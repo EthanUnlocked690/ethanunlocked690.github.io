@@ -35,29 +35,9 @@ body {
 <button type="button"
 onclick="document.getElementById('demo').innerHTML = Date()">
 Click me to display Date and Time - You may need to Spam to get different times and dates. LET! HIM! COOK!</button>
-
-<p id="demo"></p>
-<h1 style="color:yellow;">Want your Co-ordinates?</h1>
-<button onclick="getLocation()">Click here to get them!!</button>
-
-<p id="demo"></p>
-
-<script>
-const x = document.getElementById("demo");
-
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showPosition);
-  } else { 
-    x.innerHTML = "Geolocation is not supported by this browser.";
-  }
-}
-
-function showPosition(position) {
-  x.innerHTML = "Latitude: " + position.coords.latitude + 
-  "<br>Longitude: " + position.coords.longitude;
-}
-
 </script>
+</head>
+<body>
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
 </head>
 <body>
