@@ -1,5 +1,27 @@
 <!DOCTYPE html>
-<embed name="JuiceWrld" src="juice-wrld-type-beat-king-of-pain-297514.mp3" loop="true" hidden="true" autostart="true">
+</head>
+<body>
+
+    <button id="myButton">Background music On/Off</button>
+    <audio id="myAudio">
+        <source src="juice-wrld-type-beat-king-of-pain-297514.mp3" type="audio/mp3">
+    </audio>
+
+    <script>
+        const button = document.getElementById("myButton");
+        const audio = document.getElementById("myAudio");
+
+        button.addEventListener("click", function() {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        });
+    </script>
+
+</body>
+</html>
 <html>
 <head>
 
