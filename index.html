@@ -1,5 +1,39 @@
 <!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
 
+  video {
+    width: 1px;
+    height: 1px;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+</style>
+</head>
+<body>
+
+<video id="myVideo" autoplay loop muted>
+  <source src="https://www.youtube.com/watch?v=XbGs_qK2PQA" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+<script>
+  const video = document.getElementById('myVideo');
+
+  video.addEventListener('error', (error) => {
+    console.error('Video error:', error);
+  });
+</script>
+
+</body>
+</html>
 </script>
 
 <html>
@@ -156,8 +190,6 @@ li a:hover {
         }
     }
 </style>
-  <h1 style="color:white;">Sound buttons</h1>
- <iframe width="110" height="200" src="https://www.myinstants.com/instant/rap-god-91140/embed/" frameborder="0" scrolling="no"></iframe>
   
 
     </script>
