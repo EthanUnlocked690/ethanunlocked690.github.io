@@ -1,33 +1,5 @@
 <!DOCTYPE html>
-<audio id="backgroundMusic" loop style="display: none;">
-  <source src="watch.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
-</audio>
-
-<script>
-  window.onload = function() {
-    var music = document.getElementById("backgroundMusic");
-    music.volume = 0.5;
-
-    // Attempt to autoplay
-    var playPromise = music.play();
-
-    if (playPromise !== undefined) {
-      playPromise.then(_ => {
-        // Autoplay started!
-        console.log("Autoplay started successfully.");
-      })
-      .catch(error => {
-        // Autoplay was prevented. Show a UI element so that the user can start playback.
-        console.log("Autoplay prevented:", error);
-        // Play audio on first user interaction (click anywhere)
-        document.addEventListener('click', function playOnClick() {
-          music.play();
-          document.removeEventListener('click', playOnClick); // Remove listener after first click
-        });
-      });
-    }
-  };
+<div id="music"><embed src="Rap_God_-_Eminem.mp3" autostart=true loop=true></div>
 </script>
 
 <html>
