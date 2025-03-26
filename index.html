@@ -120,6 +120,40 @@ li a:hover {
 </script>
 </head>
 <body>
+  <style>
+    /* ... your existing CSS ... */
+
+    /* Media query for smaller screens (e.g., mobile phones) */
+    @media (max-width: 768px) {
+        ul {
+            flex-direction: column; /* Stack list items vertically */
+        }
+
+        li {
+            float: none; /* Remove floating */
+            width: 100%; /* Make list items full-width */
+        }
+        li a {
+          width:100%;
+        }
+
+        .bouncy-text {
+            font-size: 30px !important; /* Reduce font size */
+        }
+
+        iframe {
+            width: 100%; /* Make iframes full-width */
+            height: auto; /* Adjust height automatically */
+        }
+    }
+
+    /* Media query for tablets */
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .bouncy-text {
+            font-size: 40px !important;
+        }
+    }
+</style>
   
 
     </script>
