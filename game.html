@@ -88,6 +88,94 @@ li a:hover {
    <div id="controls">
         Controls: Left/Right Arrow Keys
     </div>
+    <script>const player = document.getElementById('player');
+const gameContainer = document.getElementById('game-container');
+const scoreDisplay = document.getElementById('score');
+let score = 0;
+let playerX = window.innerWidth / 2;
+const playerSpeed = 10;
+
+// Touch control elements
+const leftControl = document.createElement('div');
+const rightControl = document.createElement('div');
+
+leftControl.style.position = 'absolute';
+leftControl.style.bottom = '20px';
+leftControl.style.left = '10px';
+leftControl.style.width = '80px';
+leftControl.style.height = '50px';
+leftControl.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+leftControl.textContent = 'Left';
+leftControl.style.color = 'white';
+leftControl.style.textAlign = 'center';
+leftControl.style.lineHeight = '50px';
+
+rightControl.style.position = 'absolute';
+rightControl.style.bottom = '20px';
+rightControl.style.right = '10px';
+rightControl.style.width = '80px';
+rightControl.style.height = '50px';
+rightControl.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+rightControl.textContent = 'Right';
+rightControl.style.color = 'white';
+rightControl.style.textAlign = 'center';
+rightControl.style.lineHeight = '50px';
+
+gameContainer.appendChild(leftControl);
+gameContainer.appendChild(rightControl);
+
+let moveLeft = false;
+let moveRight = false;
+
+// Touch event listeners
+leftControl.addEventListener('touchstart', (event) => {
+    moveLeft = true;
+    event.preventDefault(); // Prevent default touch behavior (scrolling)
+});
+
+leftControl.addEventListener('touchend', () => {
+    moveLeft = false;
+});
+
+rightControl.addEventListener('touchstart', (event) => {
+    moveRight = true;
+    event.preventDefault();
+});
+
+rightControl.addEventListener('touchend', () => {
+    moveRight = false;
+});
+
+// Update player position based on touch input
+function updatePlayerPosition() {
+    if (moveLeft) {
+        playerX -= playerSpeed;
+    }
+    if (moveRight) {
+        playerX += playerSpeed;
+    }
+
+    playerX = Math.max(0, Math.min(playerX, window.innerWidth - 50));
+    player.style.left = playerX + 'px';
+    requestAnimationFrame(updatePlayerPosition);
+}
+
+updatePlayerPosition(); // Start the update loop
+
+// ... (rest of your game logic: createFallingObject, checkCollision, etc.) ...
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+        playerX -= playerSpeed;
+    } else if (event.key === 'ArrowRight') {
+        playerX += playerSpeed;
+    }
+
+    playerX = Math.max(0, Math.min(playerX, window.innerWidth - 50));
+    player.style.left = playerX + 'px';
+});
+
+setInterval(createFallingObject, 1000);
+    </script>
     <script>
         const player = document.getElementById('player');
         const gameContainer = document.getElementById('game-container');
