@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #222;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #player {
+            width: 50px;
+            height: 50px;
+            background-color: lightgreen;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .falling-object {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            position: absolute;
+        }
+
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player"></div>
+        <div id="score">Score: 0</div>
+    </div>
+    <script>
+        const player = document.getElementById('player');
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let playerX = window.innerWidth / 2;
+        const playerSpeed = 10;
+
+        function createFallingObject() {
+            const object = document.createElement('div');
+            object.classList.add('falling-object');
+            object.style.left = Math.random() * (window.innerWidth - 20) + 'px';
+            object.style.top = '0px';
+            gameContainer.appendChild(object);
+
+            let objectY = 0;
+            const fallSpeed = Math.random() * 5 + 3;
+
+            function fall() {
+                objectY += fallSpeed;
+                object.style.top = objectY + 'px';
+
+                if (objectY > window.innerHeight) {
+                    object.remove();
+                } else if (checkCollision(object)) {
+                    object.remove();
+                    score++;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                } else {
+                    requestAnimationFrame(fall);
+                }
+            }
+            fall();
+        }
+
+        function checkCollision(object) {
+            const playerRect = player.getBoundingClientRect();
+            const objectRect = object.getBoundingClientRect();
+
+            return !(playerRect.right < objectRect.left ||
+                     playerRect.left > objectRect.right ||
+                     playerRect.bottom < objectRect.top ||
+                     playerRect.top > objectRect.bottom);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                playerX -= playerSpeed;
+            } else if (event.key === 'ArrowRight') {
+                playerX += playerSpeed;
+            }
+
+            playerX = Math.max(0, Math.min(playerX, window.innerWidth - 50));
+            player.style.left = playerX + 'px';
+        });
+
+        setInterval(createFallingObject, 1000);
+    </script>
+</body>
+</html>
