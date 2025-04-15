@@ -47,50 +47,11 @@ li a:hover {
   <li><a href="meme.html" style="background-color:red;">Memes</a></li>
   <li><a href="animate.html">LEGO Animations</a></li>
 </ul>
-  <style>
-        #muteButton {
-            background-color: lightblue;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-    <video id="myVideo" width="100" height="100" controls autoplay muted>
-        <source src="lava.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
-
-    <button id="muteButton">Mute/Unmute Background music</button>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const video = document.getElementById('myVideo');
-            const muteButton = document.getElementById('muteButton');
-
-            console.log("Video element:", video); // Debugging
-            console.log("Button element:", muteButton); // Debugging
-
-            if (video && muteButton) { // Check if elements exist
-                muteButton.addEventListener('click', function() {
-                    if (video.muted) {
-                        video.muted = false;
-                        muteButton.textContent = 'Mute';
-                        console.log("Video unmuted."); // Debugging
-                    } else {
-                        video.muted = true;
-                        muteButton.textContent = 'Unmute';
-                        console.log("Video muted."); // Debugging
-                    }
-                });
-            } else {
-                console.error("Video or button element not found."); // Debugging
-            }
-
-        });
-    </script>
+  <body>
+      <audio id="audio_playo24" controls>
+   <source src="lava.mp4" type="audio/mp4" />
+</audio>
+<a href="javascript:void(0);" onclick="toggleMute()">Mute/Unmute</a>
   <style>
   .bouncy-text {
             font-size: 50px !important;
