@@ -8,6 +8,52 @@
      background-color:rgb(217, 198, 76);
     }
 </style>
+  <style>
+  body { font-family: sans-serif; }
+  form { width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; }
+  label { display: block; margin-bottom: 5px; }
+  input[type="text"], textarea, input[type="file"] { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+  input[type="submit"] { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; }
+  .error { color: red; }
+</style>
+</head>
+<body>
+
+  <form id="newsForm" action="/upload_news" method="POST" enctype="multipart/form-data">
+    <label for="title">Title:</label><br>
+    <input type="text" id="title" name="title"><br><br>
+
+    <label for="content">Content:</label><br>
+    <textarea id="content" name="content"></textarea><br><br>
+
+    <label for="image">Image:</label><br>
+    <input type="file" id="image" name="image" accept="image/*"><br><br>
+
+    <label for="video">Video:</label><br>
+    <input type="file" id="video" name="video" accept="video/*"><br><br>
+
+    <input type="submit" value="Submit">
+    <div id="error-message" class="error"></div>
+  </form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() { // Ensure DOM is loaded
+        const newsForm = document.getElementById("newsForm");
+        const errorMessage = document.getElementById("error-message");
+
+        newsForm.addEventListener("submit", function(event) {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+
+            if (title.length < 5 || content.length < 10) {
+                errorMessage.textContent = "Please enter a longer title and content.";
+                event.preventDefault(); // Prevent form submission
+            } else {
+                errorMessage.textContent = ""; // Clear any previous error messages
+            }
+        });
+    });
+  </script>
 <style>
 ul {
   list-style-type: none;
