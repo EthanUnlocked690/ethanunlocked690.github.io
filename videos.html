@@ -6,6 +6,72 @@
      background-color:rgb(0, 255, 0);
     }
 </style>
+  <style>
+  #video-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .video-item {
+    width: 300px;
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+
+  .video-item video {
+    width: 100%;
+    height: auto;
+  }
+</style>
+</head>
+<body>
+
+  <input type="text" id="searchInput" placeholder="Search videos...">
+  <div id="video-container">
+    <div class="video-item" data-title="Bro whats this?">
+      <video controls src="https://youtu.be/lLTXlIvWR_8"></video>
+      <p>Bro what's this? 😂</p>
+    </div>
+    <div class="video-item" data-title="The random skin challenge">
+      <video controls src="https://www.youtube.com/watch?v=GqkkJ4wKaa0"></video>
+      <p>The random skin challenge</p>
+    </div>
+    <div class="video-item" data-title="POV: You step on a brick">
+      <video controls src="https://www.youtube.com/watch?v=w4-yOivm5jA"></video>
+      <p>POV: You step on a brick</p>
+    </div>
+    <div class="video-item" data-title="Gangnam style music video">
+      <video controls src="https://www.youtube.com/watch?v=SrgMCyEV2rc&pp=0gcJCX4JAYcqIYzv"></video>
+      <p>Gangnam style music video</p>
+    </div>
+    <div class="video-item" data-title="My first RECORDED victory royale">
+      <video controls src="https://www.youtube.com/watch?v=6UsvdwxBwfk&t=1s"></video>
+      <p>My first RECORDED victory royale</p>
+    </div>
+        <div class="video-item" data-title="Bro mortis needs to chill">
+      <video controls src="https://www.youtube.com/watch?v=GzSEie9hWJU"></video>
+      <p>Bro mortis needs to chill</p>
+    </div>
+    </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const videoItems = document.querySelectorAll('.video-item');
+
+    searchInput.addEventListener('input', function() {
+      const searchTerm = searchInput.value.toLowerCase();
+
+      videoItems.forEach(videoItem => {
+        const title = videoItem.dataset.title.toLowerCase();
+        if (title.includes(searchTerm)) {
+          videoItem.style.display = 'block';
+        } else {
+          videoItem.style.display = 'none';
+        }
+      });
+    });
+  </script>
 <style>
 ul {
   list-style-type: none;
