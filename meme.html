@@ -47,10 +47,26 @@ li a:hover {
   <li><a href="meme.html" style="background-color:red;">Memes</a></li>
   <li><a href="animate.html">LEGO Animations</a></li>
 </ul>
-  <video width="5" height="10" controls loop autoplay unmuted>
-  <source src="lava.mp4" type="video/mp4">
-  Your browser does not support the video tag.
+  <video id="myVideo" width="5" height="10" controls loop autoplay muted>
+    <source src="lava.mp4" type="video/mp4">
+    Your browser does not support the video tag.
 </video>
+<button id="muteButton">Mute/Unmute Background music</button>
+
+<script>
+    const video = document.getElementById('myVideo');
+    const muteButton = document.getElementById('muteButton');
+
+    muteButton.addEventListener('click', function() {
+        if (video.muted) {
+            video.muted = false;
+            muteButton.textContent = 'Mute';
+        } else {
+            video.muted = true;
+            muteButton.textContent = 'Unmute';
+        }
+    });
+</script>
   <style>
   .bouncy-text {
             font-size: 50px !important;
