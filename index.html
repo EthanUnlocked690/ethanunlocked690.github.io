@@ -127,6 +127,34 @@ li a:hover {
 <button type="button" onclick="alert('Hey guys, a new LEGO channel is coming out called: EthanUnlockeds brick hits. I will put in the link when its created.')">Click Me to get the latest announcement</button>
 </body>
 </html>
+<button id="theButton">Tap Me!</button>
+  <p id="theWords"></p>
+
+  <script>
+    // This bit is like finding your button on the paper
+    const theButtonThing = document.getElementById("theButton");
+    const theWordPlace = document.getElementById("theWords");
+
+    // This part says, "Hey computer, listen really carefully for when someone taps the button!"
+    theButtonThing.addEventListener("click", function() {
+      // When they DO tap it, do the stuff inside these curly lines { }
+
+      // Let's see what words are on the button right now
+      if (theButtonThing.textContent === "Tap Me!") {
+        // If it says "Tap Me!", then CHANGE it to "Don't you see?"
+        theButtonThing.textContent = "Don't you see?";
+        // And let's write a little message down below
+        theWordPlace.textContent = "The button changed its writing!";
+      } else {
+        // If it DOESN'T say "Tap Me!" (it must say "Yay!...")
+        // then change it BACK to "Awesome, right?"
+        theButtonThing.textContent = "Awesome, right?";
+        // And change the message back too
+        theWordPlace.textContent = "The button is now back to normal. Subscribe if this was cool: Ethan and Isabella Unlocked";
+      }
+
+    });
+  </script>
 <body>
    
 
