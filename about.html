@@ -95,85 +95,8 @@ li a:hover {
 
 </head>
 <body>
-<style>
-  .bouncy-text {
-            font-size: 50px !important;
-            font-weight: bold;
-            text-align: center;
-        }
-        .bouncy-text span {
-            animation: bounce 0.5s infinite alternate;
-            display: inline-block;
-            background: linear-gradient(to bottom, #ff6600, #ffcc33);
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-10px); }
-        }
-        .bouncy-text span:nth-child(1) { animation-delay: 0s; }
-        .bouncy-text span:nth-child(2) { animation-delay: 0.05s; }
-        .bouncy-text span:nth-child(3) { animation-delay: 0.1s; }
-        .bouncy-text span:nth-child(4) { animation-delay: 0.15s; }
-        .bouncy-text span:nth-child(5) { animation-delay: 0.20s; }
-        .bouncy-text span:nth-child(6) { animation-delay: 0.25s; }
-        .bouncy-text span:nth-child(7) { animation-delay: 0.30s; }
-        .bouncy-text span:nth-child(8) { animation-delay: 0.35s; }
-        .bouncy-text span:nth-child(9) { animation-delay: 0.40s; }
-        .bouncy-text span:nth-child(10) { animation-delay: 0.45s; }
-        .bouncy-text span:nth-child(11) { animation-delay: 0.50s; }
-        .bouncy-text span:nth-child(12) { animation-delay: 0.55s; }
-        .bouncy-text span:nth-child(13) { animation-delay: 0.60s; }
-        .bouncy-text span:nth-child(14) { animation-delay: 0.65s; }
-    </style>
-  <div style="width:100%">
-<div class="bouncy-text">
-        <span>N</span><span>u</span><span>m</span><span>b</span><span>e</span><span>r</span>
-        <span>g</span><span>u</span><span>e</span><span>s</span><span>s</span><span>i</span><span>n</span><span>g</span>
-        <span>g</span><span>a</span><span>m</span><span>e</span>
     </div>
   </div>
-  <p style="color:white;">I'm thinking of a number between 1 and 10. Try to guess it!</p>
-
-  <input type="number" id="guessInput" min="1" max="10">
-  <button id="guessButton">Guess</button>
-  <p id="message"></p>
-
-  <script>
-    // Generate a random number between 1 and 10
-    const secretNumber = Math.floor(Math.random() * 10) + 1;
-    const guessInput = document.getElementById("guessInput");
-    const guessButton = document.getElementById("guessButton");
-    const messageElement = document.getElementById("message");
-    let attempts = 0;
-
-    guessButton.addEventListener("click", function() {
-      const userGuess = parseInt(guessInput.value);
-      attempts++;
-
-      if (isNaN(userGuess) || userGuess < 1 || userGuess > 10) {
-        messageElement.textContent = "Please enter a number between 1 and 10." style="color:white;">;
-      } else if (userGuess === secretNumber) {
-        messageElement.textContent = `You guessed it in ${attempts} tries! The number was ${secretNumber}.`;
-        guessButton.disabled = true; // Disable the button after guessing correctly
-      } else if (userGuess < secretNumber) {
-        messageElement.textContent = "Too low! Try again.";
-      } else {
-        messageElement.textContent = "Too high! Try again.";
-      }
-
-      guessInput.value = ""; // Clear the input field after each guess
-      guessInput.focus(); // Put the cursor back in the input field
-    });
-
-    // Allow the user to press Enter to submit their guess
-    guessInput.addEventListener("keypress", function(event) {
-      if (event.key === "Enter") {
-        guessButton.click(); // Simulate a button click
-      }
-    });
-  </script>
 
    <html>
 <body>
