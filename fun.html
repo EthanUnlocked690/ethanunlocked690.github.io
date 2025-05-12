@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<title>Brawl Stars Quiz</title>
+<style>
+
+ul {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+  overflow: hidden;
+  background-color: #ff0000; /* Keep your background color */
+}
+
+body {
+  margin:0px;
+  background-image: url('brawl.png');
+}
+  
+  li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: #964B00;
+}
+  </style>
+<ul>
+  <li><a class="active" href="index.html">Home</a></li>
+  <li><a href="news.html">News</a></li>
+  <li><a href="subscribe.html">Subscribe</a></li>
+  <li><a href="about.html">About</a></li>
+  <li><a href="short.html">Shorts</a></li>
+  <li><a href="videos.html">Video Gallery</a></li>
+  <li><a href="images.html">Image Gallery</a></li>
+  <li><a href="animate.html">LEGO Animations</a></li>
+  <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
+  <li><a href="fun.html" style="background-color:pink;">Fun interactives</a></li>
+</ul>
+<h1 style="color:white;">Animal of the day</h1><br>
+<script>
+function clickAction() {
+  // Put your code here
+    const animalInput = document.getElementById("animal");
+  const animalOfTheDay = document.getElementById("day");
+  const messageParagraph = document.getElementById("message");
+
+  const newAnimal = animalInput.value.trim();
+
+  if (newAnimal) {
+    animalOfTheDay.textContent = newAnimal;
+    messageParagraph.textContent = `Today's special animal is the magnificent ${newAnimal}!`;
+    animalInput.value = ""; // Clear the input field
+  } else {
+    messageParagraph.textContent = "Good choice!";
+  }
+  
+}
+
+button.onclick = clickAction;
+</script><br>
+<h1 style="color:white;">Rock Paper Scissors</h1><br>
+<!DOCTYPE html>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .choices button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #result {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        #score {
+            font-size: 1em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="choices">
+        <button onclick="playGame('rock')">Rock</button>
+        <button onclick="playGame('paper')">Paper</button>
+        <button onclick="playGame('scissors')">Scissors</button>
+    </div>
+
+    <div id="result"></div>
+    <div id="score"></div>
+
+    <script>
+        let userScore = 0;
+        let computerScore = 0;
+
+        function getComputerChoice() {
+            const choices = ['rock', 'paper', 'scissors'];
+            const randomIndex = Math.floor(Math.random() * choices.length);
+            return choices[randomIndex];
+        }
+
+        function determineWinner(userChoice, computerChoice) {
+            if (userChoice === computerChoice) {
+                return "It's a tie!";
+            } else if (
+                (userChoice === 'rock' && computerChoice === 'scissors') ||
+                (userChoice === 'paper' && computerChoice === 'rock') ||
+                (userChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                userScore++;
+                return "You win!";
+            } else {
+                computerScore++;
+                return "Computer wins!";
+            }
+        }
+
+        function playGame(userChoice) {
+            const computerChoice = getComputerChoice();
+            const result = determineWinner(userChoice, computerChoice);
+
+            document.getElementById('result').textContent = `You chose: ${userChoice}, Computer chose: ${computerChoice}. ${result}`;
+            document.getElementById('score').textContent = `Your Score: ${userScore} | Computer Score: ${computerScore}`;
+        }
+    </script>
+</body><br>
+<h1 style="color:white;">Tic-Tac-Toe</h1><br>
+<style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            margin-top: 20px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            cursor: pointer;
+        }
+        .cell:nth-child(1), .cell:nth-child(2), .cell:nth-child(3) {
+            border-top: none;
+        }
+        .cell:nth-child(3n+1) {
+            border-left: none;
+        }
+        .cell:nth-child(3n) {
+            border-right: none;
+        }
+        .cell:nth-child(7), .cell:nth-child(8), .cell:nth-child(9) {
+            border-bottom: none;
+        }
+        #message {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        button {
+            font-size: 1em;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe VS Bot</h1>
+
+    <div class="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <div id="message">Your turn (X)</div>
+    <button onclick="resetBoard()">Reset Board</button>
+
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const message = document.getElementById('message');
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+        const userSymbol = 'X';
+        const botSymbol = 'O';
+
+        function handleCellClick(clickedCellEvent) {
+            const clickedCell = clickedCellEvent.target;
+            const clickedCellIndex = parseInt(clickedCell.dataset.index);
+
+            if (gameBoard[clickedCellIndex] !== '' || !gameActive) {
+                return;
+            }
+
+            gameBoard[clickedCellIndex] = userSymbol;
+            clickedCell.textContent = userSymbol;
+
+            checkWin();
+            if (gameActive && !gameBoard.every(cell => cell !== '')) {
+                setTimeout(botTurn, 500); // Bot makes a move after a short delay
+            }
+        }
+
+        function botTurn() {
+            if (!gameActive) return;
+
+            let bestMove = findBestMove();
+            if (bestMove !== -1) {
+                gameBoard[bestMove] = botSymbol;
+                cells[bestMove].textContent = botSymbol;
+                checkWin();
+            }
+        }
+
+        // Basic AI: Random move for now
+        function findBestMove() {
+            const availableSpots = [];
+            for (let i = 0; i < gameBoard.length; i++) {
+                if (gameBoard[i] === '') {
+                    availableSpots.push(i);
+                }
+            }
+            if (availableSpots.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableSpots.length);
+                return availableSpots[randomIndex];
+            }
+            return -1; // No available spots
+        }
+
+        function checkWin() {
+            const winningConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6]             // Diagonals
+            ];
+
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (gameBoard[a] !== '' && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
+                    message.textContent = (gameBoard[a] === userSymbol ? "You win!" : "Bot wins!");
+                    gameActive = false;
+                    return;
+                }
+            }
+
+            if (!gameBoard.includes('')) {
+                message.textContent = "It's a draw!";
+                gameActive = false;
+            } else if (gameActive && gameBoard.filter(cell => cell === '').length > 0 && gameBoard.filter(cell => cell === userSymbol).length > gameBoard.filter(cell => cell === botSymbol).length) {
+                message.textContent = "Bot's turn";
+            } else if (gameActive && gameBoard.filter(cell => cell === '').length > 0 && gameBoard.filter(cell => cell === botSymbol).length >= gameBoard.filter(cell => cell === userSymbol).length) {
+                message.textContent = "Your turn (X)";
+            }
+        }
+
+        function resetBoard() {
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            message.textContent = "Your turn (X)";
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.removeEventListener('click', handleCellClick); // Remove old listeners
+                cell.addEventListener('click', handleCellClick);   // Add new listeners
+            });
+        }
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+    </script>
+</body><br>
+
