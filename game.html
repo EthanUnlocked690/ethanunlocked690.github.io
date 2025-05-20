@@ -1,43 +1,79 @@
 <!DOCTYPE html>
-<title>Coming soon...</title>
-<style>
-  
-body {
-  margin: 0px;
-  background-image: url('webpage-backdrop.jpg');
-}
-  </style>
-  
-<style>
-ul {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 100;
-  list-style-type: none;
-  margin: 0px;
-  padding: 0px;
-  overflow: hidden;
-  background-color: #ff0000; /* Keep your background color */
-}
-  
-  li {
-  float: left;
-}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</script>
+<!-- This is JavaScript for interacting with my game -->
+<script>
+window.alert("WARNING: This game is still being coded, so, some of it might not work. In, the meantime, check out the rest of this website. Thank you for listening!");
+</script>
+<body>
+<html>
+<head>
+<title>Fighting simulator VS Bot</title>
+<head>
+<body>
 
-li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
+  <div id="player" class="character">Mike Tyson<br>HP: 100</div>
+  <div id="bot" class="character">Jack Black<br>HP: 150</div>
+  </body>
+  </head>
+<style>
+	.character {
+      width: 80px; /* Increased size */
+      height: 120px; /* Increased size */
+      background-color: gray; /* Placeholder color */
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: sans-serif;
+      border: 1px solid black;
+    }
+    #player {
+      left: 50px;
+      bottom: 50px;
+      background-color: red; /* Mike Tyson */
+    }
+    #bot {
+      right: 50px;
+      bottom: 50px;
+      background-color: green; /* Jack Black (Bot) */
+    }
+	body {
+     margin: 0px;
+	 background-image: url('images/arena.png')
+	}
 
-li a:hover {
-  background-color: #964B00;
-}
-  </style>
+	ul {
+	  position: fixed;
+	  top: 0;
+	  left: 0;
+	  width: 100%;
+	  z-index: 100;
+	  list-style-type: none;
+	  margin: 0px;
+	  padding: 0px;
+	  overflow: hidden;
+	  background-color: #ff0000; /* Keep your background color */
+	}
+	  
+	  li {
+	  float: left;
+	}
+
+	li a {
+	  display: block;
+	  color: white;
+	  text-align: center;
+	  padding: 14px 16px;
+	  text-decoration: none;
+	}
+
+	li a:hover {
+	  background-color: #964B00;
+	}
+</style>
 <ul>
   <li><a class="active" href="index.html">Home</a></li>
   <li><a href="news.html">News</a></li>
@@ -50,13 +86,127 @@ li a:hover {
   <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
   <li><a href="game.html" style="background-color:pink;">Game</a></li>
 </ul>
-<style>h1 {
-  font-size: 50px;
+<script>
+<!-- Our players name -->
+let playerName = "Mike Tyson";
+
+<!-- How many lives? -->
+let playerLives = 3;
+
+<!-- How to say that they attacked -->
+function playerAttack() {
+   console.log(playerName + " attacked BOT!");
+  }
+  
+<!-- When they lose a life -->
+function playerLostLife() {
+   playerLives = playerLives - 1;
+   console.log(playerName + " lost a life! Lives remaining: " + playerLives);
+   if (playerLives <= 0) {
+     console.log(playerName + " has been defeated! Game Over!");
+	}
+   }
+   
+<!-- Player at the start -->
+console.log("player Name: " + playerName);
+console.log("Starting Lives: " + playerLives);
+console.log("------------------");
+
+<!-- Players actions -->
+playerAttack();
+playerLostLife();
+playerAttack();
+playerLostLife();
+playerLostLife();
+
+let playerName = "Mike Tyson";
+let playerHealth = 100;
+
+function takeDamage(damage) {
+  playerHealth -= damage;
+  console.log(playerName + " took " + damage + " damage. Health: " + playerHealth);
+  if (playerHealth <= 0) {
+    console.log(playerName + " defeated!");
+  }
 }
-h1 {text-align: center;}
-  </style>
-<h1 style="color:white;">Coming soon...</h1><br>
-<h1 style="color:white;">_______________________</h1><br>
-<h1 style="color:white;">Stick around to see it! Characters: Jack Black, Mike Tyson</h1><br>
+
+console.log(playerName + "'s health: " + playerHealth);
+takeDamage(20);
+takeDamage(30);
+takeDamage(60);
+
+<!-- Now for the Bot! -->
+<!-- Our Bot's name -->
+let botName = "Jack Black";
+let botLives = 3;
+let botAttackPower = 5;
+
+function botAttack(targetName) {
+  console.log(botName + " attacks " + targetName + " with power " + botAttackPower + "!");
+ <!-- In a real game, you'd have code here to make the target lose health -->
+}
+
+function botLostLife() {
+  botLives--;
+  console.log(botName + " lost a life! Lives: " + botLives);
+  if (botLives <= 0) {
+    console.log(botName + " is defeated!");
+  }
+}
+
+//The bot just attacks sometimes
+function botTakeTurn(opponentName) {
+  // Lets say the bot has a 50% chance to attack on its turn
+  if (Math.random() > 0.5) {
+    botAttack(opponentName);
+  } else {
+    console.log(botName + " does nothing this turn.");
+  }
+}
+
+console.log("Bot Name: " + botName);
+console.log("Starting Lives: " + botLives);
+console.log("Attack Power: " + botAttackPower);
+console.log("------------------");
+
+// Simulate some turns
+botTakeTurn("Player One");
+botLostLife();
+botTakeTurn("Player One");
+botTakeTurn("Player One");
+
+let botName = "Jack Black";
+let botAttackPower = 10;
+
+function botAttack(targetPlayer) {
+  console.log(botName + " attacked " + targetPlayer.playerName + "!" + botAttackPower + " damage dealt!");
+  targetPlayer.takeDamage(botAttackPower); // <--- This is where the player takes damage
+}
+
+// Assuming you have the player object from the earlier code:
+console.log("Player's health before attack:", playerName, playerHealth);
+botAttack({ playerName: playerName, takeDamage: takeDamage }); // Simulate the bot attacking the player
+console.log("Player's health after attack:", playerName, playerHealth);
+</script>
+<img id="jack" src="images/jack-left.png" alt="Jack Black" width="300" height="300" style = "position: absolute; bottom: 20%; right: 0">
+<img id="mike" src="images/mike-right.png" alt="Mike Tyson" width="550" height="500" style = "position: absolute; bottom: 5%; left: 0">
+<script>
+const image = document.getElementById('mike');
+let currentLeft = parseInt(image.style.left) || 0; // Get the initial left position or default to 0
+const moveSpeed = 10; // Adjust this value to control the movement speed
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'a') {
+    currentLeft -= moveSpeed;
+    image.style.left = currentLeft + 'px';
+  } else if (event.key === 'd') {
+    currentLeft += moveSpeed;
+    image.style.left = currentLeft + 'px';
+  }
+});
+</script>
+</body>
+</html>
+</head>
 
 
