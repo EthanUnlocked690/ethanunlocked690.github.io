@@ -3,7 +3,7 @@
 </script>
 <!-- This is JavaScript for interacting with my game -->
 <script>
-window.alert("WARNING: This game is still being coded, so, some of it might not work. In, the meantime, check out the rest of this website. Thank you for listening!");
+window.alert('WARNING: This game is incomplete, so, it wont work properly, but, in the meantime, check out the rest of the website. Thank you for listening!')
 </script>
 <body>
 <html>
@@ -93,6 +93,17 @@ let playerName = "Mike Tyson";
 <!-- How many lives? -->
 let playerLives = 3;
 
+let playerHealth = 100;
+
+
+<!-- Our Bot's name -->
+let botName = "Jack Black";
+let botLives = 3;
+let botAttackPower = 5;
+
+
+
+
 <!-- How to say that they attacked -->
 function playerAttack() {
    console.log(playerName + " attacked BOT!");
@@ -119,8 +130,7 @@ playerAttack();
 playerLostLife();
 playerLostLife();
 
-let playerName = "Mike Tyson";
-let playerHealth = 100;
+
 
 function takeDamage(damage) {
   playerHealth -= damage;
@@ -136,10 +146,6 @@ takeDamage(30);
 takeDamage(60);
 
 <!-- Now for the Bot! -->
-<!-- Our Bot's name -->
-let botName = "Jack Black";
-let botLives = 3;
-let botAttackPower = 5;
 
 function botAttack(targetName) {
   console.log(botName + " attacks " + targetName + " with power " + botAttackPower + "!");
@@ -175,12 +181,11 @@ botLostLife();
 botTakeTurn("Player One");
 botTakeTurn("Player One");
 
-let botName = "Jack Black";
-let botAttackPower = 10;
+
 
 function botAttack(targetPlayer) {
   console.log(botName + " attacked " + targetPlayer.playerName + "!" + botAttackPower + " damage dealt!");
-  targetPlayer.takeDamage(botAttackPower); // <--- This is where the player takes damage
+  // targetPlayer.takeDamage(botAttackPower); // <--- This is where the player takes damage
 }
 
 // Assuming you have the player object from the earlier code:
@@ -191,9 +196,12 @@ console.log("Player's health after attack:", playerName, playerHealth);
 <img id="jack" src="jack-left.png" alt="Jack Black" width="300" height="300" style = "position: absolute; bottom: 20%; right: 0">
 <img id="mike" src="mike-right.png" alt="Mike Tyson" width="550" height="500" style = "position: absolute; bottom: 5%; left: 0">
 <script>
+
 const image = document.getElementById('mike');
 let currentLeft = parseInt(image.style.left) || 0; // Get the initial left position or default to 0
 const moveSpeed = 10; // Adjust this value to control the movement speed
+
+
 
 document.addEventListener('keydown', function(event) {
   if (event.key === 'a') {
@@ -202,7 +210,8 @@ document.addEventListener('keydown', function(event) {
   } else if (event.key === 'd') {
     currentLeft += moveSpeed;
     image.style.left = currentLeft + 'px';
-  }
+  } else if (event.key === ' ') {
+  console.log("attack key pressed") {
 });
 </script>
 </body>
