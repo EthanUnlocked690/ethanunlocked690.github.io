@@ -104,7 +104,7 @@
       width: 40,
       height: 40,
       speed: 5,
-      color: 'lime'
+      color: 'blue'
     };
 
     const bullets = [];
@@ -119,7 +119,7 @@
         fireRate: 500,
         bulletSpeed: 7,
         shoot() {
-          bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'yellow' });
+          bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'white' });
         }
       },
       {
@@ -128,7 +128,7 @@
         bulletSpeed: 5,
         shoot() {
           [-1, 0, 1].forEach(offset =>
-            bullets.push({ x: player.x + 18 + offset * 10, y: player.y, speed: -this.bulletSpeed, dx: offset, color: 'orange' })
+            bullets.push({ x: player.x + 18 + offset * 10, y: player.y, speed: -this.bulletSpeed, dx: offset, color: 'yellow' })
           );
         }
       },
@@ -137,7 +137,7 @@
         fireRate: 200,
         bulletSpeed: 10,
         shoot() {
-          bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'cyan' });
+          bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'red' });
         }
       },
     ];
@@ -179,7 +179,7 @@
           e.y < player.y + player.height &&
           e.y + e.size > player.y
         ) {
-          alert('Game Over!\n\nYour final score: ' + score + '\n\nREFRESH TO PLAY AGAIN!');
+          alert('Game Over!\n\nYour final score: ' + score + '\n\nPlease wait for tab to refresh to play again!');
           document.location.reload();
         }
 
