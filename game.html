@@ -84,19 +84,21 @@
   <b style="color:white;">Background music toggle</b><br>
   <audio id="bgMusic" src="welcome2detroit.mp3" controls autoplay loop></audio><br>
 
+  <!-- Sound Effects (Add your own MP3/OGG files to the same folder) -->
+  <audio id="pistolSound" src="pistol.mp3"></audio>
+  <audio id="shotgunSound" src="shotgun.mp3"></audio>
+  <audio id="laserSound" src="laser.mp3"></audio>
+
   <script>
-    // Show welcome message when the page loads
-    window.onload = () => {
-      alert("Welcome to Random GunGame!\n\nHow the game works is, you start off with a random gun and every 3 seconds, the weapon changes.\n\nControls:\n← Left arrow key = Move Left\n→ Right arrow key = Move Right\n⎵ Spacebar = Shoot\nPress OK to start");
-
-      const music = document.getElementById('bgMusic');
-      music.volume = 0.4;
-    };
-
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const weaponNameText = document.getElementById('weaponName');
     const scoreText = document.getElementById('score');
+
+    const music = document.getElementById('bgMusic');
+    const pistolSound = document.getElementById('pistolSound');
+    const shotgunSound = document.getElementById('shotgunSound');
+    const laserSound = document.getElementById('laserSound');
 
     const player = {
       x: 400,
@@ -119,6 +121,8 @@
         fireRate: 500,
         bulletSpeed: 7,
         shoot() {
+          pistolSound.currentTime = 0;
+          pistolSound.play();
           bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'white' });
         }
       },
@@ -127,6 +131,8 @@
         fireRate: 800,
         bulletSpeed: 5,
         shoot() {
+          shotgunSound.currentTime = 0;
+          shotgunSound.play();
           [-1, 0, 1].forEach(offset =>
             bullets.push({ x: player.x + 18 + offset * 10, y: player.y, speed: -this.bulletSpeed, dx: offset, color: 'yellow' })
           );
@@ -137,6 +143,8 @@
         fireRate: 200,
         bulletSpeed: 10,
         shoot() {
+          laserSound.currentTime = 0;
+          laserSound.play();
           bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'red' });
         }
       },
@@ -224,7 +232,7 @@
         lastShot = timestamp;
       }
 
-      // Switch weapon every 5 seconds
+      // Switch weapon every 3 seconds
       if (timestamp - weaponSwitchTime > 3000) {
         switchWeapon();
         weaponSwitchTime = timestamp;
@@ -246,13 +254,13 @@
     document.addEventListener('keydown', e => keys[e.key] = true);
     document.addEventListener('keyup', e => keys[e.key] = false);
 
-    // Start game
-    switchWeapon();
-    gameLoop();
+    window.onload = () => {
+      alert("Welcome to Random GunGame!\n\nHow the game works is, you start off with a random gun and every few seconds, the weapon changes.\n\nControls:\n← Left arrow key = Move Left\n→ Right arrow key = Move Right\n⎵ Spacebar = Shoot\n\nPress OK to start.");
+
+      music.volume = 0.4;
+      switchWeapon();
+      requestAnimationFrame(gameLoop);
+    };
   </script>
 </body>
 </html>
-
-
-
-
