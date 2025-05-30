@@ -87,7 +87,7 @@
   <script>
     // Show welcome message when the page loads
     window.onload = () => {
-      alert("Welcome to Random GunGame!\n\nHow the game works is, you start off with a random gun and every 5 seconds, the weapon changes.\n\nControls:\n← Left arrow key = Move Left\n→ Right arrow key = Move Right\n⎵ Spacebar = Shoot\nPress OK to start");
+      alert("Welcome to Random GunGame!\n\nHow the game works is, you start off with a random gun and every 3 seconds, the weapon changes.\n\nControls:\n← Left arrow key = Move Left\n→ Right arrow key = Move Right\n⎵ Spacebar = Shoot\nPress OK to start");
 
       const music = document.getElementById('bgMusic');
       music.volume = 0.4;
@@ -225,7 +225,7 @@
       }
 
       // Switch weapon every 5 seconds
-      if (timestamp - weaponSwitchTime > 5000) {
+      if (timestamp - weaponSwitchTime > 3000) {
         switchWeapon();
         weaponSwitchTime = timestamp;
       }
