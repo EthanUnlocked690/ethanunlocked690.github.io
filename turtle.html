@@ -71,37 +71,15 @@ body {
 </style>
 </html>
 <script>
-print ("Program run at:")
+# Flask example for a simple "Hello, World!" web page
+from flask import Flask
 
-import datetime
+app = Flask(__name__)
 
-x = datetime.datetime.now()
-print(x)
-print(x.strftime("%A"))
-f = "Watch as this turtle draws 2 circles!!"
-print (f)
+@app.route('/')
+def hello():
+    return '<h1>Hello, World from Flask!</h1>'
 
-//Tells the program which text to print. Use different so you don't get multiples.//
-
-//This summons a turtle into the program.//
-
-
-import turtle
-      
-t = turtle.Turtle()
-my_turtle = turtle.Turtle()
-turtle.speed(0)
-t.color("blue")
-      
-for i in range(365):
-    my_turtle.forward(10)
-    my_turtle.right(11)
-    my_turtle.left(12)
-    my_turtle.backward(13)
-
-for i in range(400):
-    my_turtle.forward(10)
-    my_turtle.right(11)
-turtle.done()
-//Line 104 stops the turtle. Without them, the program won't work.//
+if __name__ == '__main__':
+    app.run(debug=True)
 </script>
