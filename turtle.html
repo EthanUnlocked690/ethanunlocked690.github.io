@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<style>
+body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Navigation Bar */
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+    }
+
+    li {
+      float: left;
+    }
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+    li a:hover {
+      background-color: #111;
+    }
+
+    h1 {
+      margin: 10px 0;
+    }
+
+    #ui {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+      border: 2px solid #fff;
+      background-color: #222;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <ul>
+    <li><a class="active" href="index.html">Home</a></li>
+    <li><a href="news.html">News</a></li>
+    <li><a href="subscribe.html">Subscribe</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="short.html">Shorts</a></li>
+    <li><a href="videos.html">Video Gallery</a></li>
+    <li><a href="images.html">Image Gallery</a></li>
+    <li><a href="animate.html">LEGO Animations</a></li>
+    <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
+    <li><a href="game.html" style="background-color:black">Python turtle drawing</a></li>
+  </ul>
+</style>
+</html>
+<script>
+print ("Program run at:")
+
+import datetime
+
+x = datetime.datetime.now()
+print(x)
+print(x.strftime("%A"))
+f = "Watch as this turtle draws 2 circles!!"
+print (f)
+
+//Tells the program which text to print. Use different so you don't get multiples.//
+
+//This summons a turtle into the program.//
+
+
+import turtle
+
+my_turtle = turtle.Turtle()
+turtle.speed(0)
+for i in range(365):
+    my_turtle.forward(10)
+    my_turtle.right(11)
+    my_turtle.left(12)
+    my_turtle.backward(13)
+
+
+import turtle
+
+my_turtle = turtle.Turtle()
+turtle.speed(0)
+for i in range(400):
+    my_turtle.forward(10)
+    my_turtle.right(11)
+turtle.done()
+//Line 50 and 31 stops the turtle. Without them, the program won't work.//
+</script>
