@@ -73,5 +73,58 @@ body {
 </style>
 </html>
 <script>
-print "Hello World!"
+'''
+Line 4-10 tells when the program has been run.
+'''
+
+print ("Program run at:")
+
+import datetime
+
+x = datetime.datetime.now()
+print(x)
+print(x.strftime("%A"))
+f = "Watch as this turtle draws 2 circles!!"
+print (f)
+'''
+Tells the program which text to print. Use different so you don't get multiples.
+'''
+
+'''
+This summons a turtle into the program.
+'''
+
+import turtle
+t = turtle.Turtle()
+t.speed(0)
+t.color("red", "blue") # Sets pen color to red and fill color to blue
+for i in range(365):
+    t.forward(10)
+    t.right(11)
+    t.left(12)
+    t.backward(13)
+'''
+t.color("blue") makes the turtle blue.
+'''
+my_turtle = turtle.Turtle()
+my_turtle.speed(0)
+my_turtle.color("blue")
+for i in range(50):
+    my_turtle.forward(10)
+    my_turtle.right(11)
+
+my_turtle = turtle.Turtle()
+my_turtle.speed(0)
+my_turtle.color("yellow")
+for i in range(400):
+    my_turtle.forward(50)
+    my_turtle.right(55)
+    
+my_turtle = turtle.Turtle()
+my_turtle.speed(0)
+my_turtle.color("green")
+for i in range(80):
+    my_turtle.forward(100)
+    my_turtle.right(105)
+      my_turtle.done()
 </script>
