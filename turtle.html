@@ -1,130 +1,149 @@
 <!DOCTYPE html>
 <html>
 <head>
-      <title>Random Python stuff...</title>
-<style>
-body {
-      background-color: #111;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
+    <title>Random Python stuff...</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
 
-    /* Navigation Bar */
-    ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: #333;
-    }
+        /* Navigation Bar */
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #333;
+        }
 
-    li {
-      float: left;
-    }
+        li {
+            float: left;
+        }
 
-    li a {
-      display: block;
-      color: white;
-      text-align: center;
-      padding: 14px 16px;
-      text-decoration: none;
-    }
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
 
-    li a:hover {
-      background-color: #111;
-    }
+        li a:hover {
+            background-color: #111;
+        }
 
-    h1 {
-      margin: 10px 0;
-    }
+        h1 {
+            margin: 10px 0;
+        }
 
-    #ui {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 10px;
-    }
+        #ui {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
 
-    canvas {
-      display: block;
-      margin: 0 auto;
-      border: 2px solid #fff;
-      background-color: #222;
-    }
-  </style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 2px solid #fff;
+            background-color: #222;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+    <py-config>
+        # Example: packages = ["requests"]
+    </py-config>
+
 </head>
 <body>
-  <!-- Navigation Bar -->
-  <ul>
-    <li><a class="active" href="index.html">Home</a></li>
-    <li><a href="news.html">News</a></li>
-    <li><a href="subscribe.html">Subscribe</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="short.html">Shorts</a></li>
-    <li><a href="videos.html">Video Gallery</a></li>
-    <li><a href="images.html">Image Gallery</a></li>
-    <li><a href="animate.html">LEGO Animations</a></li>
-    <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
-    <li><a href="turtle.html" style="background-color:black">Python turtle drawing</a></li>
-  </ul>
-</style>
+    <ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="news.html">News</a></li>
+        <li><a href="subscribe.html">Subscribe</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="short.html">Shorts</a></li>
+        <li><a href="videos.html">Video Gallery</a></li>
+        <li><a href="images.html">Image Gallery</a></li>
+        <li><a href="animate.html">LEGO Animations</a></li>
+        <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
+        <li><a href="turtle.html" style="background-color:black">Python turtle drawing</a></li>
+    </ul>
+
+    <h1>Python Output:</h1>
+    <div id="python-output"></div>
+
+    <script type="py">
+        # Import necessary modules
+        import datetime
+        from js import document # Allows Python to interact with HTML elements
+
+        # Get the HTML element where we want to display output
+        output_div = document.getElementById("python-output")
+
+        # Display program run time
+        output_div.innerHTML += "Program run at:<br>"
+
+        x = datetime.datetime.now()
+        output_div.innerHTML += f"{x}<br>"
+        output_div.innerHTML += f"{x.strftime('%A')}<br>"
+
+        # Display a custom message
+        f = "Watch as this turtle draws 2 circles!!"
+        output_div.innerHTML += f"{f}<br>"
+
+        # --- IMPORTANT NOTE: Python's 'turtle' module for drawing ---
+        # The 'turtle' module is designed for desktop GUI applications (like Tkinter)
+        # and does NOT work directly in a web browser using PyScript.
+        # Browsers do not have a built-in "turtle" graphics environment.
+        # If you need drawing in the browser, you would typically use:
+        # 1. JavaScript's native Canvas API.
+        # 2. A JavaScript drawing library (like p5.js, Konva.js) and control it from Python.
+        # Therefore, the 'turtle' code from your original script is commented out below
+        # because it will not produce visual output in a web browser.
+
+        # import turtle
+        # t = turtle.Turtle()
+        # t.speed(0)
+        # t.color("red", "blue")
+        # for i in range(365):
+        #     t.forward(10)
+        #     t.right(11)
+        #     t.left(12)
+        #     t.backward(13)
+
+        # my_turtle = turtle.Turtle()
+        # my_turtle.speed(0)
+        # my_turtle.color("blue")
+        # for i in range(50):
+        #     my_turtle.forward(10)
+        #     my_turtle.right(11)
+
+        # my_turtle = turtle.Turtle()
+        # my_turtle.speed(0)
+        # my_turtle.color("yellow")
+        # for i in range(400):
+        #     my_turtle.forward(50)
+        #     my_turtle.right(55)
+
+        # my_turtle = turtle.Turtle()
+        # my_turtle.speed(0)
+        # my_turtle.color("green")
+        # for i in range(80):
+        #     my_turtle.forward(100)
+        #     my_turtle.right(105)
+        #     my_turtle.done() # This is also a desktop GUI function
+    </script>
+
+    <py-repl></py-repl>
+
+</body>
 </html>
-<script>
-'''
-Line 4-10 tells when the program has been run.
-'''
-
-print ("Program run at:")
-
-import datetime
-
-x = datetime.datetime.now()
-print(x)
-print(x.strftime("%A"))
-f = "Watch as this turtle draws 2 circles!!"
-print (f)
-'''
-Tells the program which text to print. Use different so you don't get multiples.
-'''
-
-'''
-This summons a turtle into the program.
-'''
-
-import turtle
-t = turtle.Turtle()
-t.speed(0)
-t.color("red", "blue") # Sets pen color to red and fill color to blue
-for i in range(365):
-    t.forward(10)
-    t.right(11)
-    t.left(12)
-    t.backward(13)
-'''
-t.color("blue") makes the turtle blue.
-'''
-my_turtle = turtle.Turtle()
-my_turtle.speed(0)
-my_turtle.color("blue")
-for i in range(50):
-    my_turtle.forward(10)
-    my_turtle.right(11)
-
-my_turtle = turtle.Turtle()
-my_turtle.speed(0)
-my_turtle.color("yellow")
-for i in range(400):
-    my_turtle.forward(50)
-    my_turtle.right(55)
-    
-my_turtle = turtle.Turtle()
-my_turtle.speed(0)
-my_turtle.color("green")
-for i in range(80):
-    my_turtle.forward(100)
-    my_turtle.right(105)
-      my_turtle.done()
-</script>
