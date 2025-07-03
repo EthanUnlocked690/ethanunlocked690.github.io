@@ -48,9 +48,10 @@
             margin-bottom: 10px;
         }
 
-        canvas {
+        /* Style for the drawing canvas */
+        #myDrawingCanvas {
             display: block;
-            margin: 0 auto;
+            margin: 20px auto; /* Centering the canvas */
             border: 2px solid #fff;
             background-color: #222;
         }
@@ -81,12 +82,15 @@
     <h1>Python Output:</h1>
     <div id="python-output"></div>
 
+    <h1>Canvas Drawing with Python:</h1>
+    <canvas id="myDrawingCanvas" width="600" height="400"></canvas>
+
     <script type="py">
         # Import necessary modules
         import datetime
         from js import document # Allows Python to interact with HTML elements
 
-        # Get the HTML element where we want to display output
+        # Get the HTML element where we want to display text output
         output_div = document.getElementById("python-output")
 
         # Display program run time
@@ -100,47 +104,45 @@
         f = "Watch as this turtle draws 2 circles!!"
         output_div.innerHTML += f"{f}<br>"
 
-        # --- IMPORTANT NOTE: Python's 'turtle' module for drawing ---
-        # The 'turtle' module is designed for desktop GUI applications (like Tkinter)
-        # and does NOT work directly in a web browser using PyScript.
-        # Browsers do not have a built-in "turtle" graphics environment.
-        # If you need drawing in the browser, you would typically use:
-        # 1. JavaScript's native Canvas API.
-        # 2. A JavaScript drawing library (like p5.js, Konva.js) and control it from Python.
-        # Therefore, the 'turtle' code from your original script is commented out below
-        # because it will not produce visual output in a web browser.
+        # --- Python code for drawing on HTML Canvas ---
+        # Get the canvas element and its 2D rendering context
+        canvas = document.getElementById("myDrawingCanvas")
+        ctx = canvas.getContext("2d")
 
-        # import turtle
-        # t = turtle.Turtle()
-        # t.speed(0)
-        # t.color("red", "blue")
-        # for i in range(365):
-        #     t.forward(10)
-        #     t.right(11)
-        #     t.left(12)
-        #     t.backward(13)
+        # Function to draw a circle using Canvas API
+        def draw_circle(x_pos, y_pos, radius, color="red", fill=True):
+            ctx.beginPath() # Start a new path
+            ctx.arc(x_pos, y_pos, radius, 0, 2 * 3.14159, False) # Draw arc
+            if fill:
+                ctx.fillStyle = color
+                ctx.fill() # Fill the circle
+            else:
+                ctx.strokeStyle = color
+                ctx.stroke() # Just draw the outline
 
-        # my_turtle = turtle.Turtle()
-        # my_turtle.speed(0)
-        # my_turtle.color("blue")
-        # for i in range(50):
-        #     my_turtle.forward(10)
-        #     my_turtle.right(11)
+        # Function to draw a line using Canvas API
+        def draw_line(x1, y1, x2, y2, color="blue", line_width=2):
+            ctx.strokeStyle = color
+            ctx.lineWidth = line_width
+            ctx.beginPath()
+            ctx.moveTo(x1, y1)
+            ctx.lineTo(x2, y2)
+            ctx.stroke()
 
-        # my_turtle = turtle.Turtle()
-        # my_turtle.speed(0)
-        # my_turtle.color("yellow")
-        # for i in range(400):
-        #     my_turtle.forward(50)
-        #     my_turtle.right(55)
+        # --- Now, draw something similar to your original turtle intent ---
+        # Note: Canvas coordinates (0,0) is top-left.
+        # Turtle coordinates are usually (0,0) center. We'll adjust for canvas.
 
-        # my_turtle = turtle.Turtle()
-        # my_turtle.speed(0)
-        # my_turtle.color("green")
-        # for i in range(80):
-        #     my_turtle.forward(100)
-        #     my_turtle.right(105)
-        #     my_turtle.done() # This is also a desktop GUI function
+        # Draw a red circle (filled)
+        draw_circle(150, 200, 50, "red", True) # x, y, radius, color, fill
+
+        # Draw a blue circle (outline)
+        draw_circle(450, 200, 70, "blue", False)
+
+        # Draw some lines
+        draw_line(50, 50, 550, 350, "green", 3)
+        draw_line(550, 50, 50, 350, "purple", 3)
+
     </script>
 
     <py-repl></py-repl>
