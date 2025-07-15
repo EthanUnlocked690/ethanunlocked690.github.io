@@ -381,16 +381,28 @@ window.alert("WARNING!! This game is SO hard that the creator himself could only
         function handleInput(event) {
             if (gameState.gameOver || gameState.gameWon) return;
 
-            let dx = 0, dy = 0;
+let dx = 0, dy = 0;
             switch (event.key) {
-                case 'ArrowUp': dy = -1; break;
-                case 'ArrowDown': dy = 1; break;
-                case 'ArrowLeft': dx = -1; break;
-                case 'ArrowRight': dx = 1; break;
-                case 'A': dx = -1; break;
-                case 'D': dx = 1; break;
-                case 'S': dy = 1; break;
-                case 'W': dy = -1; break;
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    dy = -1; 
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    dy = 1; 
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    dx = -1; 
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    dx = 1; 
+                    break;
                 default: return; // Ignore other keys
             }
 
