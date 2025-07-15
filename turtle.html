@@ -1,18 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Random Python stuff...</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Awesome Obby! (Grade 6 Work)</title>
     <style>
-        ul {
-            list-style-type: none;
+        /* This is like the big paper we draw our game on! */
+        body {
+            background-color: #87CEEB; /* Sky blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Put everything in the middle */
+            height: 100vh; /* Make the paper big */
             margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: #333;
+            overflow: hidden; /* Don't show messy parts outside the game */
+            font-family: 'Inter', sans-serif; /* Nice letters */
+            color: #333; /* Dark text color */
+            flex-direction: column; /* Stack items vertically (nav bar on top of game) */
         }
 
+        /* Styles for the navigation bar */
+        ul {
+            list-style-type: none;
+            margin: 0px;
+            padding: 0px;
+            overflow: hidden;
+            background-color: #ff0000; /* Red background for the nav bar */
+            width: 800px; /* Make it the same width as the game box for neatness */
+            border-radius: 8px; /* Rounded corners for the nav bar */
+            margin-bottom: 10px; /* Space between nav bar and game box */
+        }
+          
         li {
-            float: left;
+            float: left; /* Make list items go side-by-side */
         }
 
         li a {
@@ -20,26 +40,105 @@
             color: white;
             text-align: center;
             padding: 14px 16px;
-            text-decoration: none;
+            text-decoration: none; /* No underline for links */
         }
 
         li a:hover {
-            background-color: #111;
+            background-color: #964B00; /* Brown background when you hover over a link */
         }
 
-        h1 {
-            margin: 10px 0;
+        /* This is our game box! */
+        #gameBox {
+            position: relative; /* Helps us put things inside exactly */
+            width: 800px; /* How wide our game box is */
+            height: 400px; /* How tall our game box is */
+            background-color: #ADD8E6; /* Light blue background for the game */
+            border-radius: 15px; /* Round corners for the game box! */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); /* A cool shadow */
+            overflow: hidden; /* Keep game parts inside the box */
         }
 
-        #ui {
+        /* This is our happy player! */
+        #player {
+            position: absolute;
+            width: 30px; /* Player is a square */
+            height: 30px;
+            background-color: #FFD700; /* Gold color! */
+            border-radius: 8px; /* Little rounded player */
+            bottom: 0px; /* Starts on the ground */
+            left: 50px; /* Starts a little to the left */
+            z-index: 10; /* Make sure player is on top of blocks */
+        }
+
+        /* This is for all our ground and platforms */
+        .block {
+            position: absolute;
+            background-color: #228B22; /* Green grass! */
+            border-radius: 5px; /* Slightly rounded blocks */
+        }
+
+        /* This is the hot lava! Don't touch! */
+        .lava {
+            position: absolute;
+            background-color: #FF4500; /* Red hot lava! */
+            border-radius: 5px;
+        }
+
+        /* Checkpoints! They save your spot. */
+        .checkpoint {
+            position: absolute;
+            width: 40px;
+            height: 60px;
+            background-color: #DAA520; /* Goldenrod color */
+            border: 3px solid #B8860B; /* Darker gold border */
+            border-radius: 5px;
+            bottom: 0px;
+            z-index: 5;
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin-bottom: 10px;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-size: 14px;
         }
-</style>
+
+        /* When you hit a checkpoint, it turns green! */
+        .checkpoint.activated {
+            background-color: #32CD32; /* Lime green! */
+            border-color: #228B22;
+        }
+
+        /* This is the message that pops up! */
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7); /* Dark and see-through */
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            display: none; /* Hidden at first */
+            z-index: 1000; /* Make sure it's on top of everything! */
+            text-align: center;
+            font-size: 24px;
+        }
+
+        #message button {
+            background-color: #4CAF50; /* Green button */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
+    <!-- Navigation Bar -->
     <ul>
         <li><a class="active" href="index.html">Home</a></li>
         <li><a href="news.html">News</a></li>
@@ -50,8 +149,265 @@
         <li><a href="images.html">Image Gallery</a></li>
         <li><a href="animate.html">LEGO Animations</a></li>
         <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
-        <li><a href="turtle.html" style="background-color:black">Python turtle drawing</a></li>
+        <li><a href="turtle.html">Game</a></li>
     </ul>
 
+    <div id="gameBox">
+        <!-- Here is our player! -->
+        <div id="player"></div>
+
+        <!-- Level Parts (Platforms, Lava, Checkpoints, Finish) -->
+        <!-- Starting Ground -->
+        <div class="block" style="width: 800px; height: 20px; bottom: 0px; left: 0px;"></div>
+
+        <!-- First Jump Platform -->
+        <div class="block" style="width: 100px; height: 15px; bottom: 80px; left: 200px;"></div>
+
+        <!-- Lava Pit! -->
+        <div class="lava" style="width: 150px; height: 10px; bottom: 0px; left: 400px;"></div>
+
+        <!-- Platform over the lava -->
+        <div class="block" style="width: 100px; height: 15px; bottom: 80px; left: 550px;"></div>
+
+        <!-- Checkpoint! - Save your spot! -->
+        <div class="checkpoint" id="checkpoint1" style="bottom: 20px; left: 650px;">CP</div>
+
+        <!-- Finish Line! -->
+        <div class="block" id="finishLine" style="width: 50px; height: 100px; background-color: #00BFFF; left: 750px; bottom: 20px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 18px;">GOAL!</div>
+    </div>
+
+    <!-- The message box for game feedback -->
+    <div id="message">
+        <!-- Message content will be set by JavaScript -->
+        <br>
+        <button onclick="resetGame()">Play Again!</button>
+    </div>
+
+    <script>
+        // --- Game Parts (Elements) ---
+        const player = document.getElementById('player');
+        const gameBox = document.getElementById('gameBox'); // The game window
+        const messageBox = document.getElementById('message');
+        const checkpoint1 = document.getElementById('checkpoint1'); // Our checkpoint block
+        const finishLine = document.getElementById('finishLine'); // Our finish line
+
+        // --- Game Information (Variables) ---
+        let playerX = 50; // Player's horizontal spot (how far from left)
+        let playerY = 0;  // Player's vertical spot (how high from bottom)
+        let playerGoUpOrDown = 0; // How fast player is going up or down
+        let playerIsJumping = false; // Is player jumping right now?
+        let onSomethingSolid = false; // Is player touching a block they can stand on?
+
+        let playerSpeed = 5; // How fast player walks left and right
+        let jumpPower = 10; // How high player jumps
+        let fallSpeed = 0.5; // How strong gravity pulls player down
+
+        // Where player goes back to if they fall (starts at the very beginning)
+        let respawnX = 50;
+        let respawnY = 0;
+
+        let gameIsActive = true; // Is the game running?
+
+        // --- Game Setup (Functions) ---
+        function initializeGame() {
+            // Put player back at the start
+            playerX = 50;
+            playerY = 0;
+            playerGoUpOrDown = 0;
+            playerIsJumping = false;
+            onSomethingSolid = false;
+            gameIsActive = true; // Make game active
+
+            // Reset checkpoint color
+            checkpoint1.classList.remove('activated');
+
+            // Set respawn to the very start
+            respawnX = 50;
+            respawnY = 0;
+
+            // Hide any messages
+            hideMessage();
+            // Put player in correct spot on screen
+            updatePlayerPosition();
+        }
+
+        // --- How things look on screen (Visual Functions) ---
+        function updatePlayerPosition() {
+            player.style.left = playerX + 'px';
+            player.style.bottom = playerY + 'px';
+        }
+
+        function showMessage(msg) {
+            messageBox.innerHTML = `${msg}<br><button onclick="resetGame()">Play Again!</button>`;
+            messageBox.style.display = 'block'; // Make message box visible
+            gameIsActive = false; // Stop the game while message is showing
+        }
+
+        function hideMessage() {
+            messageBox.style.display = 'none'; // Hide message box
+        }
+
+        // --- Game Rules (Logic Functions) ---
+
+        // Makes the player fall down (gravity!)
+        function applyGravity() {
+            playerGoUpOrDown -= fallSpeed; // Pull player down
+            playerY += playerGoUpOrDown; // Move player up/down
+        }
+
+        // Checks if player is touching blocks, lava, checkpoint, or finish line
+        function checkWhatPlayerIsTouching() {
+            const playerSpot = player.getBoundingClientRect(); // Get player's exact spot on screen
+            onSomethingSolid = false; // Assume player is not on a block at first
+
+            // Check all blocks (platforms)
+            const blocks = document.querySelectorAll('.block');
+            blocks.forEach(block => {
+                const blockSpot = block.getBoundingClientRect(); // Get block's exact spot
+
+                // If player is hitting the top of a block and falling
+                if (playerSpot.right > blockSpot.left && // Player is over the block horizontally
+                    playerSpot.left < blockSpot.right &&
+                    playerSpot.bottom <= blockSpot.top + 5 && /* A little wiggle room for landing */
+                    playerSpot.bottom >= blockSpot.top - 5 &&
+                    playerGoUpOrDown < 0) { /* Only if player is falling down */
+                    
+                    // Put player right on top of the block
+                    playerY = parseFloat(block.style.bottom) + block.offsetHeight;
+                    playerGoUpOrDown = 0; /* Stop falling */
+                    playerIsJumping = false; /* Not jumping anymore */
+                    onSomethingSolid = true; /* Yes, we are on a block! */
+                }
+            });
+
+            // If player falls way below the game box, reset them
+            if (playerY < -10) { /* A little below the screen */
+                resetPlayerToRespawn();
+                return; // Stop checking other things this time
+            }
+
+            // Check lava (death zones)
+            const lavas = document.querySelectorAll('.lava');
+            lavas.forEach(lava => {
+                const lavaSpot = lava.getBoundingClientRect();
+                // If player touches lava
+                if (playerSpot.right > lavaSpot.left &&
+                    playerSpot.left < lavaSpot.right &&
+                    playerSpot.bottom > lavaSpot.top &&
+                    playerSpot.top < lavaSpot.bottom) {
+                    resetPlayerToRespawn(); // Send player back to respawn
+                }
+            });
+
+            // Check checkpoint
+            const checkpointSpot = checkpoint1.getBoundingClientRect();
+            // If player touches the checkpoint
+            if (playerSpot.right > checkpointSpot.left &&
+                playerSpot.left < checkpointSpot.right &&
+                playerSpot.bottom > checkpointSpot.top &&
+                playerSpot.top < checkpointSpot.bottom) {
+                
+                // If this is a new checkpoint, save its spot!
+                if (!checkpoint1.classList.contains('activated')) {
+                    respawnX = parseFloat(checkpoint1.style.left);
+                    respawnY = parseFloat(checkpoint1.style.bottom) + checkpoint1.offsetHeight;
+                    checkpoint1.classList.add('activated'); // Make checkpoint glow green
+                }
+            }
+
+            // Check finish line
+            const finishSpot = finishLine.getBoundingClientRect();
+            // If player touches the finish line
+            if (playerSpot.right > finishSpot.left &&
+                playerSpot.left < finishSpot.right &&
+                playerSpot.bottom > finishSpot.top &&
+                playerSpot.top < finishSpot.bottom) {
+                
+                if (gameIsActive) { // Only show message once
+                    showMessage(`You made it to the GOAL! You win!`);
+                }
+            }
+
+            // If player is not on something solid and hits the very bottom of the game box
+            if (!onSomethingSolid && playerY <= 0) {
+                playerY = 0;
+                playerGoUpOrDown = 0;
+                playerIsJumping = false;
+            }
+        }
+
+        // Puts the player back at the saved respawn spot
+        function resetPlayerToRespawn() {
+            playerX = respawnX;
+            playerY = respawnY;
+            playerGoUpOrDown = 0;
+            playerIsJumping = false;
+            // Player turns red for a moment when they reset
+            player.style.backgroundColor = 'red';
+            setTimeout(() => player.style.backgroundColor = '#FFD700', 200); // Then back to gold
+        }
+
+        // --- The Main Game Loop! (Runs all the time) ---
+        function gameTime() {
+            if (!gameIsActive) { // If game is paused (like when a message is showing)
+                requestAnimationFrame(gameTime); // Keep asking to run, but don't do game stuff
+                return;
+            }
+
+            // NEW: Move player based on key flags
+            if (goLeft) {
+                playerX -= playerSpeed;
+            }
+            if (goRight) {
+                playerX += playerSpeed;
+            }
+
+            // Don't let player go off the sides of the game box!
+            if (playerX < 0) {
+                playerX = 0;
+            }
+            if (playerX > gameBox.offsetWidth - player.offsetWidth) {
+                playerX = gameBox.offsetWidth - player.offsetWidth;
+            }
+
+            applyGravity(); // Make player fall
+            checkWhatPlayerIsTouching(); // See if player hit anything important
+            updatePlayerPosition(); // Move player on screen
+
+            requestAnimationFrame(gameTime); // Ask the computer to run this function again very soon!
+        }
+
+        // --- When Keys Are Pushed Down (Event Listeners) ---
+        document.addEventListener('keydown', (event) => {
+            if (!gameIsActive) return; // Don't do anything if game is paused
+            if (event.key === 'ArrowLeft') {
+                goLeft = true; // Set flag to true
+            } else if (event.key === 'ArrowRight') {
+                goRight = true; // Set flag to true
+            } else if (event.key === 'ArrowUp' && onSomethingSolid && !playerIsJumping) {
+                playerGoUpOrDown = jumpPower;
+                playerIsJumping = true;
+                onSomethingSolid = false;
+            }
+        });
+
+        // --- When Keys Are Let Go (Event Listeners) ---
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'ArrowLeft') {
+                goLeft = false; // Set flag to false
+            } else if (event.key === 'ArrowRight') {
+                goRight = false; // Set flag to false
+            }
+        });
+
+        // --- Start the Game! ---
+        function resetGame() {
+            initializeGame();
+        }
+
+        // Start the game when the whole page is ready!
+        window.onload = resetGame;
+
+    </script>
 </body>
 </html>
