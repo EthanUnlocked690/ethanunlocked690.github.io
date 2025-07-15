@@ -3,23 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Awesome Obby!</title>
+    <title>Dungeon Escape Game</title>
     <style>
-        /* This is like the big paper we draw our game on! */
-        body {
-            background-color: #87CEEB; /* Sky blue background */
-            display: flex;
-            justify-content: center;
-            align-items: center; /* Put everything in the middle */
-            height: 100vh; /* Make the paper big */
-            margin: 0;
-            overflow: hidden; /* Don't show messy parts outside the game */
-            font-family: 'Inter', sans-serif; /* Nice letters */
-            color: #333; /* Dark text color */
-            flex-direction: column; /* Stack items vertically (nav bar on top of game) */
-        }
-
-        /* Styles for the navigation bar */
+        /* Provided Navbar CSS */
         ul {
             list-style-type: none;
             margin: 0px;
@@ -30,7 +16,7 @@
             border-radius: 8px; /* Rounded corners for the nav bar */
             margin-bottom: 10px; /* Space between nav bar and game box */
         }
-          
+        
         li {
             float: left; /* Make list items go side-by-side */
         }
@@ -47,367 +33,414 @@
             background-color: #964B00; /* Brown background when you hover over a link */
         }
 
-        /* This is our game box! */
-        #gameBox {
-            position: relative; /* Helps us put things inside exactly */
-            width: 800px; /* How wide our game box is */
-            height: 400px; /* How tall our game box is */
-            background-color: #ADD8E6; /* Light blue background for the game */
-            border-radius: 15px; /* Round corners for the game box! */
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3); /* A cool shadow */
-            overflow: hidden; /* Keep game parts inside the box */
-        }
-
-        /* This is our happy player! */
-        #player {
-            position: absolute;
-            width: 30px; /* Player is a square */
-            height: 30px;
-            background-color: #FFD700; /* Gold color! */
-            border-radius: 8px; /* Little rounded player */
-            bottom: 0px; /* Starts on the ground */
-            left: 50px; /* Starts a little to the left */
-            z-index: 10; /* Make sure player is on top of blocks */
-        }
-
-        /* This is for all our ground and platforms */
-        .block {
-            position: absolute;
-            background-color: #228B22; /* Green grass! */
-            border-radius: 5px; /* Slightly rounded blocks */
-        }
-
-        /* This is the hot lava! Don't touch! */
-        .lava {
-            position: absolute;
-            background-color: #FF4500; /* Red hot lava! */
-            border-radius: 5px;
-        }
-
-        /* Checkpoints! They save your spot. */
-        .checkpoint {
-            position: absolute;
-            width: 40px;
-            height: 60px;
-            background-color: #DAA520; /* Goldenrod color */
-            border: 3px solid #B8860B; /* Darker gold border */
-            border-radius: 5px;
-            bottom: 0px;
-            z-index: 5;
+        /* Game & Page Styling */
+        body {
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            background-color: #1a1a1a;
+            color: white;
+            margin-top: 20px;
+        }
+
+        #game-container {
+            border: 4px solid #ff0000;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+
+        canvas {
+            background-color: #111;
+            display: block;
+        }
+
+        #game-ui {
+            width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 0 5px;
+        }
+
+        #status-text {
+            font-size: 1.2em;
             font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            font-size: 14px;
+        }
+        
+        #hp-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745; /* Green for health */
         }
 
-        /* When you hit a checkpoint, it turns green! */
-        .checkpoint.activated {
-            background-color: #32CD32; /* Lime green! */
-            border-color: #228B22;
-        }
-
-        /* This is the message that pops up! */
-        #message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.7); /* Dark and see-through */
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            display: none; /* Hidden at first */
-            z-index: 1000; /* Make sure it's on top of everything! */
-            text-align: center;
-            font-size: 24px;
-        }
-
-        #message button {
-            background-color: #4CAF50; /* Green button */
+        button#resetButton {
+            background-color: #ff0000;
             color: white;
             border: none;
             padding: 10px 20px;
-            margin-top: 20px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 18px;
+            font-family: inherit;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button#resetButton:hover {
+            background-color: #964B00;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
     <ul>
-        <li><a class="active" href="index.html">Home</a></li>
-        <li><a href="news.html">News</a></li>
-        <li><a href="subscribe.html">Subscribe</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="short.html">Shorts</a></li>
-        <li><a href="videos.html">Video Gallery</a></li>
-        <li><a href="images.html">Image Gallery</a></li>
-        <li><a href="animate.html">LEGO Animations</a></li>
-        <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
-        <li><a href="turtle.html">Game</a></li>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#news">News</a></li>
+        <li><a href="#subscribe">Subscribe</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#shorts">Shorts</a></li>
+        <li><a href="#videos">Video Gallery</a></li>
+        <li><a href="#images">Image Gallery</a></li>
+        <li><a href="#animate">LEGO Animations</a></li>
+        <li><a href="#tutorial">Tutorials & Speedruns</a></li>
+        <li><a class="active" href="#game" style="background-color:yellow;">Game</a></li>
     </ul>
 
-    <div id="gameBox">
-        <!-- Here is our player! -->
-        <div id="player"></div>
-
-        <!-- Level Parts (Platforms, Lava, Checkpoints, Finish) -->
-        <!-- Starting Ground -->
-        <div class="block" style="width: 800px; height: 20px; bottom: 0px; left: 0px;"></div>
-
-        <!-- First Jump Platform -->
-        <div class="block" style="width: 100px; height: 15px; bottom: 80px; left: 200px;"></div>
-
-        <!-- Lava Pit! -->
-        <div class="lava" style="width: 150px; height: 10px; bottom: 0px; left: 400px;"></div>
-
-        <!-- Platform over the lava -->
-        <div class="block" style="width: 100px; height: 15px; bottom: 80px; left: 550px;"></div>
-
-        <!-- Checkpoint! - Save your spot! -->
-        <div class="checkpoint" id="checkpoint1" style="bottom: 20px; left: 650px;">CP</div>
-
-        <!-- Finish Line! -->
-        <div class="block" id="finishLine" style="width: 50px; height: 100px; background-color: #00BFFF; left: 750px; bottom: 20px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; font-size: 18px;">GOAL!</div>
+    <div id="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
     </div>
-
-    <!-- The message box for game feedback -->
-    <div id="message">
-        <!-- Message content will be set by JavaScript -->
-        <br>
-        <button onclick="resetGame()">Play Again!</button>
+    
+    <div id="game-ui">
+        <span id="status-text">Find the key 🔑 and escape!</span>
+        <button id="resetButton">New Game</button>
+        <span id="hp-text">HP: 100</span>
     </div>
 
     <script>
-        // --- Game Parts (Elements) ---
-        const player = document.getElementById('player');
-        const gameBox = document.getElementById('gameBox'); // The game window
-        const messageBox = document.getElementById('message');
-        const checkpoint1 = document.getElementById('checkpoint1'); // Our checkpoint block
-        const finishLine = document.getElementById('finishLine'); // Our finish line
+        // --- Game Setup ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const resetButton = document.getElementById('resetButton');
+        const statusText = document.getElementById('status-text');
+        const hpText = document.getElementById('hp-text');
 
-        // --- Game Information (Variables) ---
-        let playerX = 50; // Player's horizontal spot (how far from left)
-        let playerY = 0;  // Player's vertical spot (how high from bottom)
-        let playerGoUpOrDown = 0; // How fast player is going up or down
-        let playerIsJumping = false; // Is player jumping right now?
-        let onSomethingSolid = false; // Is player touching a block they can stand on?
+        const TILE_SIZE = 40;
+        const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
+        const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
 
-        let playerSpeed = 5; // How fast player walks left and right
-        let jumpPower = 10; // How high player jumps
-        let fallSpeed = 0.5; // How strong gravity pulls player down
+        const Wall = '🪨';
+        const Floor = ' ';
+        const Player = '😎';
+        const Enemy = '💀';
+        const Key = '🔑';
+        const Exit = '🚪';
+        const Potion = '❤️';
+        
+        let gameState = {};
 
-        // Where player goes back to if they fall (starts at the very beginning)
-        let respawnX = 50;
-        let respawnY = 0;
+        // --- Game Logic ---
 
-        let gameIsActive = true; // Is the game running?
-
-        // --- Game Setup (Functions) ---
-        function initializeGame() {
-            // Put player back at the start
-            playerX = 50;
-            playerY = 0;
-            playerGoUpOrDown = 0;
-            playerIsJumping = false;
-            onSomethingSolid = false;
-            gameIsActive = true; // Make game active
-
-            // Reset checkpoint color
-            checkpoint1.classList.remove('activated');
-
-            // Set respawn to the very start
-            respawnX = 50;
-            respawnY = 0;
-
-            // Hide any messages
-            hideMessage();
-            // Put player in correct spot on screen
-            updatePlayerPosition();
-        }
-
-        // --- How things look on screen (Visual Functions) ---
-        function updatePlayerPosition() {
-            player.style.left = playerX + 'px';
-            player.style.bottom = playerY + 'px';
-        }
-
-        function showMessage(msg) {
-            messageBox.innerHTML = `${msg}<br><button onclick="resetGame()">Play Again!</button>`;
-            messageBox.style.display = 'block'; // Make message box visible
-            gameIsActive = false; // Stop the game while message is showing
-        }
-
-        function hideMessage() {
-            messageBox.style.display = 'none'; // Hide message box
-        }
-
-        // --- Game Rules (Logic Functions) ---
-
-        // Makes the player fall down (gravity!)
-        function applyGravity() {
-            playerGoUpOrDown -= fallSpeed; // Pull player down
-            playerY += playerGoUpOrDown; // Move player up/down
-        }
-
-        // Checks if player is touching blocks, lava, checkpoint, or finish line
-        function checkWhatPlayerIsTouching() {
-            const playerSpot = player.getBoundingClientRect(); // Get player's exact spot on screen
-            onSomethingSolid = false; // Assume player is not on a block at first
-
-            // Check all blocks (platforms)
-            const blocks = document.querySelectorAll('.block');
-            blocks.forEach(block => {
-                const blockSpot = block.getBoundingClientRect(); // Get block's exact spot
-
-                // If player is hitting the top of a block and falling
-                if (playerSpot.right > blockSpot.left && // Player is over the block horizontally
-                    playerSpot.left < blockSpot.right &&
-                    playerSpot.bottom <= blockSpot.top + 5 && /* A little wiggle room for landing */
-                    playerSpot.bottom >= blockSpot.top - 5 &&
-                    playerGoUpOrDown < 0) { /* Only if player is falling down */
-                    
-                    // Put player right on top of the block
-                    playerY = parseFloat(block.style.bottom) + block.offsetHeight;
-                    playerGoUpOrDown = 0; /* Stop falling */
-                    playerIsJumping = false; /* Not jumping anymore */
-                    onSomethingSolid = true; /* Yes, we are on a block! */
-                }
-            });
-
-            // If player falls way below the game box, reset them
-            if (playerY < -10) { /* A little below the screen */
-                resetPlayerToRespawn();
-                return; // Stop checking other things this time
+        /**
+         * Initializes or resets the game state.
+         */
+        function initGame() {
+            gameState = {
+                map: generateMap(),
+                player: { x: 0, y: 0, hp: 100, maxHp: 100 },
+                enemies: [],
+                key: { x: 0, y: 0 },
+                exit: { x: 0, y: 0 },
+                potions: [],
+                hasKey: false,
+                gameOver: false,
+                gameWon: false,
+                turn: 0 // Turn counter for enemy movement
+            };
+            
+            placeEntities();
+            updateUI();
+            
+            // Ensure the main game loop isn't running from a previous game
+            if(gameState.animationFrameId) {
+                cancelAnimationFrame(gameState.animationFrameId);
             }
+            gameLoop();
+        }
 
-            // Check lava (death zones)
-            const lavas = document.querySelectorAll('.lava');
-            lavas.forEach(lava => {
-                const lavaSpot = lava.getBoundingClientRect();
-                // If player touches lava
-                if (playerSpot.right > lavaSpot.left &&
-                    playerSpot.left < lavaSpot.right &&
-                    playerSpot.bottom > lavaSpot.top &&
-                    playerSpot.top < lavaSpot.bottom) {
-                    resetPlayerToRespawn(); // Send player back to respawn
+        /**
+         * Procedurally generates a cave-like map using Cellular Automata.
+         */
+        function generateMap() {
+            let map = Array.from({ length: MAP_HEIGHT_TILES }, () => 
+                Array.from({ length: MAP_WIDTH_TILES }, () => Math.random() < 0.45 ? Wall : Floor)
+            );
+
+            // Automata simulation to smooth out the map into caves
+            for (let i = 0; i < 4; i++) {
+                let newMap = JSON.parse(JSON.stringify(map));
+                for (let y = 1; y < MAP_HEIGHT_TILES - 1; y++) {
+                    for (let x = 1; x < MAP_WIDTH_TILES - 1; x++) {
+                        let wallCount = 0;
+                        for (let ny = y - 1; ny <= y + 1; ny++) {
+                            for (let nx = x - 1; nx <= x + 1; nx++) {
+                                if (map[ny][nx] === Wall) {
+                                    wallCount++;
+                                }
+                            }
+                        }
+                        newMap[y][x] = wallCount > 4 ? Wall : Floor;
+                    }
                 }
-            });
+                map = newMap;
+            }
+            // Add a border of walls
+            for(let y = 0; y < MAP_HEIGHT_TILES; y++) {
+                map[y][0] = Wall;
+                map[y][MAP_WIDTH_TILES-1] = Wall;
+            }
+             for(let x = 0; x < MAP_WIDTH_TILES; x++) {
+                map[0][x] = Wall;
+                map[MAP_HEIGHT_TILES-1][x] = Wall;
+            }
+            return map;
+        }
 
-            // Check checkpoint
-            const checkpointSpot = checkpoint1.getBoundingClientRect();
-            // If player touches the checkpoint
-            if (playerSpot.right > checkpointSpot.left &&
-                playerSpot.left < checkpointSpot.right &&
-                playerSpot.bottom > checkpointSpot.top &&
-                playerSpot.top < checkpointSpot.bottom) {
-                
-                // If this is a new checkpoint, save its spot!
-                if (!checkpoint1.classList.contains('activated')) {
-                    respawnX = parseFloat(checkpoint1.style.left);
-                    respawnY = parseFloat(checkpoint1.style.bottom) + checkpoint1.offsetHeight;
-                    checkpoint1.classList.add('activated'); // Make checkpoint glow green
+        /**
+         * Places the player, enemies, key, exit, and potions on valid floor tiles.
+         */
+        function placeEntities() {
+            const floorTiles = [];
+            for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+                for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                    if (gameState.map[y][x] === Floor) {
+                        floorTiles.push({ x, y });
+                    }
                 }
             }
 
-            // Check finish line
-            const finishSpot = finishLine.getBoundingClientRect();
-            // If player touches the finish line
-            if (playerSpot.right > finishSpot.left &&
-                playerSpot.left < finishSpot.right &&
-                playerSpot.bottom > finishSpot.top &&
-                playerSpot.top < finishSpot.bottom) {
-                
-                if (gameIsActive) { // Only show message once
-                    showMessage(`You made it to the GOAL! You win!`);
-                }
+            const getRandomTile = () => {
+                const index = Math.floor(Math.random() * floorTiles.length);
+                return floorTiles.splice(index, 1)[0];
+            };
+
+            // Place Player, Key, Exit
+            Object.assign(gameState.player, getRandomTile());
+            Object.assign(gameState.key, getRandomTile());
+            Object.assign(gameState.exit, getRandomTile());
+            
+            // Place Enemies
+            const NUM_ENEMIES = 5;
+            for (let i = 0; i < NUM_ENEMIES; i++) {
+                if (floorTiles.length > 0) gameState.enemies.push(getRandomTile());
             }
 
-            // If player is not on something solid and hits the very bottom of the game box
-            if (!onSomethingSolid && playerY <= 0) {
-                playerY = 0;
-                playerGoUpOrDown = 0;
-                playerIsJumping = false;
+            // Place Potions
+            const NUM_POTIONS = 3;
+            for (let i = 0; i < NUM_POTIONS; i++) {
+                if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
             }
         }
-
-        // Puts the player back at the saved respawn spot
-        function resetPlayerToRespawn() {
-            playerX = respawnX;
-            playerY = respawnY;
-            playerGoUpOrDown = 0;
-            playerIsJumping = false;
-            // Player turns red for a moment when they reset
-            player.style.backgroundColor = 'red';
-            setTimeout(() => player.style.backgroundColor = '#FFD700', 200); // Then back to gold
-        }
-
-        // --- The Main Game Loop! (Runs all the time) ---
-        function gameTime() {
-            if (!gameIsActive) { // If game is paused (like when a message is showing)
-                requestAnimationFrame(gameTime); // Keep asking to run, but don't do game stuff
+        
+        /**
+         * The main game loop, responsible for updating and drawing.
+         */
+        function gameLoop() {
+            if (gameState.gameOver || gameState.gameWon) {
+                draw(); // Final draw to show win/loss message
                 return;
             }
-
-            // NEW: Move player based on key flags
-            if (goLeft) {
-                playerX -= playerSpeed;
-            }
-            if (goRight) {
-                playerX += playerSpeed;
-            }
-
-            // Don't let player go off the sides of the game box!
-            if (playerX < 0) {
-                playerX = 0;
-            }
-            if (playerX > gameBox.offsetWidth - player.offsetWidth) {
-                playerX = gameBox.offsetWidth - player.offsetWidth;
-            }
-
-            applyGravity(); // Make player fall
-            checkWhatPlayerIsTouching(); // See if player hit anything important
-            updatePlayerPosition(); // Move player on screen
-
-            requestAnimationFrame(gameTime); // Ask the computer to run this function again very soon!
+            
+            update();
+            draw();
+            gameState.animationFrameId = requestAnimationFrame(gameLoop);
         }
 
-        // --- When Keys Are Pushed Down (Event Listeners) ---
-        document.addEventListener('keydown', (event) => {
-            if (!gameIsActive) return; // Don't do anything if game is paused
-            if (event.key === 'ArrowLeft') {
-                goLeft = true; // Set flag to true
-            } else if (event.key === 'ArrowRight') {
-                goRight = true; // Set flag to true
-            } else if (event.key === 'ArrowUp' && onSomethingSolid && !playerIsJumping) {
-                playerGoUpOrDown = jumpPower;
-                playerIsJumping = true;
-                onSomethingSolid = false;
-            }
-        });
+        /**
+         * Updates the game state (e.g., enemy movement).
+         */
+        function update() {
+            // This function is intentionally simple for this turn-based structure.
+            // Complex updates happen in response to player input.
+        }
+        
+        /**
+         * Moves all enemies based on simple AI.
+         */
+        function moveEnemies() {
+            gameState.enemies.forEach(enemy => {
+                // 50% chance to hunt the player, 50% chance to move randomly
+                const huntPlayer = Math.random() > 0.5;
+                let dx = 0, dy = 0;
 
-        // --- When Keys Are Let Go (Event Listeners) ---
-        document.addEventListener('keyup', (event) => {
-            if (event.key === 'ArrowLeft') {
-                goLeft = false; // Set flag to false
-            } else if (event.key === 'ArrowRight') {
-                goRight = false; // Set flag to false
-            }
-        });
+                if (huntPlayer) {
+                    dx = Math.sign(gameState.player.x - enemy.x);
+                    dy = Math.sign(gameState.player.y - enemy.y);
+                } else {
+                    dx = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                    dy = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                }
+                
+                // Attempt to move
+                const nextX = enemy.x + dx;
+                const nextY = enemy.y + dy;
 
-        // --- Start the Game! ---
-        function resetGame() {
-            initializeGame();
+                if (isWalkable(nextX, nextY)) {
+                    enemy.x = nextX;
+                    enemy.y = nextY;
+                }
+                 // Check for collision with player after moving
+                if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
+                    takeDamage(15);
+                }
+            });
         }
 
-        // Start the game when the whole page is ready!
-        window.onload = resetGame;
+        /**
+         * Renders the entire game state to the canvas.
+         */
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = `${TILE_SIZE * 0.8}px monospace`;
 
+            // Draw map
+            for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+                for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                    if (gameState.map[y][x] === Wall) {
+                        ctx.fillText(Wall, x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE);
+                    }
+                }
+            }
+            // Draw entities
+            const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
+            
+            if(!gameState.hasKey) drawEntity(gameState.key, Key);
+            drawEntity(gameState.exit, Exit);
+            gameState.potions.forEach(potion => drawEntity(potion, Potion));
+            gameState.enemies.forEach(enemy => drawEntity(enemy, Enemy));
+            drawEntity(gameState.player, Player);
+
+            // Draw Game Over or Win message
+            if (gameState.gameOver || gameState.gameWon) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
+                ctx.font = 'bold 60px Courier New';
+                ctx.textAlign = 'center';
+                const message = gameState.gameWon ? 'YOU ESCAPED!' : 'GAME OVER';
+                ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+                ctx.textAlign = 'left'; // Reset alignment
+            }
+        }
+        
+        /**
+         * Updates the UI elements (status and HP text).
+         */
+        function updateUI() {
+            if (gameState.gameOver) {
+                statusText.textContent = "You were defeated! 💀";
+                hpText.style.color = "#dc3545";
+            } else if (gameState.gameWon) {
+                statusText.textContent = "Congratulations! You escaped! 🎉";
+                hpText.style.color = "#28a745";
+            } else if (gameState.hasKey) {
+                statusText.textContent = "You have the key! Go to the door! 🚪";
+            } else {
+                statusText.textContent = "Find the key 🔑 and escape!";
+            }
+            hpText.textContent = `HP: ${gameState.player.hp}`;
+             if(gameState.player.hp < 30) {
+                hpText.style.color = "#ffc107"; // Warning yellow
+            } else {
+                 hpText.style.color = "#28a745"; // Healthy green
+            }
+        }
+
+        /**
+         * Reduces player HP and checks for game over.
+         */
+        function takeDamage(amount) {
+            gameState.player.hp = Math.max(0, gameState.player.hp - amount);
+            if (gameState.player.hp <= 0) {
+                gameState.gameOver = true;
+            }
+            updateUI();
+        }
+
+        /**
+         * Handles player movement and interactions.
+         */
+        function handleInput(event) {
+            if (gameState.gameOver || gameState.gameWon) return;
+
+            let dx = 0, dy = 0;
+            switch (event.key) {
+                case 'ArrowUp': dy = -1; break;
+                case 'ArrowDown': dy = 1; break;
+                case 'ArrowLeft': dx = -1; break;
+                case 'ArrowRight': dx = 1; break;
+                default: return; // Ignore other keys
+            }
+
+            const nextX = gameState.player.x + dx;
+            const nextY = gameState.player.y + dy;
+
+            if (isWalkable(nextX, nextY)) {
+                gameState.player.x = nextX;
+                gameState.player.y = nextY;
+                
+                // After player moves, enemies get a turn.
+                moveEnemies();
+                checkInteractions();
+                updateUI();
+            }
+        }
+        
+        /**
+         * Checks for player interactions with items, enemies, and the exit.
+         */
+        function checkInteractions() {
+            // Check key
+            if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
+                gameState.hasKey = true;
+            }
+            // Check exit
+            if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
+                gameState.gameWon = true;
+            }
+            // Check potions
+            gameState.potions = gameState.potions.filter(potion => {
+                if (potion.x === gameState.player.x && potion.y === gameState.player.y) {
+                    gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 50);
+                    return false; // Remove potion from array
+                }
+                return true;
+            });
+            // Check enemies (collision after enemy move)
+             gameState.enemies.forEach(enemy => {
+                if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
+                    takeDamage(15);
+                }
+            });
+        }
+
+        /**
+         * Checks if a tile at given coordinates is walkable (not a wall).
+         */
+        function isWalkable(x, y) {
+            return x >= 0 && x < MAP_WIDTH_TILES &&
+                   y >= 0 && y < MAP_HEIGHT_TILES &&
+                   gameState.map[y][x] === Floor;
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('keydown', handleInput);
+        resetButton.addEventListener('click', initGame);
+
+        // --- Initial Start ---
+        initGame();
     </script>
 </body>
 </html>
