@@ -126,14 +126,14 @@ button#resetButton:hover {
     const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
     const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
 
-    const Wall = '🏳️‍🌈';
+    const Wall = '🪨'; // Reverted to original wall emoji
     const Floor = ' ';
     const Player = '🙍';
-    const Enemy = '🐉'; // Changed enemy to a dragon
+    const Enemy = '🐉';
     const Key = '🔑';
     const Exit = '🚪';
     const Potion = '❤️';
-    const PlayerWin = '🥳'; // New constant for winning player
+    const PlayerWin = '🥳';
 
     let gameState = {};
 
@@ -334,7 +334,8 @@ button#resetButton:hover {
             ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
             ctx.font = 'bold 60px Courier New';
             ctx.textAlign = 'center';
-            const message = gameState.gameWon ? 'YOU ESCAPED!' : 'GAME OVER';
+            // Added gay flag emoji to win/loss messages
+            const message = gameState.gameWon ? 'YOU ESCAPED! 🏳️‍🌈' : 'GAME OVER 🏳️‍🌈';
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
             ctx.textAlign = 'left'; // Reset alignment
         }
