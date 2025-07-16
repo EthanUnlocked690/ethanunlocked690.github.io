@@ -126,14 +126,14 @@ button#resetButton:hover {
     const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
     const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
 
-    const Wall = '🪨';
+    const Wall = '🏳️‍🌈';
     const Floor = ' ';
     const Player = '🙍';
-    // Changed enemy to a dragon
-    const Enemy = '🐉';
+    const Enemy = '🐉'; // Changed enemy to a dragon
     const Key = '🔑';
     const Exit = '🚪';
     const Potion = '❤️';
+    const PlayerWin = '🥳'; // New constant for winning player
 
     let gameState = {};
 
@@ -318,8 +318,14 @@ button#resetButton:hover {
         // Conditionally draw enemies as skulls if game is won
         gameState.enemies.forEach(enemy => drawEntity(enemy, gameState.gameWon ? '💀' : Enemy));
 
-        // Conditionally draw player as skull if game is over
-        drawEntity(gameState.player, gameState.gameOver ? '💀' : Player);
+        // Conditionally draw player as skull if game is over, or partying face if game is won
+        let currentPlayerSymbol = Player;
+        if (gameState.gameOver) {
+            currentPlayerSymbol = '💀'; // Skull for game over
+        } else if (gameState.gameWon) {
+            currentPlayerSymbol = PlayerWin; // Party face for win
+        }
+        drawEntity(gameState.player, currentPlayerSymbol);
 
         // Draw Game Over or Win message
         if (gameState.gameOver || gameState.gameWon) {
