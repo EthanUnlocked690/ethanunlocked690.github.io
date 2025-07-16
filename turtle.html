@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>
-window.alert("WARNING!! This game is SO hard that the creator himself could only beat it ONCE!! If you beat it, tell me in the comments of ANY of my videos and I will give you a shoutout!! Good luck and have fun!!");
-</script>
 <title>Dungeon Escape</title>
 <style>
 /* Provided Navbar CSS */
@@ -88,6 +85,114 @@ button#resetButton:hover {
     background-color: #32a852;
     color: black
 }
+
+/* Mobile Controls (Arrow Buttons) Styling */
+#mobile-controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; /* Space between rows */
+}
+
+.d-pad-row {
+    display: flex;
+    gap: 5px; /* Space between buttons in a row */
+}
+
+.arrow-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+    min-width: 60px; /* Ensure good touch target */
+    min-height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.arrow-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
+
+.arrow-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be responsive */
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    color: black; /* Ensure text is visible */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    color: #ff0000;
+    margin-top: 0;
+}
+
+.modal-content button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
+}
+
+.modal-content button:hover {
+    background-color: #45a049;
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -104,9 +209,9 @@ button#resetButton:hover {
     <li><a href="turtle.html" style="background-color:blue;">Game</a></li>
 </ul>
 <h1 style="color:black;">Controls</h1>
-<p1 style="color:black;">Use arrow keys, WASD</p1>
-<p1 style="color:black;">If you want to heal, get the heart (Potion) Max: 100 (Health in bottom-right corner) And remember! If you die, you are gay! If you escape, you are gay with ChatGPT</p1>
-<div id="game-container">
+<p1 style="color:black;">Use arrow keys, WASD, or the on-screen buttons</p1>
+<p1 style="color:black;">Press 'R' or click "New Game" to reset</p1>
+<p1 style="color:black;">If you want to heal, get the heart (Potion) Max: 100 (Health in bottom-right corner)</p1> <div id="game-container">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 <div id="game-ui">
@@ -114,6 +219,29 @@ button#resetButton:hover {
     <button id="resetButton">New Game</button>
     <span id="hp-text">HP: 100</span>
 </div>
+
+<div id="mobile-controls">
+    <div class="d-pad-row">
+        <button id="upButton" class="arrow-button">⬆️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="leftButton" class="arrow-button">⬅️</button>
+        <button id="centerButton" class="arrow-button" style="visibility: hidden;">.</button> <button id="rightButton" class="arrow-button">➡️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="downButton" class="arrow-button">⬇️</button>
+    </div>
+</div>
+
+<div id="warningModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2>WARNING!</h2>
+        <p>This game is SO hard that the creator himself could only beat it ONCE!! If you beat it, tell me in the comments of ANY of my videos and I will give you a shoutout!! Good luck and have fun!!</p>
+        <button onclick="closeModal()">Got It!</button>
+    </div>
+</div>
+
 <script>
     // --- Game Setup ---
     const canvas = document.getElementById('gameCanvas');
@@ -126,7 +254,7 @@ button#resetButton:hover {
     const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
     const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
 
-    const Wall = '🪨'; // Reverted to original wall emoji
+    const Wall = '🪨'; // Original wall emoji
     const Floor = ' ';
     const Player = '🙍';
     const Enemy = '🐉';
@@ -334,7 +462,6 @@ button#resetButton:hover {
             ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
             ctx.font = 'bold 60px Courier New';
             ctx.textAlign = 'center';
-            // Added gay flag emoji to win/loss messages
             const message = gameState.gameWon ? 'YOU ESCAPED! 🏳️‍🌈' : 'GAME OVER! 🏳️‍🌈';
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
             ctx.textAlign = 'left'; // Reset alignment
@@ -376,11 +503,29 @@ button#resetButton:hover {
     }
 
     /**
-     * Handles player movement and interactions.
+     * New function to handle player movement logic
      */
-    function handleInput(event) {
+    function movePlayer(dx, dy) {
         if (gameState.gameOver || gameState.gameWon) return;
 
+        const nextX = gameState.player.x + dx;
+        const nextY = gameState.player.y + dy;
+
+        if (isWalkable(nextX, nextY)) {
+            gameState.player.x = nextX;
+            gameState.player.y = nextY;
+
+            // After player moves, enemies get a turn.
+            moveEnemies();
+            checkInteractions();
+            updateUI();
+        }
+    }
+
+    /**
+     * Handles player movement and interactions from keyboard.
+     */
+    function handleInput(event) {
         let dx = 0, dy = 0;
         switch (event.key) {
             case 'ArrowUp':
@@ -403,22 +548,14 @@ button#resetButton:hover {
             case 'D':
                 dx = 1;
                 break;
+            case 'r': // Added 'r' for reset
+            case 'R':
+                initGame();
+                return; // Don't process movement after reset
             default:
                 return; // Ignore other keys
         }
-
-        const nextX = gameState.player.x + dx;
-        const nextY = gameState.player.y + dy;
-
-        if (isWalkable(nextX, nextY)) {
-            gameState.player.x = nextX;
-            gameState.player.y = nextY;
-
-            // After player moves, enemies get a turn.
-            moveEnemies();
-            checkInteractions();
-            updateUI();
-        }
+        movePlayer(dx, dy); // Call the new movement function
     }
 
     /**
@@ -463,8 +600,29 @@ button#resetButton:hover {
     window.addEventListener('keydown', handleInput);
     resetButton.addEventListener('click', initGame);
 
+    // Event listeners for arrow buttons
+    document.getElementById('upButton').addEventListener('click', () => movePlayer(0, -1));
+    document.getElementById('downButton').addEventListener('click', () => movePlayer(0, 1));
+    document.getElementById('leftButton').addEventListener('click', () => movePlayer(-1, 0));
+    document.getElementById('rightButton').addEventListener('click', () => movePlayer(1, 0));
+
+
     // --- Initial Start ---
-    initGame();
+    // Show modal on window load, then initialize game
+    window.onload = function() {
+        showModal();
+        initGame(); // Initialize game after modal is shown
+    };
+
+    // Modal functions
+    function showModal() {
+        // Ensure the modal is a flex container when displayed to center its content
+        document.getElementById('warningModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('warningModal').style.display = 'none';
+    }
 </script>
 </body>
 </html>
