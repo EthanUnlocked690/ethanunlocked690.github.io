@@ -270,6 +270,8 @@ function startQuiz() {
     nextButton.style.display = 'none';
     answeredThisQuestion = false;
     answerButtonsDiv.style.display = 'block'; // Ensure answer buttons are visible
+    // Reset button text to "Next Question" when starting a new quiz
+    nextButton.textContent = "Next Question";
     showQuestion();
 }
 
@@ -290,6 +292,12 @@ function showQuestion() {
             button.style.display = 'none'; // Hide button if no answer data
         }
     });
+    // Ensure button text is "Next Question" for all but the last question initially
+    if (currentQuestionIndex === questions.length - 1) {
+        nextButton.textContent = "See results";
+    } else {
+        nextButton.textContent = "Next Question";
+    }
 }
 
 function resetQuizState() {
@@ -329,11 +337,12 @@ function selectAnswer(event) {
 }
 
 function showNextQuestion() {
-    currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
-        showQuestion();
+    // Check if the current question is the LAST one BEFORE moving to the next index
+    if (currentQuestionIndex === questions.length - 1) {
+        endQuiz(); // If it's the last question, immediately end the quiz
     } else {
-        endQuiz();
+        currentQuestionIndex++; // Move to the next question
+        showQuestion(); // Display the next question
     }
 }
 
