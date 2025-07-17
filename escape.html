@@ -76,6 +76,18 @@ canvas {
     font-weight: bold;
     color: #28a745; /* Green for health */
 }
+/* NEW: Style for Bomb Count and Timer */
+#bomb-text, #timer-text {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #FFA500; /* Orange for bombs */
+    margin: 0 10px; /* Spacing */
+}
+#timer-text {
+    color: #FFFFFF; /* White for timer */
+}
+
+
 button#resetButton {
     background-color: #ff0000;
     color: white;
@@ -207,16 +219,19 @@ button#resetButton:hover {
     <li><a href="turtle.html">⬅ Back to game selection</a></li>
 </ul>
 <h1 style="color:black;">Controls</h1>
-<p1 style="color:black;">Use arrow keys, WASD, or the on-screen buttons</p1>
-<p1 style="color:black;">Press 'R' or click "New Game" to reset</p1>
-<p1 style="color:black;">If you want to heal, get the heart (Potion) Max: 100 (Health in bottom-right corner)</p1> <div id="game-container">
+<p style="color:black;">Use arrow keys, WASD, or the on-screen buttons</p>
+<p style="color:black;">Press 'R' or click "New Game" to reset</p>
+<p style="color:black;">If you want to heal, get the heart (Potion) Max: 100 (Health in bottom-right corner)</p>
+<p style="color:black;">Press 'X' to use a bomb (stuns nearby enemies, or damages you if no enemies are in range!)</p>
+
+<div id="game-container">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 <div id="game-ui">
     <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
-    <button id="resetButton">New Game</button>
+    <span id="bomb-text">Bombs: 3 💣</span> <button id="resetButton">New Game</button>
     <span id="hp-text">HP: 100</span>
-</div>
+    <span id="timer-text">Time: 00:00</span> </div>
 
 <div id="mobile-controls">
     <div class="d-pad-row">
@@ -247,12 +262,14 @@ button#resetButton:hover {
     const resetButton = document.getElementById('resetButton');
     const statusText = document.getElementById('status-text');
     const hpText = document.getElementById('hp-text');
+    const bombText = document.getElementById('bomb-text'); // NEW
+    const timerText = document.getElementById('timer-text'); // NEW
 
     const TILE_SIZE = 40;
     const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
     const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
 
-    const Wall = '🪨'; // Original wall emoji
+    const Wall = '🪨';
     const Floor = ' ';
     const Player = '🙍';
     const Enemy = '🐉';
@@ -260,33 +277,38 @@ button#resetButton:hover {
     const Exit = '🚪';
     const Potion = '❤️';
     const PlayerWin = '🥳';
-    const FrozenEnemy = '❄️'; // New emoji for frozen enemy
+    const FrozenEnemy = '❄️';
 
     let gameState = {};
+    let animationFrameId; // To store the animation frame ID for timer
 
     // --- Game Logic ---
     /**
      * Initializes or resets the game state.
      */
     function initGame() {
+        if(animationFrameId) { // Stop any existing timer
+            cancelAnimationFrame(animationFrameId);
+        }
+
         gameState = {
             map: generateMap(),
-            player: { x: 0, y: 0, hp: 100, maxHp: 100 },
-            enemies: [], // Enemies will be initialized with frozenTurns later
+            player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 3 }, // NEW: Add bombs to player state
+            enemies: [],
             key: { x: 0, y: 0 },
             exit: { x: 0, y: 0 },
             potions: [],
             hasKey: false,
             gameOver: false,
             gameWon: false,
-            turn: 0 // Turn counter for enemy movement
+            turn: 0, // Turn counter for enemy movement
+            startTime: null, // NEW: For timer
+            elapsedTime: 0,  // NEW: For timer
+            animationFrameId: null // Store ID for cancelling
         };
         placeEntities();
         updateUI();
-        // Ensure the main game loop isn't running from a previous game
-        if(gameState.animationFrameId) {
-            cancelAnimationFrame(gameState.animationFrameId);
-        }
+        gameState.startTime = performance.now(); // Start timer
         gameLoop();
     }
 
@@ -372,14 +394,22 @@ button#resetButton:hover {
     /**
      * The main game loop, responsible for updating and drawing.
      */
-    function gameLoop() {
+    function gameLoop(currentTime) {
+        if (!gameState.startTime) { // Ensure startTime is set
+            gameState.startTime = currentTime;
+        }
+        gameState.elapsedTime = currentTime - gameState.startTime; // Update elapsed time
+
         if (gameState.gameOver || gameState.gameWon) {
             draw(); // Final draw to show win/loss message
-            return;
+            updateUI(); // Ensure final time/HP/bombs are displayed
+            return; // Stop the loop
         }
+
         update();
         draw();
-        gameState.animationFrameId = requestAnimationFrame(gameLoop);
+        updateUI(); // Update UI every frame to show timer
+        animationFrameId = requestAnimationFrame(gameLoop); // Store ID for cancellation
     }
 
     /**
@@ -487,7 +517,7 @@ button#resetButton:hover {
     }
 
     /**
-     * Updates the UI elements (status and HP text).
+     * Updates the UI elements (status, HP, bombs, and timer text).
      */
     function updateUI() {
         if (gameState.gameOver) {
@@ -507,6 +537,15 @@ button#resetButton:hover {
         } else {
             hpText.style.color = "#28a745"; // Healthy green
         }
+
+        // NEW: Update bomb count
+        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
+
+        // NEW: Update timer
+        const minutes = Math.floor(gameState.elapsedTime / 60000);
+        const seconds = Math.floor((gameState.elapsedTime % 60000) / 1000);
+        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        timerText.textContent = `Time: ${formattedTime}`;
     }
 
     /**
@@ -541,6 +580,38 @@ button#resetButton:hover {
     }
 
     /**
+     * NEW: Function to handle bomb usage.
+     */
+    function useBomb() {
+        if (gameState.gameOver || gameState.gameWon) return;
+        if (gameState.player.bombs <= 0) {
+            statusText.textContent = "No bombs left! 💥";
+            return;
+        }
+
+        gameState.player.bombs--;
+        let enemiesStunned = false;
+        const bombRange = 3; // Max distance for stun
+
+        gameState.enemies.forEach(enemy => {
+            const distance = Math.abs(gameState.player.x - enemy.x) + Math.abs(gameState.player.y - enemy.y);
+            if (distance <= bombRange) {
+                enemy.frozenTurns = 2; // Stun for 2 turns
+                enemiesStunned = true;
+            }
+        });
+
+        if (enemiesStunned) {
+            statusText.textContent = "BOMB! Enemies stunned! 💥";
+        } else {
+            takeDamage(20); // Damage player if no enemies are in range
+            statusText.textContent = "BOMB! No enemies in range, you took damage! 🤕";
+        }
+        updateUI();
+        draw(); // Redraw immediately to show frozen enemies or player damage
+    }
+
+    /**
      * Handles player movement and interactions from keyboard.
      */
     function handleInput(event) {
@@ -570,6 +641,10 @@ button#resetButton:hover {
             case 'R':
                 initGame();
                 return; // Don't process movement after reset
+            case 'x': // NEW: Bomb key
+            case 'X':
+                useBomb();
+                return; // Don't process movement after bomb use
             default:
                 return; // Ignore other keys
         }
