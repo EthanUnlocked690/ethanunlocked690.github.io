@@ -715,10 +715,10 @@ button#resetButton:hover {
     bombButton.addEventListener('click', useBomb);
 
 
-    // --- Initial Start ---
+    // --- Initial Start (Modal first, then game on close) ---
     window.onload = function() {
         showModal();
-        initGame();
+        // initGame() is no longer called here. It will be called by closeModal().
     };
 
     // Modal functions
@@ -728,6 +728,7 @@ button#resetButton:hover {
 
     function closeModal() {
         document.getElementById('warningModal').style.display = 'none';
+        initGame(); // <-- Game (and timer) starts here after the modal is closed!
     }
 </script>
 <audio autoplay loop>
