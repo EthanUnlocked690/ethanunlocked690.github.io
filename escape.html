@@ -239,7 +239,7 @@ button#resetButton:hover {
     <span id="bomb-text">Bombs: 3 💣</span>
     <button id="resetButton">New Game</button>
     <span id="hp-text">HP: 100</span>
-    <span id="timer-text">Time: 00:00</span>
+    <span id="timer-text">Time: 01:30</span>
 </div>
 
 <div id="mobile-controls">
@@ -248,9 +248,7 @@ button#resetButton:hover {
     </div>
     <div class="d-pad-row">
         <button id="leftButton" class="arrow-button">⬅️</button>
-        <button id="centerButton" class="arrow-button" style="visibility: hidden;">.</button>
-        <button id="rightButton" class="arrow-button">➡️</button>
-        <button id="bombButton" class="arrow-button">💣</button>
+        <button id="bombButton" class="arrow-button">💣</button> <button id="rightButton" class="arrow-button">➡️</button>
     </div>
     <div class="d-pad-row">
         <button id="downButton" class="arrow-button">⬇️</button>
@@ -299,8 +297,9 @@ button#resetButton:hover {
      * Initializes or resets the game state.
      */
     function initGame() {
-        if(animationFrameId) { // Stop any existing timer
+        if(animationFrameId) { // Stop any existing animation frame (like the timer)
             cancelAnimationFrame(animationFrameId);
+            animationFrameId = null; // Clear the ID
         }
 
         gameState = {
@@ -314,13 +313,13 @@ button#resetButton:hover {
             gameOver: false,
             gameWon: false,
             turn: 0, // Turn counter for enemy movement
-            startTime: null, // For timer
-            elapsedTime: 0,  // For timer
-            animationFrameId: null // Store ID for cancelling
+            startTime: null, // For tracking when the timer started
+            initialTime: 90 * 1000, // 1 minute 30 seconds in milliseconds
+            remainingTime: 90 * 1000 // Current remaining time for the countdown
         };
         placeEntities();
         updateUI();
-        gameState.startTime = performance.now(); // Start timer
+        gameState.startTime = performance.now(); // Record start time for countdown
         gameLoop();
     }
 
@@ -409,12 +408,29 @@ button#resetButton:hover {
         if (!gameState.startTime) {
             gameState.startTime = currentTime;
         }
-        gameState.elapsedTime = currentTime - gameState.startTime;
+
+        // Calculate elapsed time from the start
+        const elapsedTimeFromStart = currentTime - gameState.startTime;
+        // Calculate remaining time
+        gameState.remainingTime = gameState.initialTime - elapsedTimeFromStart;
+
+        if (gameState.remainingTime <= 0) {
+            gameState.remainingTime = 0; // Cap at 0
+            if (!gameState.gameOver && !gameState.gameWon) { // Only trigger game over if not already won
+                gameState.gameOver = true;
+                statusText.textContent = "Time's Up! Game Over! 💀"; // Set game over message immediately
+                // Don't return yet, let it draw one last time
+            }
+        }
 
         if (gameState.gameOver || gameState.gameWon) {
             draw();
-            updateUI();
-            return;
+            updateUI(); // Ensure UI updates one last time
+            if (animationFrameId) { // Ensure timer stops when game is over/won
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null; // Clear the ID
+            }
+            return; // Stop the loop if game is over or won
         }
 
         update();
@@ -540,12 +556,21 @@ button#resetButton:hover {
             hpText.style.color = "#28a745";
         }
 
-        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
+        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`; // Ensure no double bomb emoji
 
-        const minutes = Math.floor(gameState.elapsedTime / 60000);
-        const seconds = Math.floor((gameState.elapsedTime % 60000) / 1000);
+        const minutes = Math.floor(gameState.remainingTime / 60000);
+        const seconds = Math.floor((gameState.remainingTime % 60000) / 1000);
         const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         timerText.textContent = `Time: ${formattedTime}`;
+
+        // Change timer color when low or game over
+        if (gameState.remainingTime < 10000 && gameState.remainingTime > 0) { // Less than 10 seconds
+            timerText.style.color = "#FF4500"; // OrangeRed
+        } else if (gameState.remainingTime <= 0) {
+            timerText.style.color = "#dc3545"; // Red
+        } else {
+            timerText.style.color = "#FFFFFF"; // Default white
+        }
     }
 
     /**
