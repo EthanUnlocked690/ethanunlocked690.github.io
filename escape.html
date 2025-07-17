@@ -36,7 +36,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #2fff00;
+    /* --- ORIGINAL: background-color: #2fff00; --- */
+    /* --- NEW: Background Image Properties --- */
+    background-image: url('rickroll.gif'); /* REPLACE WITH YOUR IMAGE PATH/URL */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+    background-attachment: fixed; /* Keeps the background image fixed when scrolling */
+    /* ----------------------------------------- */
     color: white;
     margin-top: 20px;
 }
