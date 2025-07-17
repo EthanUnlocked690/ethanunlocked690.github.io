@@ -7,643 +7,631 @@
 <style>
 /* Provided Navbar CSS */
 ul {
-    list-style-type: none;
-    margin: 0px;
-    padding: 0px;
-    overflow: hidden;
-    background-color: #fa07e2;
-    width: 800px;
-    border-radius: 8px;
-    margin-bottom: 10px;
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    background-color: #fa07e2;
+    width: 800px;
+    border-radius: 8px;
+    margin-bottom: 10px;
 }
 li {
-    float: left; /* Make list items go side-by-side */
+    float: left; /* Make list items go side-by-side */
 }
 li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none; /* No underline for links */
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none; /* No underline for links */
 }
 li a:hover {
-    background-color: #60fa07;
-    color: #000000
+    background-color: #60fa07;
+    color: #000000
 }
 /* Game & Page Styling */
 body {
-    font-family: 'Courier New', Courier, monospace;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #2fff00;
-    color: white;
-    margin-top: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #2fff00;
+    color: white;
+    margin-top: 20px;
 }
 #game-container {
-    border: 4px solid #ff0000;
-    border-radius: 8px;
-    padding: 10px;
-    background-color: #000;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    border: 4px solid #ff0000;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
 }
 canvas {
-    background-color: #111;
-    display: block;
+    background-color: #111;
+    display: block;
 }
 #game-ui {
-    width: 800px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    padding: 0 5px;
+    width: 800px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 0 5px;
 }
 #status-text {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #000000
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #000000
 }
 #hp-text {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #28a745; /* Green for health */
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #28a745; /* Green for health */
 }
 button#resetButton {
-    background-color: #ff0000;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 1em;
-    font-weight: bold;
-    transition: background-color 0.3s;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s;
 }
 button#resetButton:hover {
-    background-color: #32a852;
-    color: black
+    background-color: #32a852;
+    color: black
 }
 
 /* Mobile Controls (Arrow Buttons) Styling */
 #mobile-controls {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px; /* Space between rows */
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; /* Space between rows */
 }
 
 .d-pad-row {
-    display: flex;
-    gap: 5px; /* Space between buttons in a row */
+    display: flex;
+    gap: 5px; /* Space between buttons in a row */
 }
 
 .arrow-button {
-    background-color: #4CAF50; /* Green */
-    color: white;
-    border: none;
-    padding: 15px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.5em;
-    font-weight: bold;
-    transition: background-color 0.3s, transform 0.1s;
-    min-width: 60px; /* Ensure good touch target */
-    min-height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+    min-width: 60px; /* Ensure good touch target */
+    min-height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .arrow-button:hover {
-    background-color: #45a049;
-    transform: translateY(-2px);
+    background-color: #45a049;
+    transform: translateY(-2px);
 }
 
 .arrow-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 /* Modal Styles */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
-    justify-content: center;
-    align-items: center;
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be responsive */
-    max-width: 500px;
-    border-radius: 10px;
-    text-align: center;
-    position: relative;
-    color: black; /* Ensure text is visible */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be responsive */
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    color: black; /* Ensure text is visible */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 .modal-content h2 {
-    color: #ff0000;
-    margin-top: 0;
+    color: #ff0000;
+    margin-top: 0;
 }
 
 .modal-content button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    margin-top: 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
 }
 
 .modal-content button:hover {
-    background-color: #45a049;
+    background-color: #45a049;
 }
 
 .close-button {
-    color: #aaa;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .close-button:hover,
 .close-button:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
 </style>
 </head>
 <body>
 <ul>
-    <li><a href="turtle.html">⬅ Back to game selection</a></li>
+    <li><a href="turtle.html">⬅ Back to game selection</a></li>
 </ul>
 <h1 style="color:black;">Controls</h1>
 <p1 style="color:black;">Use arrow keys, WASD, or the on-screen buttons</p1>
 <p1 style="color:black;">Press 'R' or click "New Game" to reset</p1>
 <p1 style="color:black;">If you want to heal, get the heart (Potion) Max: 100 (Health in bottom-right corner)</p1> <div id="game-container">
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 <div id="game-ui">
-    <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
-    <button id="resetButton">New Game</button>
-    <span id="hp-text">HP: 100</span>
+    <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
+    <button id="resetButton">New Game</button>
+    <span id="hp-text">HP: 100</span>
 </div>
 
 <div id="mobile-controls">
-    <div class="d-pad-row">
-        <button id="upButton" class="arrow-button">⬆️</button>
-    </div>
-    <div class="d-pad-row">
-        <button id="leftButton" class="arrow-button">⬅️</button>
-        <button id="centerButton" class="arrow-button" style="visibility: hidden;">.</button> <button id="rightButton" class="arrow-button">➡️</button>
-    </div>
-    <div class="d-pad-row">
-        <button id="downButton" class="arrow-button">⬇️</button>
-    </div>
+    <div class="d-pad-row">
+        <button id="upButton" class="arrow-button">⬆️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="leftButton" class="arrow-button">⬅️</button>
+        <button id="centerButton" class="arrow-button" style="visibility: hidden;">.</button> <button id="rightButton" class="arrow-button">➡️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="downButton" class="arrow-button">⬇️</button>
+    </div>
 </div>
 
 <div id="warningModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeModal()">&times;</span>
-        <h2>WARNING!</h2>
-        <p>This game is SO hard that the creator himself could only beat it ONCE!! If you beat it, tell me in the comments of ANY of my videos and I will give you a shoutout!! Good luck and have fun!!</p>
-        <button onclick="closeModal()">Got It!</button>
-    </div>
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2>WARNING!</h2>
+        <p>This game is SO hard that the creator himself could only beat it ONCE!! If you beat it, tell me in the comments of ANY of my videos and I will give you a shoutout!! Good luck and have fun!!</p>
+        <button onclick="closeModal()">Got It!</button>
+    </div>
 </div>
 
 <script>
-    // --- Game Setup ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const resetButton = document.getElementById('resetButton');
-    const statusText = document.getElementById('status-text');
-    const hpText = document.getElementById('hp-text');
+    // --- Game Setup ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const resetButton = document.getElementById('resetButton');
+    const statusText = document.getElementById('status-text');
+    const hpText = document.getElementById('hp-text');
 
-    const TILE_SIZE = 40;
-    const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
-    const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
+    const TILE_SIZE = 40;
+    const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
+    const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
 
-    const Wall = '🪨'; // Original wall emoji
-    const Floor = ' ';
-    const Player = '🙍';
-    const Enemy = '🐉';
-    const Key = '🔑';
-    const Exit = '🚪';
-    const Potion = '❤️';
-    const PlayerWin = '🥳';
+    const Wall = '🪨'; // Original wall emoji
+    const Floor = ' ';
+    const Player = '🙍';
+    const Enemy = '🐉';
+    const Key = '🔑';
+    const Exit = '🚪';
+    const Potion = '❤️';
+    const PlayerWin = '🥳';
     const FrozenEnemy = '❄️'; // New emoji for frozen enemy
 
-    let gameState = {};
+    let gameState = {};
 
-    // --- Game Logic ---
-    /**
-     * Initializes or resets the game state.
-     */
-    function initGame() {
-        gameState = {
-            map: generateMap(),
-            player: { x: 0, y: 0, hp: 100, maxHp: 100 },
-            enemies: [], // Enemies will be initialized with frozenTurns later
-            key: { x: 0, y: 0 },
-            exit: { x: 0, y: 0 },
-            potions: [],
-            hasKey: false,
-            gameOver: false,
-            gameWon: false,
-            turn: 0 // Turn counter for enemy movement
-        };
-        placeEntities();
-        updateUI();
-        // Ensure the main game loop isn't running from a previous game
-        if(gameState.animationFrameId) {
-            cancelAnimationFrame(gameState.animationFrameId);
-        }
-        gameLoop();
-    }
+    // --- Game Logic ---
+    /**
+     * Initializes or resets the game state.
+     */
+    function initGame() {
+        gameState = {
+            map: generateMap(),
+            player: { x: 0, y: 0, hp: 100, maxHp: 100 },
+            enemies: [], // Enemies will be initialized with frozenTurns later
+            key: { x: 0, y: 0 },
+            exit: { x: 0, y: 0 },
+            potions: [],
+            hasKey: false,
+            gameOver: false,
+            gameWon: false,
+            turn: 0 // Turn counter for enemy movement
+        };
+        placeEntities();
+        updateUI();
+        // Ensure the main game loop isn't running from a previous game
+        if(gameState.animationFrameId) {
+            cancelAnimationFrame(gameState.animationFrameId);
+        }
+        gameLoop();
+    }
 
-    /**
-     * Procedurally generates a cave-like map using Cellular Automata.
-     */
-    function generateMap() {
-        let map = Array.from({ length: MAP_HEIGHT_TILES }, () =>
-            Array.from({ length: MAP_WIDTH_TILES }, () => Math.random() < 0.45 ? Wall : Floor)
-        );
+    /**
+     * Procedurally generates a cave-like map using Cellular Automata.
+     */
+    function generateMap() {
+        let map = Array.from({ length: MAP_HEIGHT_TILES }, () =>
+            Array.from({ length: MAP_WIDTH_TILES }, () => Math.random() < 0.45 ? Wall : Floor)
+        );
 
-        // Automata simulation to smooth out the map into caves
-        for (let i = 0; i < 4; i++) {
-            let newMap = JSON.parse(JSON.stringify(map));
-            for (let y = 1; y < MAP_HEIGHT_TILES - 1; y++) {
-                for (let x = 1; x < MAP_WIDTH_TILES - 1; x++) {
-                    let wallCount = 0;
-                    for (let ny = y - 1; ny <= y + 1; ny++) {
-                        for (let nx = x - 1; nx <= x + 1; nx++) {
-                            if (map[ny][nx] === Wall) {
-                                wallCount++;
-                            }
-                        }
-                    }
-                    newMap[y][x] = wallCount > 4 ? Wall : Floor;
-                }
-            }
-            map = newMap;
-        }
+        // Automata simulation to smooth out the map into caves
+        for (let i = 0; i < 4; i++) {
+            let newMap = JSON.parse(JSON.stringify(map));
+            for (let y = 1; y < MAP_HEIGHT_TILES - 1; y++) {
+                for (let x = 1; x < MAP_WIDTH_TILES - 1; x++) {
+                    let wallCount = 0;
+                    for (let ny = y - 1; ny <= y + 1; ny++) {
+                        for (let nx = x - 1; nx <= x + 1; nx++) {
+                            if (map[ny][nx] === Wall) {
+                                wallCount++;
+                            }
+                        }
+                    }
+                    newMap[y][x] = wallCount > 4 ? Wall : Floor;
+                }
+            }
+            map = newMap;
+        }
 
-        // Add a border of walls
-        for(let y = 0; y < MAP_HEIGHT_TILES; y++) {
-            map[y][0] = Wall;
-            map[y][MAP_WIDTH_TILES-1] = Wall;
-        }
-        for(let x = 0; x < MAP_WIDTH_TILES; x++) {
-            map[0][x] = Wall;
-            map[MAP_HEIGHT_TILES-1][x] = Wall;
-        }
-        return map;
-    }
+        // Add a border of walls
+        for(let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            map[y][0] = Wall;
+            map[y][MAP_WIDTH_TILES-1] = Wall;
+        }
+        for(let x = 0; x < MAP_WIDTH_TILES; x++) {
+            map[0][x] = Wall;
+            map[MAP_HEIGHT_TILES-1][x] = Wall;
+        }
+        return map;
+    }
 
-    /**
-     * Places the player, enemies, key, exit, and potions on valid floor tiles.
-     */
-    function placeEntities() {
-        const floorTiles = [];
-        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
-            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
-                if (gameState.map[y][x] === Floor) {
-                    floorTiles.push({ x, y });
-                }
-            }
-        }
+    /**
+     * Places the player, enemies, key, exit, and potions on valid floor tiles.
+     */
+    function placeEntities() {
+        const floorTiles = [];
+        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                if (gameState.map[y][x] === Floor) {
+                    floorTiles.push({ x, y });
+                }
+            }
+        }
 
-        const getRandomTile = () => {
-            const index = Math.floor(Math.random() * floorTiles.length);
-            return floorTiles.splice(index, 1)[0];
-        };
+        const getRandomTile = () => {
+            const index = Math.floor(Math.random() * floorTiles.length);
+            return floorTiles.splice(index, 1)[0];
+        };
 
-        // Place Player, Key, Exit
-        Object.assign(gameState.player, getRandomTile());
-        Object.assign(gameState.key, getRandomTile());
-        Object.assign(gameState.exit, getRandomTile());
+        // Place Player, Key, Exit
+        Object.assign(gameState.player, getRandomTile());
+        Object.assign(gameState.key, getRandomTile());
+        Object.assign(gameState.exit, getRandomTile());
 
-        // Place Enemies
-        const NUM_ENEMIES = 5;
-        for (let i = 0; i < NUM_ENEMIES; i++) {
-            if (floorTiles.length > 0) {
-                // MODIFICATION START: Initialize enemies with frozenTurns
+        // Place Enemies
+        const NUM_ENEMIES = 5;
+        for (let i = 0; i < NUM_ENEMIES; i++) {
+            if (floorTiles.length > 0) {
+                // Initialize enemies with frozenTurns: 0
                 const enemyPos = getRandomTile();
                 gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 });
-                // MODIFICATION END
             }
-        }
+        }
 
-        // Place Potions
-        const NUM_POTIONS = 3;
-        for (let i = 0; i < NUM_POTIONS; i++) {
-            if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
-        }
-    }
+        // Place Potions
+        const NUM_POTIONS = 3;
+        for (let i = 0; i < NUM_POTIONS; i++) {
+            if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
+        }
+    }
 
-    /**
-     * The main game loop, responsible for updating and drawing.
-     */
-    function gameLoop() {
-        if (gameState.gameOver || gameState.gameWon) {
-            draw(); // Final draw to show win/loss message
-            return;
-        }
-        update();
-        draw();
-        gameState.animationFrameId = requestAnimationFrame(gameLoop);
-    }
+    /**
+     * The main game loop, responsible for updating and drawing.
+     */
+    function gameLoop() {
+        if (gameState.gameOver || gameState.gameWon) {
+            draw(); // Final draw to show win/loss message
+            return;
+        }
+        update();
+        draw();
+        gameState.animationFrameId = requestAnimationFrame(gameLoop);
+    }
 
-    /**
-     * Updates the game state (e.g., enemy movement).
-     */
-    function update() {
-        // This function is intentionally simple for this turn-based structure.
-        // Complex updates happen in response to player input.
-    }
+    /**
+     * Updates the game state (e.g., enemy movement).
+     */
+    function update() {
+        // This function is intentionally simple for this turn-based structure.
+        // Complex updates happen in response to player input.
+    }
 
-    /**
-     * Moves all enemies based on simple AI.
-     */
-    function moveEnemies() {
-        gameState.enemies.forEach(enemy => {
-            // MODIFICATION START: Check if enemy is frozen
+    /**
+     * Moves all enemies based on simple AI.
+     */
+    function moveEnemies() {
+        gameState.enemies.forEach(enemy => {
+            // Check if enemy is frozen. If so, decrement turns and skip movement.
             if (enemy.frozenTurns > 0) {
                 enemy.frozenTurns--; // Decrement frozen turns
-                return; // Skip movement for this enemy
+                return; // Skip this enemy's movement for this turn
             }
-            // MODIFICATION END
 
-            // 50% chance to hunt the player, 50% chance to move randomly
-            const huntPlayer = Math.random() > 0.5;
-            let dx = 0, dy = 0;
+            // 50% chance to hunt the player, 50% chance to move randomly
+            const huntPlayer = Math.random() > 0.5;
+            let dx = 0, dy = 0;
 
-            if (huntPlayer) {
-                dx = Math.sign(gameState.player.x - enemy.x);
-                dy = Math.sign(gameState.player.y - enemy.y);
-            } else {
-                dx = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-                dy = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-            }
+            if (huntPlayer) {
+                dx = Math.sign(gameState.player.x - enemy.x);
+                dy = Math.sign(gameState.player.y - enemy.y);
+            } else {
+                dx = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                dy = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+            }
 
-            // Attempt to move
-            const nextX = enemy.x + dx;
-            const nextY = enemy.y + dy;
+            // Attempt to move
+            const nextX = enemy.x + dx;
+            const nextY = enemy.y + dy;
 
-            if (isWalkable(nextX, nextY)) {
-                enemy.x = nextX;
-                enemy.y = nextY;
-            }
+            if (isWalkable(nextX, nextY)) {
+                enemy.x = nextX;
+                enemy.y = nextY;
+            }
 
-            // Check for collision with player after moving
-            if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
-                takeDamage(15);
-                // MODIFICATION START: Freeze enemy on collision
-                enemy.frozenTurns = 2; // Freeze for 2 turns
-                // MODIFICATION END
-            }
-        });
-    }
+            // Check for collision with player AFTER the enemy moves
+            if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
+                takeDamage(15);
+                enemy.frozenTurns = 2; // Freeze this enemy for 2 turns
+            }
+        });
+    }
 
-    /**
-     * Renders the entire game state to the canvas.
-     */
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = `${TILE_SIZE * 0.8}px monospace`;
+    /**
+     * Renders the entire game state to the canvas.
+     */
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = `${TILE_SIZE * 0.8}px monospace`;
 
-        // Draw map
-        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
-            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
-                if (gameState.map[y][x] === Wall) {
-                    ctx.fillText(Wall, x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE);
-                }
-            }
-        }
+        // Draw map
+        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                if (gameState.map[y][x] === Wall) {
+                    ctx.fillText(Wall, x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE);
+                }
+            }
+        }
 
-        // Draw entities
-        const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
+        // Draw entities
+        const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
 
-        if(!gameState.hasKey) drawEntity(gameState.key, Key);
-        drawEntity(gameState.exit, Exit);
-        gameState.potions.forEach(potion => drawEntity(potion, Potion));
+        if(!gameState.hasKey) drawEntity(gameState.key, Key);
+        drawEntity(gameState.exit, Exit);
+        gameState.potions.forEach(potion => drawEntity(potion, Potion));
 
-        // Conditionally draw enemies as skulls if game is won, or frozen if frozen, else normal
-        gameState.enemies.forEach(enemy => {
-            let enemySymbol = Enemy;
+        // Draw enemies: use skull if game won, frozen emoji if frozen, else normal dragon
+        gameState.enemies.forEach(enemy => {
+            let enemySymbol = Enemy; // Default to normal dragon
             if (gameState.gameWon) {
-                enemySymbol = '💀'; // Skull for game won
+                enemySymbol = '💀'; // If game is won, all enemies are skulls
             } else if (enemy.frozenTurns > 0) {
-                enemySymbol = FrozenEnemy; // Frozen emoji
+                enemySymbol = FrozenEnemy; // If enemy is frozen, show frozen emoji
             }
             drawEntity(enemy, enemySymbol);
         });
 
-        // Conditionally draw player as skull if game is over, or partying face if game is won
-        let currentPlayerSymbol = Player;
-        if (gameState.gameOver) {
-            currentPlayerSymbol = '💀'; // Skull for game over
-        } else if (gameState.gameWon) {
-            currentPlayerSymbol = PlayerWin; // Party face for win
-        }
-        drawEntity(gameState.player, currentPlayerSymbol);
+        // Conditionally draw player as skull if game is over, or partying face if game is won
+        let currentPlayerSymbol = Player;
+        if (gameState.gameOver) {
+            currentPlayerSymbol = '💀'; // Skull for game over
+        } else if (gameState.gameWon) {
+            currentPlayerSymbol = PlayerWin; // Party face for win
+        }
+        drawEntity(gameState.player, currentPlayerSymbol);
 
-        // Draw Game Over or Win message
-        if (gameState.gameOver || gameState.gameWon) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
-            ctx.font = 'bold 60px Courier New';
-            ctx.textAlign = 'center';
-            const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' : 'GAME OVER! 💀'; // Changed win/lose emoji for clarity
-            ctx.fillText(message, canvas.width / 2, canvas.height / 2);
-            ctx.textAlign = 'left'; // Reset alignment
-        }
-    }
+        // Draw Game Over or Win message
+        if (gameState.gameOver || gameState.gameWon) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
+            ctx.font = 'bold 60px Courier New';
+            ctx.textAlign = 'center';
+            const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' : 'GAME OVER! 💀';
+            ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+            ctx.textAlign = 'left'; // Reset alignment
+        }
+    }
 
-    /**
-     * Updates the UI elements (status and HP text).
-     */
-    function updateUI() {
-        if (gameState.gameOver) {
-            statusText.textContent = "You were defeated! 💀";
-            hpText.style.color = "#dc3545";
-        } else if (gameState.gameWon) {
-            statusText.textContent = "Congratulations! You escaped! 🎉";
-            hpText.style.color = "#28a745";
-        } else if (gameState.hasKey) {
-            statusText.textContent = "You have the key! Go to the door! 🚪";
-        } else {
-            statusText.textContent = "Find the key 🔑 and escape!";
-        }
-        hpText.textContent = `HP: ${gameState.player.hp}`;
-        if(gameState.player.hp < 30) {
-            hpText.style.color = "#ffc107"; // Warning yellow
-        } else {
-            hpText.style.color = "#28a745"; // Healthy green
-        }
-    }
+    /**
+     * Updates the UI elements (status and HP text).
+     */
+    function updateUI() {
+        if (gameState.gameOver) {
+            statusText.textContent = "You were defeated! 💀";
+            hpText.style.color = "#dc3545";
+        } else if (gameState.gameWon) {
+            statusText.textContent = "Congratulations! You escaped! 🎉";
+            hpText.style.color = "#28a745";
+        } else if (gameState.hasKey) {
+            statusText.textContent = "You have the key! Go to the door! 🚪";
+        } else {
+            statusText.textContent = "Find the key 🔑 and escape!";
+        }
+        hpText.textContent = `HP: ${gameState.player.hp}`;
+        if(gameState.player.hp < 30) {
+            hpText.style.color = "#ffc107"; // Warning yellow
+        } else {
+            hpText.style.color = "#28a745"; // Healthy green
+        }
+    }
 
-    /**
-     * Reduces player HP and checks for game over.
-     */
-    function takeDamage(amount) {
-        gameState.player.hp = Math.max(0, gameState.player.hp - amount);
-        if (gameState.player.hp <= 0) {
-            gameState.gameOver = true;
-        }
-        updateUI();
-    }
+    /**
+     * Reduces player HP and checks for game over.
+     */
+    function takeDamage(amount) {
+        gameState.player.hp = Math.max(0, gameState.player.hp - amount);
+        if (gameState.player.hp <= 0) {
+            gameState.gameOver = true;
+        }
+        updateUI();
+    }
 
-    /**
-     * New function to handle player movement logic
-     */
-    function movePlayer(dx, dy) {
-        if (gameState.gameOver || gameState.gameWon) return;
+    /**
+     * New function to handle player movement logic
+     */
+    function movePlayer(dx, dy) {
+        if (gameState.gameOver || gameState.gameWon) return;
 
-        const nextX = gameState.player.x + dx;
-        const nextY = gameState.player.y + dy;
+        const nextX = gameState.player.x + dx;
+        const nextY = gameState.player.y + dy;
 
-        if (isWalkable(nextX, nextY)) {
-            gameState.player.x = nextX;
-            gameState.player.y = nextY;
+        if (isWalkable(nextX, nextY)) {
+            gameState.player.x = nextX;
+            gameState.player.y = nextY;
 
-            // After player moves, enemies get a turn.
-            moveEnemies(); // This is where enemies check their frozenTurns and move
-            checkInteractions(); // Check for new interactions after all movements
-            updateUI();
-        }
-    }
+            // After player moves, enemies get a turn.
+            moveEnemies();
+            checkInteractions(); // Check for new interactions after all movements
+            updateUI();
+        }
+    }
 
-    /**
-     * Handles player movement and interactions from keyboard.
-     */
-    function handleInput(event) {
-        let dx = 0, dy = 0;
-        switch (event.key) {
-            case 'ArrowUp':
-            case 'w':
-            case 'W':
-                dy = -1;
-                break;
-            case 'ArrowDown':
-            case 's':
-            case 'S':
-                dy = 1;
-                break;
-            case 'ArrowLeft':
-            case 'a':
-            case 'A':
-                dx = -1;
-                break;
-            case 'ArrowRight':
-            case 'd':
-            case 'D':
-                dx = 1;
-                break;
-            case 'r': // Added 'r' for reset
-            case 'R':
-                initGame();
-                return; // Don't process movement after reset
-            default:
-                return; // Ignore other keys
-        }
-        movePlayer(dx, dy); // Call the new movement function
-    }
+    /**
+     * Handles player movement and interactions from keyboard.
+     */
+    function handleInput(event) {
+        let dx = 0, dy = 0;
+        switch (event.key) {
+            case 'ArrowUp':
+            case 'w':
+            case 'W':
+                dy = -1;
+                break;
+            case 'ArrowDown':
+            case 's':
+            case 'S':
+                dy = 1;
+                break;
+            case 'ArrowLeft':
+            case 'a':
+            case 'A':
+                dx = -1;
+                break;
+            case 'ArrowRight':
+            case 'd':
+            case 'D':
+                dx = 1;
+                break;
+            case 'r': // Added 'r' for reset
+            case 'R':
+                initGame();
+                return; // Don't process movement after reset
+            default:
+                return; // Ignore other keys
+        }
+        movePlayer(dx, dy); // Call the new movement function
+    }
 
-    /**
-     * Checks for player interactions with items, enemies, and the exit.
-     */
-    function checkInteractions() {
-        // Check key
-        if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
-            gameState.hasKey = true;
-        }
+    /**
+     * Checks for player interactions with items, enemies, and the exit.
+     */
+    function checkInteractions() {
+        // Check key
+        if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
+            gameState.hasKey = true;
+        }
 
-        // Check exit
-        if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
-            gameState.gameWon = true;
-        }
+        // Check exit
+        if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
+            gameState.gameWon = true;
+        }
 
-        // Check potions
-        gameState.potions = gameState.potions.filter(potion => {
-            if (potion.x === gameState.player.x && potion.y === gameState.player.y) {
-                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 50);
-                return false; // Remove potion from array
-            }
-            return true;
-        });
+        // Check potions
+        gameState.potions = gameState.potions.filter(potion => {
+            if (potion.x === gameState.player.x && potion.y === gameState.player.y) {
+                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 50);
+                return false; // Remove potion from array
+            }
+            return true;
+        });
 
-        // Check enemies (collision after enemy move)
-        // NOTE: This interaction check is primarily for player *landing on* an enemy after player's own move,
-        // or if an enemy moved onto the player. The freeze logic is now handled more directly in moveEnemies
-        // when an enemy successfully moves onto a player. This ensures damage and freeze happen consistently.
-        // It's still good to have this here for completeness or if game logic changes, but the main freeze trigger is in moveEnemies.
-        gameState.enemies.forEach(enemy => {
-            if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
-                // Damage and freeze logic moved to moveEnemies for consistency
-                // to ensure the enemy that *just* moved onto the player is the one frozen.
-                // This block can remain for other types of interactions if needed.
-            }
-        });
-    }
+        // The primary damage/freeze trigger is now handled when the enemy *moves onto* the player
+        // inside moveEnemies() to ensure the correct enemy gets frozen.
+        // This check is mostly for completeness but shouldn't trigger damage/freeze
+        // if the flow is movePlayer -> moveEnemies -> checkInteractions.
+    }
 
-    /**
-     * Checks if a tile at given coordinates is walkable (not a wall).
-     */
-    function isWalkable(x, y) {
-        return x >= 0 && x < MAP_WIDTH_TILES && y >= 0 && y < MAP_HEIGHT_TILES && gameState.map[y][x] === Floor;
-    }
+    /**
+     * Checks if a tile at given coordinates is walkable (not a wall).
+     */
+    function isWalkable(x, y) {
+        return x >= 0 && x < MAP_WIDTH_TILES && y >= 0 && y < MAP_HEIGHT_TILES && gameState.map[y][x] === Floor;
+    }
 
-    // --- Event Listeners ---
-    window.addEventListener('keydown', handleInput);
-    resetButton.addEventListener('click', initGame);
+    // --- Event Listeners ---
+    window.addEventListener('keydown', handleInput);
+    resetButton.addEventListener('click', initGame);
 
-    // Event listeners for arrow buttons
-    document.getElementById('upButton').addEventListener('click', () => movePlayer(0, -1));
-    document.getElementById('downButton').addEventListener('click', () => movePlayer(0, 1));
-    document.getElementById('leftButton').addEventListener('click', () => movePlayer(-1, 0));
-    document.getElementById('rightButton').addEventListener('click', () => movePlayer(1, 0));
+    // Event listeners for arrow buttons
+    document.getElementById('upButton').addEventListener('click', () => movePlayer(0, -1));
+    document.getElementById('downButton').addEventListener('click', () => movePlayer(0, 1));
+    document.getElementById('leftButton').addEventListener('click', () => movePlayer(-1, 0));
+    document.getElementById('rightButton').addEventListener('click', () => movePlayer(1, 0));
 
 
-    // --- Initial Start ---
-    // Show modal on window load, then initialize game
-    window.onload = function() {
-        showModal();
-        initGame(); // Initialize game after modal is shown
-    };
+    // --- Initial Start ---
+    // Show modal on window load, then initialize game
+    window.onload = function() {
+        showModal();
+        initGame(); // Initialize game after modal is shown
+    };
 
-    // Modal functions
-    function showModal() {
-        // Ensure the modal is a flex container when displayed to center its content
-        document.getElementById('warningModal').style.display = 'flex';
-    }
+    // Modal functions
+    function showModal() {
+        // Ensure the modal is a flex container when displayed to center its content
+        document.getElementById('warningModal').style.display = 'flex';
+    }
 
-    function closeModal() {
-        document.getElementById('warningModal').style.display = 'none';
-    }
+    function closeModal() {
+        document.getElementById('warningModal').style.display = 'none';
+    }
 </script>
 </body>
 </html>
