@@ -312,6 +312,7 @@ button#resetButton:hover {
             hasKey: false,
             gameOver: false,
             gameWon: false,
+            gameOverReason: null, // Stores 'time' or 'hp' if game over
             turn: 0, // Turn counter for enemy movement
             startTime: null, // For tracking when the timer started
             initialTime: 90 * 1000, // 1 minute 30 seconds in milliseconds
@@ -418,8 +419,7 @@ button#resetButton:hover {
             gameState.remainingTime = 0; // Cap at 0
             if (!gameState.gameOver && !gameState.gameWon) { // Only trigger game over if not already won
                 gameState.gameOver = true;
-                statusText.textContent = "Time's Up! Game Over! 💀"; // Set game over message immediately
-                // Don't return yet, let it draw one last time
+                gameState.gameOverReason = 'time'; // Set the reason for game over
             }
         }
 
@@ -528,7 +528,9 @@ button#resetButton:hover {
             ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
             ctx.font = 'bold 60px Courier New';
             ctx.textAlign = 'center';
-            const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' : 'GAME OVER! 💀';
+            // UPDATED: Differentiate Game Over message on canvas
+            const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' :
+                            (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀'); // Changed here
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
             ctx.textAlign = 'left';
         }
@@ -539,8 +541,15 @@ button#resetButton:hover {
      */
     function updateUI() {
         if (gameState.gameOver) {
-            statusText.textContent = "You were defeated! 💀";
-            hpText.style.color = "#dc3545";
+            // UPDATED: Display specific game over message based on reason
+            if (gameState.gameOverReason === 'time') {
+                statusText.textContent = "Times up! 💀"; // Changed here
+            } else if (gameState.gameOverReason === 'hp') {
+                statusText.textContent = "Game Over! 💀"; // Changed here
+            } else { // Fallback, shouldn't be hit with current logic
+                statusText.textContent = "Game Over! 💀";
+            }
+            hpText.style.color = "#dc3545"; // Red for game over HP
         } else if (gameState.gameWon) {
             statusText.textContent = "Congratulations! You escaped! 🎉";
             hpText.style.color = "#28a745";
@@ -550,9 +559,9 @@ button#resetButton:hover {
             statusText.textContent = "Find the key 🔑 and escape!";
         }
         hpText.textContent = `HP: ${gameState.player.hp}`;
-        if(gameState.player.hp < 30) {
+        if(gameState.player.hp < 30 && !gameState.gameOver) { // Only change color if not already game over
             hpText.style.color = "#ffc107";
-        } else {
+        } else if (!gameState.gameOver){
             hpText.style.color = "#28a745";
         }
 
@@ -580,6 +589,7 @@ button#resetButton:hover {
         gameState.player.hp = Math.max(0, gameState.player.hp - amount);
         if (gameState.player.hp <= 0) {
             gameState.gameOver = true;
+            gameState.gameOverReason = 'hp'; // Set the reason for game over
         }
         updateUI();
     }
