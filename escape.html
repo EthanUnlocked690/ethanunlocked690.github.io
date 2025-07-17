@@ -36,14 +36,11 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* --- ORIGINAL: background-color: #2fff00; --- */
-    /* --- NEW: Background Image Properties --- */
     background-image: url('rickroll.gif'); /* REPLACE WITH YOUR IMAGE PATH/URL */
     background-size: cover; /* Ensures the image covers the entire background */
     background-position: center center; /* Centers the image */
     background-repeat: no-repeat; /* Prevents the image from repeating */
     background-attachment: fixed; /* Keeps the background image fixed when scrolling */
-    /* ----------------------------------------- */
     color: white;
     margin-top: 20px;
 }
@@ -76,7 +73,7 @@ canvas {
     font-weight: bold;
     color: #28a745; /* Green for health */
 }
-/* NEW: Style for Bomb Count and Timer */
+/* Style for Bomb Count and Timer */
 #bomb-text, #timer-text {
     font-size: 1.2em;
     font-weight: bold;
@@ -146,6 +143,16 @@ button#resetButton:hover {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
+/* Specific style for the bomb button to distinguish it */
+#bombButton {
+    background-color: #FF4500; /* OrangeRed */
+    border: 2px solid #CD3333; /* Darker red */
+}
+#bombButton:hover {
+    background-color: #E04000;
+}
+
 
 /* Modal Styles */
 .modal {
@@ -222,16 +229,18 @@ button#resetButton:hover {
 <p style="color:black;">Use arrow keys, WASD, or the on-screen buttons</p>
 <p style="color:black;">Press 'R' or click "New Game" to reset</p>
 <p style="color:black;">If you want to heal, get the heart (Potion) Max: 100 (Health in bottom-right corner)</p>
-<p style="color:black;">Press 'X' to use a bomb (stuns nearby enemies, or damages you if no enemies are in range!)</p>
+<p style="color:black;">Press 'X' or the bomb button to use a bomb (stuns nearby enemies, or damages you if no enemies are in range!)</p>
 
 <div id="game-container">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 </div>
 <div id="game-ui">
     <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
-    <span id="bomb-text">Bombs: 3 💣</span> <button id="resetButton">New Game</button>
+    <span id="bomb-text">Bombs: 3 💣</span>
+    <button id="resetButton">New Game</button>
     <span id="hp-text">HP: 100</span>
-    <span id="timer-text">Time: 00:00</span> </div>
+    <span id="timer-text">Time: 00:00</span>
+</div>
 
 <div id="mobile-controls">
     <div class="d-pad-row">
@@ -239,7 +248,9 @@ button#resetButton:hover {
     </div>
     <div class="d-pad-row">
         <button id="leftButton" class="arrow-button">⬅️</button>
-        <button id="centerButton" class="arrow-button" style="visibility: hidden;">.</button> <button id="rightButton" class="arrow-button">➡️</button>
+        <button id="centerButton" class="arrow-button" style="visibility: hidden;">.</button>
+        <button id="rightButton" class="arrow-button">➡️</button>
+        <button id="bombButton" class="arrow-button">💣</button>
     </div>
     <div class="d-pad-row">
         <button id="downButton" class="arrow-button">⬇️</button>
@@ -262,8 +273,9 @@ button#resetButton:hover {
     const resetButton = document.getElementById('resetButton');
     const statusText = document.getElementById('status-text');
     const hpText = document.getElementById('hp-text');
-    const bombText = document.getElementById('bomb-text'); // NEW
-    const timerText = document.getElementById('timer-text'); // NEW
+    const bombText = document.getElementById('bomb-text');
+    const timerText = document.getElementById('timer-text');
+    const bombButton = document.getElementById('bombButton');
 
     const TILE_SIZE = 40;
     const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
@@ -293,7 +305,7 @@ button#resetButton:hover {
 
         gameState = {
             map: generateMap(),
-            player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 3 }, // NEW: Add bombs to player state
+            player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 3 },
             enemies: [],
             key: { x: 0, y: 0 },
             exit: { x: 0, y: 0 },
@@ -302,8 +314,8 @@ button#resetButton:hover {
             gameOver: false,
             gameWon: false,
             turn: 0, // Turn counter for enemy movement
-            startTime: null, // NEW: For timer
-            elapsedTime: 0,  // NEW: For timer
+            startTime: null, // For timer
+            elapsedTime: 0,  // For timer
             animationFrameId: null // Store ID for cancelling
         };
         placeEntities();
@@ -378,7 +390,6 @@ button#resetButton:hover {
         const NUM_ENEMIES = 5;
         for (let i = 0; i < NUM_ENEMIES; i++) {
             if (floorTiles.length > 0) {
-                // Initialize enemies with frozenTurns: 0
                 const enemyPos = getRandomTile();
                 gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 });
             }
@@ -395,21 +406,21 @@ button#resetButton:hover {
      * The main game loop, responsible for updating and drawing.
      */
     function gameLoop(currentTime) {
-        if (!gameState.startTime) { // Ensure startTime is set
+        if (!gameState.startTime) {
             gameState.startTime = currentTime;
         }
-        gameState.elapsedTime = currentTime - gameState.startTime; // Update elapsed time
+        gameState.elapsedTime = currentTime - gameState.startTime;
 
         if (gameState.gameOver || gameState.gameWon) {
-            draw(); // Final draw to show win/loss message
-            updateUI(); // Ensure final time/HP/bombs are displayed
-            return; // Stop the loop
+            draw();
+            updateUI();
+            return;
         }
 
         update();
         draw();
-        updateUI(); // Update UI every frame to show timer
-        animationFrameId = requestAnimationFrame(gameLoop); // Store ID for cancellation
+        updateUI();
+        animationFrameId = requestAnimationFrame(gameLoop);
     }
 
     /**
@@ -425,13 +436,11 @@ button#resetButton:hover {
      */
     function moveEnemies() {
         gameState.enemies.forEach(enemy => {
-            // Check if enemy is frozen. If so, decrement turns and skip movement.
             if (enemy.frozenTurns > 0) {
-                enemy.frozenTurns--; // Decrement frozen turns
-                return; // Skip this enemy's movement for this turn
+                enemy.frozenTurns--;
+                return;
             }
 
-            // 50% chance to hunt the player, 50% chance to move randomly
             const huntPlayer = Math.random() > 0.5;
             let dx = 0, dy = 0;
 
@@ -439,11 +448,10 @@ button#resetButton:hover {
                 dx = Math.sign(gameState.player.x - enemy.x);
                 dy = Math.sign(gameState.player.y - enemy.y);
             } else {
-                dx = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-                dy = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+                dx = Math.floor(Math.random() * 3) - 1;
+                dy = Math.floor(Math.random() * 3) - 1;
             }
 
-            // Attempt to move
             const nextX = enemy.x + dx;
             const nextY = enemy.y + dy;
 
@@ -452,10 +460,9 @@ button#resetButton:hover {
                 enemy.y = nextY;
             }
 
-            // Check for collision with player AFTER the enemy moves
             if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
                 takeDamage(15);
-                enemy.frozenTurns = 2; // Freeze this enemy for 2 turns
+                enemy.frozenTurns = 2;
             }
         });
     }
@@ -467,7 +474,6 @@ button#resetButton:hover {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = `${TILE_SIZE * 0.8}px monospace`;
 
-        // Draw map
         for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
             for (let x = 0; x < MAP_WIDTH_TILES; x++) {
                 if (gameState.map[y][x] === Wall) {
@@ -476,34 +482,30 @@ button#resetButton:hover {
             }
         }
 
-        // Draw entities
         const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
 
         if(!gameState.hasKey) drawEntity(gameState.key, Key);
         drawEntity(gameState.exit, Exit);
         gameState.potions.forEach(potion => drawEntity(potion, Potion));
 
-        // Draw enemies: use skull if game won, frozen emoji if frozen, else normal dragon
         gameState.enemies.forEach(enemy => {
-            let enemySymbol = Enemy; // Default to normal dragon
+            let enemySymbol = Enemy;
             if (gameState.gameWon) {
-                enemySymbol = '💀'; // If game is won, all enemies are skulls
+                enemySymbol = '💀';
             } else if (enemy.frozenTurns > 0) {
-                enemySymbol = FrozenEnemy; // If enemy is frozen, show frozen emoji
+                enemySymbol = FrozenEnemy;
             }
             drawEntity(enemy, enemySymbol);
         });
 
-        // Conditionally draw player as skull if game is over, or partying face if game is won
         let currentPlayerSymbol = Player;
         if (gameState.gameOver) {
-            currentPlayerSymbol = '💀'; // Skull for game over
+            currentPlayerSymbol = '💀';
         } else if (gameState.gameWon) {
-            currentPlayerSymbol = PlayerWin; // Party face for win
+            currentPlayerSymbol = PlayerWin;
         }
         drawEntity(gameState.player, currentPlayerSymbol);
 
-        // Draw Game Over or Win message
         if (gameState.gameOver || gameState.gameWon) {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -512,7 +514,7 @@ button#resetButton:hover {
             ctx.textAlign = 'center';
             const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' : 'GAME OVER! 💀';
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
-            ctx.textAlign = 'left'; // Reset alignment
+            ctx.textAlign = 'left';
         }
     }
 
@@ -533,15 +535,13 @@ button#resetButton:hover {
         }
         hpText.textContent = `HP: ${gameState.player.hp}`;
         if(gameState.player.hp < 30) {
-            hpText.style.color = "#ffc107"; // Warning yellow
+            hpText.style.color = "#ffc107";
         } else {
-            hpText.style.color = "#28a745"; // Healthy green
+            hpText.style.color = "#28a745";
         }
 
-        // NEW: Update bomb count
         bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
 
-        // NEW: Update timer
         const minutes = Math.floor(gameState.elapsedTime / 60000);
         const seconds = Math.floor((gameState.elapsedTime % 60000) / 1000);
         const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -572,15 +572,14 @@ button#resetButton:hover {
             gameState.player.x = nextX;
             gameState.player.y = nextY;
 
-            // After player moves, enemies get a turn.
             moveEnemies();
-            checkInteractions(); // Check for new interactions after all movements
+            checkInteractions();
             updateUI();
         }
     }
 
     /**
-     * NEW: Function to handle bomb usage.
+     * Function to handle bomb usage.
      */
     function useBomb() {
         if (gameState.gameOver || gameState.gameWon) return;
@@ -591,7 +590,7 @@ button#resetButton:hover {
 
         gameState.player.bombs--;
         let enemiesStunned = false;
-        const bombRange = 3; // Max distance for stun
+        const bombRange = 3; // Max Manhattan distance for stun
 
         gameState.enemies.forEach(enemy => {
             const distance = Math.abs(gameState.player.x - enemy.x) + Math.abs(gameState.player.y - enemy.y);
@@ -608,7 +607,7 @@ button#resetButton:hover {
             statusText.textContent = "BOMB! No enemies in range, you took damage! 🤕";
         }
         updateUI();
-        draw(); // Redraw immediately to show frozen enemies or player damage
+        draw();
     }
 
     /**
@@ -637,47 +636,39 @@ button#resetButton:hover {
             case 'D':
                 dx = 1;
                 break;
-            case 'r': // Added 'r' for reset
+            case 'r':
             case 'R':
                 initGame();
-                return; // Don't process movement after reset
-            case 'x': // NEW: Bomb key
+                return;
+            case 'x':
             case 'X':
                 useBomb();
-                return; // Don't process movement after bomb use
+                return;
             default:
-                return; // Ignore other keys
+                return;
         }
-        movePlayer(dx, dy); // Call the new movement function
+        movePlayer(dx, dy);
     }
 
     /**
      * Checks for player interactions with items, enemies, and the exit.
      */
     function checkInteractions() {
-        // Check key
         if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
             gameState.hasKey = true;
         }
 
-        // Check exit
         if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
             gameState.gameWon = true;
         }
 
-        // Check potions
         gameState.potions = gameState.potions.filter(potion => {
             if (potion.x === gameState.player.x && potion.y === gameState.player.y) {
                 gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 50);
-                return false; // Remove potion from array
+                return false;
             }
             return true;
         });
-
-        // The primary damage/freeze trigger is now handled when the enemy *moves onto* the player
-        // inside moveEnemies() to ensure the correct enemy gets frozen.
-        // This check is mostly for completeness but shouldn't trigger damage/freeze
-        // if the flow is movePlayer -> moveEnemies -> checkInteractions.
     }
 
     /**
@@ -696,18 +687,17 @@ button#resetButton:hover {
     document.getElementById('downButton').addEventListener('click', () => movePlayer(0, 1));
     document.getElementById('leftButton').addEventListener('click', () => movePlayer(-1, 0));
     document.getElementById('rightButton').addEventListener('click', () => movePlayer(1, 0));
+    bombButton.addEventListener('click', useBomb);
 
 
     // --- Initial Start ---
-    // Show modal on window load, then initialize game
     window.onload = function() {
         showModal();
-        initGame(); // Initialize game after modal is shown
+        initGame();
     };
 
     // Modal functions
     function showModal() {
-        // Ensure the modal is a flex container when displayed to center its content
         document.getElementById('warningModal').style.display = 'flex';
     }
 
