@@ -484,11 +484,11 @@ function startGame() {
     gameState.levelComplete = false; // Reset level complete flag
     gameState.gameOverReason = null;
     gameState.messageOnCanvas = null; // Clear any lingering canvas messages
+    gameState.isPaused = false; // Ensure game is unpaused when starting new level
 
-    // Only increment level if coming from a win (not a death restart or initial load)
-    if (!gameState.gameOver && !gameState.gameWon && gameState.currentLevel !== 1 && !gameState.levelComplete) {
-         gameState.currentLevel++;
-    } else if (gameState.currentLevel === 0) { // Initial game start
+    // If currentLevel is 0 (initial load or full reset), set to 1.
+    // Otherwise, assume currentLevel has already been set/incremented by handleGameEndOrLevelComplete
+    if (gameState.currentLevel === 0) {
         gameState.currentLevel = 1;
     }
 
@@ -886,7 +886,7 @@ function useBomb() {
             statusText.textContent = "BOMB! Enemies affected! 💥";
         }
     } else {
-        takeDamage(20); // Damage player if no enemies are in range
+        takeDamage(20); // Damage player if no enemies in range
         statusText.textContent = "BOMB! No enemies in range, you took damage! 🤕";
     }
     updateUI();
@@ -906,12 +906,11 @@ function handleGameEndOrLevelComplete(isWin) {
         if (isWin) {
             if (gameState.isBossLevel) {
                 // Game completely won (boss defeated)
-                // You might want a final "You Win!" screen here or redirect
                 alert("CONGRATULATIONS! You have escaped the dungeon and defeated the Demon Lord!");
                 window.location.href = 'turtle.html'; // Or a dedicated win page
             } else {
                 // Regular level complete, proceed to next
-                gameState.currentLevel++;
+                gameState.currentLevel++; // THIS IS WHERE THE LEVEL IS INCREMENTED FOR REGULAR WINS
                 // Check if next level is boss level
                 if (gameState.currentLevel > 5) {
                     statusText.textContent = "You escaped the dungeon! Prepare for the Final Boss! 😈";
