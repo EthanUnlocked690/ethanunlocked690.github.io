@@ -36,24 +36,24 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-image: url('rickroll.gif'); /* NO FOLDER HERE - DIRECT PATH */
+    background-image: url('rickroll.gif'); /* Direct path, no folder */
     background-size: cover; /* Ensures the image covers the entire background */
     background-position: center center; /* Centers the image */
     background-repeat: no-repeat; /* Prevents the image from repeating */
     background-attachment: fixed; /* Keeps the background image fixed when scrolling */
-    color: white;
+    color: white; /* Default text color */
     margin-top: 20px;
 }
 #game-container {
     border: 4px solid #ff0000;
     border-radius: 8px;
-    padding: 10px; /* Adjust if button is absolutely positioned within padding */
-    background-color: #000;
+    padding: 10px;
+    background-color: #000; /* Solid black background for game area */
     box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-    position: relative; /* Crucial for absolute positioning of pause button */
+    position: relative;
 }
 canvas {
-    background-color: #111;
+    background-color: #111; /* Dark background for the map */
     display: block;
 }
 #game-ui {
@@ -63,29 +63,29 @@ canvas {
     align-items: center;
     margin-top: 10px;
     padding: 0 5px;
-    flex-wrap: wrap; /* Allow items to wrap on smaller screens */
-    gap: 5px; /* Spacing between UI elements */
+    flex-wrap: wrap;
+    gap: 5px;
 }
 #status-text {
     font-size: 1.2em;
     font-weight: bold;
-    color: #000000;
-    flex-basis: 100%; /* Take full width on a new line */
+    color: #000000; /* Black for status text */
+    flex-basis: 100%;
     text-align: center;
     margin-bottom: 10px;
 }
 #hp-text, #bomb-text, #timer-text, #level-text, #score-text {
     font-size: 1.2em;
     font-weight: bold;
-    color: #FFFFFF; /* Default white for all these */
+    color: #FFFFFF; /* White for all these */
     margin: 0 5px;
 }
 #hp-text { color: #28a745; } /* Green for health */
 #bomb-text { color: #FFA500; } /* Orange for bombs */
-#timer-text { color: #FFFFFF; } /* Default white for timer */
+#timer-text { color: #FFFFFF; } /* White for timer */
 
 
-button#resetButton { /* Removed #pauseButton from here */
+button#resetButton {
     background-color: #ff0000;
     color: white;
     border: none;
@@ -103,56 +103,52 @@ button#resetButton:hover {
     color: black
 }
 
-/* Specific styling for the new pause button */
+/* Pause button on game screen */
 button#pauseButton {
-    position: absolute; /* Position relative to game-container */
-    top: 15px; /* Adjust as needed */
-    left: 15px; /* Adjust as needed */
-    z-index: 10; /* Ensure it's above the canvas */
-    
-    /* Styling for the button itself */
-    background-color: rgba(255, 0, 0, 0.7); /* Semi-transparent red */
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 10;
+    background-color: rgba(255, 0, 0, 0.7);
     border: 2px solid #ff0000;
-    padding: 5px; /* Smaller padding for an icon button */
-    border-radius: 8px; /* Slightly more rounded */
+    padding: 5px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s, border-color 0.3s, transform 0.1s;
-    width: 50px; /* Fixed width for icon button */
-    height: 50px; /* Fixed height for icon button */
-    display: flex; /* To center the image */
+    width: 50px;
+    height: 50px;
+    display: flex;
     justify-content: center;
     align-items: center;
 }
 
 button#pauseButton:hover {
-    background-color: #ff0000; /* Solid red on hover */
+    background-color: #ff0000;
     border-color: #32a852;
 }
 button#pauseButton:active {
-    transform: translateY(1px); /* Little press effect */
+    transform: translateY(1px);
 }
 
 button#pauseButton img {
-    width: 30px; /* Size of the pause icon */
-    height: 30px; /* Size of the pause icon */
-    display: block; /* Remove extra space below image */
-    /* Optional: filter to make the icon white if it's black */
-    /* filter: invert(1); */ 
+    width: 30px;
+    height: 30px;
+    display: block;
 }
 
 
-/* Mobile Controls (Arrow Buttons) Styling */
+/* Mobile Controls (Arrow Buttons) Styling - Simplified */
 #mobile-controls {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px; /* Space between rows */
+    gap: 5px;
 }
 
 .d-pad-row {
     display: flex;
-    gap: 5px; /* Space between buttons in a row */
+    gap: 5px;
 }
 
 .arrow-button {
@@ -165,7 +161,7 @@ button#pauseButton img {
     font-size: 1.5em;
     font-weight: bold;
     transition: background-color 0.3s, transform 0.1s;
-    min-width: 60px; /* Ensure good touch target */
+    min-width: 60px;
     min-height: 60px;
     display: flex;
     justify-content: center;
@@ -183,27 +179,26 @@ button#pauseButton img {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Specific style for the bomb button to distinguish it */
 #bombButton {
     background-color: #FF4500; /* OrangeRed */
-    border: 2px solid #CD3333; /* Darker red */
+    border: 2px solid #CD3333;
 }
 #bombButton:hover {
     background-color: #E04000;
 }
 
 
-/* Modal Styles */
+/* Modal Styles - Simplified */
 .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
+    display: none;
+    position: fixed;
+    z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
     justify-content: center;
     align-items: center;
 }
@@ -213,12 +208,12 @@ button#pauseButton img {
     margin: auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; /* Could be responsive */
+    width: 80%;
     max-width: 500px;
     border-radius: 10px;
     text-align: center;
     position: relative;
-    color: black; /* Ensure text is visible */
+    color: black;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
@@ -236,30 +231,29 @@ button#pauseButton img {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
-    margin: 5px; /* Spacing between buttons in modal */
-    
-    /* Flexbox for image + text buttons */
+    margin: 5px;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Stack image and text vertically */
     align-items: center;
     justify-content: center;
-    min-width: 120px; /* Ensure buttons are wide enough for content */
-    min-height: 120px; /* Ensure buttons are tall enough for content */
+    min-width: 120px;
+    min-height: 120px;
 }
 
 .modal-content button img {
-    width: 50px; /* Adjust size of the icon */
-    height: 50px; /* Adjust size of the icon */
-    margin-bottom: 8px; /* Space between icon and text */
-    /* Optional: filter to make icons white if they are black on a dark background */
-    /* filter: invert(1); */
+    width: 50px;
+    height: 50px;
+    margin-bottom: 8px;
+    /* To ensure icons are visible on light backgrounds */
+    /* If your PNGs have transparent backgrounds, they might look 'broken' if they're black on a black modal background */
+    /* If your original icons were white, you don't need this */
+    /* filter: invert(1); */ /* Uncomment if icons are black and modal background is white */
 }
 
 .modal-content button span {
-    font-size: 1.2em; /* Make the text bigger */
+    font-size: 1.2em;
     font-weight: bold;
 }
-
 
 .modal-content button:hover {
     background-color: #45a049;
@@ -282,45 +276,33 @@ button#pauseButton img {
     cursor: pointer;
 }
 
-/* Pause Menu Specifics */
+/* Pause Menu Specifics - Simplified */
 #pauseMenuModal .modal-content {
-    display: flex; /* Use flexbox for modal content to layout buttons horizontally */
-    flex-direction: column; /* Stack title and buttons vertically */
-    align-items: center; /* Center items horizontally */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #pauseMenuModal .modal-content h2 {
-    font-size: 3em; /* Make "Paused!" larger */
+    font-size: 3em;
     margin-bottom: 20px;
 }
 
 #pauseMenuModal .button-container {
-    display: flex; /* Container for the buttons to make them row-wise */
-    gap: 20px; /* Space between buttons */
+    display: flex;
+    gap: 20px;
     justify-content: center;
     width: 100%;
-    flex-wrap: wrap; /* Allow buttons to wrap if screen is too small */
+    flex-wrap: wrap;
 }
 
-/* Specific colors for pause menu buttons if desired */
-#pauseMenuModal #pauseMenuPlayButton {
-    background-color: #007bff; /* Blue for play */
-}
-#pauseMenuModal #pauseMenuPlayButton:hover {
-    background-color: #0056b3;
-}
-#pauseMenuModal #pauseMenuRestartButton {
-    background-color: #dc3545; /* Red for restart */
-}
-#pauseMenuModal #pauseMenuRestartButton:hover {
-    background-color: #c82333;
-}
-#pauseMenuModal #pauseMenuQuitButton {
-    background-color: #6c757d; /* Grey for quit */
-}
-#pauseMenuModal #pauseMenuQuitButton:hover {
-    background-color: #5a6268;
-}
+/* Specific colors for pause menu buttons */
+#pauseMenuModal #pauseMenuPlayButton { background-color: #007bff; }
+#pauseMenuModal #pauseMenuPlayButton:hover { background-color: #0056b3; }
+#pauseMenuModal #pauseMenuRestartButton { background-color: #dc3545; }
+#pauseMenuModal #pauseMenuRestartButton:hover { background-color: #c82333; }
+#pauseMenuModal #pauseMenuQuitButton { background-color: #6c757d; }
+#pauseMenuModal #pauseMenuQuitButton:hover { background-color: #5a6268; }
 
 </style>
 </head>
@@ -378,13 +360,16 @@ button#pauseButton img {
         <h2>Paused!</h2>
         <div class="button-container">
             <button id="pauseMenuPlayButton">
-                <img src="play.png" alt="Play Icon"> <span>Play</span>
+                <img src="play.png" alt="Play Icon">
+                <span>Play</span>
             </button>
             <button id="pauseMenuRestartButton">
-                <img src="restart.png" alt="Restart Icon"> <span>Restart</span>
+                <img src="restart.png" alt="Restart Icon">
+                <span>Restart</span>
             </button>
             <button id="pauseMenuQuitButton">
-                <img src="quit.png" alt="Quit Icon"> <span>Quit</span>
+                <img src="quit.png" alt="Quit Icon">
+                <span>Quit</span>
             </button>
         </div>
     </div>
@@ -1013,8 +998,6 @@ window.onload = () => {
     showModal(warningModal);
     initGame(); // Initialize game state, but it will be paused by the modal
 };
-
-// Removed generateBossMap and placeBossAndPlayer as they are not used in this 3-level version
 </script>
 <audio autoplay loop>
     <source src="back.mp3" type="audio/mpeg"> Your browser does not support the audio element.
