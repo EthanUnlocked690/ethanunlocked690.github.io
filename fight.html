@@ -37,14 +37,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-image: url('rickroll.gif'); /* Main body background */
+    background-image: url('rickroll.gif'); /* Main body background. Ensure rickroll.gif is in the same folder. */
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     color: white;
     margin-top: 20px;
-    cursor: none; /* Hide default cursor */
+    cursor: none; /* Hide default cursor so custom crosshair can be used. */
 }
 
 #sniping-game-container {
@@ -55,10 +55,10 @@ body {
     border-radius: 8px;
     overflow: hidden; /* Hide anything outside */
     background-color: #000; /* Fallback if background_scene.jpg isn't loaded */
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-    background-image: url('background_scene.jpg'); /* Game background image */
+    background-image: url('background_scene.jpg'); /* Game background image. Ensure background_scene.jpg is in the same folder. */
     background-size: cover;
     background-position: center;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
 }
 
 canvas {
@@ -74,7 +74,7 @@ canvas {
     position: absolute;
     width: 60px; /* Size of your crosshair.png */
     height: 60px;
-    background-image: url('crosshair.png'); /* Crosshair image */
+    background-image: url('crosshair.png'); /* Crosshair image. Ensure crosshair.png is in the same folder. */
     background-size: contain;
     background-repeat: no-repeat;
     transform: translate(-50%, -50%); /* Center the crosshair image on cursor */
@@ -181,7 +181,7 @@ canvas {
     position: absolute;
     width: 80px; /* Size of flash */
     height: 80px;
-    background-color: yellow; /* Placeholder, replace with image */
+    background-color: yellow; /* Placeholder, replace with image if desired */
     border-radius: 50%; /* Circular flash */
     opacity: 0;
     pointer-events: none;
@@ -215,9 +215,9 @@ canvas {
 
 <div id="startGameModal" class="modal">
     <div class="modal-content">
-        <h2>Welcome comrad! Choose your mode!</h2>
-        <button id="singlePlayerButton">Singleplayer</button>
-        <button id="multiPlayerButton" style="background-color: #6c757d;">Multiplayer</button>
+        <h2>Welcome comrade! Choose your mode!</h2>
+        <button id="singlePlayerButton">Start Game (Singleplayer)</button>
+        <button id="multiPlayerButton" style="background-color: #6c757d;">Multiplayer (Local/Coming Soon)</button>
         <p style="font-size: 0.9em; color: #666;">Note: Real-time multiplayer requires a server, which isn't included in this file. The "Multiplayer" button here is a placeholder.</p>
     </div>
 </div>
@@ -273,13 +273,9 @@ let animationFrameId = null; // For the main game loop
 // --- Image Loading (Crucial for "Real Graphics") ---
 const images = {};
 const imagePaths = {
-    crosshair: 'crosshair.png',
-    target: 'target.png',
-    // You might want a different background for the *game area* than the body's rickroll
-    // If background_scene.jpg is used as background-image in CSS, no need to load it here
-    // If you want to draw background on canvas, uncomment:
-    // background: 'background_scene.jpg', 
-    hitEffect: 'hit_effect.png' // Optional: for a hit animation
+    crosshair: 'crosshair.png', // Ensure crosshair.png is in the same folder.
+    target: 'target.png',       // Ensure target.png is in the same folder.
+    hitEffect: 'hit_effect.png' // Optional: Ensure hit_effect.png is in the same folder if you use it.
 };
 let imagesLoaded = 0;
 let totalImages = Object.keys(imagePaths).length;
@@ -331,7 +327,7 @@ class Target {
             if (images.hitEffect) {
                 ctx.drawImage(images.hitEffect, this.x - this.width/2, this.y - this.height/2, this.width * 2, this.height * 2); // Bigger for effect
             } else {
-                ctx.fillStyle = `rgba(255, 255, 0, ${this.fadeAlpha})`; // Yellow flash
+                ctx.fillStyle = `rgba(255, 255, 0, ${this.fadeAlpha})`; // Yellow flash fallback
                 ctx.beginPath();
                 ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2 + 10, 0, Math.PI * 2);
                 ctx.fill();
@@ -344,7 +340,7 @@ class Target {
             if (images.target) {
                 ctx.drawImage(images.target, this.x, this.y, this.width, this.height);
             } else {
-                // Fallback: Draw a simple red circle/rectangle
+                // Fallback: Draw a simple red circle
                 ctx.fillStyle = 'red';
                 ctx.beginPath();
                 ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
@@ -429,7 +425,7 @@ function updateUI() {
 
 // --- Game Loop ---
 function gameLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas (background handled by CSS)
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas (background handled by CSS on container)
 
     // Update and draw targets
     const now = Date.now();
@@ -483,7 +479,6 @@ canvas.addEventListener('click', (e) => {
                 }
                 hit = true;
                 // Add a hit visual effect, maybe make target disappear faster
-                // targets.splice(i, 1); // Remove immediately if you don't want hit animation
                 break; // Only hit one target per shot
             }
         }
@@ -510,8 +505,7 @@ window.onload = () => {
 
 </script>
 <audio autoplay loop>
-    <source src="back.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
+    <source src="back.mp3" type="audio/mpeg"> Your browser does not support the audio element.
 </audio>
 </body>
 </html>
