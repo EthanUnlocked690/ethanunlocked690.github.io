@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fighting Simulator</title>
+<title>Sniper Challenge</title>
 <style>
 /* Provided Navbar CSS */
 ul {
@@ -12,7 +12,7 @@ ul {
     padding: 0px;
     overflow: hidden;
     background-color: #fa07e2;
-    width: 800px;
+    width: 800px; /* Adjusted to fit common game width */
     border-radius: 8px;
     margin-bottom: 10px;
 }
@@ -30,79 +30,76 @@ li a:hover {
     background-color: #60fa07;
     color: #000000
 }
+
 /* Game & Page Styling */
 body {
     font-family: 'Courier New', Courier, monospace;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-image: url('rickroll.gif'); /* Direct path, no folder */
+    background-image: url('rickroll.gif'); /* Main body background */
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     color: white;
     margin-top: 20px;
+    cursor: none; /* Hide default cursor */
 }
-#game-container {
+
+#sniping-game-container {
+    position: relative;
+    width: 800px; /* Game resolution width */
+    height: 600px; /* Game resolution height */
     border: 4px solid #ff0000;
     border-radius: 8px;
-    padding: 10px;
-    background-color: #000;
+    overflow: hidden; /* Hide anything outside */
+    background-color: #000; /* Fallback if background_scene.jpg isn't loaded */
     box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-    position: relative;
-    overflow: hidden; /* Ensure characters don't go outside border */
+    background-image: url('background_scene.jpg'); /* Game background image */
+    background-size: cover;
+    background-position: center;
 }
+
 canvas {
-    background-color: #111; /* Dark background for fighting stage */
     display: block;
+    /* Canvas will be used for targets, hits, score feedback directly on top of background */
+    position: absolute; /* Allows it to overlay background-image on container */
+    top: 0;
+    left: 0;
+    z-index: 1; /* Below the crosshair */
 }
+
+#crosshair {
+    position: absolute;
+    width: 60px; /* Size of your crosshair.png */
+    height: 60px;
+    background-image: url('crosshair.png'); /* Crosshair image */
+    background-size: contain;
+    background-repeat: no-repeat;
+    transform: translate(-50%, -50%); /* Center the crosshair image on cursor */
+    pointer-events: none; /* Allows clicks to pass through to canvas */
+    z-index: 10; /* Above everything else */
+    display: none; /* Hidden until game starts */
+}
+
 #game-ui {
     width: 800px;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around; /* Distribute items */
     align-items: center;
     margin-top: 10px;
-    padding: 0 5px;
-    flex-wrap: wrap;
-    gap: 5px;
+    padding: 10px 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
 }
 
-/* Health Bar Styling */
-.health-bar-container {
-    width: 380px; /* Half of canvas width minus some spacing */
-    height: 30px;
-    background-color: #555;
-    border: 2px solid #ccc;
-    border-radius: 5px;
-    overflow: hidden;
-    margin: 0 10px;
-    display: flex; /* For text inside */
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-.health-bar {
-    height: 100%;
-    background-color: #28a745; /* Green */
-    width: 100%; /* Default to full */
-    transition: width 0.3s ease-out; /* Smooth transition for HP loss */
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-
-#player2-health .health-bar {
-    background-color: #dc3545; /* Red for Player 2 / Bot */
-}
-
-.health-text {
-    position: absolute;
-    color: white;
+#game-ui span {
+    font-size: 1.5em;
     font-weight: bold;
-    font-size: 1.1em;
-    z-index: 1; /* Ensure text is above the health bar fill */
+    color: #60fa07; /* Green for UI text */
+    text-shadow: 1px 1px 2px black;
 }
 
 /* Modal Styles - Shared for Start Menu and Game Over */
@@ -115,7 +112,7 @@ canvas {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.8); /* Darker overlay */
+    background-color: rgba(0,0,0,0.85); /* Darker overlay */
     justify-content: center;
     align-items: center;
     color: black;
@@ -174,51 +171,27 @@ canvas {
     color: #007bff; /* Blue for win, red for loss is handled in JS */
 }
 
-/* Controls section styling */
-#controls-section {
-    margin-top: 20px;
-    width: 800px;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 20px;
-    border-radius: 8px;
-    color: white;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
-    text-align: center;
+/* Muzzle Flash Effect */
+@keyframes muzzleFlash {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(2); }
 }
 
-#controls-section h2 {
-    color: #fa07e2;
-    margin-bottom: 15px;
+#muzzle-flash {
+    position: absolute;
+    width: 80px; /* Size of flash */
+    height: 80px;
+    background-color: yellow; /* Placeholder, replace with image */
+    border-radius: 50%; /* Circular flash */
+    opacity: 0;
+    pointer-events: none;
+    z-index: 15; /* Above crosshair */
+    transform: translate(-50%, -50%); /* Center on click */
+}
+.flash-animation {
+    animation: muzzleFlash 0.1s ease-out forwards;
 }
 
-.control-group {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    gap: 15px;
-}
-
-.player-controls {
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    flex: 1; /* Allows them to grow and shrink */
-    min-width: 300px; /* Minimum width before wrapping */
-}
-
-.player-controls h3 {
-    color: #60fa07;
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.5em;
-}
-
-.player-controls p {
-    margin: 5px 0;
-    font-size: 1.1em;
-}
 </style>
 </head>
 <body>
@@ -226,54 +199,33 @@ canvas {
     <li><a href="turtle.html">⬅ Back to game selection</a></li>
 </ul>
 
-<div id="game-container">
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+<h1 style="color: black; text-shadow: 1px 1px 2px white;">Sniper Challenge</h1>
+
+<div id="sniping-game-container">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="crosshair"></div>
+    <div id="muzzle-flash"></div>
 </div>
 
 <div id="game-ui">
-    <div id="player1-health" class="health-bar-container">
-        <div class="health-bar" style="width: 100%;"></div>
-        <span class="health-text">Player 1 HP: 100</span>
-    </div>
-    <div id="player2-health" class="health-bar-container">
-        <div class="health-bar" style="width: 100%;"></div>
-        <span class="health-text">Player 2 HP: 100</span>
-    </div>
-</div>
-
-<div id="controls-section">
-    <h2>Controls</h2>
-    <div class="control-group">
-        <div class="player-controls">
-            <h3>Player 1</h3>
-            <p>Move Left: <strong>A</strong></p>
-            <p>Move Right: <strong>D</strong></p>
-            <p>Jump: <strong>W</strong></p>
-            <p>Punch: <strong>F</strong></p>
-            <p>Kick: <strong>G</strong></p>
-        </div>
-        <div class="player-controls">
-            <h3>Player 2 / Bot</h3>
-            <p>Move Left: <strong>⬅️</strong></p>
-            <p>Move Right: <strong>➡️</strong></p>
-            <p>Jump: <strong>⬆️</strong></p>
-            <p>Punch: <strong>K</strong></p>
-            <p>Kick: <strong>L</strong></p>
-        </div>
-    </div>
+    <span id="score-display">Score: 0</span>
+    <span id="ammo-display">Ammo: 10</span>
+    <span id="time-display">Time: 60s</span>
 </div>
 
 <div id="startGameModal" class="modal">
     <div class="modal-content">
-        <h2>Choose Your Mode!</h2>
-        <button id="singlePlayerButton">Singleplayer (VS Bot)</button>
-        <button id="multiPlayerButton">Local Multiplayer</button>
+        <h2>Welcome comrad! Choose your mode!</h2>
+        <button id="singlePlayerButton">Singleplayer</button>
+        <button id="multiPlayerButton" style="background-color: #6c757d;">Multiplayer</button>
+        <p style="font-size: 0.9em; color: #666;">Note: Real-time multiplayer requires a server, which isn't included in this file. The "Multiplayer" button here is a placeholder.</p>
     </div>
 </div>
 
 <div id="gameOverModal" class="modal">
     <div class="modal-content">
         <h2 id="gameOverMessage"></h2>
+        <p id="finalScore"></p>
         <button id="restartGameButton">Play Again</button>
         <button id="backToMenuButton">Back to Menu</button>
     </div>
@@ -282,397 +234,284 @@ canvas {
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const crosshair = document.getElementById('crosshair');
+const muzzleFlash = document.getElementById('muzzle-flash');
 
-const PLAYER_WIDTH = 40;
-const PLAYER_HEIGHT = 80;
-const GROUND = canvas.height - PLAYER_HEIGHT;
-const GRAVITY = 0.5;
-const JUMP_STRENGTH = 10;
-const PLAYER_SPEED = 3;
-const MAX_HEALTH = 100;
+// UI Elements
+const scoreDisplay = document.getElementById('score-display');
+const ammoDisplay = document.getElementById('ammo-display');
+const timeDisplay = document.getElementById('time-display');
 
-let gameMode = ''; // 'singleplayer' or 'multiplayer'
-let gameRunning = false;
-let gameOver = false;
-
-const player1HealthBar = document.querySelector('#player1-health .health-bar');
-const player1HealthText = document.querySelector('#player1-health .health-text');
-const player2HealthBar = document.querySelector('#player2-health .health-bar');
-const player2HealthText = document.querySelector('#player2-health .health-text');
-
+// Modals
 const startGameModal = document.getElementById('startGameModal');
 const singlePlayerButton = document.getElementById('singlePlayerButton');
-const multiPlayerButton = document.getElementById('multiPlayerButton');
-
+const multiPlayerButton = document.getElementById('multiPlayerButton'); // Placeholder
 const gameOverModal = document.getElementById('gameOverModal');
 const gameOverMessage = document.getElementById('gameOverMessage');
+const finalScore = document.getElementById('finalScore');
 const restartGameButton = document.getElementById('restartGameButton');
 const backToMenuButton = document.getElementById('backToMenuButton');
 
+// Game Settings
+const GAME_DURATION = 60; // seconds
+const START_AMMO = 20;
+const TARGET_SPAWN_INTERVAL = 1500; // milliseconds
+const TARGET_DESPAWN_TIME = 2000; // milliseconds
+const TARGET_SCORE = 10;
+const TARGET_SIZE = { min: 40, max: 80 }; // Min/Max size for targets
 
-class Fighter {
-    constructor(x, y, color, controls, facingRight = true) {
-        this.x = x;
-        this.y = y;
-        this.width = PLAYER_WIDTH;
-        this.height = PLAYER_HEIGHT;
-        this.color = color;
-        this.vx = 0;
-        this.vy = 0;
-        this.isJumping = false;
-        this.health = MAX_HEALTH;
-        this.controls = controls;
-        this.isAttacking = false;
-        this.attackType = null; // 'punch' or 'kick'
-        this.attackCooldown = 0; // Prevent spamming attacks
-        this.attackDuration = 10; // Frames an attack lasts
-        this.facingRight = facingRight;
+// Game State
+let score = 0;
+let ammo = START_AMMO;
+let timeLeft = GAME_DURATION;
+let gameRunning = false;
+let targets = [];
+let spawnIntervalId = null;
+let gameTimerId = null;
+let animationFrameId = null; // For the main game loop
+
+// --- Image Loading (Crucial for "Real Graphics") ---
+const images = {};
+const imagePaths = {
+    crosshair: 'crosshair.png',
+    target: 'target.png',
+    // You might want a different background for the *game area* than the body's rickroll
+    // If background_scene.jpg is used as background-image in CSS, no need to load it here
+    // If you want to draw background on canvas, uncomment:
+    // background: 'background_scene.jpg', 
+    hitEffect: 'hit_effect.png' // Optional: for a hit animation
+};
+let imagesLoaded = 0;
+let totalImages = Object.keys(imagePaths).length;
+
+function loadImage(name, path) {
+    const img = new Image();
+    img.src = path;
+    img.onload = () => {
+        images[name] = img;
+        imagesLoaded++;
+        if (imagesLoaded === totalImages) {
+            console.log("All game images loaded!");
+            // Potentially show start button here if you want to wait for assets
+        }
+    };
+    img.onerror = () => {
+        console.warn(`Failed to load image: ${path}. Using fallback.`);
+        // Remove from totalImages if you want to proceed without it
+        totalImages--;
+        if (imagesLoaded === totalImages) {
+            // All 'loadable' images done
+        }
+    };
+}
+
+// Load all images at start
+for (const key in imagePaths) {
+    loadImage(key, imagePaths[key]);
+}
+
+// --- Target Class ---
+class Target {
+    constructor() {
+        this.width = Math.random() * (TARGET_SIZE.max - TARGET_SIZE.min) + TARGET_SIZE.min;
+        this.height = this.width; // Keep square for simplicity
+        this.x = Math.random() * (canvas.width - this.width);
+        this.y = Math.random() * (canvas.height - this.height);
+        this.spawnTime = Date.now();
+        this.hit = false;
+        this.fadeAlpha = 1; // For hit animation fade
+        this.scoreGiven = false; // To prevent multiple scores for one target
     }
 
     draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-
-        // Indicate direction
-        ctx.fillStyle = 'white';
-        if (this.facingRight) {
-            ctx.fillRect(this.x + this.width - 10, this.y + 10, 5, 5); // Right eye/indicator
-        } else {
-            ctx.fillRect(this.x + 5, this.y + 10, 5, 5); // Left eye/indicator
-        }
-
-        // Draw attack animation
-        if (this.isAttacking) {
-            ctx.fillStyle = 'rgba(255, 255, 0, 0.7)'; // Yellow translucent
-            if (this.attackType === 'punch') {
-                if (this.facingRight) {
-                    ctx.fillRect(this.x + this.width, this.y + this.height / 2 - 10, 20, 20);
-                } else {
-                    ctx.fillRect(this.x - 20, this.y + this.height / 2 - 10, 20, 20);
-                }
-            } else if (this.attackType === 'kick') {
-                if (this.facingRight) {
-                    ctx.fillRect(this.x + this.width, this.y + this.height - 20, 30, 15);
-                } else {
-                    ctx.fillRect(this.x - 30, this.y + this.height - 20, 30, 15);
-                }
-            }
-        }
-    }
-
-    update() {
-        // Apply gravity
-        this.vy += GRAVITY;
-        this.y += this.vy;
-        this.x += this.vx;
-
-        // Ground collision
-        if (this.y >= GROUND) {
-            this.y = GROUND;
-            this.vy = 0;
-            this.isJumping = false;
-        }
-
-        // Canvas boundaries
-        if (this.x < 0) this.x = 0;
-        if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
-
-        // Reset attack after duration
-        if (this.isAttacking) {
-            this.attackDuration--;
-            if (this.attackDuration <= 0) {
-                this.isAttacking = false;
-                this.attackType = null;
-                this.attackDuration = 10; // Reset for next attack
-            }
-        }
-
-        // Cooldown for attacks
-        if (this.attackCooldown > 0) {
-            this.attackCooldown--;
-        }
-    }
-
-    jump() {
-        if (!this.isJumping) {
-            this.vy = -JUMP_STRENGTH;
-            this.isJumping = true;
-        }
-    }
-
-    move(direction) {
-        this.vx = direction * PLAYER_SPEED;
-        this.facingRight = direction === 1; // Update facing direction
-    }
-
-    stop() {
-        this.vx = 0;
-    }
-
-    attack(type) {
-        if (!this.isAttacking && this.attackCooldown <= 0) {
-            this.isAttacking = true;
-            this.attackType = type;
-            this.attackCooldown = 30; // 30 frames cooldown for next attack
-            this.attackDuration = 10; // Attack animation lasts 10 frames
-        }
-    }
-
-    takeDamage(amount) {
-        this.health -= amount;
-        if (this.health < 0) this.health = 0;
-    }
-
-    getAttackHitbox() {
-        if (!this.isAttacking) return null;
-
-        let hitboxX, hitboxY, hitboxWidth, hitboxHeight;
-        const attackReach = this.width * 0.75; // Extend attack slightly
-
-        if (this.attackType === 'punch') {
-            hitboxWidth = 30;
-            hitboxHeight = 20;
-            hitboxY = this.y + this.height / 2 - 10;
-        } else if (this.attackType === 'kick') {
-            hitboxWidth = 40;
-            hitboxHeight = 15;
-            hitboxY = this.y + this.height - 20;
-        }
-
-        if (this.facingRight) {
-            hitboxX = this.x + this.width - 5; // Start near player, extend right
-        } else {
-            hitboxX = this.x - hitboxWidth + 5; // Start near player, extend left
-        }
-
-        return { x: hitboxX, y: hitboxY, width: hitboxWidth, height: hitboxHeight };
-    }
-}
-
-// Player objects (initialized later based on game mode)
-let player1;
-let player2; // Can be bot or human
-
-// Key states
-const keys = {};
-document.addEventListener('keydown', (e) => {
-    keys[e.key] = true;
-});
-document.addEventListener('keyup', (e) => {
-    keys[e.key] = false;
-});
-
-function gameLoop() {
-    if (!gameRunning || gameOver) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Update players
-    player1.update();
-    player2.update();
-
-    // Player 1 Controls
-    player1.vx = 0; // Reset horizontal velocity
-    if (keys[player1.controls.left]) {
-        player1.move(-1);
-    } else if (keys[player1.controls.right]) {
-        player1.move(1);
-    } else {
-        player1.stop();
-    }
-    if (keys[player1.controls.jump]) {
-        player1.jump();
-    }
-    if (keys[player1.controls.punch]) {
-        player1.attack('punch');
-    }
-    if (keys[player1.controls.kick]) {
-        player1.attack('kick');
-    }
-
-    // Player 2 Controls (Human or Bot)
-    if (gameMode === 'multiplayer') {
-        player2.vx = 0;
-        if (keys[player2.controls.left]) {
-            player2.move(-1);
-        } else if (keys[player2.controls.right]) {
-            player2.move(1);
-        } else {
-            player2.stop();
-        }
-        if (keys[player2.controls.jump]) {
-            player2.jump();
-        }
-        if (keys[player2.controls.punch]) {
-            player2.attack('punch');
-        }
-        if (keys[player2.controls.kick]) {
-            player2.attack('kick');
-        }
-    } else if (gameMode === 'singleplayer') {
-        botLogic();
-    }
-
-    // Collision detection for attacks
-    checkAttackCollision(player1, player2);
-    checkAttackCollision(player2, player1);
-
-    // Draw players
-    player1.draw();
-    player2.draw();
-
-    // Update UI
-    updateHealthBars();
-
-    // Check game over
-    if (player1.health <= 0 || player2.health <= 0) {
-        endGame();
-    } else {
-        requestAnimationFrame(gameLoop);
-    }
-}
-
-function checkAttackCollision(attacker, target) {
-    if (!attacker.isAttacking) return;
-
-    const attackHitbox = attacker.getAttackHitbox();
-    if (!attackHitbox) return;
-
-    // Simple AABB collision detection
-    if (attackHitbox.x < target.x + target.width &&
-        attackHitbox.x + attackHitbox.width > target.x &&
-        attackHitbox.y < target.y + target.height &&
-        attackHitbox.y + attackHitbox.height > target.y)
-    {
-        let damage = 0;
-        if (attacker.attackType === 'punch') {
-            damage = 10;
-        } else if (attacker.attackType === 'kick') {
-            damage = 15;
-        }
-        target.takeDamage(damage);
-        attacker.isAttacking = false; // Attack only hits once
-    }
-}
-
-function updateHealthBars() {
-    player1HealthBar.style.width = `${player1.health}%`;
-    player1HealthText.textContent = `Player 1 HP: ${player1.health}`;
-    player2HealthBar.style.width = `${player2.health}%`;
-    player2HealthText.textContent = `Player 2 HP: ${player2.health}`;
-
-    // Adjust color based on HP
-    player1HealthBar.style.backgroundColor = player1.health < 25 ? '#dc3545' : '#28a745';
-    player2HealthBar.style.backgroundColor = player2.health < 25 ? '#dc3545' : '#dc3545'; // Player 2 is always red
-}
-
-
-// --- Bot Logic (Simple AI) ---
-function botLogic() {
-    // Bot's turn (simple logic)
-    // Make bot move towards player, and attack if close enough
-    const distance = player1.x - player2.x;
-
-    // Determine facing direction for bot
-    player2.facingRight = distance > 0;
-
-    if (Math.abs(distance) > PLAYER_WIDTH * 1.5) { // If not close enough to attack
-        if (distance > 0) {
-            player2.move(1); // Move right towards player1
-        } else {
-            player2.move(-1); // Move left towards player1
-        }
-    } else {
-        player2.stop(); // Stop moving when close
-        // Randomly decide to attack or jump
-        if (Math.random() < 0.05) { // 5% chance to attack each frame if close
-            if (Math.random() < 0.5) {
-                player2.attack('punch');
+        ctx.save();
+        if (this.hit) {
+            ctx.globalAlpha = this.fadeAlpha;
+            // Draw hit effect if available
+            if (images.hitEffect) {
+                ctx.drawImage(images.hitEffect, this.x - this.width/2, this.y - this.height/2, this.width * 2, this.height * 2); // Bigger for effect
             } else {
-                player2.attack('kick');
+                ctx.fillStyle = `rgba(255, 255, 0, ${this.fadeAlpha})`; // Yellow flash
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2 + 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            this.fadeAlpha -= 0.1; // Fade out
+            if (this.fadeAlpha < 0) this.fadeAlpha = 0;
+
+        } else {
+            // Draw target image if available
+            if (images.target) {
+                ctx.drawImage(images.target, this.x, this.y, this.width, this.height);
+            } else {
+                // Fallback: Draw a simple red circle/rectangle
+                ctx.fillStyle = 'red';
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
-        if (Math.random() < 0.01) { // 1% chance to jump
-            player2.jump();
-        }
+        ctx.restore();
+    }
+
+    isClicked(mouseX, mouseY) {
+        if (this.hit) return false; // Can't hit an already hit target
+        return mouseX > this.x && mouseX < this.x + this.width &&
+               mouseY > this.y && mouseY < this.y + this.height;
     }
 }
 
-// --- Game Flow ---
-function initGame(mode) {
-    gameMode = mode;
-    gameOver = false;
-    gameRunning = false; // Set to true after setup
+// --- Game Functions ---
 
-    // Reset players for new game
-    player1 = new Fighter(100, GROUND, 'blue', { left: 'a', right: 'd', jump: 'w', punch: 'f', kick: 'g' }, true);
-    player2 = new Fighter(canvas.width - 100 - PLAYER_WIDTH, GROUND, 'red', { left: 'ArrowLeft', right: 'ArrowRight', jump: 'ArrowUp', punch: 'k', kick: 'l' }, false);
+function startGame() {
+    score = 0;
+    ammo = START_AMMO;
+    timeLeft = GAME_DURATION;
+    targets = [];
+    gameRunning = true;
     
-    // Clear any lingering keys being held down
-    for (const key in keys) {
-        keys[key] = false;
-    }
-
+    crosshair.style.display = 'block'; // Show crosshair
     startGameModal.style.display = 'none';
     gameOverModal.style.display = 'none';
+
+    updateUI();
     
-    gameRunning = true; // Start game loop after initialization
-    gameLoop();
-    updateHealthBars(); // Initial UI update
+    // Clear any existing intervals/timeouts to prevent duplicates on restart
+    if (spawnIntervalId) clearInterval(spawnIntervalId);
+    if (gameTimerId) clearInterval(gameTimerId);
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+    spawnIntervalId = setInterval(spawnTarget, TARGET_SPAWN_INTERVAL);
+    gameTimerId = setInterval(updateTimer, 1000); // Update timer every second
+    
+    gameLoop(); // Start the main game loop
 }
 
-function endGame() {
+function endGame(reason) {
     gameRunning = false;
-    gameOver = true;
-    
-    let message = '';
-    let messageColor = '';
+    clearInterval(spawnIntervalId);
+    clearInterval(gameTimerId);
+    cancelAnimationFrame(animationFrameId);
+    crosshair.style.display = 'none'; // Hide crosshair
 
-    if (player1.health <= 0 && player2.health <= 0) {
-        message = "It's a draw!";
-        messageColor = '#007bff';
-    } else if (player1.health <= 0) {
-        message = `Player 2 ${gameMode === 'singleplayer' ? '(Bot)' : ''} Wins!`;
-        messageColor = '#dc3545';
-    } else {
-        message = 'Player 1 Wins!';
-        messageColor = '#28a745';
+    gameOverModal.style.display = 'flex';
+    if (reason === 'time') {
+        gameOverMessage.textContent = "Time's Up!";
+        gameOverMessage.style.color = '#dc3545'; // Red for loss
+    } else if (reason === 'ammo') {
+        gameOverMessage.textContent = "Out of Ammo!";
+        gameOverMessage.style.color = '#dc3545'; // Red for loss
+    } else { // Could be a custom win message if goals are added
+        gameOverMessage.textContent = "Game Over!";
+        gameOverMessage.style.color = '#dc3545';
+    }
+    finalScore.textContent = `Final Score: ${score}`;
+}
+
+function spawnTarget() {
+    targets.push(new Target());
+}
+
+function updateTimer() {
+    timeLeft--;
+    if (timeLeft <= 0) {
+        timeLeft = 0;
+        endGame('time');
+    }
+    updateUI();
+}
+
+function updateUI() {
+    scoreDisplay.textContent = `Score: ${score}`;
+    ammoDisplay.textContent = `Ammo: ${ammo}`;
+    timeDisplay.textContent = `Time: ${timeLeft}s`;
+}
+
+// --- Game Loop ---
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas (background handled by CSS)
+
+    // Update and draw targets
+    const now = Date.now();
+    targets = targets.filter(target => {
+        target.draw(); // Draw targets
+        // Remove targets that are hit and faded, or despawned
+        return (target.hit && target.fadeAlpha > 0) || (!target.hit && (now - target.spawnTime) < TARGET_DESPAWN_TIME);
+    });
+
+    if (gameRunning) {
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+}
+
+// --- Event Listeners ---
+
+// Mouse movement for crosshair
+canvas.addEventListener('mousemove', (e) => {
+    if (gameRunning) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        crosshair.style.left = `${mouseX}px`;
+        crosshair.style.top = `${mouseY}px`;
+    }
+});
+
+// Shooting mechanism
+canvas.addEventListener('click', (e) => {
+    if (!gameRunning || ammo <= 0) return;
+
+    ammo--;
+    updateUI();
+
+    // Trigger muzzle flash
+    muzzleFlash.style.left = `${e.clientX - canvas.getBoundingClientRect().left}px`;
+    muzzleFlash.style.top = `${e.clientY - canvas.getBoundingClientRect().top}px`;
+    muzzleFlash.classList.remove('flash-animation'); // Reset animation
+    void muzzleFlash.offsetWidth; // Trigger reflow
+    muzzleFlash.classList.add('flash-animation');
+
+    let hit = false;
+    for (let i = targets.length - 1; i >= 0; i--) {
+        const target = targets[i];
+        if (target.isClicked(e.offsetX, e.offsetY)) {
+            if (!target.hit) { // Ensure target isn't already hit by this click
+                target.hit = true;
+                if (!target.scoreGiven) { // Only give score once
+                    score += TARGET_SCORE;
+                    target.scoreGiven = true;
+                }
+                hit = true;
+                // Add a hit visual effect, maybe make target disappear faster
+                // targets.splice(i, 1); // Remove immediately if you don't want hit animation
+                break; // Only hit one target per shot
+            }
+        }
     }
 
-    gameOverMessage.textContent = message;
-    gameOverMessage.style.color = messageColor;
-    gameOverModal.style.display = 'flex';
-}
-
-// --- Event Listeners for Modals ---
-singlePlayerButton.addEventListener('click', () => initGame('singleplayer'));
-multiPlayerButton.addEventListener('click', () => initGame('multiplayer'));
-
-restartGameButton.addEventListener('click', () => {
-    // Restart with the same mode as the previous game
-    initGame(gameMode);
+    if (ammo <= 0 && targets.length === 0) { // If ran out of ammo and no targets left
+        endGame('ammo');
+    }
 });
 
+// Modal button listeners
+singlePlayerButton.addEventListener('click', startGame);
+restartGameButton.addEventListener('click', startGame);
 backToMenuButton.addEventListener('click', () => {
-    // Show the start menu again
+    gameOverModal.style.display = 'none';
     startGameModal.style.display = 'flex';
-    // Optionally reset canvas or clear UI
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
-
-// Initial state: Show the start game modal
+// Initial load: Show the start game modal
 window.onload = () => {
     startGameModal.style.display = 'flex';
-    // Hide game UI until game starts
-    player1HealthBar.parentElement.style.display = 'flex';
-    player2HealthBar.parentElement.style.display = 'flex';
+    // Ensure `back.mp3` path is correct if you want background music
 };
 
 </script>
 <audio autoplay loop>
-    <source src="back.mp3" type="audio/mpeg"> Your browser does not support the audio element.
+    <source src="back.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
 </audio>
 </body>
 </html>
