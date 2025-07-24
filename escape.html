@@ -47,9 +47,10 @@ body {
 #game-container {
     border: 4px solid #ff0000;
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px; /* Adjust if button is absolutely positioned within padding */
     background-color: #000;
     box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+    position: relative; /* Crucial for absolute positioning of pause button */
 }
 canvas {
     background-color: #111;
@@ -84,7 +85,7 @@ canvas {
 #timer-text { color: #FFFFFF; } /* Default white for timer */
 
 
-button#resetButton, button#pauseButton {
+button#resetButton { /* Removed #pauseButton from here */
     background-color: #ff0000;
     color: white;
     border: none;
@@ -97,10 +98,48 @@ button#resetButton, button#pauseButton {
     transition: background-color 0.3s;
     margin: 0 5px;
 }
-button#resetButton:hover, button#pauseButton:hover {
+button#resetButton:hover {
     background-color: #32a852;
     color: black
 }
+
+/* Specific styling for the new pause button */
+button#pauseButton {
+    position: absolute; /* Position relative to game-container */
+    top: 15px; /* Adjust as needed */
+    left: 15px; /* Adjust as needed */
+    z-index: 10; /* Ensure it's above the canvas */
+    
+    /* Styling for the button itself */
+    background-color: rgba(255, 0, 0, 0.7); /* Semi-transparent red */
+    border: 2px solid #ff0000;
+    padding: 5px; /* Smaller padding for an icon button */
+    border-radius: 8px; /* Slightly more rounded */
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s, transform 0.1s;
+    width: 50px; /* Fixed width for icon button */
+    height: 50px; /* Fixed height for icon button */
+    display: flex; /* To center the image */
+    justify-content: center;
+    align-items: center;
+}
+
+button#pauseButton:hover {
+    background-color: #ff0000; /* Solid red on hover */
+    border-color: #32a852;
+}
+button#pauseButton:active {
+    transform: translateY(1px); /* Little press effect */
+}
+
+button#pauseButton img {
+    width: 30px; /* Size of the pause icon */
+    height: 30px; /* Size of the pause icon */
+    display: block; /* Remove extra space below image */
+    /* Optional: filter to make the icon white if it's black */
+    /* filter: invert(1); */ 
+}
+
 
 /* Mobile Controls (Arrow Buttons) Styling */
 #mobile-controls {
@@ -188,6 +227,7 @@ button#resetButton:hover, button#pauseButton:hover {
     margin-top: 0;
 }
 
+/* Style for buttons inside modals (general) */
 .modal-content button {
     background-color: #4CAF50;
     color: white;
@@ -196,9 +236,30 @@ button#resetButton:hover, button#pauseButton:hover {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
-    margin-top: 15px;
     margin: 5px; /* Spacing between buttons in modal */
+    
+    /* Flexbox for image + text buttons */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px; /* Ensure buttons are wide enough for content */
+    min-height: 120px; /* Ensure buttons are tall enough for content */
 }
+
+.modal-content button img {
+    width: 50px; /* Adjust size of the icon */
+    height: 50px; /* Adjust size of the icon */
+    margin-bottom: 8px; /* Space between icon and text */
+    /* Optional: filter to make icons white if they are black on a dark background */
+    /* filter: invert(1); */
+}
+
+.modal-content button span {
+    font-size: 1.2em; /* Make the text bigger */
+    font-weight: bold;
+}
+
 
 .modal-content button:hover {
     background-color: #45a049;
@@ -222,10 +283,30 @@ button#resetButton:hover, button#pauseButton:hover {
 }
 
 /* Pause Menu Specifics */
-#pauseMenuModal .modal-content button {
+#pauseMenuModal .modal-content {
+    display: flex; /* Use flexbox for modal content to layout buttons horizontally */
+    flex-direction: column; /* Stack title and buttons vertically */
+    align-items: center; /* Center items horizontally */
+}
+
+#pauseMenuModal .modal-content h2 {
+    font-size: 3em; /* Make "Paused!" larger */
+    margin-bottom: 20px;
+}
+
+#pauseMenuModal .button-container {
+    display: flex; /* Container for the buttons to make them row-wise */
+    gap: 20px; /* Space between buttons */
+    justify-content: center;
+    width: 100%;
+    flex-wrap: wrap; /* Allow buttons to wrap if screen is too small */
+}
+
+/* Specific colors for pause menu buttons if desired */
+#pauseMenuModal #pauseMenuPlayButton {
     background-color: #007bff; /* Blue for play */
 }
-#pauseMenuModal .modal-content button:hover {
+#pauseMenuModal #pauseMenuPlayButton:hover {
     background-color: #0056b3;
 }
 #pauseMenuModal #pauseMenuRestartButton {
@@ -257,6 +338,7 @@ button#resetButton:hover, button#pauseButton:hover {
 
 <div id="game-container">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button id="pauseButton"><img src="path/to/pause_icon.png" alt="Pause"></button> 
 </div>
 <div id="game-ui">
     <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
@@ -264,7 +346,6 @@ button#resetButton:hover, button#pauseButton:hover {
     <span id="score-text">Score: 0 🏆</span>
     <span id="bomb-text">Bombs: 3 💣</span>
     <button id="resetButton">New Game</button>
-    <button id="pauseButton">Pause</button>
     <span id="hp-text">HP: 100</span>
     <span id="timer-text">Time: 01:00</span>
 </div>
@@ -295,9 +376,20 @@ button#resetButton:hover, button#pauseButton:hover {
 <div id="pauseMenuModal" class="modal">
     <div class="modal-content">
         <h2>Paused!</h2>
-        <button id="pauseMenuPlayButton">Play</button>
-        <button id="pauseMenuRestartButton">Restart Game</button>
-        <button id="pauseMenuQuitButton">Quit</button>
+        <div class="button-container">
+            <button id="pauseMenuPlayButton">
+                <img src="path/to/play_icon.png" alt="Play Icon">
+                <span>Play</span>
+            </button>
+            <button id="pauseMenuRestartButton">
+                <img src="path/to/restart_icon.png" alt="Restart Icon">
+                <span>Restart</span>
+            </button>
+            <button id="pauseMenuQuitButton">
+                <img src="path/to/quit_icon.png" alt="Quit Icon">
+                <span>Quit</span>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -333,11 +425,11 @@ const pauseMenuRestartButton = document.getElementById('pauseMenuRestartButton')
 const pauseMenuQuitButton = document.getElementById('pauseMenuQuitButton');
 
 // --- Game Assets/Symbols ---
-const Player = '🤠';
+const Player = '🚶‍♀️'; // Changed to woman walking emoji
 const Wall = '🪨';
 const Floor = ' '; // Empty space
 const Enemy = '🐉'; // Dragon
-const FrozenEnemy = '🧊'; // Frozen dragon
+const FrozenEnemy = '❄️'; // Changed to snowflake emoji
 const Key = '🔑';
 const Exit = '🚪';
 const Potion = '❤️';
@@ -363,7 +455,8 @@ function initGame() {
         potions: [],
         hasKey: false,
         gameOver: false,
-        gameWon: false,
+        gameWon: false, // Overall game won (e.g., after boss)
+        levelComplete: false, // For regular level progression
         gameOverReason: null,
         turn: 0,
         startTime: null,
@@ -372,7 +465,9 @@ function initGame() {
         score: 0,
         currentLevel: 0, // Starts at 0, startGame() increments to 1 for first level
         isBossLevel: false,
-        isPaused: false // Pause state
+        isPaused: false, // Pause state
+        messageOnCanvas: null, // New: For displaying messages on canvas
+        messageDisplayDuration: 0 // New: How long the message should display
     };
     
     // Call startGame to properly initialize the first level
@@ -383,15 +478,16 @@ function initGame() {
 
 // --- Level Management ---
 function startGame() {
+    // Reset flags for new level load
+    gameState.gameOver = false;
+    gameState.gameWon = false;
+    gameState.levelComplete = false; // Reset level complete flag
+    gameState.gameOverReason = null;
+    gameState.messageOnCanvas = null; // Clear any lingering canvas messages
+
     // Only increment level if coming from a win (not a death restart or initial load)
-    // If it's a death restart, currentLevel is already set by takeDamage.
-    // If it's the very first call from initGame(), currentLevel is 0, so it becomes 1.
-    if (!gameState.gameOver && !gameState.gameWon && gameState.currentLevel !== 1) {
+    if (!gameState.gameOver && !gameState.gameWon && gameState.currentLevel !== 1 && !gameState.levelComplete) {
          gameState.currentLevel++;
-    } else if (gameState.gameOver || gameState.gameWon) { // Reset these flags if restarting after game over/won
-        gameState.gameOver = false;
-        gameState.gameWon = false;
-        // Current level is already set by takeDamage for restarts
     } else if (gameState.currentLevel === 0) { // Initial game start
         gameState.currentLevel = 1;
     }
@@ -450,7 +546,6 @@ function startGame() {
         gameState.player.hp = gameState.player.maxHp; // Heal fully
         gameState.player.bombs = 3; // Reset bombs for each level
         gameState.hasKey = false;
-        gameState.gameOverReason = null;
         gameState.turn = 0;
 
         // Apply level parameters to map generation and entity placement
@@ -653,7 +748,7 @@ function isWalkable(x, y) {
 }
 
 function movePlayer(dx, dy) {
-    if (gameState.gameOver || gameState.gameWon || gameState.isPaused) return;
+    if (gameState.gameOver || gameState.gameWon || gameState.isPaused || gameState.levelComplete) return; // Prevent movement during level complete transition
 
     const nextX = gameState.player.x + dx;
     const nextY = gameState.player.y + dy;
@@ -681,7 +776,9 @@ function moveEnemies() {
                 if (enemy.isBoss) {
                     gameState.score += 500; // Big points for boss
                     gameState.gameWon = true; // Win the game when boss is defeated
-                    statusText.textContent = "You defeated the Demon Lord! 🎉"; // CONGRATULATIONS!
+                    gameState.messageOnCanvas = "You defeated the Demon Lord! 🎉"; // Message on canvas
+                    gameState.messageDisplayDuration = 3000;
+                    handleGameEndOrLevelComplete(true); // Handle game won scenario
                 } else {
                     gameState.score += 100; // Regular enemy points
                     statusText.textContent = "Dragon defeated! +100 Score! 🏆";
@@ -694,7 +791,7 @@ function moveEnemies() {
     });
 
     // Boss ability check per turn
-    if (gameState.isBossLevel) {
+    if (gameState.isBossLevel && !gameState.gameWon) { // Only activate if boss is alive and game isn't won
         activateBossAbility();
     }
 
@@ -752,37 +849,13 @@ function takeDamage(amount) {
     if (gameState.player.hp <= 0) {
         gameState.gameOver = true;
         gameState.gameOverReason = 'hp';
-        updateUI();
-        draw(); // Draw game over screen immediately
-
-        if (animationFrameId) { // Stop game loop
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
-        }
-        
-        pauseMenuModal.style.display = 'none'; // Ensure pause menu is hidden if player dies
-        
-        setTimeout(() => {
-            // Level degradation logic
-            if (gameState.isBossLevel) {
-                gameState.currentLevel = 1; // Die on boss, go back to level 1
-            } else {
-                gameState.currentLevel = Math.max(1, gameState.currentLevel - 1); // Go back one level, min is 1
-            }
-            // Reset core game state to prepare for new level load
-            gameState.gameOver = false;
-            gameState.gameWon = false;
-            gameState.hasKey = false;
-            gameState.score = 0; // Reset score on death
-            
-            startGame(); // Restart the game from the adjusted currentLevel
-        }, 3000); // 3-second delay before restarting
+        handleGameEndOrLevelComplete(false); // Handle game over scenario
     }
     updateUI();
 }
 
 function useBomb() {
-    if (gameState.gameOver || gameState.gameWon || gameState.isPaused) return;
+    if (gameState.gameOver || gameState.gameWon || gameState.isPaused || gameState.levelComplete) return;
     if (gameState.player.bombs <= 0) {
         statusText.textContent = "No bombs left! 💥";
         return;
@@ -820,10 +893,52 @@ function useBomb() {
     draw(); // Redraw immediately to show frozen enemies
 }
 
+function handleGameEndOrLevelComplete(isWin) {
+    if (animationFrameId) { // Stop game loop
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    pauseMenuModal.style.display = 'none'; // Ensure pause menu is hidden
+
+    draw(); // Draw final state with message on canvas
+
+    setTimeout(() => {
+        if (isWin) {
+            if (gameState.isBossLevel) {
+                // Game completely won (boss defeated)
+                // You might want a final "You Win!" screen here or redirect
+                alert("CONGRATULATIONS! You have escaped the dungeon and defeated the Demon Lord!");
+                window.location.href = 'turtle.html'; // Or a dedicated win page
+            } else {
+                // Regular level complete, proceed to next
+                gameState.currentLevel++;
+                // Check if next level is boss level
+                if (gameState.currentLevel > 5) {
+                    statusText.textContent = "You escaped the dungeon! Prepare for the Final Boss! 😈";
+                } else {
+                    statusText.textContent = `Level ${gameState.currentLevel} Unlocked!`;
+                }
+                startGame(); // Start next level
+            }
+        } else { // Game Over (lost)
+            // Level degradation logic
+            if (gameState.isBossLevel) {
+                gameState.currentLevel = 1; // Die on boss, go back to level 1
+            } else {
+                gameState.currentLevel = Math.max(1, gameState.currentLevel - 1); // Go back one level, min is 1
+            }
+            // Reset core game state to prepare for new level load
+            gameState.score = 0; // Reset score on death
+            
+            startGame(); // Restart the game from the adjusted currentLevel
+        }
+    }, gameState.messageDisplayDuration || 3000); // Wait for message duration or 3 seconds
+}
+
+
 function checkInteractions() {
     if (gameState.isBossLevel) {
         // Boss level win condition: all enemies (just the boss) are defeated, handled in moveEnemies filter
-        // No key/exit on boss level
         return;
     }
 
@@ -835,24 +950,15 @@ function checkInteractions() {
 
     // Normal level exit interaction
     if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
-        // Instead of just gameWon, trigger next level
+        gameState.levelComplete = true; // Set flag that level is complete
+        gameState.messageDisplayDuration = 3000; // Display message for 3 seconds
+
         if (gameState.currentLevel < 5) {
-            statusText.textContent = `Level ${gameState.currentLevel} complete! Preparing next level...`;
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId); // Stop current loop
-                animationFrameId = null;
-            }
-            setTimeout(startGame, 1000); // Start next level after a short delay
+            gameState.messageOnCanvas = `Level ${gameState.currentLevel} Complete!`;
         } else {
-            // After level 5, transition to boss level
-            statusText.textContent = "You escaped the dungeon! Prepare for the Final Boss! 😈";
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId); // Stop current loop
-                animationFrameId = null;
-            }
-            setTimeout(startGame, 2000); // Start boss level after a short delay
+            gameState.messageOnCanvas = "You escaped the dungeon! Prepare for the Final Boss! 😈";
         }
-        gameState.gameWon = true; // Mark as won for the UI during transition
+        handleGameEndOrLevelComplete(true);
     }
 
     // Potions interaction
@@ -873,27 +979,39 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.font = `${TILE_SIZE * 0.8}px monospace`; // Standard font for entities
-
+    
     // Adjust drawing based on current map size (important if map size changes per level)
     const currentMapHeight = gameState.map.length;
     const currentMapWidth = gameState.map[0].length;
 
     for (let y = 0; y < currentMapHeight; y++) {
         for (let x = 0; x < currentMapWidth; x++) {
-            if (gameState.map[y][x] === Wall) {
+            if (gameState.map[y][x] === Floor) {
+                // Optionally draw floor tiles if they have a specific background
+                // ctx.fillStyle = '#111';
+                // ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            } else if (gameState.map[y][x] === Wall) {
+                ctx.font = `${TILE_SIZE * 0.8}px monospace`; // Standard font for entities
                 ctx.fillText(Wall, x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE);
             }
         }
     }
 
-    const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
+    const drawEntity = (entity, symbol) => {
+        ctx.font = `${TILE_SIZE * 0.8}px monospace`;
+        ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
+    };
 
-    // Only draw key and exit if not boss level
-    if (!gameState.isBossLevel) {
+    // Only draw key and exit if not boss level AND not in a levelComplete/gameWon state
+    if (!gameState.isBossLevel && !gameState.levelComplete && !gameState.gameWon) {
         if(!gameState.hasKey) drawEntity(gameState.key, Key);
         drawEntity(gameState.exit, Exit);
     }
+    // Draw exit specifically if player is on it during level completion
+    else if (!gameState.isBossLevel && (gameState.levelComplete || gameState.gameWon) && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
+         drawEntity(gameState.exit, Exit);
+    }
+
     gameState.potions.forEach(potion => drawEntity(potion, Potion));
 
     gameState.enemies.forEach(enemy => {
@@ -930,51 +1048,52 @@ function draw() {
     } else if (gameState.gameWon) {
         currentPlayerSymbol = PlayerWin;
     }
+    // Always draw player, even if on exit during level complete
     drawEntity(gameState.player, currentPlayerSymbol);
 
-    // Game Over/Win screen rendering
-    if (gameState.gameOver || gameState.gameWon) {
+
+    // Draw messages on canvas (Game Over, Game Won, Level Complete)
+    if (gameState.gameOver || gameState.gameWon || gameState.levelComplete) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
+        
         ctx.font = 'bold 60px Courier New';
         ctx.textAlign = 'center';
-
+        
         let message = '';
         if (gameState.gameWon) {
-            message = gameState.isBossLevel ? 'You defeated the Demon Lord! 🎉' : 'YOU ESCAPED! 🎉';
-        } else {
-            message = gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀';
+            message = gameState.messageOnCanvas || 'YOU ESCAPED! 🎉';
+            ctx.fillStyle = '#28a745';
+        } else if (gameState.levelComplete) {
+             message = gameState.messageOnCanvas || 'Level Complete! 🎉';
+             ctx.fillStyle = '#007bff'; // Blue for level complete
+        } else { // Game Over
+            message = gameState.messageOnCanvas || (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
+            ctx.fillStyle = '#dc3545';
         }
         
         ctx.fillText(message, canvas.width / 2, canvas.height / 2 - 30);
 
-        ctx.font = 'bold 30px Courier New';
-        ctx.fillStyle = 'white';
-        ctx.fillText(`Final Score: ${gameState.score} 🏆`, canvas.width / 2, canvas.height / 2 + 20);
-        ctx.textAlign = 'left';
+        // Only show final score on definitive game over/win (not just level complete)
+        if (gameState.gameOver || (gameState.gameWon && gameState.isBossLevel)) {
+            ctx.font = 'bold 30px Courier New';
+            ctx.fillStyle = 'white';
+            ctx.fillText(`Final Score: ${gameState.score} 🏆`, canvas.width / 2, canvas.height / 2 + 20);
+        }
+        ctx.textAlign = 'left'; // Reset text alignment
     }
 }
 
 function updateUI() {
-    if (gameState.gameOver) {
-        hpText.style.color = "#dc3545"; // Red on game over
-        timerText.style.color = "#dc3545"; // Red on game over
-    } else if (gameState.gameWon) {
-        hpText.style.color = "#28a745"; // Green on win
-        timerText.style.color = "#28a745"; // Green on win
+    // UI status text is for ongoing game, not for game over/win messages on canvas
+    if (gameState.gameOver || gameState.gameWon || gameState.levelComplete) {
+        statusText.textContent = ""; // Clear UI status text during end screens
     } else if (gameState.hasKey) {
-        statusText.textContent = "You have the key! Go to the door! 🚪";
-        hpText.style.color = "green";
-        timerText.style.color = "blue";
+        statusText.textContent = "You found the key! Now find the door! 🚪";
     } else if (gameState.isBossLevel) {
         statusText.textContent = "Defeat the Demon Lord! 👹";
-        hpText.style.color = "green";
-        timerText.style.color = "blue";
     } else {
         statusText.textContent = "Find the key 🔑 and escape!";
-        hpText.style.color = "green";
-        timerText.style.color = "blue";
     }
 
     hpText.textContent = `HP: ${gameState.player.hp}`;
@@ -991,6 +1110,8 @@ function updateUI() {
         timerText.style.color = 'orange'; // Change to orange when 10 seconds left
     } else if (gameState.remainingTime <= 0) {
         timerText.style.color = 'red'; // Change to red when time is up
+    } else {
+        timerText.style.color = 'white'; // Default color
     }
 }
 
@@ -1000,8 +1121,8 @@ function gameLoop(currentTime) {
         gameState.startTime = currentTime;
     }
 
-    // Only update game logic and timer if not paused
-    if (!gameState.isPaused) {
+    // Only update game logic and timer if not paused, game over, won, or level complete
+    if (!gameState.isPaused && !gameState.gameOver && !gameState.gameWon && !gameState.levelComplete) {
         // Calculate elapsed time from the start
         const elapsedTimeFromStart = currentTime - gameState.startTime;
         // Calculate remaining time
@@ -1009,23 +1130,15 @@ function gameLoop(currentTime) {
 
         if (gameState.remainingTime <= 0) {
             gameState.remainingTime = 0; // Cap at 0
-            if (!gameState.gameOver && !gameState.gameWon) {
+            if (!gameState.gameOver && !gameState.gameWon && !gameState.levelComplete) {
                 gameState.gameOver = true;
                 gameState.gameOverReason = 'time';
+                handleGameEndOrLevelComplete(false);
+                return; // Stop current frame if game over
             }
         }
     }
 
-    if (gameState.gameOver || gameState.gameWon) {
-        draw();
-        updateUI();
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
-        }
-        return;
-    }
-    
     draw();
     updateUI();
     animationFrameId = requestAnimationFrame(gameLoop);
@@ -1057,7 +1170,7 @@ pauseMenuQuitButton.addEventListener('click', () => {
 // --- Pause Logic ---
 function togglePause() {
     // Prevent pausing if game is already over or won
-    if (gameState.gameOver || gameState.gameWon) return;
+    if (gameState.gameOver || gameState.gameWon || gameState.levelComplete) return;
 
     gameState.isPaused = !gameState.isPaused; // Toggle the pause state
 
@@ -1086,8 +1199,8 @@ function handleInput(event) {
         return; // Stop further processing if pause key was pressed
     }
 
-    // If game is paused or over/won, prevent other inputs
-    if (gameState.isPaused || gameState.gameOver || gameState.gameWon) return;
+    // If game is paused or over/won/level complete, prevent other inputs
+    if (gameState.isPaused || gameState.gameOver || gameState.gameWon || gameState.levelComplete) return;
 
     switch (event.key) {
         case 'ArrowUp':
