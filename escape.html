@@ -338,7 +338,7 @@ button#pauseButton img {
 
 <div id="game-container">
     <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <button id="pauseButton"><img src="images/pause.png" alt="Pause"></button> 
+    <button id="pauseButton"><img src="pause.png" alt="Pause"></button> 
 </div>
 <div id="game-ui">
     <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
@@ -378,13 +378,13 @@ button#pauseButton img {
         <h2>Paused!</h2>
         <div class="button-container">
             <button id="pauseMenuPlayButton">
-                <img src="images/play.png" alt="Play Icon"> <span>Play</span>
+                <img src="play.png" alt="Play"> <span>Play</span>
             </button>
             <button id="pauseMenuRestartButton">
-                <img src="images/restart.png" alt="Restart Icon"> <span>Restart</span>
+                <img src="restart.png" alt="Restart"> <span>Restart</span>
             </button>
             <button id="pauseMenuQuitButton">
-                <img src="images/quit.png" alt="Quit Icon"> <span>Quit</span>
+                <img src="quit.png" alt="Quit"> <span>Quit</span>
             </button>
         </div>
     </div>
@@ -452,7 +452,7 @@ function initGame() {
         potions: [],
         hasKey: false,
         gameOver: false,
-        gameWon: false, // Overall game won (e.g., after boss)
+        gameWon: false, // Overall game won (e.g., after final level)
         levelComplete: false, // For regular level progression
         gameOverReason: null,
         turn: 0,
@@ -461,7 +461,6 @@ function initGame() {
         remainingTime: 60 * 1000,
         score: 0,
         currentLevel: 0, // Starts at 0, startGame() increments to 1 for first level
-        isBossLevel: false,
         isPaused: false, // Pause state
         messageOnCanvas: null, // New: For displaying messages on canvas
         messageDisplayDuration: 0 // New: How long the message should display
@@ -477,7 +476,6 @@ function initGame() {
 function startGame() {
     // Reset flags for new level load
     gameState.gameOver = false;
-    gameState.gameWon = false;
     gameState.levelComplete = false; // Reset level complete flag
     gameState.gameOverReason = null;
     gameState.messageOnCanvas = null; // Clear any lingering canvas messages
@@ -489,79 +487,38 @@ function startGame() {
         gameState.currentLevel = 1;
     }
 
-    gameState.isBossLevel = false; // Reset boss flag
-
-    // Define level parameters
-    const baseTimer = 75 * 1000; // Starting timer for Level 1 (75 seconds)
-    const timerDecreasePerLevel = 5 * 1000; // 5 seconds decrease per level
-
+    // Define level parameters for 3 levels
     const levelParams = {
-        1: { name: "Baby Easy", enemyCount: 3, potionCount: 3, timer: baseTimer, mapSizeMultiplier: 1.0, enemySpeedFactor: 1.0 },
-        2: { name: "Easy", enemyCount: 5, potionCount: 3, timer: baseTimer - timerDecreasePerLevel, mapSizeMultiplier: 1.0, enemySpeedFactor: 1.1 },
-        3: { name: "Medium", enemyCount: 7, potionCount: 2, timer: baseTimer - (timerDecreasePerLevel * 2), mapSizeMultiplier: 1.1, enemySpeedFactor: 1.2 },
-        4: { name: "Difficult", enemyCount: 9, potionCount: 2, timer: baseTimer - (timerDecreasePerLevel * 3), mapSizeMultiplier: 1.2, enemySpeedFactor: 1.3 },
-        5: { name: "Impossible", enemyCount: 12, potionCount: 1, timer: baseTimer - (timerDecreasePerLevel * 4), mapSizeMultiplier: 1.3, enemySpeedFactor: 1.4 }
+        1: { name: "Beginner's Dungeon", enemyCount: 2, potionCount: 2, timer: 75 * 1000, wallDensity: 0.25 },
+        2: { name: "Cavern of Trials", enemyCount: 4, potionCount: 1, timer: 60 * 1000, wallDensity: 0.35 },
+        3: { name: "Labyrinth of Despair", enemyCount: 6, potionCount: 1, timer: 45 * 1000, wallDensity: 0.45 }
     };
 
-    // Boss Level Logic
-    if (gameState.currentLevel > 5) {
-        gameState.isBossLevel = true;
-        
-        gameState.map = generateBossMap(); // Special map for boss
-        
-        gameState.player.maxHp = 150; // Give player more max HP for boss fight
-        gameState.player.hp = gameState.player.maxHp; // Heal player to new max HP
-        
-        const bossMaxHP = 1000; // Define boss max HP
-        gameState.enemies = [{
-            x: 0, y: 0,
-            hp: bossMaxHP, maxHp: bossMaxHP,
-            frozenTurns: 0,
-            isBoss: true,
-            symbol: '👹',
-            abilityCooldown: 3, // Turns until next ability use
-            abilityTimer: 3, // Current countdown
-        }];
-        
-        gameState.player.bombs = 5; // Give more bombs for boss
-        gameState.initialTime = 90 * 1000; // More time for boss
-
-        // Clear regular level specific entities
-        gameState.key = { x: -1, y: -1 }; // No key on boss level
-        gameState.exit = { x: -1, y: -1 }; // No exit on boss level
-        gameState.potions = []; // No potions on boss level
-        gameState.hasKey = false; // Player doesn't need key on boss level
-
-        placeBossAndPlayer(); // Places boss and player on the map
-        
-        statusText.textContent = "Boss Level! Defeat the Demon Lord! 👹";
-    } else { // Regular Levels
-        const params = levelParams[gameState.currentLevel];
-        
-        // Reset player health, bombs, and key status for new level
-        gameState.player.maxHp = 100; // Reset player max HP for regular levels
-        gameState.player.hp = gameState.player.maxHp; // Heal fully
-        gameState.player.bombs = 3; // Reset bombs for each level
-        gameState.hasKey = false;
-        gameState.turn = 0;
-
-        // Apply level parameters to map generation and entity placement
-        const newMapWidth = Math.floor(MAP_WIDTH_TILES * params.mapSizeMultiplier);
-        const newMapHeight = Math.floor(MAP_HEIGHT_TILES * params.mapSizeMultiplier);
-        
-        // Ensure map dimensions don't exceed canvas size, or adjust canvas size
-        const effectiveMapWidth = Math.min(newMapWidth, Math.floor(canvas.width / TILE_SIZE));
-        const effectiveMapHeight = Math.min(newMapHeight, Math.floor(canvas.height / TILE_SIZE));
-
-        gameState.map = generateMap(effectiveMapWidth, effectiveMapHeight);
-        gameState.enemies = []; // Clear enemies from previous level
-        gameState.potions = []; // Clear potions from previous level
-        
-        placeEntities(params.enemyCount, params.potionCount, effectiveMapWidth, effectiveMapHeight);
-
-        gameState.initialTime = params.timer;
-        statusText.textContent = `Level ${gameState.currentLevel}: ${params.name}!`;
+    // Check if player completed final level (Level 3)
+    if (gameState.currentLevel > Object.keys(levelParams).length) { // Greater than 3
+        gameState.gameWon = true;
+        endGame("You escaped the dungeon and defeated all levels!"); // Declare overall game win
+        return; // Stop game setup
     }
+
+    const params = levelParams[gameState.currentLevel];
+    
+    // Reset player health, bombs, and key status for new level
+    gameState.player.maxHp = 100; // Reset player max HP for regular levels
+    gameState.player.hp = gameState.player.maxHp; // Heal fully
+    gameState.player.bombs = 3; // Reset bombs for each level
+    gameState.hasKey = false;
+    gameState.turn = 0;
+
+    // Generate map and place entities using the simpler logic
+    gameState.map = generateMap(MAP_WIDTH_TILES, MAP_HEIGHT_TILES, params.wallDensity);
+    gameState.enemies = []; // Clear enemies from previous level
+    gameState.potions = []; // Clear potions from previous level
+    
+    placeEntities(params.enemyCount, params.potionCount, MAP_WIDTH_TILES, MAP_HEIGHT_TILES);
+
+    gameState.initialTime = params.timer;
+    statusText.textContent = `Level ${gameState.currentLevel}: ${params.name}!`;
 
     gameState.remainingTime = gameState.initialTime; // Reset timer for new level
     gameState.startTime = performance.now(); // Reset start time for countdown
@@ -569,185 +526,61 @@ function startGame() {
     updateUI();
 }
 
-// --- Map Generation ---
-// Helper for BFS
-function getNeighbors(x, y, mapWidth, mapHeight, map) {
-    const neighbors = [];
-    const directions = [
-        { dx: 0, dy: -1 }, // Up
-        { dx: 0, dy: 1 },  // Down
-        { dx: -1, dy: 0 }, // Left
-        { dx: 1, dy: 0 }   // Right
-    ];
+// --- Map Generation (Reverted to simpler version) ---
+function generateMap(width = MAP_WIDTH_TILES, height = MAP_HEIGHT_TILES, wallDensity = 0.3) {
+    let map = Array.from({ length: height }, () =>
+        Array.from({ length: width }, () => Math.random() < wallDensity ? Wall : Floor)
+    );
 
-    for (const dir of directions) {
-        const nx = x + dir.dx;
-        const ny = y + dir.dy;
-        if (nx >= 0 && nx < mapWidth && ny >= 0 && ny < mapHeight && map[ny][nx] === Floor) {
-            neighbors.push({ x: nx, y: ny });
-        }
+    // Add a solid border of walls to ensure map is always enclosed
+    for(let y = 0; y < height; y++) {
+        map[y][0] = Wall;
+        map[y][width-1] = Wall;
     }
-    return neighbors;
-}
-
-function generateMap(width = MAP_WIDTH_TILES, height = MAP_HEIGHT_TILES) {
-    let map;
-    let mainConnectedComponent = [];
-    let attempts = 0;
-    const MAX_ATTEMPTS = 10; // Prevent infinite loops if map generation is consistently bad
-    const MIN_CONNECTED_TILES_RATIO = 0.2; // Minimum percentage of total map tiles that should be connected floor
-
-    // Continue attempting to generate until a sufficiently connected map is created
-    while ((mainConnectedComponent.length === 0 || mainConnectedComponent.length < (width * height) * MIN_CONNECTED_TILES_RATIO) && attempts < MAX_ATTEMPTS) {
-        attempts++;
-        // 1. Generate initial map using cellular automata
-        let tempMap = Array.from({ length: height }, () =>
-            Array.from({ length: width }, () => Math.random() < 0.45 ? Wall : Floor)
-        );
-
-        // Apply cellular automata rules for smoothing
-        for (let i = 0; i < 4; i++) { // Number of iterations for smoothing
-            let newMap = JSON.parse(JSON.stringify(tempMap)); // Deep copy
-            for (let y = 1; y < height - 1; y++) {
-                for (let x = 1; x < width - 1; x++) {
-                    let wallCount = 0;
-                    // Count neighbors in 3x3 square
-                    for (let ny = y - 1; ny <= y + 1; ny++) {
-                        for (let nx = x - 1; nx <= x + 1; nx++) {
-                            // Check bounds for safety (though 1 to height-1/width-1 loop handles most)
-                            if (tempMap[ny] && tempMap[ny][nx] === Wall) { 
-                                wallCount++;
-                            }
-                        }
-                    }
-                    // Rule for cellular automata: If 5 or more neighbors are walls, this cell becomes a wall
-                    newMap[y][x] = wallCount > 4 ? Wall : Floor;
-                }
-            }
-            tempMap = newMap;
-        }
-
-        // Add a solid border of walls to ensure map is always enclosed
-        for(let y = 0; y < height; y++) {
-            tempMap[y][0] = Wall;
-            tempMap[y][width-1] = Wall;
-        }
-        for(let x = 0; x < width; x++) {
-            tempMap[0][x] = Wall;
-            tempMap[height-1][x] = Wall;
-        }
-
-        map = tempMap; // Assign to outer map variable for connectivity check
-
-        // 2. Find the largest connected component of floor tiles using BFS
-        let visited = Array.from({ length: height }, () =>
-            Array.from({ length: width }, () => false)
-        );
-        let allFloorTiles = [];
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                if (map[y][x] === Floor) {
-                    allFloorTiles.push({ x, y });
-                }
-            }
-        }
-
-        if (allFloorTiles.length === 0) {
-            // No floor tiles generated at all, force regeneration
-            mainConnectedComponent = []; // Keep loop running
-            continue;
-        }
-
-        // Find a random starting point for BFS/DFS from available floor tiles
-        let startTile = allFloorTiles[Math.floor(Math.random() * allFloorTiles.length)];
-        
-        let queue = [startTile];
-        visited[startTile.y][startTile.x] = true;
-        mainConnectedComponent = [startTile]; // Reset for each attempt
-
-        while (queue.length > 0) {
-            let current = queue.shift();
-
-            const neighbors = getNeighbors(current.x, current.y, width, height, map);
-            for (const neighbor of neighbors) {
-                if (!visited[neighbor.y][neighbor.x]) {
-                    visited[neighbor.y][neighbor.x] = true;
-                    queue.push(neighbor);
-                    mainConnectedComponent.push(neighbor);
-                }
-            }
-        }
-        // The while loop condition now re-evaluates `mainConnectedComponent.length`
-        // If it's too small, it will loop and regenerate the map.
+    for(let x = 0; x < width; x++) {
+        map[0][x] = Wall;
+        map[height-1][x] = Wall;
     }
-
-    // Fallback to a simple open map if cellular automata repeatedly fails to create a good map
-    if (attempts === MAX_ATTEMPTS) {
-        console.warn("Could not generate a sufficiently connected map after multiple attempts. Creating a basic open map as fallback.");
-        map = Array.from({ length: height }, () => Array.from({ length: width }, () => Floor));
-        // Add border walls to the fallback map too
-        for(let y = 0; y < height; y++) {
-            map[y][0] = Wall;
-            map[y][width-1] = Wall;
-        }
-        for(let x = 0; x < width; x++) {
-            map[0][x] = Wall;
-            map[height-1][x] = Wall;
-        }
-        return map; // Return the fallback map
-    }
-
-
-    // 3. Convert all unreachable floor tiles to walls
-    // This part is crucial: Ensures only reachable floor tiles remain.
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            if (map[y][x] === Floor && !visited[y][x]) {
-                map[y][x] = Wall; // Convert isolated floor tiles to walls
-            }
-        }
-    }
-
     return map;
 }
 
-// --- Entity Placement ---
+// --- Entity Placement (Reverted to simpler version) ---
 function placeEntities(numEnemies, numPotions, mapWidth, mapHeight) {
-    const floorTiles = [];
-    for (let y = 0; y < mapHeight; y++) {
-        for (let x = 0; x < mapWidth; x++) {
-            if (gameState.map[y][x] === Floor) { // Ensure to use the final, connected map
-                floorTiles.push({ x, y });
+    // Helper to get a random empty tile. Does not guarantee connectivity.
+    const getRandomEmptyTile = () => {
+        let x, y;
+        let attempts = 0;
+        // Set a max attempts to prevent infinite loops on extremely dense maps
+        const maxAttempts = (mapWidth * mapHeight) * 2; 
+        do {
+            x = Math.floor(Math.random() * mapWidth);
+            y = Math.floor(Math.random() * mapHeight);
+            attempts++;
+            if (attempts > maxAttempts) {
+                console.warn("Could not find an empty tile after many attempts. Placing on potentially occupied tile.");
+                break; // Break if too many attempts, to prevent hang
             }
-        }
-    }
-
-    const getRandomTile = () => {
-        if (floorTiles.length === 0) {
-            console.warn("No more floor tiles available for entity placement! (This shouldn't happen with connected map)");
-            // Fallback: Return a valid, but potentially re-used or problematic tile
-            return { x: Math.floor(mapWidth / 2), y: Math.floor(mapHeight / 2) }; 
-        }
-        const index = Math.floor(Math.random() * floorTiles.length);
-        return floorTiles.splice(index, 1)[0]; // Remove to prevent placing multiple entities on same tile
+        } while (gameState.map[y][x] !== Floor); // Loop until a floor tile is found
+        return { x, y };
     };
 
-    // Place Player, Key, Exit (now guaranteed to be on connected floor tiles)
-    Object.assign(gameState.player, getRandomTile());
-    Object.assign(gameState.key, getRandomTile());
-    Object.assign(gameState.exit, getRandomTile());
+    // Place Player, Key, Exit
+    Object.assign(gameState.player, getRandomEmptyTile());
+    Object.assign(gameState.key, getRandomEmptyTile());
+    Object.assign(gameState.exit, getRandomEmptyTile());
 
     // Place Enemies
+    gameState.enemies = []; // Clear previous enemies
     for (let i = 0; i < numEnemies; i++) {
-        if (floorTiles.length > 0) {
-            const enemyPos = getRandomTile();
-            gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 });
-        }
+        const enemyPos = getRandomEmptyTile();
+        // Enemies no longer have 'isBoss' property in this version
+        gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 }); 
     }
 
     // Place Potions
+    gameState.potions = []; // Clear previous potions
     for (let i = 0; i < numPotions; i++) {
-        if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
+        gameState.potions.push(getRandomEmptyTile());
     }
 }
 
@@ -784,25 +617,9 @@ function draw() {
 
     // Draw Enemies
     gameState.enemies.forEach(enemy => {
-        const symbol = enemy.frozenTurns > 0 ? FrozenEnemy : enemy.symbol || Enemy; // Use enemy.symbol for boss
+        // No 'enemy.symbol' for regular enemies, and no boss HP bar
+        const symbol = enemy.frozenTurns > 0 ? FrozenEnemy : Enemy; 
         drawEntity(enemy.x, enemy.y, symbol);
-
-        // Draw Boss HP Bar if it's a boss
-        if (enemy.isBoss) {
-            const barWidth = TILE_SIZE;
-            const barHeight = 5;
-            const hpRatio = enemy.hp / enemy.maxHp;
-            const barX = enemy.x * TILE_SIZE;
-            const barY = enemy.y * TILE_SIZE - barHeight - 2; // Above the boss
-
-            ctx.fillStyle = 'red';
-            ctx.fillRect(barX, barY, barWidth, barHeight); // Background
-            ctx.fillStyle = 'lime'; // Green for health
-            ctx.fillRect(barX, barY, barWidth * hpRatio, barHeight); // Actual HP
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(barX, barY, barWidth, barHeight); // Border
-        }
     });
 
     // Draw Player
@@ -856,11 +673,7 @@ function updateUI() {
         statusText.textContent = "Congratulations! You won the game!";
     } else if (gameState.levelComplete) {
         statusText.textContent = `Level ${gameState.currentLevel} Complete! Press 'R' for next level!`;
-    } else if (gameState.isBossLevel) {
-        statusText.textContent = `Boss Level! Defeat the Demon Lord! 👹 (HP: ${gameState.enemies[0].hp})`;
-    } else if (gameState.hasKey) {
-        statusText.textContent = "You have the key! Find the exit! 🚪";
-    } else {
+    } else { // No boss level specific message
         statusText.textContent = "Find the key 🔑 and escape through the door🚪!";
     }
 }
@@ -890,12 +703,7 @@ function updateGameLogic() {
         moveEnemies();
     }
     
-    // Boss ability cooldown decrement
-    gameState.enemies.forEach(enemy => {
-        if (enemy.isBoss && enemy.abilityTimer > 0) {
-            enemy.abilityTimer--;
-        }
-    });
+    // No boss ability cooldown decrement in this version
 
     updateUI();
 }
@@ -996,14 +804,7 @@ function moveEnemies() {
             enemy.x = newEnemyX;
             enemy.y = newEnemyY;
         }
-
-        // Boss ability logic
-        if (enemy.isBoss) {
-            if (enemy.abilityTimer <= 0) {
-                bossAbility(enemy);
-                enemy.abilityTimer = enemy.abilityCooldown; // Reset cooldown
-            }
-        }
+        // No boss ability logic in this version
     });
     checkEnemyCollision(); // Check collision after all enemies move
 }
@@ -1011,11 +812,7 @@ function moveEnemies() {
 function checkEnemyCollision() {
     gameState.enemies.forEach(enemy => {
         if (gameState.player.x === enemy.x && gameState.player.y === enemy.y) {
-            if (enemy.isBoss) {
-                takeDamage(20); // Boss hits harder
-            } else {
-                takeDamage(10);
-            }
+            takeDamage(10); // Standard enemy damage
         }
     });
 }
@@ -1048,17 +845,7 @@ function useBomb() {
         const dy = Math.abs(gameState.player.y - enemy.y);
 
         if (dx <= blastRadius && dy <= blastRadius) {
-            if (enemy.isBoss) {
-                enemy.hp -= 100; // Damage boss
-                gameState.score += 50; // Score for boss damage
-                if (enemy.hp <= 0) {
-                    enemy.hp = 0;
-                    endGame("You defeated the Demon Lord!");
-                    gameState.gameWon = true; // Set gameWon for final victory
-                }
-            } else {
-                enemy.frozenTurns = 3; // Freeze for 3 turns
-            }
+            enemy.frozenTurns = 3; // Freeze for 3 turns
             enemiesStunnedOrHit++;
         }
     });
@@ -1071,38 +858,7 @@ function useBomb() {
     updateUI();
 }
 
-function bossAbility(boss) {
-    // Example boss ability: Teleport player to a random safe spot
-    // or stun player for 1 turn (assuming player has frozenTurns property)
-    // For simplicity, let's make it a minor area attack or stun.
-
-    const abilityRange = 3; // Range around the boss for its ability
-    const affectedTiles = [];
-
-    // Find tiles within ability range
-    for (let y = boss.y - abilityRange; y <= boss.y + abilityRange; y++) {
-        for (let x = boss.x - abilityRange; x <= boss.x + abilityRange; x++) {
-            if (isValidMove(x, y)) { // Only affect valid floor tiles
-                affectedTiles.push({ x, y });
-            }
-        }
-    }
-
-    // If player is in affected range, deal damage
-    const playerInAbilityRange = Math.abs(gameState.player.x - boss.x) <= abilityRange &&
-                                 Math.abs(gameState.player.y - boss.y) <= abilityRange;
-
-    if (playerInAbilityRange) {
-        takeDamage(15); // Boss ability damage
-        gameState.messageOnCanvas = "Boss used ability! 💥";
-        gameState.messageDisplayDuration = 30;
-    } else {
-        gameState.messageOnCanvas = "Boss power surge! ⚡";
-        gameState.messageDisplayDuration = 30;
-    }
-    updateUI();
-}
-
+// No bossAbility function in this version
 
 // --- Game State Transitions ---
 function endGame(reason) {
@@ -1126,12 +882,12 @@ function handleGameEndOrLevelComplete() {
         // Player lost overall game, restart completely
         initGame();
     } else if (gameState.gameWon) {
-        // Player won the entire game (defeated boss)
+        // Player won the entire game (completed final level)
         initGame(); // Or show a special "You Won!" screen
     } else if (gameState.levelComplete) {
         // Player completed a regular level, proceed to next
         gameState.currentLevel++;
-        startGame(); // Start next level
+        startGame(); // Attempt to start next level (will handle win if > 3)
     } else {
         // This case shouldn't be reached if called correctly, but as a safeguard, restart game.
         initGame();
@@ -1258,94 +1014,10 @@ window.onload = () => {
     initGame(); // Initialize game state, but it will be paused by the modal
 };
 
-// --- Boss Map Generation (Add this function if it's missing) ---
-function generateBossMap() {
-    const bossMapWidth = MAP_WIDTH_TILES;
-    const bossMapHeight = MAP_HEIGHT_TILES;
-    let map = Array.from({ length: bossMapHeight }, () => Array(bossMapWidth).fill(Floor));
-
-    // Create a border of walls
-    for (let y = 0; y < bossMapHeight; y++) {
-        map[y][0] = Wall;
-        map[y][bossMapWidth - 1] = Wall;
-    }
-    for (let x = 0; x < bossMapWidth; x++) {
-        map[0][x] = Wall;
-        map[bossMapHeight - 1][x] = Wall;
-    }
-
-    // Create some obstacles or pathways for a boss arena
-    // Example: A central open area with some pillars
-    const centerX = Math.floor(bossMapWidth / 2);
-    const centerY = Math.floor(bossMapHeight / 2);
-
-    // Create an open central area (e.g., a 5x5 clearing)
-    for (let y = centerY - 2; y <= centerY + 2; y++) {
-        for (let x = centerX - 2; x <= centerX + 2; x++) {
-            if (x > 0 && x < bossMapWidth - 1 && y > 0 && y < bossMapHeight - 1) {
-                map[y][x] = Floor;
-            }
-        }
-    }
-
-    // Add some random or structured walls/pillars in the arena
-    for (let i = 0; i < 10; i++) { // Add 10 random wall blocks
-        let randX = Math.floor(Math.random() * (bossMapWidth - 2)) + 1;
-        let randY = Math.floor(Math.random() * (bossMapHeight - 2)) + 1;
-        if (map[randY][randX] === Floor) { // Only place if it's not already a wall
-            map[randY][randX] = Wall;
-        }
-    }
-
-    // Ensure the player and boss spawn in valid, connected floor tiles
-    // This is handled by placeBossAndPlayer, which will pick from available floor tiles.
-    return map;
-}
-
-// --- Place Boss and Player (Add this function if it's missing) ---
-function placeBossAndPlayer() {
-    const floorTiles = [];
-    for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
-        for (let x = 0; x < MAP_WIDTH_TILES; x++) {
-            if (gameState.map[y][x] === Floor) {
-                floorTiles.push({ x, y });
-            }
-        }
-    }
-
-    const getRandomTile = () => {
-        if (floorTiles.length === 0) {
-            console.warn("No more floor tiles available for boss/player placement!");
-            return { x: 1, y: 1 }; // Fallback to a corner
-        }
-        const index = Math.floor(Math.random() * floorTiles.length);
-        return floorTiles.splice(index, 1)[0];
-    };
-
-    // Place boss
-    const bossSpawn = getRandomTile();
-    gameState.enemies[0].x = bossSpawn.x;
-    gameState.enemies[0].y = bossSpawn.y;
-
-    // Place player, ensuring not on boss's spot
-    let playerSpawn;
-    let attempts = 0;
-    do {
-        playerSpawn = getRandomTile();
-        attempts++;
-        if (attempts > 100 && floorTiles.length > 0) { // Safety break if too hard to find distinct spot
-            console.warn("Could not find a distinct player spawn from boss. Placing near boss.");
-            break;
-        }
-    } while (playerSpawn.x === bossSpawn.x && playerSpawn.y === bossSpawn.y && floorTiles.length > 0);
-    
-    Object.assign(gameState.player, playerSpawn);
-}
-
+// Removed generateBossMap and placeBossAndPlayer as they are not used in this 3-level version
 </script>
 <audio autoplay loop>
-    <source src="back.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
+    <source src="images/back.mp3" type="audio/mpeg"> Your browser does not support the audio element.
 </audio>
 </body>
 </html>
