@@ -177,6 +177,22 @@ canvas {
     color: #007bff; /* Blue for win, red for loss is handled in JS */
 }
 
+#game-instructions {
+    margin-top: 15px; /* Spacing from the game container */
+    width: 320px; /* Match canvas width */
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+#game-instructions p {
+    margin: 0; /* Remove default paragraph margins */
+    font-size: 1.1em;
+}
+
 #controls-section {
     margin-top: 20px;
     width: 480px; /* Align with game width */
@@ -217,6 +233,10 @@ canvas {
     <div id="pause-overlay" style="display: none;">PAUSED</div>
 </div>
 
+<div id="game-instructions">
+    <p>Clear lines, score points, and don't let the blocks reach the top!</p>
+</div>
+
 <div id="controls-section">
     <h2>Controls</h2>
     <p>Move Left: <strong>←</strong> (Left Arrow)</p>
@@ -227,14 +247,6 @@ canvas {
     <p>Pause/Resume: <strong>P</strong></p>
 </div>
 
-
-<div id="startGameModal" class="modal">
-    <div class="modal-content">
-        <h2>Welcome to Tetris!</h2>
-        <p>Clear lines, score points, and don't let the blocks reach the top!</p>
-        <button id="startGameButton">Start Game</button>
-    </div>
-</div>
 
 <div id="gameOverModal" class="modal">
     <div class="modal-content">
@@ -254,8 +266,8 @@ const levelDisplay = document.getElementById('levelDisplay');
 const pauseOverlay = document.getElementById('pause-overlay');
 
 // Modals
-const startGameModal = document.getElementById('startGameModal');
-const startGameButton = document.getElementById('startGameButton');
+// const startGameModal = document.getElementById('startGameModal'); // Removed
+// const startGameButton = document.getElementById('startGameButton'); // Removed
 const gameOverModal = document.getElementById('gameOverModal');
 const gameOverMessage = document.getElementById('gameOverMessage');
 const finalScoreDisplay = document.getElementById('finalScore');
@@ -633,7 +645,7 @@ function initGame() {
     isPaused = false;
     pauseOverlay.style.display = 'none';
 
-    startGameModal.style.display = 'none';
+    // No need to hide startGameModal as it's removed
     gameOverModal.style.display = 'none';
 
     gameStarted = true;
@@ -643,16 +655,16 @@ function initGame() {
 }
 
 // Event listeners for modals
-startGameButton.addEventListener('click', initGame);
+// startGameButton.addEventListener('click', initGame); // Removed
 restartGameButton.addEventListener('click', initGame);
 backToMenuButton.addEventListener('click', () => {
-    gameOverModal.style.display = 'none';
-    startGameModal.style.display = 'flex';
+    // There's no start menu modal anymore, so this button now just restarts directly
+    initGame();
 });
 
-// Initial state: Show the start game modal
+// Initial state: Start the game immediately on load
 window.onload = () => {
-    startGameModal.style.display = 'flex';
+    initGame();
 };
 
 </script>
