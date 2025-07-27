@@ -239,7 +239,7 @@ button#resetButton:hover {
     <span id="bomb-text">Bombs: 3 💣</span>
     <button id="resetButton">New Game</button>
     <span id="hp-text">HP: 100</span>
-    <span id="timer-text">Time: 01:00</span> <!-- UPDATED: Initial timer display to 01:00 -->
+    <span id="timer-text">Time: 01:00</span>
 </div>
 
 <div id="mobile-controls">
@@ -316,8 +316,9 @@ button#resetButton:hover {
             gameOverReason: null, // Stores 'time' or 'hp' if game over
             turn: 0, // Turn counter for enemy movement
             startTime: null, // For tracking when the timer started
-            initialTime: 60 * 1000, // UPDATED: 1 minute in milliseconds (60 seconds)
-            remainingTime: 60 * 1000 // UPDATED: Current remaining time for the countdown
+            initialTime: 60 * 1000, // 1 minute in milliseconds (60 seconds)
+            elapsedTime: 0, // Track elapsed time for display on win
+            completionTime: null // NEW: Stores time taken to win
         };
         placeEntities();
         updateUI();
@@ -412,9 +413,9 @@ button#resetButton:hover {
         }
 
         // Calculate elapsed time from the start
-        const elapsedTimeFromStart = currentTime - gameState.startTime;
+        gameState.elapsedTime = currentTime - gameState.startTime; // Update elapsed time
         // Calculate remaining time
-        gameState.remainingTime = gameState.initialTime - elapsedTimeFromStart;
+        gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
 
         if (gameState.remainingTime <= 0) {
             gameState.remainingTime = 0; // Cap at 0
@@ -529,10 +530,19 @@ button#resetButton:hover {
             ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
             ctx.font = 'bold 60px Courier New';
             ctx.textAlign = 'center';
-            // Corrected: Differentiate Game Over message on canvas
             const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' :
                             (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+
+            // NEW: Display completion time on win screen
+            if (gameState.gameWon && gameState.completionTime !== null) {
+                const minutes = Math.floor(gameState.completionTime / 60000);
+                const seconds = Math.floor((gameState.completionTime % 60000) / 1000);
+                const formattedCompletionTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                ctx.font = 'bold 30px Courier New';
+                ctx.fillStyle = '#FFFFFF'; // White for time
+                ctx.fillText(`Time: ${formattedCompletionTime}`, canvas.width / 2, canvas.height / 2 + 50);
+            }
             ctx.textAlign = 'left';
         }
     }
@@ -542,12 +552,11 @@ button#resetButton:hover {
      */
     function updateUI() {
         if (gameState.gameOver) {
-            // Corrected: Display specific game over message based on reason
             if (gameState.gameOverReason === 'time') {
                 statusText.textContent = "Times up! 💀";
             } else if (gameState.gameOverReason === 'hp') {
                 statusText.textContent = "Game Over! 💀";
-            } else { // Fallback, shouldn't be hit with current logic
+            } else {
                 statusText.textContent = "Game Over! 💀";
             }
             hpText.style.color = "#dc3545"; // Red for game over HP
@@ -560,13 +569,13 @@ button#resetButton:hover {
             statusText.textContent = "Find the key 🔑 and escape!";
         }
         hpText.textContent = `HP: ${gameState.player.hp}`;
-        if(gameState.player.hp < 30 && !gameState.gameOver) { // Only change color if not already game over
+        if(gameState.player.hp < 30 && !gameState.gameOver) {
             hpText.style.color = "#ffc107";
         } else if (!gameState.gameOver){
             hpText.style.color = "#28a745";
         }
 
-        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`; // Ensure no double bomb emoji
+        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
 
         const minutes = Math.floor(gameState.remainingTime / 60000);
         const seconds = Math.floor((gameState.remainingTime % 60000) / 1000);
@@ -574,7 +583,7 @@ button#resetButton:hover {
         timerText.textContent = `Time: ${formattedTime}`;
 
         // Change timer color when low or game over
-        if (gameState.remainingTime < 10000 && gameState.remainingTime > 0) { // Less than 10 seconds
+        if (gameState.remainingTime < 10000 && gameState.remainingTime > 0) {
             timerText.style.color = "#FF4500"; // OrangeRed
         } else if (gameState.remainingTime <= 0) {
             timerText.style.color = "#dc3545"; // Red
@@ -696,6 +705,7 @@ button#resetButton:hover {
 
         if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
             gameState.gameWon = true;
+            gameState.completionTime = gameState.elapsedTime; // NEW: Record time on win
         }
 
         gameState.potions = gameState.potions.filter(potion => {
@@ -743,7 +753,7 @@ button#resetButton:hover {
     }
 </script>
 <audio autoplay loop>
-  <source src="indian.mp3" type="audio/mpeg">
+  <source src="back.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
 </body>
