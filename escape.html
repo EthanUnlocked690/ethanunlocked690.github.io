@@ -283,7 +283,8 @@ button#resetButton:hover {
     const Wall = '🪨';
     const Floor = ' ';
     const Player = '🙍';
-    const Enemy = '🐉';
+    const Enemy = '🐉'; // Standard enemy dragon
+    const GIANT_DRAGON_BOSS = '🐲'; // Different dragon emoji for the boss
     const Key = '🔑';
     const Exit = '🚪';
     const Potion = '❤️';
@@ -304,7 +305,7 @@ button#resetButton:hover {
         }
 
         gameState = {
-            map: generateMap(),
+            map: [],
             player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 3 },
             enemies: [],
             key: { x: 0, y: 0 },
@@ -316,14 +317,61 @@ button#resetButton:hover {
             gameOverReason: null, // Stores 'time' or 'hp' if game over
             turn: 0, // Turn counter for enemy movement
             startTime: null, // For tracking when the timer started
-            initialTime: 60 * 1000, // 1 minute in milliseconds (60 seconds)
+            initialTime: 0, // Will be set by setupLevel
             elapsedTime: 0, // Track elapsed time for display on win
-            completionTime: null // NEW: Stores time taken to win
+            completionTime: null, // Stores time taken to win
+            isTypingTime: false, // Control typing animation
+            typedCompletionTime: '', // Store typed completion time
+            typedTimeLeft: '', // Store typed time left
+            currentLevel: 1, // NEW: Start at level 1
+            boss: null, // NEW: Boss object, null until level 3
+            bossDefeated: false // NEW: Track boss status
         };
-        placeEntities();
-        updateUI();
+        setupLevel(gameState.currentLevel); // Start the first level
         gameState.startTime = performance.now(); // Record start time for countdown
         gameLoop();
+    }
+
+    /**
+     * Sets up the game for a specific level.
+     */
+    function setupLevel(level) {
+        // Reset player's dynamic stats for the new level but keep overall HP
+        gameState.player.x = 0;
+        gameState.player.y = 0;
+        gameState.player.bombs = 3; // Give new bombs each level
+
+        gameState.hasKey = false;
+        gameState.enemies = [];
+        gameState.potions = [];
+        gameState.boss = null;
+        gameState.bossDefeated = false;
+
+        // Set initial time based on level
+        switch(level) {
+            case 1:
+                gameState.initialTime = 90 * 1000; // 1 minute 30 seconds
+                break;
+            case 2:
+                gameState.initialTime = 120 * 1000; // 2 minutes
+                break;
+            case 3:
+                gameState.initialTime = 300 * 1000; // 5 minutes (Final Boss)
+                break;
+            default:
+                gameState.initialTime = 60 * 1000; // Default to 1 minute
+        }
+        gameState.startTime = performance.now(); // Reset timer for new level
+
+
+        if (level === 3) {
+            gameState.map = generateBossMap();
+        } else {
+            gameState.map = generateMap(); // Use cellular automata for levels 1 & 2
+        }
+
+        placeEntitiesForLevel(level);
+        updateUI(); // Update UI to reflect new level status
     }
 
     /**
@@ -366,9 +414,29 @@ button#resetButton:hover {
     }
 
     /**
-     * Places the player, enemies, key, exit, and potions on valid floor tiles.
+     * Generates a simpler, more open map for the boss fight.
      */
-    function placeEntities() {
+    function generateBossMap() {
+        let map = Array.from({ length: MAP_HEIGHT_TILES }, () =>
+            Array.from({ length: MAP_WIDTH_TILES }, () => Floor)
+        );
+        // Create a border of walls
+        for(let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            map[y][0] = Wall;
+            map[y][MAP_WIDTH_TILES-1] = Wall;
+        }
+        for(let x = 0; x < MAP_WIDTH_TILES; x++) {
+            map[0][x] = Wall;
+            map[MAP_HEIGHT_TILES-1][x] = Wall;
+        }
+        return map;
+    }
+
+
+    /**
+     * Places entities based on the current level.
+     */
+    function placeEntitiesForLevel(level) {
         const floorTiles = [];
         for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
             for (let x = 0; x < MAP_WIDTH_TILES; x++) {
@@ -383,24 +451,65 @@ button#resetButton:hover {
             return floorTiles.splice(index, 1)[0];
         };
 
-        // Place Player, Key, Exit
+        // Place Player
         Object.assign(gameState.player, getRandomTile());
-        Object.assign(gameState.key, getRandomTile());
-        Object.assign(gameState.exit, getRandomTile());
 
-        // Place Enemies
-        const NUM_ENEMIES = 5;
-        for (let i = 0; i < NUM_ENEMIES; i++) {
-            if (floorTiles.length > 0) {
-                const enemyPos = getRandomTile();
-                gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 });
+        if (level < 3) {
+            // Place Key, Exit for normal levels
+            Object.assign(gameState.key, getRandomTile());
+            Object.assign(gameState.exit, getRandomTile());
+
+            // Place Enemies
+            const NUM_ENEMIES = level === 1 ? 5 : 8; // More enemies on Level 2
+            for (let i = 0; i < NUM_ENEMIES; i++) {
+                if (floorTiles.length > 0) {
+                    const enemyPos = getRandomTile();
+                    gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 });
+                }
             }
-        }
 
-        // Place Potions
-        const NUM_POTIONS = 3;
-        for (let i = 0; i < NUM_POTIONS; i++) {
-            if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
+            // Place Potions
+            const NUM_POTIONS = 3;
+            for (let i = 0; i < NUM_POTIONS; i++) {
+                if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
+            }
+        } else { // Level 3: Boss Level
+            // Place the boss
+            const bossSize = 3; // Boss occupies a 3x3 area
+            let bossPlaced = false;
+            while (!bossPlaced) {
+                const centerTile = getRandomTile();
+                const bossX = centerTile.x - Math.floor(bossSize / 2);
+                const bossY = centerTile.y - Math.floor(bossSize / 2);
+
+                let validPlacement = true;
+                for (let by = 0; by < bossSize; by++) {
+                    for (let bx = 0; bx < bossSize; bx++) {
+                        if (!isWalkable(bossX + bx, bossY + by)) {
+                            validPlacement = false;
+                            break;
+                        }
+                    }
+                    if (!validPlacement) break;
+                }
+
+                if (validPlacement) {
+                    // Remove boss tiles from available floor tiles to prevent other entities from spawning there
+                    for (let by = 0; by < bossSize; by++) {
+                        for (let bx = 0; bx < bossSize; bx++) {
+                            const index = floorTiles.findIndex(t => t.x === bossX + bx && t.y === bossY + by);
+                            if (index !== -1) floorTiles.splice(index, 1);
+                        }
+                    }
+
+                    gameState.boss = { x: bossX, y: bossY, hp: 300, maxHp: 300, damage: 30, frozenTurns: 0, size: bossSize };
+                    bossPlaced = true;
+                }
+            }
+
+            // Place exit far from player, key will drop from boss
+            Object.assign(gameState.exit, getRandomTile());
+            gameState.hasKey = false; // Player starts without key on boss level
         }
     }
 
@@ -412,27 +521,25 @@ button#resetButton:hover {
             gameState.startTime = currentTime;
         }
 
-        // Calculate elapsed time from the start
-        gameState.elapsedTime = currentTime - gameState.startTime; // Update elapsed time
-        // Calculate remaining time
+        gameState.elapsedTime = currentTime - gameState.startTime;
         gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
 
         if (gameState.remainingTime <= 0) {
-            gameState.remainingTime = 0; // Cap at 0
-            if (!gameState.gameOver && !gameState.gameWon) { // Only trigger game over if not already won
+            gameState.remainingTime = 0;
+            if (!gameState.gameOver && !gameState.gameWon) {
                 gameState.gameOver = true;
-                gameState.gameOverReason = 'time'; // Set the reason for game over
+                gameState.gameOverReason = 'time';
             }
         }
 
         if (gameState.gameOver || gameState.gameWon) {
             draw();
-            updateUI(); // Ensure UI updates one last time
-            if (animationFrameId) { // Ensure timer stops when game is over/won
+            updateUI();
+            if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
-                animationFrameId = null; // Clear the ID
+                animationFrameId = null;
             }
-            return; // Stop the loop if game is over or won
+            return;
         }
 
         update();
@@ -450,7 +557,18 @@ button#resetButton:hover {
     }
 
     /**
-     * Moves all enemies based on simple AI.
+     * Moves enemies and/or boss based on simple AI.
+     */
+    function moveGameEntities() {
+        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+            moveBoss(gameState.boss);
+        } else {
+            moveEnemies();
+        }
+    }
+
+    /**
+     * Moves all regular enemies based on simple AI.
      */
     function moveEnemies() {
         gameState.enemies.forEach(enemy => {
@@ -478,12 +596,93 @@ button#resetButton:hover {
                 enemy.y = nextY;
             }
 
+            // Enemy attacks player if on the same tile after moving
             if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
                 takeDamage(15);
-                enemy.frozenTurns = 2;
+                enemy.frozenTurns = 2; // Stun enemy after attack
             }
         });
     }
+
+    /**
+     * Moves the boss based on simple AI.
+     */
+    function moveBoss(boss) {
+        if (boss.frozenTurns > 0) {
+            boss.frozenTurns--;
+            return;
+        }
+
+        let dx = Math.sign(gameState.player.x - (boss.x + Math.floor(boss.size / 2)));
+        let dy = Math.sign(gameState.player.y - (boss.y + Math.floor(boss.size / 2)));
+
+        // Try to move towards the player, but check all 9 boss tiles for collision
+        const originalBossX = boss.x;
+        const originalBossY = boss.y;
+
+        const potentialBossX = boss.x + dx;
+        const potentialBossY = boss.y + dy;
+
+        let canMove = true;
+        for (let by = 0; by < boss.size; by++) {
+            for (let bx = 0; bx < boss.size; bx++) {
+                if (!isWalkable(potentialBossX + bx, potentialBossY + by)) {
+                    canMove = false;
+                    break;
+                }
+            }
+            if (!canMove) break;
+        }
+
+        if (canMove) {
+            boss.x = potentialBossX;
+            boss.y = potentialBossY;
+        } else {
+            // If direct move blocked, try moving only horizontally or vertically
+            if (dx !== 0) {
+                let canMoveX = true;
+                for (let by = 0; by < boss.size; by++) {
+                    for (let bx = 0; bx < boss.size; bx++) {
+                        if (!isWalkable(originalBossX + dx + bx, originalBossY + by)) {
+                            canMoveX = false;
+                            break;
+                        }
+                    }
+                    if (!canMoveX) break;
+                }
+                if (canMoveX) boss.x = originalBossX + dx;
+            }
+            if (dy !== 0) {
+                let canMoveY = true;
+                for (let by = 0; by < boss.size; by++) {
+                    for (let bx = 0; bx < boss.size; bx++) {
+                        if (!isWalkable(originalBossX + bx, originalBossY + dy + by)) {
+                            canMoveY = false;
+                            break;
+                        }
+                    }
+                    if (!canMoveY) break;
+                }
+                if (canMoveY) boss.y = originalBossY + dy;
+            }
+        }
+
+        // Check for player-boss collision after boss moves
+        if (isPlayerCollidingWithBoss(gameState.player, boss)) {
+            takeDamage(boss.damage); // Boss attacks player
+            boss.frozenTurns = 1; // Boss briefly stunned after attacking
+        }
+    }
+
+    /**
+     * Checks if the player is occupying any tile of the boss.
+     */
+    function isPlayerCollidingWithBoss(player, boss) {
+        if (!boss) return false;
+        return player.x >= boss.x && player.x < (boss.x + boss.size) &&
+               player.y >= boss.y && player.y < (boss.y + boss.size);
+    }
+
 
     /**
      * Renders the entire game state to the canvas.
@@ -502,14 +701,33 @@ button#resetButton:hover {
 
         const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
 
-        if(!gameState.hasKey) drawEntity(gameState.key, Key);
-        drawEntity(gameState.exit, Exit);
+        // Draw entities based on level
+        if (gameState.currentLevel === 3) {
+            // On boss level, key only appears after boss defeated
+            if (gameState.bossDefeated) {
+                drawEntity(gameState.key, Key);
+            }
+            if (gameState.boss && !gameState.bossDefeated) {
+                // Draw the GIANT dragon boss (3x3 grid of emojis)
+                for (let by = 0; by < gameState.boss.size; by++) {
+                    for (let bx = 0; bx < gameState.boss.size; bx++) {
+                        ctx.fillText(GIANT_DRAGON_BOSS, (gameState.boss.x + bx) * TILE_SIZE, (gameState.boss.y + by) * TILE_SIZE + TILE_SIZE);
+                    }
+                }
+                drawBossHealthBar();
+            }
+            drawEntity(gameState.exit, Exit); // Exit always drawn on boss level
+        } else { // Normal levels
+            if(!gameState.hasKey) drawEntity(gameState.key, Key);
+            drawEntity(gameState.exit, Exit);
+        }
+
         gameState.potions.forEach(potion => drawEntity(potion, Potion));
 
         gameState.enemies.forEach(enemy => {
             let enemySymbol = Enemy;
             if (gameState.gameWon) {
-                enemySymbol = '💀';
+                enemySymbol = '💀'; // All enemies dead on game won
             } else if (enemy.frozenTurns > 0) {
                 enemySymbol = FrozenEnemy;
             }
@@ -531,21 +749,107 @@ button#resetButton:hover {
             ctx.font = 'bold 60px Courier New';
             ctx.textAlign = 'center';
             const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' :
-                            (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
+                                (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
 
-            // NEW: Display completion time on win screen
+            // Display completion time and time left on win screen with typing effect
             if (gameState.gameWon && gameState.completionTime !== null) {
-                const minutes = Math.floor(gameState.completionTime / 60000);
-                const seconds = Math.floor((gameState.completionTime % 60000) / 1000);
-                const formattedCompletionTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 ctx.font = 'bold 30px Courier New';
                 ctx.fillStyle = '#FFFFFF'; // White for time
-                ctx.fillText(`Time: ${formattedCompletionTime}`, canvas.width / 2, canvas.height / 2 + 50);
+
+                if (!gameState.isTypingTime) {
+                    // Start typing animation if not already running
+                    gameState.isTypingTime = true;
+                    typeCompletionAndRemainingTime();
+                }
+
+                ctx.fillText(gameState.typedCompletionTime, canvas.width / 2, canvas.height / 2 + 50);
+                ctx.fillText(gameState.typedTimeLeft, canvas.width / 2, canvas.height / 2 + 100);
             }
             ctx.textAlign = 'left';
         }
     }
+
+    /**
+     * Draws the boss's health bar on the canvas.
+     */
+    function drawBossHealthBar() {
+        if (!gameState.boss || gameState.bossDefeated) return;
+
+        const barWidth = 250;
+        const barHeight = 25;
+        const barX = (canvas.width / 2) - (barWidth / 2);
+        const barY = 20; // Top of the canvas
+
+        // Background bar (red)
+        ctx.fillStyle = '#880000'; // Dark red for background
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+
+        // Current health bar (green)
+        const currentHealthWidth = (gameState.boss.hp / gameState.boss.maxHp) * barWidth;
+        ctx.fillStyle = '#00FF00'; // Bright green for health
+        ctx.fillRect(barX, barY, currentHealthWidth, barHeight);
+
+        // Border
+        ctx.strokeStyle = '#FFFFFF'; // White border
+        ctx.lineWidth = 2;
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+
+        // Text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '18px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText(`DRAGON HP: ${gameState.boss.hp}/${gameState.boss.maxHp}`, canvas.width / 2, barY + barHeight + 25);
+        ctx.textAlign = 'left'; // Reset alignment
+    }
+
+    /**
+     * Handles the typewriter effect for displaying text.
+     */
+    function typewriterEffect(text, x, y, speed, onComplete) {
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i < text.length) {
+                // Determine which `typed` state variable to update
+                if (text.startsWith("Time: ")) {
+                    gameState.typedCompletionTime = text.substring(0, i + 1);
+                } else if (text.startsWith("Time left: ")) {
+                    gameState.typedTimeLeft = text.substring(0, i + 1);
+                }
+                draw(); // Redraw to show partial text
+                i++;
+            } else {
+                clearInterval(interval);
+                if (onComplete) {
+                    onComplete();
+                }
+            }
+        }, speed);
+    }
+
+    /**
+     * Sequences the typing of completion time and remaining time.
+     */
+    function typeCompletionAndRemainingTime() {
+        const minutes = Math.floor(gameState.completionTime / 60000);
+        const seconds = Math.floor((gameState.completionTime % 60000) / 1000);
+        const formattedCompletionTime = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        const timeLeftMillis = Math.max(0, gameState.initialTime - gameState.completionTime);
+        const timeLeftMinutes = Math.floor(timeLeftMillis / 60000);
+        const timeLeftSeconds = Math.floor((timeLeftMillis % 60000) / 1000);
+        const formattedTimeLeft = `Time left: ${timeLeftMinutes.toString().padStart(2, '0')}:${timeLeftSeconds.toString().padStart(2, '0')}`;
+
+
+        // Type completion time first
+        typewriterEffect(formattedCompletionTime, canvas.width / 2, canvas.height / 2 + 50, 70, () => {
+            // After completion time is typed, type time left
+            typewriterEffect(formattedTimeLeft, canvas.width / 2, canvas.height / 2 + 100, 70, () => {
+                gameState.isTypingTime = false; // Typing animation finished
+            });
+        });
+    }
+
 
     /**
      * Updates the UI elements (status, HP, bombs, and timer text).
@@ -561,12 +865,14 @@ button#resetButton:hover {
             }
             hpText.style.color = "#dc3545"; // Red for game over HP
         } else if (gameState.gameWon) {
-            statusText.textContent = "Congratulations! You escaped! 🎉";
+            statusText.textContent = `LEVEL ${gameState.currentLevel} COMPLETE! You escaped! 🎉`;
             hpText.style.color = "#28a745";
         } else if (gameState.hasKey) {
-            statusText.textContent = "You have the key! Go to the door! 🚪";
+            statusText.textContent = `Level ${gameState.currentLevel}: You have the key! Go to the door! 🚪`;
+        } else if (gameState.currentLevel === 3) {
+            statusText.textContent = "Level 3: Defeat the GIANT Dragon Boss! 🐲";
         } else {
-            statusText.textContent = "Find the key 🔑 and escape!";
+            statusText.textContent = `Level ${gameState.currentLevel}: Find the key 🔑 and escape!`;
         }
         hpText.textContent = `HP: ${gameState.player.hp}`;
         if(gameState.player.hp < 30 && !gameState.gameOver) {
@@ -605,7 +911,23 @@ button#resetButton:hover {
     }
 
     /**
-     * New function to handle player movement logic
+     * Reduces boss HP and checks for boss defeat.
+     */
+    function takeBossDamage(amount) {
+        if (!gameState.boss || gameState.bossDefeated) return;
+        gameState.boss.hp = Math.max(0, gameState.boss.hp - amount);
+        if (gameState.boss.hp <= 0) {
+            gameState.bossDefeated = true;
+            // Key appears where the boss was centered
+            gameState.key.x = gameState.boss.x + Math.floor(gameState.boss.size / 2);
+            gameState.key.y = gameState.boss.y + Math.floor(gameState.boss.size / 2);
+            statusText.textContent = "Boss defeated! The key appeared! 🔑";
+        }
+        draw(); // Redraw to update health bar immediately
+    }
+
+    /**
+     * Handles player movement logic.
      */
     function movePlayer(dx, dy) {
         if (gameState.gameOver || gameState.gameWon) return;
@@ -614,10 +936,24 @@ button#resetButton:hover {
         const nextY = gameState.player.y + dy;
 
         if (isWalkable(nextX, nextY)) {
+            // Check if moving into a boss tile
+            if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+                const tempPlayer = { x: nextX, y: nextY };
+                if (isPlayerCollidingWithBoss(tempPlayer, gameState.boss)) {
+                    // Player cannot move into boss tiles, but gets attacked
+                    takeDamage(gameState.boss.damage);
+                    gameState.boss.frozenTurns = 1; // Boss briefly stunned after attacking
+                    moveGameEntities(); // Still let enemies/boss move
+                    checkInteractions();
+                    updateUI();
+                    return; // Player movement blocked
+                }
+            }
+
             gameState.player.x = nextX;
             gameState.player.y = nextY;
 
-            moveEnemies();
+            moveGameEntities(); // Move enemies/boss after player
             checkInteractions();
             updateUI();
         }
@@ -634,23 +970,38 @@ button#resetButton:hover {
         }
 
         gameState.player.bombs--;
-        let enemiesStunned = false;
-        const bombRange = 3; // Max Manhattan distance for stun
+        let targetsAffected = false;
+        const bombRange = 4; // Increased range for bomb
 
-        gameState.enemies.forEach(enemy => {
-            const distance = Math.abs(gameState.player.x - enemy.x) + Math.abs(gameState.player.y - enemy.y);
-            if (distance <= bombRange) {
-                enemy.frozenTurns = 2; // Stun for 2 turns
-                enemiesStunned = true;
+        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+            // Check if boss is in range
+            const bossCenterX = gameState.boss.x + Math.floor(gameState.boss.size / 2);
+            const bossCenterY = gameState.boss.y + Math.floor(gameState.boss.size / 2);
+            const distanceToBoss = Math.abs(gameState.player.x - bossCenterX) + Math.abs(gameState.player.y - bossCenterY);
+
+            if (distanceToBoss <= bombRange) {
+                takeBossDamage(50); // Bomb deals damage to boss
+                gameState.boss.frozenTurns = 1; // Boss briefly stunned
+                targetsAffected = true;
             }
-        });
-
-        if (enemiesStunned) {
-            statusText.textContent = "BOMB! Enemies stunned! 💥";
         } else {
-            takeDamage(20); // Damage player if no enemies are in range
-            statusText.textContent = "BOMB! No enemies in range, you took damage! 🤕";
+            // Affect normal enemies
+            gameState.enemies.forEach(enemy => {
+                const distance = Math.abs(gameState.player.x - enemy.x) + Math.abs(gameState.player.y - enemy.y);
+                if (distance <= bombRange) {
+                    enemy.frozenTurns = 2; // Stun for 2 turns
+                    targetsAffected = true;
+                }
+            });
         }
+
+        if (targetsAffected) {
+            statusText.textContent = "BOMB! Targets affected! 💥";
+        } else {
+            takeDamage(20); // Damage player if no enemies/boss are in range
+            statusText.textContent = "BOMB! No targets in range, you took damage! 🤕";
+        }
+        moveGameEntities(); // Enemies/boss still get a turn
         updateUI();
         draw();
     }
@@ -699,19 +1050,32 @@ button#resetButton:hover {
      * Checks for player interactions with items, enemies, and the exit.
      */
     function checkInteractions() {
+        // Pick up key
         if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
             gameState.hasKey = true;
+            statusText.textContent = `Level ${gameState.currentLevel}: You picked up the key!`;
         }
 
+        // Reach exit
         if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
-            gameState.gameWon = true;
-            gameState.completionTime = gameState.elapsedTime; // NEW: Record time on win
+            if (gameState.currentLevel < 3) {
+                gameState.currentLevel++;
+                statusText.textContent = `Level ${gameState.currentLevel - 1} Clear! Proceeding to Level ${gameState.currentLevel}!`;
+                // Briefly pause or show a level clear message before setting up next level
+                setTimeout(() => setupLevel(gameState.currentLevel), 500); // Small delay for visual feedback
+                return; // Stop current turn's checks
+            } else { // It's Level 3, game won!
+                gameState.gameWon = true;
+                gameState.completionTime = gameState.elapsedTime;
+            }
         }
 
+        // Pick up potions
         gameState.potions = gameState.potions.filter(potion => {
             if (potion.x === gameState.player.x && potion.y === gameState.player.y) {
                 gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 50);
-                return false;
+                statusText.textContent = "Healed 50 HP! Feeling stronger! ❤️";
+                return false; // Remove potion
             }
             return true;
         });
@@ -719,9 +1083,20 @@ button#resetButton:hover {
 
     /**
      * Checks if a tile at given coordinates is walkable (not a wall).
+     * Accounts for boss tiles if on boss level and boss is not defeated.
      */
     function isWalkable(x, y) {
-        return x >= 0 && x < MAP_WIDTH_TILES && y >= 0 && y < MAP_HEIGHT_TILES && gameState.map[y][x] === Floor;
+        if (x < 0 || x >= MAP_WIDTH_TILES || y < 0 || y >= MAP_HEIGHT_TILES || gameState.map[y][x] === Wall) {
+            return false;
+        }
+        // On boss level, if boss is alive, its tiles are not walkable
+        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+            if (x >= gameState.boss.x && x < (gameState.boss.x + gameState.boss.size) &&
+                y >= gameState.boss.y && y < (gameState.boss.y + gameState.boss.size)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // --- Event Listeners ---
@@ -739,7 +1114,6 @@ button#resetButton:hover {
     // --- Initial Start (Modal first, then game on close) ---
     window.onload = function() {
         showModal();
-        // initGame() is no longer called here. It will be called by closeModal().
     };
 
     // Modal functions
