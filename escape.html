@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dungeon Escape</title>
+<style>
+/* Provided Navbar CSS */
+ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    background-color: #fa07e2;
+    width: 800px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+li {
+    float: left; /* Make list items go side-by-side */
+}
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none; /* No underline for links */
+}
+li a:hover {
+    background-color: #60fa07;
+    color: #000000
+}
+/* Game & Page Styling */
+body {
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-image: url('rickroll.gif'); /* REPLACE WITH YOUR IMAGE PATH/URL */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+    background-attachment: fixed; /* Keeps the background image fixed when scrolling */
+    color: white;
+    margin-top: 20px;
+}
+#game-container {
+    border: 4px solid #ff0000;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #000;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+canvas {
+    background-color: #111;
+    display: block;
+}
+#game-ui {
+    width: 800px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding: 0 5px;
+}
+#status-text {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #000000
+}
+#hp-text {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #28a745; /* Green for health */
+}
+/* Style for Bomb Count and Timer */
+#bomb-text, #timer-text {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #FFA500; /* Orange for bombs */
+    margin: 0 10px; /* Spacing */
+}
+#timer-text {
+    color: #FFFFFF; /* White for timer */
+}
+
+
+button#resetButton {
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+button#resetButton:hover {
+    background-color: #32a852;
+    color: black
+}
+
+/* Mobile Controls (Arrow Buttons) Styling */
+#mobile-controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; /* Space between rows */
+}
+
+.d-pad-row {
+    display: flex;
+    gap: 5px; /* Space between buttons in a row */
+}
+
+.arrow-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s;
+    min-width: 60px; /* Ensure good touch target */
+    min-height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.arrow-button:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+}
+
+.arrow-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Specific style for the bomb button to distinguish it */
+#bombButton {
+    background-color: #FF4500; /* OrangeRed */
+    border: 2px solid #CD3333; /* Darker red */
+}
+#bombButton:hover {
+    background-color: #E04000;
+}
+
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be responsive */
+    max-width: 500px;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    color: black; /* Ensure text is visible */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    color: #ff0000;
+    margin-top: 0;
+}
+
+.modal-content button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 15px;
+}
+
+.modal-content button:hover {
+    background-color: #45a049;
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+<ul>
+    <li><a href="turtle.html">⬅ Back to game selection</a></li>
+</ul>
+<h1 style="color:black;">Controls</h1>
+<p style="color:black;">Use arrow keys, WASD, or the on-screen buttons</p>
+<p style="color:black;">Press 'R' or click "New Game" to reset</p>
+<p style="color:black;">If you want to heal, get the heart (Potion) Max: 100 (Health in bottom-right corner)</p>
+<p style="color:black;">Press 'X' or the bomb button to use a bomb (stuns nearby enemies, or damages you if no enemies are in range!)</p>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+</div>
+<div id="game-ui">
+    <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
+    <span id="bomb-text">Bombs: 3 💣</span>
+    <button id="resetButton">New Game</button>
+    <span id="hp-text">HP: 100</span>
+    <span id="timer-text">Time: 01:00</span> <!-- UPDATED: Initial timer display to 01:00 -->
+</div>
+
+<div id="mobile-controls">
+    <div class="d-pad-row">
+        <button id="upButton" class="arrow-button">⬆️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="leftButton" class="arrow-button">⬅️</button>
+        <button id="bombButton" class="arrow-button">💣</button>
+        <button id="rightButton" class="arrow-button">➡️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="downButton" class="arrow-button">⬇️</button>
+    </div>
+</div>
+
+<div id="warningModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2>WARNING!</h2>
+        <p>This game is SO hard that the creator himself could only beat it ONCE!! If you beat it, tell me in the comments of ANY of my videos and I will give you a shoutout!! Good luck and have fun!!</p>
+        <button onclick="closeModal()">Got It!</button>
+    </div>
+</div>
+
+<script>
+    // --- Game Setup ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const resetButton = document.getElementById('resetButton');
+    const statusText = document.getElementById('status-text');
+    const hpText = document.getElementById('hp-text');
+    const bombText = document.getElementById('bomb-text');
+    const timerText = document.getElementById('timer-text');
+    const bombButton = document.getElementById('bombButton');
+
+    const TILE_SIZE = 40;
+    const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
+    const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
+
+    const Wall = '🪨';
+    const Floor = ' ';
+    const Player = '🙍';
+    const Enemy = '🐉';
+    const Key = '🔑';
+    const Exit = '🚪';
+    const Potion = '❤️';
+    const PlayerWin = '🥳';
+    const FrozenEnemy = '❄️';
+
+    let gameState = {};
+    let animationFrameId; // To store the animation frame ID for timer
+
+    // --- Game Logic ---
+    /**
+     * Initializes or resets the game state.
+     */
+    function initGame() {
+        if(animationFrameId) { // Stop any existing animation frame (like the timer)
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null; // Clear the ID
+        }
+
+        gameState = {
+            map: generateMap(),
+            player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 3 },
+            enemies: [],
+            key: { x: 0, y: 0 },
+            exit: { x: 0, y: 0 },
+            potions: [],
+            hasKey: false,
+            gameOver: false,
+            gameWon: false,
+            gameOverReason: null, // Stores 'time' or 'hp' if game over
+            turn: 0, // Turn counter for enemy movement
+            startTime: null, // For tracking when the timer started
+            initialTime: 60 * 1000, // UPDATED: 1 minute in milliseconds (60 seconds)
+            remainingTime: 60 * 1000 // UPDATED: Current remaining time for the countdown
+        };
+        placeEntities();
+        updateUI();
+        gameState.startTime = performance.now(); // Record start time for countdown
+        gameLoop();
+    }
+
+    /**
+     * Procedurally generates a cave-like map using Cellular Automata.
+     */
+    function generateMap() {
+        let map = Array.from({ length: MAP_HEIGHT_TILES }, () =>
+            Array.from({ length: MAP_WIDTH_TILES }, () => Math.random() < 0.45 ? Wall : Floor)
+        );
+
+        // Automata simulation to smooth out the map into caves
+        for (let i = 0; i < 4; i++) {
+            let newMap = JSON.parse(JSON.stringify(map));
+            for (let y = 1; y < MAP_HEIGHT_TILES - 1; y++) {
+                for (let x = 1; x < MAP_WIDTH_TILES - 1; x++) {
+                    let wallCount = 0;
+                    for (let ny = y - 1; ny <= y + 1; ny++) {
+                        for (let nx = x - 1; nx <= x + 1; nx++) {
+                            if (map[ny][nx] === Wall) {
+                                wallCount++;
+                            }
+                        }
+                    }
+                    newMap[y][x] = wallCount > 4 ? Wall : Floor;
+                }
+            }
+            map = newMap;
+        }
+
+        // Add a border of walls
+        for(let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            map[y][0] = Wall;
+            map[y][MAP_WIDTH_TILES-1] = Wall;
+        }
+        for(let x = 0; x < MAP_WIDTH_TILES; x++) {
+            map[0][x] = Wall;
+            map[MAP_HEIGHT_TILES-1][x] = Wall;
+        }
+        return map;
+    }
+
+    /**
+     * Places the player, enemies, key, exit, and potions on valid floor tiles.
+     */
+    function placeEntities() {
+        const floorTiles = [];
+        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                if (gameState.map[y][x] === Floor) {
+                    floorTiles.push({ x, y });
+                }
+            }
+        }
+
+        const getRandomTile = () => {
+            const index = Math.floor(Math.random() * floorTiles.length);
+            return floorTiles.splice(index, 1)[0];
+        };
+
+        // Place Player, Key, Exit
+        Object.assign(gameState.player, getRandomTile());
+        Object.assign(gameState.key, getRandomTile());
+        Object.assign(gameState.exit, getRandomTile());
+
+        // Place Enemies
+        const NUM_ENEMIES = 5;
+        for (let i = 0; i < NUM_ENEMIES; i++) {
+            if (floorTiles.length > 0) {
+                const enemyPos = getRandomTile();
+                gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 });
+            }
+        }
+
+        // Place Potions
+        const NUM_POTIONS = 3;
+        for (let i = 0; i < NUM_POTIONS; i++) {
+            if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
+        }
+    }
+
+    /**
+     * The main game loop, responsible for updating and drawing.
+     */
+    function gameLoop(currentTime) {
+        if (!gameState.startTime) {
+            gameState.startTime = currentTime;
+        }
+
+        // Calculate elapsed time from the start
+        const elapsedTimeFromStart = currentTime - gameState.startTime;
+        // Calculate remaining time
+        gameState.remainingTime = gameState.initialTime - elapsedTimeFromStart;
+
+        if (gameState.remainingTime <= 0) {
+            gameState.remainingTime = 0; // Cap at 0
+            if (!gameState.gameOver && !gameState.gameWon) { // Only trigger game over if not already won
+                gameState.gameOver = true;
+                gameState.gameOverReason = 'time'; // Set the reason for game over
+            }
+        }
+
+        if (gameState.gameOver || gameState.gameWon) {
+            draw();
+            updateUI(); // Ensure UI updates one last time
+            if (animationFrameId) { // Ensure timer stops when game is over/won
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null; // Clear the ID
+            }
+            return; // Stop the loop if game is over or won
+        }
+
+        update();
+        draw();
+        updateUI();
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    /**
+     * Updates the game state (e.g., enemy movement).
+     */
+    function update() {
+        // This function is intentionally simple for this turn-based structure.
+        // Complex updates happen in response to player input.
+    }
+
+    /**
+     * Moves all enemies based on simple AI.
+     */
+    function moveEnemies() {
+        gameState.enemies.forEach(enemy => {
+            if (enemy.frozenTurns > 0) {
+                enemy.frozenTurns--;
+                return;
+            }
+
+            const huntPlayer = Math.random() > 0.5;
+            let dx = 0, dy = 0;
+
+            if (huntPlayer) {
+                dx = Math.sign(gameState.player.x - enemy.x);
+                dy = Math.sign(gameState.player.y - enemy.y);
+            } else {
+                dx = Math.floor(Math.random() * 3) - 1;
+                dy = Math.floor(Math.random() * 3) - 1;
+            }
+
+            const nextX = enemy.x + dx;
+            const nextY = enemy.y + dy;
+
+            if (isWalkable(nextX, nextY)) {
+                enemy.x = nextX;
+                enemy.y = nextY;
+            }
+
+            if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
+                takeDamage(15);
+                enemy.frozenTurns = 2;
+            }
+        });
+    }
+
+    /**
+     * Renders the entire game state to the canvas.
+     */
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = `${TILE_SIZE * 0.8}px monospace`;
+
+        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                if (gameState.map[y][x] === Wall) {
+                    ctx.fillText(Wall, x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE);
+                }
+            }
+        }
+
+        const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
+
+        if(!gameState.hasKey) drawEntity(gameState.key, Key);
+        drawEntity(gameState.exit, Exit);
+        gameState.potions.forEach(potion => drawEntity(potion, Potion));
+
+        gameState.enemies.forEach(enemy => {
+            let enemySymbol = Enemy;
+            if (gameState.gameWon) {
+                enemySymbol = '💀';
+            } else if (enemy.frozenTurns > 0) {
+                enemySymbol = FrozenEnemy;
+            }
+            drawEntity(enemy, enemySymbol);
+        });
+
+        let currentPlayerSymbol = Player;
+        if (gameState.gameOver) {
+            currentPlayerSymbol = '💀';
+        } else if (gameState.gameWon) {
+            currentPlayerSymbol = PlayerWin;
+        }
+        drawEntity(gameState.player, currentPlayerSymbol);
+
+        if (gameState.gameOver || gameState.gameWon) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
+            ctx.font = 'bold 60px Courier New';
+            ctx.textAlign = 'center';
+            // Corrected: Differentiate Game Over message on canvas
+            const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' :
+                            (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
+            ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+            ctx.textAlign = 'left';
+        }
+    }
+
+    /**
+     * Updates the UI elements (status, HP, bombs, and timer text).
+     */
+    function updateUI() {
+        if (gameState.gameOver) {
+            // Corrected: Display specific game over message based on reason
+            if (gameState.gameOverReason === 'time') {
+                statusText.textContent = "Times up! 💀";
+            } else if (gameState.gameOverReason === 'hp') {
+                statusText.textContent = "Game Over! 💀";
+            } else { // Fallback, shouldn't be hit with current logic
+                statusText.textContent = "Game Over! 💀";
+            }
+            hpText.style.color = "#dc3545"; // Red for game over HP
+        } else if (gameState.gameWon) {
+            statusText.textContent = "Congratulations! You escaped! 🎉";
+            hpText.style.color = "#28a745";
+        } else if (gameState.hasKey) {
+            statusText.textContent = "You have the key! Go to the door! 🚪";
+        } else {
+            statusText.textContent = "Find the key 🔑 and escape!";
+        }
+        hpText.textContent = `HP: ${gameState.player.hp}`;
+        if(gameState.player.hp < 30 && !gameState.gameOver) { // Only change color if not already game over
+            hpText.style.color = "#ffc107";
+        } else if (!gameState.gameOver){
+            hpText.style.color = "#28a745";
+        }
+
+        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`; // Ensure no double bomb emoji
+
+        const minutes = Math.floor(gameState.remainingTime / 60000);
+        const seconds = Math.floor((gameState.remainingTime % 60000) / 1000);
+        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        timerText.textContent = `Time: ${formattedTime}`;
+
+        // Change timer color when low or game over
+        if (gameState.remainingTime < 10000 && gameState.remainingTime > 0) { // Less than 10 seconds
+            timerText.style.color = "#FF4500"; // OrangeRed
+        } else if (gameState.remainingTime <= 0) {
+            timerText.style.color = "#dc3545"; // Red
+        } else {
+            timerText.style.color = "#FFFFFF"; // Default white
+        }
+    }
+
+    /**
+     * Reduces player HP and checks for game over.
+     */
+    function takeDamage(amount) {
+        gameState.player.hp = Math.max(0, gameState.player.hp - amount);
+        if (gameState.player.hp <= 0) {
+            gameState.gameOver = true;
+            gameState.gameOverReason = 'hp'; // Set the reason for game over
+        }
+        updateUI();
+    }
+
+    /**
+     * New function to handle player movement logic
+     */
+    function movePlayer(dx, dy) {
+        if (gameState.gameOver || gameState.gameWon) return;
+
+        const nextX = gameState.player.x + dx;
+        const nextY = gameState.player.y + dy;
+
+        if (isWalkable(nextX, nextY)) {
+            gameState.player.x = nextX;
+            gameState.player.y = nextY;
+
+            moveEnemies();
+            checkInteractions();
+            updateUI();
+        }
+    }
+
+    /**
+     * Function to handle bomb usage.
+     */
+    function useBomb() {
+        if (gameState.gameOver || gameState.gameWon) return;
+        if (gameState.player.bombs <= 0) {
+            statusText.textContent = "No bombs left! 💥";
+            return;
+        }
+
+        gameState.player.bombs--;
+        let enemiesStunned = false;
+        const bombRange = 3; // Max Manhattan distance for stun
+
+        gameState.enemies.forEach(enemy => {
+            const distance = Math.abs(gameState.player.x - enemy.x) + Math.abs(gameState.player.y - enemy.y);
+            if (distance <= bombRange) {
+                enemy.frozenTurns = 2; // Stun for 2 turns
+                enemiesStunned = true;
+            }
+        });
+
+        if (enemiesStunned) {
+            statusText.textContent = "BOMB! Enemies stunned! 💥";
+        } else {
+            takeDamage(20); // Damage player if no enemies are in range
+            statusText.textContent = "BOMB! No enemies in range, you took damage! 🤕";
+        }
+        updateUI();
+        draw();
+    }
+
+    /**
+     * Handles player movement and interactions from keyboard.
+     */
+    function handleInput(event) {
+        let dx = 0, dy = 0;
+        switch (event.key) {
+            case 'ArrowUp':
+            case 'w':
+            case 'W':
+                dy = -1;
+                break;
+            case 'ArrowDown':
+            case 's':
+            case 'S':
+                dy = 1;
+                break;
+            case 'ArrowLeft':
+            case 'a':
+            case 'A':
+                dx = -1;
+                break;
+            case 'ArrowRight':
+            case 'd':
+            case 'D':
+                dx = 1;
+                break;
+            case 'r':
+            case 'R':
+                initGame();
+                return;
+            case 'x':
+            case 'X':
+                useBomb();
+                return;
+            default:
+                return;
+        }
+        movePlayer(dx, dy);
+    }
+
+    /**
+     * Checks for player interactions with items, enemies, and the exit.
+     */
+    function checkInteractions() {
+        if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
+            gameState.hasKey = true;
+        }
+
+        if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
+            gameState.gameWon = true;
+        }
+
+        gameState.potions = gameState.potions.filter(potion => {
+            if (potion.x === gameState.player.x && potion.y === gameState.player.y) {
+                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 50);
+                return false;
+            }
+            return true;
+        });
+    }
+
+    /**
+     * Checks if a tile at given coordinates is walkable (not a wall).
+     */
+    function isWalkable(x, y) {
+        return x >= 0 && x < MAP_WIDTH_TILES && y >= 0 && y < MAP_HEIGHT_TILES && gameState.map[y][x] === Floor;
+    }
+
+    // --- Event Listeners ---
+    window.addEventListener('keydown', handleInput);
+    resetButton.addEventListener('click', initGame);
+
+    // Event listeners for arrow buttons
+    document.getElementById('upButton').addEventListener('click', () => movePlayer(0, -1));
+    document.getElementById('downButton').addEventListener('click', () => movePlayer(0, 1));
+    document.getElementById('leftButton').addEventListener('click', () => movePlayer(-1, 0));
+    document.getElementById('rightButton').addEventListener('click', () => movePlayer(1, 0));
+    bombButton.addEventListener('click', useBomb);
+
+
+    // --- Initial Start (Modal first, then game on close) ---
+    window.onload = function() {
+        showModal();
+        // initGame() is no longer called here. It will be called by closeModal().
+    };
+
+    // Modal functions
+    function showModal() {
+        document.getElementById('warningModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('warningModal').style.display = 'none';
+        initGame(); // <-- Game (and timer) starts here after the modal is closed!
+    }
+</script>
+<audio autoplay loop>
+  <source src="indian.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+</body>
+</html>
