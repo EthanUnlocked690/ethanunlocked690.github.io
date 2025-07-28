@@ -12,7 +12,7 @@ ul {
     padding: 0px;
     overflow: hidden;
     background-color: #fa07e2;
-    width: 800px;
+    width: 1000px; /* Updated width */
     border-radius: 8px;
     margin-bottom: 10px;
 }
@@ -56,7 +56,7 @@ canvas {
     display: block;
 }
 #game-ui {
-    width: 800px;
+    width: 1000px; /* Updated width */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -232,7 +232,7 @@ button#resetButton:hover {
 <p style="color:black;">Press 'X' or the bomb button to use a bomb (stuns nearby enemies, or damages you if no enemies are in range!)</p>
 
 <div id="game-container">
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="1000" height="750"></canvas> <!-- Updated width and height -->
 </div>
 <div id="game-ui">
     <span id="status-text" style="color:black;">Find the key 🔑 and escape through the door🚪!</span>
@@ -277,12 +277,13 @@ button#resetButton:hover {
     const bombButton = document.getElementById('bombButton');
 
     const TILE_SIZE = 40;
+    // Updated MAP_WIDTH_TILES and MAP_HEIGHT_TILES based on new canvas size
     const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
     const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
 
     const Wall = '🪨';
     const Floor = ' ';
-    const Player = '🙍';
+    const Player = '�';
     const Enemy = '🐉'; // Standard enemy dragon
     const GIANT_DRAGON_BOSS = '🐲'; // Different dragon emoji for the boss
     const Key = '🔑';
