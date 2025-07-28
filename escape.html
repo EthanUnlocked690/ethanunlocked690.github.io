@@ -327,7 +327,17 @@ button#resetButton:hover {
             typedTimeLeft: '', // Store typed time left
             currentLevel: 1, // NEW: Start at level 1
             boss: null, // NEW: Boss object, null until level 3
-            bossDefeated: false // NEW: Track boss status
+            bossDefeated: false, // NEW: Track boss status
+            showingLevelTransition: false, // NEW: For level transition messages
+            levelTransitionMessage: '', // NEW: Text for level transition
+            cinematicActive: false, // NEW: For boss cinematic
+            bossCinematicText: '', // NEW: Text for boss cinematic
+            bossCinematicAlpha: 0, // NEW: Alpha for boss cinematic text fade
+            explosionActive: false, // NEW: For boss explosion
+            explosionX: 0, // NEW: Explosion center X
+            explosionY: 0, // NEW: Explosion center Y
+            explosionRadius: 0, // NEW: Explosion current radius
+            explosionAlpha: 1 // NEW: Explosion current opacity
         };
         setupLevel(gameState.currentLevel); // Start the first level
         gameState.startTime = performance.now(); // Record start time for countdown
@@ -341,6 +351,7 @@ button#resetButton:hover {
         // Reset player's dynamic stats for the new level but keep overall HP
         gameState.player.x = 0;
         gameState.player.y = 0;
+        gameState.player.hp = gameState.player.maxHp; // Player health now goes to full
         gameState.player.bombs = 5; // Give new bombs each level, now 5
         gameState.player.attackDamage = 15; // Reset attack damage for new level
 
@@ -531,30 +542,26 @@ button#resetButton:hover {
             gameState.startTime = currentTime;
         }
 
-        gameState.elapsedTime = currentTime - gameState.startTime;
-        gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
+        // Only update game logic if no special cinematic/transition/explosion is active
+        if (!gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.explosionActive) {
+            gameState.elapsedTime = currentTime - gameState.startTime;
+            gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
 
-        if (gameState.remainingTime <= 0) {
-            gameState.remainingTime = 0;
-            if (!gameState.gameOver && !gameState.gameWon) {
-                gameState.gameOver = true;
-                gameState.gameOverReason = 'time';
+            if (gameState.remainingTime <= 0) {
+                gameState.remainingTime = 0;
+                if (!gameState.gameOver && !gameState.gameWon) {
+                    gameState.gameOver = true;
+                    gameState.gameOverReason = 'time';
+                }
+            }
+
+            if (!(gameState.gameOver || gameState.gameWon)) {
+                update(); // Still call update for any passive updates
             }
         }
 
-        if (gameState.gameOver || gameState.gameWon) {
-            draw();
-            updateUI();
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-            return;
-        }
-
-        update();
         draw();
-        updateUI();
+        updateUI(); // UI always updates
         animationFrameId = requestAnimationFrame(gameLoop);
     }
 
@@ -753,14 +760,65 @@ button#resetButton:hover {
         }
         drawEntity(gameState.player, currentPlayerSymbol);
 
+        // Draw explosion (if active)
+        if (gameState.explosionActive) {
+            ctx.save(); // Save current canvas state
+            ctx.globalAlpha = gameState.explosionAlpha; // Apply fading effect
+            ctx.fillStyle = 'orange';
+            ctx.beginPath();
+            ctx.arc(gameState.explosionX * TILE_SIZE + TILE_SIZE / 2,
+                    gameState.explosionY * TILE_SIZE + TILE_SIZE / 2,
+                    gameState.explosionRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'yellow';
+            ctx.beginPath();
+            ctx.arc(gameState.explosionX * TILE_SIZE + TILE_SIZE / 2,
+                    gameState.explosionY * TILE_SIZE + TILE_SIZE / 2,
+                    gameState.explosionRadius * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore(); // Restore canvas state (remove globalAlpha)
+        }
+
+        // Draw level transition message (overlay)
+        if (gameState.showingLevelTransition) {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 40px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText(gameState.levelTransitionMessage, canvas.width / 2, canvas.height / 2);
+            ctx.textAlign = 'left';
+        }
+
+        // Draw cinematic (overlay)
+        if (gameState.cinematicActive) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear everything for cinematic
+            ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // Solid black background
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = `rgba(255, 255, 255, ${gameState.bossCinematicAlpha})`;
+            ctx.font = 'bold 50px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText(gameState.bossCinematicText, canvas.width / 2, canvas.height / 2);
+            ctx.textAlign = 'left';
+        }
+
+        // Game Over / Game Won screen (overlay)
         if (gameState.gameOver || gameState.gameWon) {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
             ctx.font = 'bold 60px Courier New';
             ctx.textAlign = 'center';
-            const message = gameState.gameWon ? 'YOU ESCAPED! 🎉' :
-                                (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
+            let message = '';
+            if (gameState.gameWon) {
+                message = 'YOU ESCAPED! 🎉';
+                if (gameState.currentLevel === 3) { // Specific message for final boss win
+                    message = 'Congratulations! You beat the final boss!';
+                }
+            } else {
+                message = (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
+            }
             ctx.fillText(message, canvas.width / 2, canvas.height / 2);
 
             // Display completion time and time left on win screen with typing effect
@@ -776,6 +834,12 @@ button#resetButton:hover {
 
                 ctx.fillText(gameState.typedCompletionTime, canvas.width / 2, canvas.height / 2 + 50);
                 ctx.fillText(gameState.typedTimeLeft, canvas.width / 2, canvas.height / 2 + 100);
+
+                // Add YouTube message for final boss win
+                if (gameState.currentLevel === 3) {
+                    ctx.font = 'bold 25px Courier New';
+                    ctx.fillText("Don't forget to subscribe to Ethan and Isabella Unlocked on YT!!", canvas.width / 2, canvas.height / 2 + 150);
+                }
             }
             ctx.textAlign = 'left';
         }
@@ -929,199 +993,257 @@ button#resetButton:hover {
         gameState.boss.hp = Math.max(0, gameState.boss.hp - amount);
         if (gameState.boss.hp <= 0) {
             gameState.bossDefeated = true;
-            // Key appears where the boss was centered
-            gameState.key.x = gameState.boss.x + Math.floor(gameState.boss.size / 2);
-            gameState.key.y = gameState.boss.y + Math.floor(gameState.boss.size / 2);
-            statusText.textContent = "Boss defeated! The key appeared! 🔑";
+            gameState.explosionActive = true;
+            gameState.explosionX = gameState.boss.x + Math.floor(gameState.boss.size / 2);
+            gameState.explosionY = gameState.boss.y + Math.floor(gameState.boss.size / 2);
+            gameState.explosionRadius = 0;
+            gameState.explosionAlpha = 1;
+            statusText.textContent = "The GIANT Dragon has fallen! Pick up the key! 🔑"; // This will be overwritten by final message
+
+            let explosionStartTime = performance.now();
+            function animateExplosion(currentTime) {
+                const elapsed = currentTime - explosionStartTime;
+                const duration = 1500; // Explosion lasts 1.5 seconds
+
+                if (elapsed < duration) {
+                    gameState.explosionRadius = (elapsed / duration) * (TILE_SIZE * 5); // Max radius 5 tiles
+                    gameState.explosionAlpha = 1 - (elapsed / duration); // Fade out
+                    requestAnimationFrame(animateExplosion);
+                } else {
+                    gameState.explosionActive = false;
+                    // Key appears after explosion
+                    gameState.key.x = gameState.boss.x + Math.floor(gameState.boss.size / 2);
+                    gameState.key.y = gameState.boss.y + Math.floor(gameState.boss.size / 2);
+                    draw(); // Redraw to show key
+                    updateUI(); // Update UI to show key status
+                }
+            }
+            requestAnimationFrame(animateExplosion);
         }
-        draw(); // Redraw to update health bar immediately
+        updateUI();
+        draw(); // Redraw the canvas to show the updated boss health or the key
     }
 
     /**
-     * Handles player movement logic.
+     * Checks if a tile is walkable (not a wall and within bounds).
+     */
+    function isWalkable(x, y) {
+        return x >= 0 && x < MAP_WIDTH_TILES &&
+               y >= 0 && y < MAP_HEIGHT_TILES &&
+               gameState.map[y][x] !== Wall;
+    }
+
+    /**
+     * Handles player movement and interactions.
      */
     function movePlayer(dx, dy) {
-        if (gameState.gameOver || gameState.gameWon) return;
+        if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition || gameState.cinematicActive || gameState.explosionActive) return;
 
-        const nextX = gameState.player.x + dx;
-        const nextY = gameState.player.y + dy;
+        const newPlayerX = gameState.player.x + dx;
+        const newPlayerY = gameState.player.y + dy;
 
-        if (isWalkable(nextX, nextY)) {
-            // Check if moving into a boss tile
-            if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
-                const tempPlayer = { x: nextX, y: nextY };
-                if (isPlayerCollidingWithBoss(tempPlayer, gameState.boss)) {
-                    // Player cannot move into boss tiles, but gets attacked
-                    takeDamage(gameState.boss.damage);
-                    gameState.boss.frozenTurns = 1; // Boss briefly stunned after attacking
-                    moveGameEntities(); // Still let enemies/boss move
-                    checkInteractions();
-                    updateUI();
-                    return; // Player movement blocked
+        if (isWalkable(newPlayerX, newPlayerY)) {
+            gameState.player.x = newPlayerX;
+            gameState.player.y = newPlayerY;
+
+            // Pick up key
+            if (gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y && !gameState.hasKey) {
+                gameState.hasKey = true;
+                statusText.textContent = `Level ${gameState.currentLevel}: You found the key! Now find the exit! 🚪`;
+            }
+
+            // Pick up potion
+            const potionIndex = gameState.potions.findIndex(p => p.x === gameState.player.x && p.y === gameState.player.y);
+            if (potionIndex !== -1) {
+                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 25); // Heal 25 HP
+                gameState.potions.splice(potionIndex, 1); // Remove potion
+                statusText.textContent = `You used a potion! HP: ${gameState.player.hp}`;
+            }
+
+            // Pick up weapon (only on boss level, for simplicity)
+            if (gameState.currentLevel === 3 && gameState.weapon && gameState.player.x === gameState.weapon.x && gameState.player.y === gameState.weapon.y) {
+                gameState.player.attackDamage += 25; // Increase attack damage
+                gameState.weapon = null; // Remove weapon from map
+                statusText.textContent = `You picked up a weapon! Attack +25!`;
+            }
+
+            // Enter exit
+            if (gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
+                if (gameState.hasKey || (gameState.currentLevel === 3 && gameState.bossDefeated)) {
+                    if (gameState.currentLevel < 3) { // Advance to next level
+                        gameState.showingLevelTransition = true;
+                        if (gameState.currentLevel === 2) {
+                            gameState.levelTransitionMessage = `Level 2 complete! Moving onto final boss...`;
+                        } else {
+                            gameState.levelTransitionMessage = `Level ${gameState.currentLevel} complete! Moving to Level ${gameState.currentLevel + 1}...`;
+                        }
+                        // Pause game updates, display message, then transition
+                        setTimeout(() => {
+                            gameState.showingLevelTransition = false;
+                            gameState.currentLevel++;
+                            if (gameState.currentLevel === 3) {
+                                startBossCinematic(); // Start cinematic for boss level
+                            } else {
+                                setupLevel(gameState.currentLevel); // Proceed to next regular level
+                            }
+                        }, 2000); // Show message for 2 seconds
+                    } else { // Game won on Level 3
+                        gameState.gameWon = true;
+                        gameState.completionTime = gameState.elapsedTime;
+                        // The final message is handled in draw()
+                    }
+                } else {
+                    statusText.textContent = `Level ${gameState.currentLevel}: You need the key to open the door! 🔑`;
                 }
             }
 
-            gameState.player.x = nextX;
-            gameState.player.y = nextY;
-
-            moveGameEntities(); // Move enemies/boss after player
-            checkInteractions();
-            updateUI();
-        }
-    }
-
-    /**
-     * Function to handle bomb usage.
-     */
-    function useBomb() {
-        if (gameState.gameOver || gameState.gameWon) return;
-        if (gameState.player.bombs <= 0) {
-            statusText.textContent = "No bombs left! 💥";
-            return;
-        }
-
-        gameState.player.bombs--;
-        let targetsAffected = false;
-        const bombRange = 4; // Increased range for bomb
-
-        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
-            // Check if boss is in range
-            const bossCenterX = gameState.boss.x + Math.floor(gameState.boss.size / 2);
-            const bossCenterY = gameState.boss.y + Math.floor(gameState.boss.size / 2);
-            const distanceToBoss = Math.abs(gameState.player.x - bossCenterX) + Math.abs(gameState.player.y - bossCenterY);
-
-            if (distanceToBoss <= bombRange) {
-                takeBossDamage(50); // Bomb deals damage to boss
-                gameState.boss.frozenTurns = 1; // Boss briefly stunned
-                targetsAffected = true;
+            // Handle combat with regular enemies after player moves
+            const enemyHit = gameState.enemies.find(enemy => enemy.x === gameState.player.x && enemy.y === gameState.player.y);
+            if (enemyHit) {
+                takeEnemyDamage(enemyHit);
             }
-        } else {
-            // Affect normal enemies
-            gameState.enemies.forEach(enemy => {
-                const distance = Math.abs(gameState.player.x - enemy.x) + Math.abs(gameState.player.y - enemy.y);
-                if (distance <= bombRange) {
-                    enemy.frozenTurns = 2; // Stun for 2 turns
-                    targetsAffected = true;
-                }
-            });
-        }
 
-        if (targetsAffected) {
-            statusText.textContent = "BOMB! Targets affected! 💥";
-        } else {
-            takeDamage(20); // Damage player if no enemies/boss are in range
-            statusText.textContent = "BOMB! No targets in range, you took damage! 🤕";
+            // Handle combat with boss after player moves (if on boss level)
+            if (gameState.currentLevel === 3 && gameState.boss && isPlayerCollidingWithBoss(gameState.player, gameState.boss) && !gameState.bossDefeated) {
+                takeBossDamage(gameState.player.attackDamage);
+            }
+
+
+            // Only move game entities if not in a transition/cinematic/explosion
+            if (!gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.explosionActive) {
+                moveGameEntities();
+            }
         }
-        moveGameEntities(); // Enemies/boss still get a turn
         updateUI();
         draw();
     }
 
     /**
-     * Handles player movement and interactions from keyboard.
+     * Player attacks a regular enemy.
      */
-    function handleInput(event) {
-        let dx = 0, dy = 0;
-        switch (event.key) {
+    function takeEnemyDamage(enemy) {
+        // Player deals damage to enemy. Since enemies don't have HP in this simple setup,
+        // they are simply defeated upon contact if player has attackDamage.
+        // For a more complex game, enemies would have HP.
+        // For now, if the player has attackDamage, the enemy is removed.
+        if (gameState.player.attackDamage > 0) { // If player has any attack capability
+            const index = gameState.enemies.indexOf(enemy);
+            if (index > -1) {
+                gameState.enemies.splice(index, 1); // Remove enemy
+                statusText.textContent = "You defeated an enemy! 🐉";
+            }
+        }
+    }
+
+    /**
+     * Starts the cinematic for the boss fight.
+     */
+    function startBossCinematic() {
+        gameState.cinematicActive = true;
+        gameState.bossCinematicText = "A GIANT shadow looms... The FINAL BOSS awaits!";
+        gameState.bossCinematicAlpha = 0; // For fading in text
+        let cinematicStartTime = performance.now();
+
+        function animateCinematic(currentTime) {
+            const elapsed = currentTime - cinematicStartTime;
+            const duration = 3000; // Cinematic lasts 3 seconds
+
+            // Fade in
+            gameState.bossCinematicAlpha = Math.min(1, elapsed / 1000); // Fade in over 1 second
+
+            draw(); // Only draw the cinematic
+
+            if (elapsed < duration) {
+                requestAnimationFrame(animateCinematic);
+            } else {
+                gameState.cinematicActive = false;
+                setupLevel(3); // Setup the boss level after cinematic
+                // gameLoop is already running, no need to restart it explicitly
+            }
+        }
+        requestAnimationFrame(animateCinematic);
+    }
+
+    /**
+     * Uses a bomb, stunning/damaging nearby enemies or damaging the player.
+     */
+    function useBomb() {
+        if (gameState.gameOver || gameState.gameWon || gameState.player.bombs <= 0 || gameState.showingLevelTransition || gameState.cinematicActive || gameState.explosionActive) return;
+
+        gameState.player.bombs--; // Consume a bomb
+
+        let enemiesAffected = false;
+        // Iterate over a 5x5 area around the player for bomb effect
+        for (let y = gameState.player.y - 2; y <= gameState.player.y + 2; y++) {
+            for (let x = gameState.player.x - 2; x <= gameState.player.x + 2; x++) {
+                // Check for regular enemies
+                const enemy = gameState.enemies.find(e => e.x === x && e.y === y);
+                if (enemy) {
+                    enemy.frozenTurns = 3; // Stun for 3 turns
+                    enemiesAffected = true;
+                }
+                // Check for boss (if on boss level)
+                if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+                    // Check if bomb blast overlaps with any part of the boss's 3x3 area
+                    if (x >= gameState.boss.x && x < gameState.boss.x + gameState.boss.size &&
+                        y >= gameState.boss.y && y < gameState.boss.y + gameState.boss.size) {
+                        takeBossDamage(50); // Bombs deal damage to boss
+                        gameState.boss.frozenTurns = 2; // Stun boss for 2 turns
+                        enemiesAffected = true;
+                    }
+                }
+            }
+        }
+
+        if (enemiesAffected) {
+            statusText.textContent = "Bomb used! Enemies stunned/damaged! 💥";
+        } else {
+            takeDamage(10); // Damage player if no enemies were affected
+            statusText.textContent = "Bomb missed! You took 10 damage! 🤕";
+        }
+        // Only move game entities if not in a transition/cinematic/explosion
+        if (!gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.explosionActive) {
+            moveGameEntities();
+        }
+        updateUI();
+        draw();
+    }
+
+    // --- Event Listeners ---
+    document.addEventListener('keydown', (e) => {
+        switch (e.key) {
             case 'ArrowUp':
             case 'w':
             case 'W':
-                dy = -1;
+                movePlayer(0, -1);
                 break;
             case 'ArrowDown':
             case 's':
             case 'S':
-                dy = 1;
+                movePlayer(0, 1);
                 break;
             case 'ArrowLeft':
             case 'a':
             case 'A':
-                dx = -1;
+                movePlayer(-1, 0);
                 break;
             case 'ArrowRight':
             case 'd':
             case 'D':
-                dx = 1;
+                movePlayer(1, 0);
                 break;
             case 'r':
             case 'R':
                 initGame();
-                return;
+                break;
             case 'x':
             case 'X':
                 useBomb();
-                return;
-            default:
-                return;
+                break;
         }
-        movePlayer(dx, dy);
-    }
+    });
 
-    /**
-     * Checks for player interactions with items, enemies, and the exit.
-     */
-    function checkInteractions() {
-        // Pick up key
-        if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
-            gameState.hasKey = true;
-            statusText.textContent = `Level ${gameState.currentLevel}: You picked up the key!`;
-        }
-
-        // Reach exit
-        if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
-            if (gameState.currentLevel < 3) {
-                gameState.currentLevel++;
-                statusText.textContent = `Level ${gameState.currentLevel - 1} Clear! Proceeding to Level ${gameState.currentLevel}!`;
-                // Briefly pause or show a level clear message before setting up next level
-                setTimeout(() => setupLevel(gameState.currentLevel), 500); // Small delay for visual feedback
-                return; // Stop current turn's checks
-            } else { // It's Level 3, game won!
-                gameState.gameWon = true;
-                gameState.completionTime = gameState.elapsedTime;
-            }
-        }
-
-        // Pick up potions
-        gameState.potions = gameState.potions.filter(potion => {
-            if (potion.x === gameState.player.x && potion.y === gameState.player.y) {
-                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 50);
-                statusText.textContent = "Healed 50 HP! Feeling stronger! ❤️";
-                return false; // Remove potion
-            }
-            return true;
-        });
-
-        // NEW: Pick up weapon on Level 3
-        if (gameState.currentLevel === 3 && gameState.weapon && gameState.player.x === gameState.weapon.x && gameState.player.y === gameState.weapon.y) {
-            gameState.player.attackDamage = 50; // Boost player damage!
-            gameState.weapon = null; // Remove weapon from map
-            statusText.textContent = "You picked up the powerful weapon! Attack increased! ⚔️";
-        }
-    }
-
-    /**
-     * Checks if a tile at given coordinates is walkable (not a wall).
-     * Accounts for boss tiles if on boss level and boss is not defeated.
-     */
-    function isWalkable(x, y) {
-        if (x < 0 || x >= MAP_WIDTH_TILES || y < 0 || y >= MAP_HEIGHT_TILES || gameState.map[y][x] === Wall) {
-            return false;
-        }
-        // On boss level, if boss is alive, its tiles are not walkable
-        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
-            if (x >= gameState.boss.x && x < (gameState.boss.x + gameState.boss.size) &&
-                y >= gameState.boss.y && y < (gameState.boss.y + gameState.boss.size)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // --- Event Listeners ---
-    window.addEventListener('keydown', handleInput);
-    resetButton.addEventListener('click', initGame);
-
-    // Event listeners for arrow buttons
+    // Mobile controls
     document.getElementById('upButton').addEventListener('click', () => movePlayer(0, -1));
     document.getElementById('downButton').addEventListener('click', () => movePlayer(0, 1));
     document.getElementById('leftButton').addEventListener('click', () => movePlayer(-1, 0));
@@ -1129,24 +1251,21 @@ button#resetButton:hover {
     bombButton.addEventListener('click', useBomb);
 
 
-    // --- Initial Start (Modal first, then game on close) ---
-    window.onload = function() {
-        showModal();
-    };
+    resetButton.addEventListener('click', initGame);
 
-    // Modal functions
-    function showModal() {
-        document.getElementById('warningModal').style.display = 'flex';
+    // --- Modal Functions ---
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'flex';
     }
 
     function closeModal() {
         document.getElementById('warningModal').style.display = 'none';
-        initGame(); // <-- Game (and timer) starts here after the modal is closed!
     }
+
+    // Initial game setup and modal display
+    initGame();
+    openModal('warningModal');
+
 </script>
-<audio autoplay loop>
-  <source src="back.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
-</audio>
 </body>
 </html>
