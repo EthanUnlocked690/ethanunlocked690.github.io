@@ -277,13 +277,13 @@ button#resetButton:hover {
     const bombButton = document.getElementById('bombButton');
 
     const TILE_SIZE = 40;
-    // Updated MAP_WIDTH_TILES and MAP_HEIGHT_TILES based on new canvas size
-    const MAP_WIDTH_TILES = canvas.width / TILE_SIZE;
-    const MAP_HEIGHT_TILES = canvas.height / TILE_SIZE;
+    // Ensure MAP_WIDTH_TILES and MAP_HEIGHT_TILES are integers
+    const MAP_WIDTH_TILES = Math.floor(canvas.width / TILE_SIZE);
+    const MAP_HEIGHT_TILES = Math.floor(canvas.height / TILE_SIZE);
 
-    const Wall = '🪨';
+    const Wall = '�';
     const Floor = ' ';
-    const Player = '�';
+    const Player = '🙍';
     const Enemy = '🐉'; // Standard enemy dragon
     const GIANT_DRAGON_BOSS = '🐲'; // Different dragon emoji for the boss
     const Key = '🔑';
@@ -1188,7 +1188,7 @@ button#resetButton:hover {
                     // Check if bomb blast overlaps with any part of the boss's 3x3 area
                     if (x >= gameState.boss.x && x < gameState.boss.x + gameState.boss.size &&
                         y >= gameState.boss.y && y < gameState.boss.y + gameState.boss.size) {
-                        takeBossDamage(50); // Bombs deal damage to boss
+                        takeBossDamage(100); // Bombs now deal 100 damage to boss
                         gameState.boss.frozenTurns = 2; // Stun boss for 2 turns
                         enemiesAffected = true;
                     }
@@ -1265,6 +1265,7 @@ button#resetButton:hover {
 
     // Initial game setup and modal display
     initGame();
+    // IMPORTANT: The warning modal will cover the canvas initially. Click "Got It!" to proceed and see the game.
     openModal('warningModal');
 
 </script>
