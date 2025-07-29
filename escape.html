@@ -809,7 +809,7 @@ button#resetButton:hover {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
-            ctx.font = 'bold 60px Courier New';
+            ctx.font = 'bold 30px Courier New';
             ctx.textAlign = 'center';
             let message = '';
             if (gameState.gameWon) {
@@ -1144,6 +1144,7 @@ button#resetButton:hover {
         gameState.bossCinematicText = "A GIANT shadow looms... The FINAL BOSS awaits!";
         gameState.bossCinematicAlpha = 0; // For fading in text
         let cinematicStartTime = performance.now();
+        ctx.font = "24px Arial";
 
         function animateCinematic(currentTime) {
             const elapsed = currentTime - cinematicStartTime;
