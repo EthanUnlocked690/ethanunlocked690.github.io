@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess</title>
+<title>Chess Game vs. Bot</title>
 <style>
 /* Provided Navbar CSS */
 ul {
@@ -135,6 +135,58 @@ canvas.dragging {
 .check-square {
     background-color: rgba(255, 0, 0, 0.5); /* Red highlight for king in check */
 }
+
+/* Promotion Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #3a3f47;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    color: #f0f0f0;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: #61dafb;
+}
+
+.promotion-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.promotion-buttons button {
+    background-color: #61dafb;
+    color: #282c34;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.promotion-buttons button:hover {
+    background-color: #4fa3d1;
+    transform: translateY(-2px);
+}
 </style>
 </head>
 <body>
@@ -155,6 +207,20 @@ canvas.dragging {
     </div>
 </div>
 
+<!-- Pawn Promotion Modal -->
+<div id="promotionModal" class="modal">
+    <div class="modal-content">
+        <h2>Pawn Promotion</h2>
+        <p>Choose a piece to promote your pawn to:</p>
+        <div class="promotion-buttons">
+            <button id="promoteQueen">Queen ♕</button>
+            <button id="promoteRook">Rook ♖</button>
+            <button id="promoteBishop">Bishop ♗</button>
+            <button id="promoteKnight">Knight ♘</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const canvas = document.getElementById('chessCanvas');
     const ctx = canvas.getContext('2d');
@@ -162,7 +228,14 @@ canvas.dragging {
     const statusMessage = document.getElementById('status-message');
     const resetButton = document.getElementById('resetButton');
     const undoButton = document.getElementById('undoButton');
-    const resignButton = document.getElementById('resignButton'); // Get the new resign button
+    const resignButton = document.getElementById('resignButton');
+
+    // Promotion modal elements
+    const promotionModal = document.getElementById('promotionModal');
+    const promoteQueenButton = document.getElementById('promoteQueen');
+    const promoteRookButton = document.getElementById('promoteRook');
+    const promoteBishopButton = document.getElementById('promoteBishop');
+    const promoteKnightButton = document.getElementById('promoteKnight');
 
 
     const BOARD_SIZE = 8;
@@ -196,6 +269,10 @@ canvas.dragging {
     let gameOver = false;
     let history = []; // To store board states for undo
 
+    // Promotion specific state
+    let isPromoting = false;
+    let promotionTarget = { row: -1, col: -1, color: '' }; // Stores where the pawn needs to be promoted
+
     // --- Game Initialization ---
     function initGame() {
         board = createInitialBoard();
@@ -209,8 +286,11 @@ canvas.dragging {
         currentMousePos = { x: 0, y: 0 };
         validMovesForDraggedPiece = [];
 
-        history = [];
         gameOver = false;
+        isPromoting = false;
+        promotionTarget = { row: -1, col: -1, color: '' };
+
+        history = [];
         saveBoardState(); // Save initial state
         drawBoard();
         updateGameInfo();
@@ -273,7 +353,7 @@ canvas.dragging {
      * Restores the previous board state from history.
      */
     function undoMove() {
-        if (gameOver) return; // Prevent undoing after game over
+        if (gameOver || isPromoting) return; // Prevent undoing if game over or during promotion
         if (history.length > 1) { // Need at least two states to undo (current and previous)
             history.pop(); // Remove current state
             const prevState = history[history.length - 1]; // Get previous state
@@ -299,7 +379,7 @@ canvas.dragging {
      * Handles the resign action, ending the game.
      */
     function resignGame() {
-        if (gameOver) return;
+        if (gameOver || isPromoting) return; // Prevent resigning during promotion
 
         gameOver = true;
         statusMessage.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} Resigns! ${currentPlayer === 'white' ? 'Black' : 'White'} Wins!`;
@@ -412,11 +492,11 @@ canvas.dragging {
 
     /**
      * Handles a click on the canvas, processing piece selection and movement (for click-to-move).
-     * This function will only execute if not currently dragging.
+     * This function will only execute if not currently dragging or promoting.
      * @param {MouseEvent} event The click event.
      */
     function handleCanvasClick(event) {
-        if (gameOver || currentPlayer === 'black' || isDragging) return; // Prevent player from moving during bot's turn, if game is over, or if dragging
+        if (gameOver || currentPlayer === 'black' || isDragging || isPromoting) return;
 
         const rect = canvas.getBoundingClientRect();
         const mouseX = event.clientX - rect.left;
@@ -436,8 +516,7 @@ canvas.dragging {
                 validMoves = [];
                 drawBoard(); // Redraw after move
                 updateGameInfo();
-                if (!gameOver) {
-                    // If game is not over, it's bot's turn
+                if (!gameOver && !isPromoting) { // Only trigger bot if not promoting
                     statusMessage.textContent = "Bot is thinking...";
                     setTimeout(botMove, 1000); // Delay bot move for better UX
                 }
@@ -467,7 +546,7 @@ canvas.dragging {
      * Handles mouse down event for dragging.
      */
     function handleMouseDown(event) {
-        if (gameOver || currentPlayer === 'black') return; // Prevent player from moving during bot's turn or if game is over
+        if (gameOver || currentPlayer === 'black' || isPromoting) return; // Prevent interaction during promotion
 
         const rect = canvas.getBoundingClientRect();
         const mouseX = event.clientX - rect.left;
@@ -541,7 +620,7 @@ canvas.dragging {
         drawBoard(); // Final redraw
         updateGameInfo();
 
-        if (!gameOver && currentPlayer === 'black') {
+        if (!gameOver && !isPromoting && currentPlayer === 'black') { // Only trigger bot if not promoting
             // If game is not over and it's bot's turn, trigger bot move
             statusMessage.textContent = "Bot is thinking...";
             setTimeout(botMove, 1000); // Delay bot move for better UX
@@ -567,13 +646,53 @@ canvas.dragging {
             piece.hasMoved = true;
         }
 
-        // Pawn Promotion (simplified: always promotes to Queen)
+        // Pawn Promotion
         if (piece.type === 'pawn' && ((piece.color === 'white' && endY === 0) || (piece.color === 'black' && endY === BOARD_SIZE - 1))) {
-            board[endY][endX] = { type: 'queen', color: piece.color };
+            // If it's the player's turn, show promotion modal
+            if (piece.color === 'white') { // Assuming player is always white for now
+                handlePawnPromotion(endY, endX, piece.color);
+            } else { // Bot's pawn promotion (always to Queen for simplicity)
+                board[endY][endX] = { type: 'queen', color: piece.color };
+                switchPlayer(); // Switch turn after bot's promotion
+            }
+        } else {
+            switchPlayer(); // Normal turn switch
         }
-
-        switchPlayer();
     }
+
+    /**
+     * Handles pawn promotion by showing the modal.
+     * @param {number} row The row where the pawn is promoting.
+     * @param {number} col The column where the pawn is promoting.
+     * @param {string} color The color of the pawn.
+     */
+    function handlePawnPromotion(row, col, color) {
+        isPromoting = true;
+        promotionTarget = { row, col, color };
+        promotionModal.style.display = 'flex';
+        statusMessage.textContent = "Pawn Promotion! Choose your piece.";
+    }
+
+    /**
+     * Promotes the pawn to the chosen piece type.
+     * @param {string} type The type of piece to promote to ('queen', 'rook', 'bishop', 'knight').
+     */
+    function promotePawn(type) {
+        board[promotionTarget.row][promotionTarget.col] = { type: type, color: promotionTarget.color };
+        promotionModal.style.display = 'none';
+        isPromoting = false;
+        promotionTarget = { row: -1, col: -1, color: '' }; // Reset promotion target
+
+        drawBoard();
+        updateGameInfo();
+
+        // After promotion, it's the bot's turn
+        if (!gameOver) {
+            statusMessage.textContent = "Bot is thinking...";
+            setTimeout(botMove, 1000);
+        }
+    }
+
 
     /**
      * Switches the current player.
@@ -847,7 +966,7 @@ canvas.dragging {
      * Makes a move for the bot (black player).
      */
     function botMove() {
-        if (gameOver || currentPlayer !== 'black') return;
+        if (gameOver || currentPlayer !== 'black' || isPromoting) return; // Prevent bot move during promotion
 
         let allBotMoves = [];
         for (let r = 0; r < BOARD_SIZE; r++) {
@@ -869,10 +988,10 @@ canvas.dragging {
         } else {
             // No moves available for bot, check for stalemate or checkmate
             if (isKingInCheck(findKing('black').y, findKing('black').x, 'black', board)) {
-                statusMessage.textContent = "Checkmate! White Wins!";
+                statusMessage.textContent = "Checkmate by White!";
                 gameOver = true;
             } else {
-                statusMessage.textContent = "Stalemate! It's a Draw!";
+                statusMessage.textContent = "Stalemate!";
                 gameOver = true;
             }
         }
@@ -890,7 +1009,13 @@ canvas.dragging {
 
     resetButton.addEventListener('click', initGame);
     undoButton.addEventListener('click', undoMove);
-    resignButton.addEventListener('click', resignGame); // Add event listener for the resign button
+    resignButton.addEventListener('click', resignGame);
+
+    // Promotion button listeners
+    promoteQueenButton.addEventListener('click', () => promotePawn('queen'));
+    promoteRookButton.addEventListener('click', () => promotePawn('rook'));
+    promoteBishopButton.addEventListener('click', () => promotePawn('bishop'));
+    promoteKnightButton.addEventListener('click', () => promotePawn('knight'));
 
     // Initial game setup - directly start the game as white
     initGame();
