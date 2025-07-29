@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Merge Game</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* General body styling */
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars due to background image */
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            background-image: url('https://media.tenor.com/x8v1oNUOmg4AAAAd/rickroll-roll.gif'); /* Rickroll GIF */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative; /* For overlay */
+        }
+
+        /* Overlay to make text more readable on busy background */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+            z-index: -1; /* Behind content */
+        }
+
+        /* Navbar styling */
+        nav {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            margin-bottom: 20px;
+            z-index: 10; /* Ensure navbar is above other elements */
+        }
+
+        nav a {
+            color: #a8dadc;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: rgba(168, 218, 220, 0.2);
+            color: #e0f2f7;
+        }
+
+        nav a i {
+            margin-right: 8px;
+        }
+
+        /* Main game layout container */
+        #main-game-layout {
+            display: flex;
+            flex-direction: row; /* Side-by-side layout */
+            align-items: flex-start; /* Align items to the top */
+            gap: 20px; /* Space between game area and sidebar */
+            max-width: 95%; /* Responsive width */
+            margin-top: 20px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            justify-content: center; /* Center items when wrapped */
+        }
+
+        /* Game container styling */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent background for the game area */
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            min-width: 360px; /* Minimum width for the canvas and its container */
+        }
+
+        canvas {
+            background-color: #f0f8ff; /* Light blue background for canvas */
+            border: 5px solid #457b9d;
+            border-radius: 10px;
+            display: block;
+            touch-action: none; /* Prevent browser touch actions like scrolling/zooming */
+            width: 320px; /* Fixed width for game logic */
+            height: 480px; /* Fixed height for game logic */
+        }
+
+        /* Sidebar for NEXT, SCORE, etc. */
+        #game-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            min-width: 150px; /* Minimum width for sidebar */
+        }
+
+        .sidebar-panel {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            color: #f1faee;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-panel h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 1.2em;
+            color: #a8dadc;
+        }
+
+        #next-fruit-display {
+            width: 80px; /* Size for the next fruit circle */
+            height: 80px;
+            border-radius: 50%;
+            background-color: #eee; /* Placeholder */
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #457b9d;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+            font-size: 0.8em; /* For fruit name */
+            color: #333;
+            text-align: center;
+        }
+
+        #score-display {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #f1faee;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        #processing-message {
+            margin-top: 10px;
+            font-size: 1em;
+            font-style: italic;
+            color: #a8dadc;
+            display: none; /* Hidden by default */
+        }
+
+        /* All fruits display at the bottom */
+        #all-fruits-display {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            max-width: 90%;
+        }
+
+        .fruit-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(0, 0, 0, 0.3);
+            font-size: 0.6em;
+            color: #333;
+            text-align: center;
+        }
+
+
+        #game-over-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(220, 20, 60, 0.9); /* Crimson red */
+            color: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: bold;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.9);
+            display: none; /* Hidden by default */
+            z-index: 100;
+            animation: fadeInScale 0.5s ease-out forwards;
+        }
+
+        #game-over-message button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            background-color: #a8dadc;
+            color: #1d3557;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #game-over-message button:hover {
+            background-color: #e0f2f7;
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #main-game-layout {
+                flex-direction: column; /* Stack vertically on smaller screens */
+                align-items: center;
+            }
+            nav {
+                padding: 10px 15px;
+            }
+            nav a {
+                font-size: 1em;
+                padding: 6px 10px;
+            }
+            #game-container {
+                padding: 15px;
+                min-width: unset; /* Remove min-width for better responsiveness */
+                width: 95%; /* Allow it to shrink */
+            }
+            canvas {
+                width: 100%; /* Canvas takes full width of its container */
+                height: auto; /* Maintain aspect ratio */
+            }
+            #game-sidebar {
+                min-width: unset;
+                width: 95%; /* Sidebar takes full width */
+                flex-direction: row; /* Arrange sidebar panels horizontally */
+                justify-content: space-around;
+                flex-wrap: wrap;
+            }
+            .sidebar-panel {
+                flex: 1; /* Allow panels to grow */
+                min-width: 100px; /* Ensure minimum size for panels */
+                margin: 5px;
+            }
+            #score-display {
+                font-size: 1.5em;
+            }
+            #game-over-message {
+                font-size: 1.8em;
+                padding: 20px 30px;
+            }
+            #all-fruits-display {
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav a {
+                font-size: 0.9em;
+            }
+            #game-over-message {
+                font-size: 1.5em;
+                padding: 15px 25px;
+            }
+            #game-over-message button {
+                padding: 10px 20px;
+                font-size: 0.9em;
+            }
+            #game-sidebar {
+                flex-direction: column; /* Stack sidebar panels vertically again on very small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar for navigation -->
+    <nav>
+        <a href="turtle.html">
+            <i class="fas fa-arrow-left"></i> Back to game selection
+        </a>
+    </nav>
+
+    <!-- Background Music -->
+    <audio id="background-music" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" autoplay loop></audio>
+
+    <!-- Main Game Layout -->
+    <div id="main-game-layout">
+        <!-- Game Container -->
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- Game Sidebar -->
+        <div id="game-sidebar">
+            <div class="sidebar-panel">
+                <h3>NEXT</h3>
+                <div id="next-fruit-display"></div>
+            </div>
+            <div class="sidebar-panel">
+                <h3>SCORE</h3>
+                <div id="score-display">0</div>
+                <div id="processing-message">Processing...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Fruits Display -->
+    <div id="all-fruits-display">
+        <!-- Fruit icons will be dynamically added here by JavaScript -->
+    </div>
+
+    <!-- Game Over Message -->
+    <div id="game-over-message">
+        Game Over!
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score-display');
+        const nextFruitDisplay = document.getElementById('next-fruit-display');
+        const allFruitsDisplay = document.getElementById('all-fruits-display');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const processingMessage = document.getElementById('processing-message');
+
+        // Canvas dimensions - fixed for game logic, but can be scaled visually with CSS
+        const CANVAS_WIDTH = 320;
+        const CANVAS_HEIGHT = 480;
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+
+        // Game variables
+        let fruits = [];
+        let score = 0;
+        let gameOver = false;
+        let currentFruit = null; // The fruit currently being aimed/dropped
+        let upcomingFruitTypeIndex = 0; // The type of the fruit that will appear AFTER currentFruit
+        let mouseX = CANVAS_WIDTH / 2; // Initial position for dropping fruit
+        let isFruitFalling = false; // State variable for tracking falling fruit
+
+        // Fruit properties (radius, color, next fruit type index, name)
+        const FRUIT_TYPES = [
+            { radius: 15, color: '#FFDDC1', name: 'Garlic' },
+            { radius: 20, color: '#A2D2FF', name: 'Olive' },
+            { radius: 25, color: '#FF6B6B', name: 'Tomato' },
+            { radius: 30, color: '#FFD966', name: 'Lemon' },
+            { radius: 35, color: '#98FB98', name: 'Avocado' },
+            { radius: 40, color: '#BA55D3', name: 'Grape' },
+            { radius: 45, color: '#FFA07A', name: 'Peach' },
+            { radius: 50, color: '#FF8C00', name: 'Orange' },
+            { radius: 55, color: '#6A5ACD', name: 'Plum' },
+            { radius: 60, color: '#20B2AA', name: 'Kiwi' },
+            { radius: 65, color: '#DC143C', name: 'Watermelon' },
+            { radius: 70, color: '#8B008B', name: 'Dragon Fruit'}
+        ];
+
+        // Physics constants
+        const GRAVITY = 0.5;
+        const FRICTION = 0.8;
+        const MERGE_SCORE_MULTIPLIER = 20;
+
+        // Game initialization
+        function initGame() {
+            fruits = [];
+            score = 0;
+            gameOver = false;
+            scoreDisplay.textContent = `${score}`;
+            gameOverMessage.style.display = 'none';
+            processingMessage.style.display = 'none';
+            // Generate the first upcoming fruit
+            upcomingFruitTypeIndex = Math.floor(Math.random() * Math.min(FRUIT_TYPES.length - 6, 6));
+            generateCurrentFruit(); // This will use the initial upcomingFruitTypeIndex
+            populateAllFruitsDisplay();
+            gameLoop();
+        }
+
+        // Generate the fruit that the user will aim and drop (currentFruit)
+        function generateCurrentFruit() {
+            // The current fruit to drop is based on what was previously the 'upcoming' fruit
+            const fruitTypeToDrop = upcomingFruitTypeIndex;
+
+            currentFruit = {
+                x: mouseX,
+                y: FRUIT_TYPES[fruitTypeToDrop].radius,
+                radius: FRUIT_TYPES[fruitTypeToDrop].radius,
+                color: FRUIT_TYPES[fruitTypeToDrop].color,
+                type: fruitTypeToDrop,
+                vx: 0,
+                vy: 0,
+                isFalling: false, // Starts as not falling, waiting for user drop
+                isMerging: false
+            };
+
+            // Generate the *new* upcoming fruit for the *next* turn
+            upcomingFruitTypeIndex = Math.floor(Math.random() * Math.min(FRUIT_TYPES.length - 6, 6));
+            updateNextFruitDisplay(); // Update the display with the new upcoming fruit
+        }
+
+
+        // Update the "NEXT" fruit display to show the upcomingFruitTypeIndex
+        function updateNextFruitDisplay() {
+            const fruit = FRUIT_TYPES[upcomingFruitTypeIndex];
+            if (fruit) {
+                nextFruitDisplay.style.backgroundColor = fruit.color;
+                nextFruitDisplay.innerHTML = `<span style="font-size: ${fruit.radius * 0.5}px; color: #333;">${fruit.name}</span>`;
+                nextFruitDisplay.style.width = `${fruit.radius * 2}px`;
+                nextFruitDisplay.style.height = `${fruit.radius * 2}px`;
+            }
+        }
+
+        // Populate the "All Fruits" display at the bottom
+        function populateAllFruitsDisplay() {
+            allFruitsDisplay.innerHTML = '';
+            FRUIT_TYPES.forEach(fruit => {
+                const fruitIcon = document.createElement('div');
+                fruitIcon.classList.add('fruit-icon');
+                fruitIcon.style.backgroundColor = fruit.color;
+                fruitIcon.innerHTML = `<span style="font-size: ${fruit.radius * 0.4}px; color: #333;">${fruit.name}</span>`;
+                allFruitsDisplay.appendChild(fruitIcon);
+            });
+        }
+
+        // Draw a single fruit
+        function drawFruit(fruit) {
+            ctx.beginPath();
+            ctx.arc(fruit.x, fruit.y, fruit.radius, 0, Math.PI * 2);
+            ctx.fillStyle = fruit.color;
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.closePath();
+
+            ctx.fillStyle = '#333';
+            ctx.font = `${fruit.radius * 0.4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(FRUIT_TYPES[fruit.type].name, fruit.x, fruit.y);
+        }
+
+        // Draw all fruits and the current fruit being aimed, including the aiming line
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            ctx.beginPath();
+            ctx.moveTo(0, 50);
+            ctx.lineTo(CANVAS_WIDTH, 50);
+            ctx.strokeStyle = '#dc143c';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.closePath();
+
+            if (currentFruit && !currentFruit.isFalling) {
+                ctx.beginPath();
+                ctx.arc(mouseX, currentFruit.radius, currentFruit.radius, 0, Math.PI * 2);
+                ctx.fillStyle = currentFruit.color;
+                ctx.fill();
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.closePath();
+
+                ctx.fillStyle = '#333';
+                ctx.font = `${currentFruit.radius * 0.4}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(FRUIT_TYPES[currentFruit.type].name, mouseX, currentFruit.radius);
+
+                const startY = currentFruit.radius * 2;
+                let potentialLandingY = CANVAS_HEIGHT - currentFruit.radius;
+
+                for (const fruit of fruits) {
+                    const dx = mouseX - fruit.x;
+                    const distanceBetweenCenters = currentFruit.radius + fruit.radius;
+
+                    if (Math.abs(dx) < distanceBetweenCenters) {
+                        const yOnFruit = fruit.y - fruit.radius - currentFruit.radius;
+                        if (yOnFruit < potentialLandingY) {
+                            potentialLandingY = yOnFruit;
+                        }
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)'; // Black, semi-transparent
+                ctx.lineWidth = 2;
+                ctx.moveTo(mouseX, startY);
+                ctx.lineTo(mouseX, potentialLandingY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            fruits.forEach(drawFruit);
+        }
+
+        // Update game state (physics, collisions)
+        function update() {
+            if (gameOver) return;
+
+            // Update current falling fruit
+            if (currentFruit && currentFruit.isFalling) {
+                isFruitFalling = true; // Set flag when fruit starts falling
+                processingMessage.style.display = 'block'; // Show processing message
+
+                currentFruit.vy += GRAVITY;
+                currentFruit.y += currentFruit.vy;
+                currentFruit.x += currentFruit.vx;
+
+                // Boundary checks for current falling fruit
+                if (currentFruit.x - currentFruit.radius < 0) {
+                    currentFruit.x = currentFruit.radius;
+                    currentFruit.vx *= -FRICTION;
+                }
+                if (currentFruit.x + currentFruit.radius > CANVAS_WIDTH) {
+                    currentFruit.x = CANVAS_WIDTH - currentFruit.radius;
+                    currentFruit.vx *= -FRICTION;
+                }
+
+                // Check collision with bottom of canvas
+                if (currentFruit.y + currentFruit.radius > CANVAS_HEIGHT) {
+                    currentFruit.y = CANVAS_HEIGHT - currentFruit.radius;
+                    currentFruit.vy *= -0.5; // Bounce
+                    currentFruit.vx *= FRICTION;
+                    // If fruit has settled, add to fruits array and generate next
+                    if (Math.abs(currentFruit.vy) < 1 && Math.abs(currentFruit.vx) < 1) {
+                        currentFruit.isFalling = false;
+                        fruits.push(currentFruit);
+                        generateCurrentFruit(); // Generate the next fruit to aim
+                        isFruitFalling = false; // Reset flag
+                        processingMessage.style.display = 'none'; // Hide processing message
+                    }
+                }
+            }
+
+            // Update existing fruits
+            fruits.forEach(fruit => {
+                fruit.vy += GRAVITY;
+                fruit.y += fruit.vy;
+                fruit.x += fruit.vx;
+
+                // Boundary checks
+                if (fruit.x - fruit.radius < 0) {
+                    fruit.x = fruit.radius;
+                    fruit.vx *= -FRICTION;
+                }
+                if (fruit.x + fruit.radius > CANVAS_WIDTH) {
+                    fruit.x = CANVAS_WIDTH - fruit.radius;
+                    fruit.vx *= -FRICTION;
+                }
+                if (fruit.y + fruit.radius > CANVAS_HEIGHT) {
+                    fruit.y = CANVAS_HEIGHT - fruit.radius;
+                    fruit.vy *= -0.5; // Bounce
+                    fruit.vx *= FRICTION;
+                }
+
+                // Stop small movements to prevent jittering
+                if (Math.abs(fruit.vy) < 0.1) fruit.vy = 0;
+                if (Math.abs(fruit.vx) < 0.1) fruit.vx = 0;
+            });
+
+            // Collision detection and merging
+            for (let i = 0; i < fruits.length; i++) {
+                for (let j = i + 1; j < fruits.length; j++) {
+                    const fruitA = fruits[i];
+                    const fruitB = fruits[j];
+
+                    const dx = fruitA.x - fruitB.x;
+                    const dy = fruitA.y - fruitB.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const minDistance = fruitA.radius + fruitB.radius;
+
+                    if (distance < minDistance) {
+                        // Collision detected
+                        // Resolve collision (simple push apart)
+                        const angle = Math.atan2(dy, dx);
+                        const overlap = minDistance - distance;
+                        const pushX = Math.cos(angle) * overlap * 0.5;
+                        const pushY = Math.sin(angle) * overlap * 0.5;
+
+                        fruitA.x += pushX;
+                        fruitA.y += pushY;
+                        fruitB.x -= pushX;
+                        fruitB.y -= pushY;
+
+                        // Apply impulse
+                        const totalMass = fruitA.radius + fruitB.radius;
+                        const impulseFactor = 0.5;
+                        const relativeVelocityX = fruitA.vx - fruitB.vx;
+                        const relativeVelocityY = fruitA.vy - fruitB.vy;
+                        const dotProduct = relativeVelocityX * dx + relativeVelocityY * dy;
+
+                        if (dotProduct < 0) {
+                            const impulse = dotProduct / (distance * distance);
+                            fruitA.vx -= impulse * dx * (fruitB.radius / totalMass) * impulseFactor;
+                            fruitA.vy -= impulse * dy * (fruitB.radius / totalMass) * impulseFactor;
+                            fruitB.vx += impulse * dx * (fruitA.radius / totalMass) * impulseFactor;
+                            fruitB.vy += impulse * dy * (fruitA.radius / totalMass) * impulseFactor;
+                        }
+
+                        // Merge logic
+                        if (fruitA.type === fruitB.type && !fruitA.isMerging && !fruitB.isMerging) {
+                            fruitA.isMerging = true;
+                            fruitB.isMerging = true;
+
+                            const newType = fruitA.type + 1;
+                            if (newType < FRUIT_TYPES.length) {
+                                const newFruit = {
+                                    x: (fruitA.x + fruitB.x) / 2,
+                                    y: (fruitA.y + fruitB.y) / 2,
+                                    radius: FRUIT_TYPES[newType].radius,
+                                    color: FRUIT_TYPES[newType].color,
+                                    type: newType,
+                                    vx: (fruitA.vx + fruitB.vx) / 2,
+                                    vy: (fruitA.vy + fruitB.vy) / 2,
+                                    isFalling: true,
+                                    isMerging: false
+                                };
+                                fruits.splice(fruits.indexOf(fruitA), 1);
+                                fruits.splice(fruits.indexOf(fruitB), 1);
+                                fruits.push(newFruit);
+                                score += (newType + 1) * MERGE_SCORE_MULTIPLIER;
+                                scoreDisplay.textContent = `${score}`;
+                            } else {
+                                fruits.splice(fruits.indexOf(fruitA), 1);
+                                fruits.splice(fruits.indexOf(fruitB), 1);
+                                score += FRUIT_TYPES.length * MERGE_SCORE_MULTIPLIER;
+                                scoreDisplay.textContent = `${score}`;
+                            }
+                        }
+                    }
+                }
+                fruits[i].isMerging = false;
+            }
+
+            // Check for game over condition
+            for (let i = 0; i < fruits.length; i++) {
+                if (fruits[i].y - fruits[i].radius < 50 && fruits[i].vy < 1 && fruits[i].vx < 1) {
+                    setGameOver();
+                    break;
+                }
+            }
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (gameOver) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Set game over state
+        function setGameOver() {
+            gameOver = true;
+            gameOverMessage.style.display = 'block';
+            processingMessage.style.display = 'none';
+        }
+
+        // Restart game
+        function restartGame() {
+            initGame();
+        }
+
+        // Event listener for dropping fruit (mouse/touch)
+        let isDropping = false;
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!currentFruit || gameOver || isDropping) return;
+            const rect = canvas.getBoundingClientRect();
+            mouseX = (e.clientX - rect.left) * (CANVAS_WIDTH / rect.width);
+            mouseX = Math.max(currentFruit.radius, Math.min(CANVAS_WIDTH - currentFruit.radius, mouseX));
+            draw();
+        });
+
+        canvas.addEventListener('click', () => {
+            if (gameOver || isDropping) return;
+            if (currentFruit) {
+                currentFruit.x = mouseX;
+                currentFruit.isFalling = true;
+                isDropping = true;
+                isFruitFalling = true;
+                processingMessage.style.display = 'block';
+                setTimeout(() => {
+                    isDropping = false;
+                }, 200);
+            }
+        });
+
+        // Touch events for mobile
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!currentFruit || gameOver || isDropping) return;
+            const rect = canvas.getBoundingClientRect();
+            mouseX = (e.touches[0].clientX - rect.left) * (CANVAS_WIDTH / rect.width);
+            mouseX = Math.max(currentFruit.radius, Math.min(CANVAS_WIDTH - currentFruit.radius, mouseX));
+            draw();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (gameOver || isDropping) return;
+            if (currentFruit) {
+                currentFruit.x = mouseX;
+                currentFruit.isFalling = true;
+                isDropping = true;
+                isFruitFalling = true;
+                processingMessage.style.display = 'block';
+                setTimeout(() => {
+                    isDropping = false;
+                }, 200);
+            }
+        });
+
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>
