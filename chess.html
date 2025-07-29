@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess</title>
+<title>Chess Game vs. Bot</title>
 <style>
 /* Provided Navbar CSS */
 ul {
@@ -370,6 +370,12 @@ canvas.dragging {
 
             drawBoard();
             updateGameInfo();
+
+            // After undo, if it's the bot's turn, trigger bot move
+            if (!gameOver && currentPlayer === 'black') {
+                statusMessage.textContent = "Bot is thinking...";
+                setTimeout(botMove, 1000);
+            }
         } else {
             statusMessage.textContent = "Cannot undo further.";
         }
@@ -516,7 +522,7 @@ canvas.dragging {
                 validMoves = [];
                 drawBoard(); // Redraw after move
                 updateGameInfo();
-                if (!gameOver && !isPromoting) { // Only trigger bot if not promoting
+                if (!gameOver && !isPromoting && currentPlayer === 'black') { // Only trigger bot if not promoting and it's bot's turn
                     statusMessage.textContent = "Bot is thinking...";
                     setTimeout(botMove, 1000); // Delay bot move for better UX
                 }
@@ -620,7 +626,7 @@ canvas.dragging {
         drawBoard(); // Final redraw
         updateGameInfo();
 
-        if (!gameOver && !isPromoting && currentPlayer === 'black') { // Only trigger bot if not promoting
+        if (!gameOver && !isPromoting && currentPlayer === 'black') { // Only trigger bot if not promoting and it's bot's turn
             // If game is not over and it's bot's turn, trigger bot move
             statusMessage.textContent = "Bot is thinking...";
             setTimeout(botMove, 1000); // Delay bot move for better UX
@@ -648,8 +654,8 @@ canvas.dragging {
 
         // Pawn Promotion
         if (piece.type === 'pawn' && ((piece.color === 'white' && endY === 0) || (piece.color === 'black' && endY === BOARD_SIZE - 1))) {
-            // If it's the player's turn, show promotion modal
-            if (piece.color === 'white') { // Assuming player is always white for now
+            // If it's the player's pawn, show promotion modal
+            if (piece.color === 'white') {
                 handlePawnPromotion(endY, endX, piece.color);
             } else { // Bot's pawn promotion (always to Queen for simplicity)
                 board[endY][endX] = { type: 'queen', color: piece.color };
@@ -683,11 +689,14 @@ canvas.dragging {
         isPromoting = false;
         promotionTarget = { row: -1, col: -1, color: '' }; // Reset promotion target
 
+        // Switch player after promotion is complete
+        switchPlayer();
+
         drawBoard();
         updateGameInfo();
 
         // After promotion, it's the bot's turn
-        if (!gameOver) {
+        if (!gameOver && currentPlayer === 'black') {
             statusMessage.textContent = "Bot is thinking...";
             setTimeout(botMove, 1000);
         }
@@ -961,9 +970,42 @@ canvas.dragging {
         return moves;
     }
 
+    /**
+     * Evaluates the given board state from the perspective of a specific color.
+     * Higher score is better for the given color.
+     * @param {Array<Array<Object|null>>} currentBoard The board to evaluate.
+     * @param {string} color The color whose perspective the evaluation is from.
+     * @returns {number} The evaluated score of the board.
+     */
+    function evaluateBoard(currentBoard, color) {
+        let score = 0;
+        const pieceValues = {
+            'pawn': 10,
+            'knight': 30,
+            'bishop': 30,
+            'rook': 50,
+            'queen': 90,
+            'king': 900 // King value is high to represent game-ending importance
+        };
+
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const piece = currentBoard[r][c];
+                if (piece) {
+                    if (piece.color === color) {
+                        score += pieceValues[piece.type];
+                    } else {
+                        score -= pieceValues[piece.type];
+                    }
+                }
+            }
+        }
+        return score;
+    }
+
     // --- Bot AI ---
     /**
-     * Makes a move for the bot (black player).
+     * Makes a move for the bot (black player) using a simple evaluation.
      */
     function botMove() {
         if (gameOver || currentPlayer !== 'black' || isPromoting) return; // Prevent bot move during promotion
@@ -980,18 +1022,56 @@ canvas.dragging {
         }
 
         if (allBotMoves.length > 0) {
-            // Simple AI: pick a random valid move
-            const randomMove = allBotMoves[Math.floor(Math.random() * allBotMoves.length)];
-            makeMove(randomMove.startY, randomMove.startX, randomMove.endY, randomMove.endX);
-            drawBoard();
-            updateGameInfo();
+            let bestMove = null;
+            let bestScore = -Infinity; // Bot wants to maximize its score
+
+            for (const move of allBotMoves) {
+                // Simulate the move
+                const tempBoard = JSON.parse(JSON.stringify(board));
+                const pieceToMove = tempBoard[move.startY][move.startX];
+                tempBoard[move.endY][move.endX] = pieceToMove;
+                tempBoard[move.startY][move.startX] = null;
+
+                // Simulate pawn promotion for bot (always to Queen for simplicity in AI lookahead)
+                if (pieceToMove.type === 'pawn' && move.endY === BOARD_SIZE - 1) {
+                    tempBoard[move.endY][move.endX] = { type: 'queen', color: 'black' };
+                }
+
+                // Evaluate the board after the simulated move
+                const currentScore = evaluateBoard(tempBoard, 'black');
+
+                if (currentScore > bestScore) {
+                    bestScore = currentScore;
+                    bestMove = move;
+                }
+            }
+
+            if (bestMove) {
+                makeMove(bestMove.startY, bestMove.startX, bestMove.endY, bestMove.endX);
+                drawBoard();
+                updateGameInfo();
+            } else {
+                // Fallback if no best move found (shouldn't happen if allBotMoves.length > 0 and game not over)
+                statusMessage.textContent = "Bot couldn't find a legal move. Stalemate or Checkmate?";
+                // This scenario should ideally be caught by isStalemate/isCheckmate
+                // but as a fallback, we can set game over here if no moves are truly possible.
+                const blackKingPos = findKing('black');
+                if (blackKingPos && isKingInCheck(blackKingPos.y, blackKingPos.x, 'black', board)) {
+                    statusMessage.textContent = "Checkmate! White Wins!";
+                    gameOver = true;
+                } else {
+                    statusMessage.textContent = "Stalemate! It's a Draw!";
+                    gameOver = true;
+                }
+            }
         } else {
             // No moves available for bot, check for stalemate or checkmate
-            if (isKingInCheck(findKing('black').y, findKing('black').x, 'black', board)) {
-                statusMessage.textContent = "Checkmate by White!";
+            const blackKingPos = findKing('black');
+            if (blackKingPos && isKingInCheck(blackKingPos.y, blackKingPos.x, 'black', board)) {
+                statusMessage.textContent = "Checkmate! White Wins!";
                 gameOver = true;
             } else {
-                statusMessage.textContent = "Stalemate!";
+                statusMessage.textContent = "Stalemate! It's a Draw!";
                 gameOver = true;
             }
         }
