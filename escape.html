@@ -289,7 +289,7 @@ button#resetButton:hover {
     const Floor = ' ';
     const Player = '🚶';
     const Enemy = '🐉'; // Standard enemy dragon
-    const GIANT_DRAGON_BOSS = '🐲'; // Different dragon emoji for the boss
+    const GIANT_DRAGON_BOSS = '�'; // Different dragon emoji for the boss
     const Key = '🔑';
     const Exit = '🚪';
     const Potion = '❤️';
@@ -352,14 +352,14 @@ button#resetButton:hover {
             glitchStartTime: 0, // Glitch effect start time
             glitchDuration: 750, // Glitch effect duration in ms
 
-            // New states for boss intro countdown
+            // New states for boss intro countdown and cinematic
             bossIntroCountdownActive: false,
             bossIntroCountdownValue: 3,
             bossIntroCountdownStartTime: 0,
             bossIntroCountdownMessage: '',
-            bossIntroCinematicActive: false, // For "The Dragon Appears!" text
-            bossIntroCinematicText: '',
-            bossIntroCinematicAlpha: 0
+            dragonMasterIntroCinematicActive: false, // For "As the shadows loom..." text
+            dragonMasterIntroCinematicText: '',
+            dragonMasterIntroCinematicAlpha: 0
         };
         setupLevel(gameState.currentLevel); // Start the first level
         // Timer starts after intro countdown/cinematic for Level 3, otherwise immediately
@@ -396,7 +396,7 @@ button#resetButton:hover {
 
         // Reset boss intro flags
         gameState.bossIntroCountdownActive = false;
-        gameState.bossIntroCinematicActive = false;
+        gameState.dragonMasterIntroCinematicActive = false;
 
         // Set initial time based on level
         switch(level) {
@@ -421,9 +421,9 @@ button#resetButton:hover {
         }
         placeEntitiesForLevel(level);
 
-        // Start boss intro countdown for level 3, otherwise just start game timer
+        // Timer starts after intro countdown/cinematic for Level 3, otherwise immediately
         if (level === 3) {
-            startBossIntroCountdown();
+            // No direct timer start here, it will be started after the intro sequence
         } else {
             gameState.startTime = performance.now(); // Start timer immediately for non-boss levels
             // Ensure timer is running for the new level
@@ -587,93 +587,49 @@ button#resetButton:hover {
      * The main game loop, responsible for updating and drawing.
      */
     function gameLoop(currentTime) {
-        if (!gameState.startTime && !gameState.bossIntroCountdownActive && !gameState.bossIntroCinematicActive) {
-            gameState.startTime = currentTime;
-        }
-
-        // Handle boss intro countdown
-        if (gameState.bossIntroCountdownActive) {
-            const elapsedCountdownTime = currentTime - gameState.bossIntroCountdownStartTime;
-            const remainingCountdownSeconds = 3 - Math.floor(elapsedCountdownTime / 1000);
-
-            if (remainingCountdownSeconds > 0) {
-                gameState.bossIntroCountdownMessage = remainingCountdownSeconds.toString();
-            } else if (remainingCountdownSeconds <= 0 && elapsedCountdownTime < 4000) { // Display "GO!" for 1 second
-                gameState.bossIntroCountdownMessage = 'GO!';
-            } else {
-                // Countdown finished, start intro cinematic
-                gameState.bossIntroCountdownActive = false;
-                gameState.bossIntroCinematicActive = true;
-                gameState.bossIntroCinematicText = 'The Dragon Appears!';
-                gameState.bossIntroCinematicAlpha = 0;
-                let cinematicFadeDuration = 1000;
-                let cinematicHoldDuration = 1000;
-                let cinematicFadeOutDuration = 1000;
-                let cinematicStartTime = performance.now();
-
-                function animateBossIntroCinematic(introTime) {
-                    const introElapsed = introTime - cinematicStartTime;
-                    if (introElapsed < cinematicFadeDuration) {
-                        gameState.bossIntroCinematicAlpha = introElapsed / cinematicFadeDuration;
-                    } else if (introElapsed < cinematicFadeDuration + cinematicHoldDuration) {
-                        gameState.bossIntroCinematicAlpha = 1;
-                    } else if (introElapsed < cinematicFadeDuration + cinematicHoldDuration + cinematicFadeOutDuration) {
-                        gameState.bossIntroCinematicAlpha = 1 - ((introElapsed - (cinematicFadeDuration + cinematicHoldDuration)) / cinematicFadeOutDuration);
-                    } else {
-                        gameState.bossIntroCinematicActive = false;
-                        gameState.startTime = currentTime; // Start the main game timer AFTER intro cinematic
-                        // Re-request animation frame to ensure gameLoop continues with normal logic
-                        if (animationFrameId) cancelAnimationFrame(animationFrameId);
-                        animationFrameId = requestAnimationFrame(gameLoop);
-                        return; // End intro cinematic animation
-                    }
-                    requestAnimationFrame(animateBossIntroCinematic);
-                }
-                requestAnimationFrame(animateBossIntroCinematic);
-            }
-        }
-
         // Only update game logic if no special cinematic/transition/explosion/glitch/intro is active
         // Timer now stops during level transitions and when the game is won
-        if (!gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.explosionActive && !gameState.glitchActive && !gameState.bossIntroCountdownActive && !gameState.bossIntroCinematicActive && !gameState.gameWon && !gameState.gameOver) {
-            gameState.elapsedTime = currentTime - gameState.startTime;
-            gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
+        if (!gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.explosionActive && !gameState.glitchActive && !gameState.dragonMasterIntroCinematicActive && !gameState.bossIntroCountdownActive && !gameState.gameWon && !gameState.gameOver) {
+            // Only update elapsed time and remaining time if the game is actively running (not paused for intro, etc.)
+            if (gameState.startTime) { // Ensure startTime is set before calculating elapsed time
+                gameState.elapsedTime = currentTime - gameState.startTime;
+                gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
 
-            if (gameState.remainingTime <= 0) {
-                gameState.remainingTime = 0;
-                if (!gameState.gameOver && !gameState.gameWon) {
-                    gameState.gameOver = true;
-                    gameState.gameOverReason = 'time';
+                if (gameState.remainingTime <= 0) {
+                    gameState.remainingTime = 0;
+                    if (!gameState.gameOver && !gameState.gameWon) {
+                        gameState.gameOver = true;
+                        gameState.gameOverReason = 'time';
+                    }
+                }
+
+                // Time warnings
+                const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
+                if (remainingSeconds === 60 && !gameState.warning60sTriggered) {
+                    statusText.textContent = '1 minute remaining!';
+                    statusText.style.color = 'orange';
+                    gameState.warning60sTriggered = true;
+                    // Reset other warnings if time increases (e.g., from potion pickup)
+                    gameState.warning30sTriggered = false;
+                    gameState.warning10sTriggered = false;
+                    gameState.countdownActive = false;
+                } else if (remainingSeconds === 30 && !gameState.warning30sTriggered) {
+                    statusText.textContent = '30 seconds remaining!';
+                    statusText.style.color = 'red';
+                    gameState.warning30sTriggered = true;
+                    gameState.warning10sTriggered = false;
+                    gameState.countdownActive = false;
+                } else if (remainingSeconds === 10 && !gameState.warning10sTriggered) {
+                    statusText.textContent = '10 seconds remaining!';
+                    statusText.style.color = 'darkred';
+                    gameState.warning10sTriggered = true;
+                    gameState.countdownActive = false;
+                } else if (remainingSeconds <= 5 && remainingSeconds > 0) { // Final 5-second countdown
+                    gameState.countdownActive = true;
+                } else if (remainingSeconds === 0 && gameState.countdownActive) {
+                    gameState.countdownActive = false; // Stop countdown when time runs out
                 }
             }
-
-            // Time warnings
-            const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
-            if (remainingSeconds === 60 && !gameState.warning60sTriggered) {
-                statusText.textContent = '1 minute remaining!';
-                statusText.style.color = 'orange';
-                gameState.warning60sTriggered = true;
-                // Reset other warnings if time increases (e.g., from potion pickup)
-                gameState.warning30sTriggered = false;
-                gameState.warning10sTriggered = false;
-                gameState.countdownActive = false;
-            } else if (remainingSeconds === 30 && !gameState.warning30sTriggered) {
-                statusText.textContent = '30 seconds remaining!';
-                statusText.style.color = 'red';
-                gameState.warning30sTriggered = true;
-                gameState.warning10sTriggered = false;
-                gameState.countdownActive = false;
-            } else if (remainingSeconds === 10 && !gameState.warning10sTriggered) {
-                statusText.textContent = '10 seconds remaining!';
-                statusText.style.color = 'darkred';
-                gameState.warning10sTriggered = true;
-                gameState.countdownActive = false;
-            } else if (remainingSeconds <= 5 && remainingSeconds > 0) { // Final 5-second countdown
-                gameState.countdownActive = true;
-            } else if (remainingSeconds === 0 && gameState.countdownActive) {
-                gameState.countdownActive = false; // Stop countdown when time runs out
-            }
-
 
             update(); // Still call update for any passive updates
         }
@@ -695,10 +651,13 @@ button#resetButton:hover {
      * Moves enemies and/or boss based on simple AI.
      */
     function moveGameEntities() {
-        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
-            moveBoss(gameState.boss);
-        } else {
-            moveEnemies();
+        // Only allow entities to move if the game is not in an intro/cinematic state
+        if (!gameState.dragonMasterIntroCinematicActive && !gameState.bossIntroCountdownActive) {
+            if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+                moveBoss(gameState.boss);
+            } else {
+                moveEnemies();
+            }
         }
     }
 
@@ -827,6 +786,20 @@ button#resetButton:hover {
         ctx.font = `${TILE_SIZE * 0.8}px monospace`;
         ctx.filter = 'none'; // Reset filter for normal drawing
 
+        // Draw boss intro cinematic ("As the shadows loom...")
+        if (gameState.dragonMasterIntroCinematicActive) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear everything for cinematic
+            ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // Solid black background
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = `rgba(255, 255, 255, ${gameState.dragonMasterIntroCinematicAlpha})`;
+            ctx.font = 'bold 40px Courier New';
+            ctx.textAlign = 'center';
+            ctx.fillText(gameState.dragonMasterIntroCinematicText, canvas.width / 2, canvas.height / 2);
+            ctx.textAlign = 'left';
+            return; // Stop drawing normal game elements during cinematic
+        }
+
         // Draw boss intro countdown
         if (gameState.bossIntroCountdownActive) {
             ctx.fillStyle = 'rgba(0, 0, 0, 0.9)'; // Dark overlay
@@ -837,20 +810,6 @@ button#resetButton:hover {
             ctx.fillText(gameState.bossIntroCountdownMessage, canvas.width / 2, canvas.height / 2);
             ctx.textAlign = 'left';
             return; // Stop drawing normal game elements during countdown
-        }
-
-        // Draw boss intro cinematic ("The Dragon Appears!")
-        if (gameState.bossIntroCinematicActive) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear everything for cinematic
-            ctx.fillStyle = 'rgba(0, 0, 0, 1)'; // Solid black background
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            ctx.fillStyle = `rgba(255, 255, 255, ${gameState.bossIntroCinematicAlpha})`;
-            ctx.font = 'bold 40px Courier New'; // Reduced font size
-            ctx.textAlign = 'center';
-            ctx.fillText(gameState.bossIntroCinematicText, canvas.width / 2, canvas.height / 2);
-            ctx.textAlign = 'left';
-            return; // Stop drawing normal game elements during cinematic
         }
 
         // Draw glitch effect if active, and stop drawing normal game elements
@@ -1090,11 +1049,11 @@ button#resetButton:hover {
             statusText.textContent = gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀';
             statusText.style.color = '#dc3545'; // Red for game over
         } else if (gameState.gameWon) {
-            statusText.textContent = gameState.currentLevel < 3 ? 'Level Complete! 🎉' : 'YOU ESCAPED! �'; // More specific message
+            statusText.textContent = gameState.currentLevel < 3 ? 'Level Complete! 🎉' : 'YOU ESCAPED! 🎉'; // More specific message
             statusText.style.color = '#28a745'; // Green for win
         } else {
             // Only update status text if no active time warning/countdown or boss intro
-            if (!gameState.bossIntroCountdownActive && !gameState.bossIntroCinematicActive) {
+            if (!gameState.bossIntroCountdownActive && !gameState.dragonMasterIntroCinematicActive) {
                 const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
                 if (remainingSeconds > 10 || (remainingSeconds > 5 && !gameState.warning10sTriggered) || (remainingSeconds > 30 && !gameState.warning30sTriggered) || (remainingSeconds > 60 && !gameState.warning60sTriggered)) {
                     if (gameState.currentLevel === 3) {
@@ -1117,14 +1076,22 @@ button#resetButton:hover {
         const minutes = Math.floor(remainingSeconds / 60);
         const seconds = remainingSeconds % 60;
 
-        if (gameState.countdownActive) {
-            timerText.textContent = `${remainingSeconds}!`;
-            timerText.style.fontSize = '2em'; // Make it larger for emphasis
-            timerText.style.color = 'red'; // Make it red for urgency
+        // Ensure timer text is only updated if not in intro sequence
+        if (!gameState.bossIntroCountdownActive && !gameState.dragonMasterIntroCinematicActive) {
+            if (gameState.countdownActive) {
+                timerText.textContent = `${remainingSeconds}!`;
+                timerText.style.fontSize = '2em'; // Make it larger for emphasis
+                timerText.style.color = 'red'; // Make it red for urgency
+            } else {
+                timerText.textContent = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                timerText.style.fontSize = '1.2em'; // Reset to default size
+                timerText.style.color = remainingSeconds > 10 ? '#FFFFFF' : '#dc3545'; // White normally, red if low time
+            }
         } else {
-            timerText.textContent = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            timerText.style.fontSize = '1.2em'; // Reset to default size
-            timerText.style.color = remainingSeconds > 10 ? '#FFFFFF' : '#dc3545'; // White normally, red if low time
+            // During intro, hide or freeze timer
+            timerText.textContent = `Time: --:--`;
+            timerText.style.color = '#FFFFFF';
+            timerText.style.fontSize = '1.2em';
         }
     }
 
@@ -1174,7 +1141,7 @@ button#resetButton:hover {
         // Prevent movement during any cinematic/transition/countdown
         if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition ||
             gameState.cinematicActive || gameState.explosionActive || gameState.glitchActive ||
-            gameState.bossIntroCountdownActive || gameState.bossIntroCinematicActive) {
+            gameState.dragonMasterIntroCinematicActive || gameState.bossIntroCountdownActive) {
             return;
         }
 
@@ -1423,8 +1390,8 @@ button#resetButton:hover {
             requestAnimationFrame(animateGlitch);
         } else {
             gameState.glitchActive = false;
-            setupLevel(3); // Move to level 3, which will now trigger the intro countdown
-            // The boss intro cinematic will be triggered by setupLevel(3)
+            setupLevel(3); // Move to level 3, which will prepare the map and entities
+            startDragonMasterIntroCinematic(); // Start the new intro cinematic after glitch
         }
     }
 
@@ -1461,6 +1428,36 @@ button#resetButton:hover {
     }
 
     /**
+     * Starts the "As the shadows loom... the Dragon Master appears!" cinematic.
+     */
+    function startDragonMasterIntroCinematic() {
+        gameState.dragonMasterIntroCinematicActive = true;
+        gameState.dragonMasterIntroCinematicText = 'As the shadows loom... the Dragon Master appears!';
+        gameState.dragonMasterIntroCinematicAlpha = 0;
+        let fadeDuration = 1000;
+        let holdDuration = 2000; // Hold longer for this important message
+        let fadeOutDuration = 1000;
+        let startTime = performance.now();
+
+        function animateDragonMasterIntroCinematic(introTime) {
+            const elapsed = introTime - startTime;
+            if (elapsed < fadeDuration) {
+                gameState.dragonMasterIntroCinematicAlpha = elapsed / fadeDuration;
+            } else if (elapsed < fadeDuration + holdDuration) {
+                gameState.dragonMasterIntroCinematicAlpha = 1;
+            } else if (elapsed < fadeDuration + holdDuration + fadeOutDuration) {
+                gameState.dragonMasterIntroCinematicAlpha = 1 - ((elapsed - (fadeDuration + holdDuration)) / fadeOutDuration);
+            } else {
+                gameState.dragonMasterIntroCinematicActive = false;
+                startBossIntroCountdown(); // Start countdown after this cinematic
+                return;
+            }
+            requestAnimationFrame(animateDragonMasterIntroCinematic);
+        }
+        requestAnimationFrame(animateDragonMasterIntroCinematic);
+    }
+
+    /**
      * Starts the boss intro countdown.
      */
     function startBossIntroCountdown() {
@@ -1485,7 +1482,7 @@ button#resetButton:hover {
         // Prevent bomb usage during any cinematic/transition/countdown
         if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition ||
             gameState.cinematicActive || gameState.explosionActive || gameState.glitchActive ||
-            gameState.bossIntroCountdownActive || gameState.bossIntroCinematicActive ||
+            gameState.dragonMasterIntroCinematicActive || gameState.bossIntroCountdownActive ||
             gameState.player.bombs <= 0) {
             return;
         }
@@ -1573,7 +1570,7 @@ button#resetButton:hover {
     document.addEventListener('keydown', (e) => {
         if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition ||
             gameState.cinematicActive || gameState.explosionActive || gameState.glitchActive ||
-            gameState.bossIntroCountdownActive || gameState.bossIntroCinematicActive) {
+            gameState.dragonMasterIntroCinematicActive || gameState.bossIntroCountdownActive) {
             if (e.key === 'r' || e.key === 'R') {
                 initGame(); // Allow reset even if game is over
             }
