@@ -858,7 +858,7 @@ button#resetButton:hover {
         const barY = 20; // Top of the canvas
 
         // Background bar (red)
-        ctx.fillStyle = '#880000'; // Dark red for background
+        ctx.fillStyle = '#FF0000'; // Dark red for background
         ctx.fillRect(barX, barY, barWidth, barHeight);
 
         // Current health bar (green)
@@ -966,11 +966,11 @@ button#resetButton:hover {
 
         // Change timer color when low or game over
         if (gameState.remainingTime < 10000 && gameState.remainingTime > 0) {
-            timerText.style.color = "#FF4500"; // OrangeRed
+            timerText.style.color = "#FF4500";
         } else if (gameState.remainingTime <= 0) {
-            timerText.style.color = "#dc3545"; // Red
+            timerText.style.color = "#dc3545";
         } else {
-            timerText.style.color = "#FFFFFF"; // Default white
+            timerText.style.color = "#FFFFFF";
         }
     }
 
