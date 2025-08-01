@@ -48,30 +48,30 @@
             width: 250px;
             height: 250px;
             cursor: pointer;
-            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
             user-select: none;
-            /* New styles for the button effect */
+            position: relative;
             border-radius: 50%;
             border: 5px solid #a0522d;
             box-shadow: 0 10px 0 #8b4513, inset 0 -5px 10px rgba(0,0,0,0.2);
-            padding: 10px;
+            padding: 0;
             box-sizing: border-box;
             background-color: transparent;
+            overflow: hidden;
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
         }
-        
-        /* This is the key part for the "pressed" effect */
+
         #cookie:active {
             transform: translateY(5px);
             box-shadow: 0 5px 0 #8b4513, inset 0 -2px 5px rgba(0,0,0,0.2);
         }
-        
-        /* The image inside the cookie */
+
         #cookie-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
-        
+
         #score {
             font-size: 3em;
             margin: 20px 0;
@@ -116,7 +116,7 @@
 <div class="game-container">
     <div id="score">0 Cookies</div>
     <div id="cookie">
-        <img src="https://www.freeiconspng.com/uploads/chocolate-chip-cookie-25.png" alt="Cookie" id="cookie-image">
+        <img src="my-cookie.png" alt="Cookie" id="cookie-image">
     </div>
 
     <div class="upgrades-container">
@@ -139,6 +139,8 @@
     let grandmaCost = 10;
     let factoryCost = 100;
 
+    // This line creates an audio object that looks for a file named 'click.mp3'
+    // You need to have this file in the same folder as this HTML file for the sound to work.
     const clickSound = new Audio('click.mp3');
 
     cookie.addEventListener('click', () => {
