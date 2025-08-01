@@ -36,11 +36,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-image: url('rickroll.gif'); /* REPLACE WITH YOUR IMAGE PATH/URL */
-    background-size: cover; /* Ensures the image covers the entire background */
-    background-position: center center; /* Centers the image */
-    background-repeat: no-repeat; /* Prevents the image from repeating */
-    background-attachment: fixed; /* Keeps the background image fixed when scrolling */
+    background-color: #2c2c2c;
     color: white;
     margin-top: 20px;
 }
@@ -225,6 +221,9 @@ button#resetButton:hover {
 </style>
 </head>
 <body>
+<!-- Tone.js for audio synthesis -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
 <ul>
     <li><a href="turtle.html">⬅ Back to game selection</a></li>
 </ul>
@@ -294,11 +293,67 @@ button#resetButton:hover {
     const Exit = '🚪';
     const Potion = '❤️';
     const Weapon = '⚔️'; // NEW: Weapon emoji
-    const PlayerWin = '🥳';
+    const PlayerWin = '�';
     const FrozenEnemy = '❄️';
 
     let gameState = {};
     let animationFrameId; // To store the animation frame ID for timer
+
+    // --- Sound Effects with Tone.js ---
+    // Glitching sound effect
+    const glitchSynth = new Tone.NoiseSynth({
+        noise: { type: 'pink' },
+        envelope: {
+            attack: 0.001,
+            decay: 0.1,
+            sustain: 0.05,
+            release: 0.1
+        }
+    }).chain(new Tone.PingPongDelay("4n", 0.5)).toDestination();
+
+    // Suspense music for the boss fight
+    const suspenseSynth = new Tone.Synth({
+        oscillator: { type: 'sawtooth' },
+        envelope: {
+            attack: 0.1,
+            decay: 0.2,
+            sustain: 0.8,
+            release: 0.5
+        }
+    }).toDestination();
+
+    const suspenseLoop = new Tone.Loop(time => {
+        suspenseSynth.triggerAttackRelease("C3", "4n", time);
+        suspenseSynth.triggerAttackRelease("Eb3", "4n", time + Tone.Time("8n"));
+    }, "2n");
+
+    function playSuspenseMusic() {
+        Tone.start();
+        suspenseLoop.start();
+    }
+
+    function stopSuspenseMusic() {
+        suspenseLoop.stop();
+    }
+
+    // Explosion sound effect
+    const explosionSynth = new Tone.MembraneSynth({
+        pitchDecay: 0.05,
+        octaves: 8,
+        oscillator: { type: 'sine' },
+        envelope: {
+            attack: 0.001,
+            decay: 0.4,
+            sustain: 0.01,
+            release: 0.4,
+            attackCurve: 'exponential'
+        }
+    }).toDestination();
+
+    function playExplosionSound() {
+        Tone.start();
+        explosionSynth.triggerAttackRelease("C1", "2n");
+    }
 
     // --- Game Logic ---
     /**
@@ -350,6 +405,8 @@ button#resetButton:hover {
             glitchActive: false,
             glitchStartTime: 0,
             glitchDuration: 750, // ms
+            glitchSoundInterval: null, // New variable to manage glitch sound interval
+            glitchingTimer: false, // NEW: Flag for glitching timer in boss fight
 
             // New states for boss intro sequence
             bossIntroCountdownActive: false,
@@ -361,6 +418,7 @@ button#resetButton:hover {
             dragonMasterIntroCinematicAlpha: 0,
             dragonMasterIntroCinematicStartTime: 0
         };
+        stopSuspenseMusic();
         setupLevel(gameState.currentLevel); // Setup initial level state
         gameLoop(); // Start the main game loop
     }
@@ -390,6 +448,7 @@ button#resetButton:hover {
         gameState.glitchActive = false;
         gameState.bossIntroCountdownActive = false;
         gameState.dragonMasterIntroCinematicActive = false;
+        gameState.glitchingTimer = false; // Reset glitching timer flag
 
         switch(level) {
             case 1:
@@ -399,7 +458,9 @@ button#resetButton:hover {
                 gameState.initialTime = 120 * 1000;
                 break;
             case 3:
-                gameState.initialTime = 300 * 1000;
+                // For the boss level, we set a large time and enable the glitching timer
+                gameState.initialTime = Infinity;
+                gameState.glitchingTimer = true;
                 break;
             default:
                 gameState.initialTime = 60 * 1000;
@@ -417,6 +478,7 @@ button#resetButton:hover {
             gameState.startTime = performance.now();
         } else {
             gameState.startTime = null; // Ensure timer is paused until intro sequence is done
+            playSuspenseMusic();
         }
         updateUI();
     }
@@ -434,16 +496,18 @@ button#resetButton:hover {
             let newMap = JSON.parse(JSON.stringify(map));
             for (let y = 1; y < MAP_HEIGHT_TILES - 1; y++) {
                 for (let x = 1; x < MAP_WIDTH_TILES - 1; x++) {
-                    let wallCount = 0;
-                    for (let ny = y - 1; ny <= y + 1; ny++) {
-                        for (let nx = x - 1; nx <= x + 1; nx++) {
-                            // Ensure bounds checking for map access
-                            if (ny >= 0 && ny < MAP_HEIGHT_TILES && nx >= 0 && nx < MAP_WIDTH_TILES && map[ny][nx] === Wall) {
-                                wallCount++;
+                    // Ensure bounds checking for map access
+                    if (y >= 0 && y < MAP_HEIGHT_TILES && x >= 0 && x < MAP_WIDTH_TILES) {
+                        let wallCount = 0;
+                        for (let ny = y - 1; ny <= y + 1; ny++) {
+                            for (let nx = x - 1; nx <= x + 1; nx++) {
+                                if (ny >= 0 && ny < MAP_HEIGHT_TILES && nx >= 0 && nx < MAP_WIDTH_TILES && map[ny][nx] === Wall) {
+                                    wallCount++;
+                                }
                             }
                         }
+                        newMap[y][x] = wallCount > 4 ? Wall : Floor;
                     }
-                    newMap[y][x] = wallCount > 4 ? Wall : Floor;
                 }
             }
             map = newMap;
@@ -572,45 +636,49 @@ button#resetButton:hover {
                              !gameState.gameOver;
 
         if (isGameActive) {
-            // Only update elapsed time and remaining time if the game is actively running
-            if (!gameState.startTime) {
-                gameState.startTime = currentTime; // Initialize startTime when game becomes active
-            }
-            gameState.elapsedTime = currentTime - gameState.startTime;
-            gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
+            // Only update elapsed time and remaining time if the game is actively running AND it's not the boss level
+            if (!gameState.glitchingTimer) {
+                if (!gameState.startTime) {
+                    gameState.startTime = currentTime; // Initialize startTime when game becomes active
+                }
+                gameState.elapsedTime = currentTime - gameState.startTime;
+                gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
 
-            if (gameState.remainingTime <= 0) {
-                gameState.remainingTime = 0;
-                if (!gameState.gameOver && !gameState.gameWon) {
-                    gameState.gameOver = true;
-                    gameState.gameOverReason = 'time';
+                if (gameState.remainingTime <= 0) {
+                    gameState.remainingTime = 0;
+                    if (!gameState.gameOver && !gameState.gameWon) {
+                        gameState.gameOver = true;
+                        gameState.gameOverReason = 'time';
+                        stopSuspenseMusic();
+                    }
+                }
+                // Time warnings logic
+                const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
+                if (remainingSeconds === 60 && !gameState.warning60sTriggered) {
+                    statusText.textContent = '1 minute remaining!';
+                    statusText.style.color = 'orange';
+                    gameState.warning60sTriggered = true;
+                    gameState.warning30sTriggered = false;
+                    gameState.warning10sTriggered = false;
+                    gameState.countdownActive = false;
+                } else if (remainingSeconds === 30 && !gameState.warning30sTriggered) {
+                    statusText.textContent = '30 seconds remaining!';
+                    statusText.style.color = 'red';
+                    gameState.warning30sTriggered = true;
+                    gameState.warning10sTriggered = false;
+                    gameState.countdownActive = false;
+                } else if (remainingSeconds === 10 && !gameState.warning10sTriggered) {
+                    statusText.textContent = '10 seconds remaining!';
+                    statusText.style.color = 'darkred';
+                    gameState.warning10sTriggered = true;
+                    gameState.countdownActive = false;
+                } else if (remainingSeconds <= 5 && remainingSeconds > 0) {
+                    gameState.countdownActive = true;
+                } else if (remainingSeconds === 0 && gameState.countdownActive) {
+                    gameState.countdownActive = false;
                 }
             }
-            // Time warnings logic
-            const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
-            if (remainingSeconds === 60 && !gameState.warning60sTriggered) {
-                statusText.textContent = '1 minute remaining!';
-                statusText.style.color = 'orange';
-                gameState.warning60sTriggered = true;
-                gameState.warning30sTriggered = false;
-                gameState.warning10sTriggered = false;
-                gameState.countdownActive = false;
-            } else if (remainingSeconds === 30 && !gameState.warning30sTriggered) {
-                statusText.textContent = '30 seconds remaining!';
-                statusText.style.color = 'red';
-                gameState.warning30sTriggered = true;
-                gameState.warning10sTriggered = false;
-                gameState.countdownActive = false;
-            } else if (remainingSeconds === 10 && !gameState.warning10sTriggered) {
-                statusText.textContent = '10 seconds remaining!';
-                statusText.style.color = 'darkred';
-                gameState.warning10sTriggered = true;
-                gameState.countdownActive = false;
-            } else if (remainingSeconds <= 5 && remainingSeconds > 0) {
-                gameState.countdownActive = true;
-            } else if (remainingSeconds === 0 && gameState.countdownActive) {
-                gameState.countdownActive = false;
-            }
+
 
             update(); // Call update only when game is active
         }
@@ -630,7 +698,7 @@ button#resetButton:hover {
     }
 
     /**
-     * Moves enemies and/or boss
+     * Moves enemies and/or boss based on simple AI.
      */
     function moveGameEntities() {
         // Only allow entities to move if the game is not in an intro/cinematic state
@@ -644,7 +712,7 @@ button#resetButton:hover {
     }
 
     /**
-     * Moves all regular enemies
+     * Moves all regular enemies based on simple AI.
      */
     function moveEnemies() {
         gameState.enemies.forEach(enemy => {
@@ -681,7 +749,7 @@ button#resetButton:hover {
     }
 
     /**
-     * Moves the boss
+     * Moves the boss based on simple AI.
      */
     function moveBoss(boss) {
         if (boss.frozenTurns > 0) {
@@ -895,7 +963,7 @@ button#resetButton:hover {
                 if (gameState.currentLevel === 3) {
                     message = 'The final boss will NEVER return because of YOUR braveness! Well done!';
                 } else {
-                    message = 'YOU ESCAPED! �';
+                    message = 'YOU ESCAPED! 🎉';
                 }
             } else {
                 message = (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
@@ -1016,15 +1084,12 @@ button#resetButton:hover {
         } else {
             // Only update status text if not in a special intro/cinematic state
             if (!gameState.bossIntroCountdownActive && !gameState.dragonMasterIntroCinematicActive && !gameState.showingLevelTransition) {
-                const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
-                if (remainingSeconds > 10 || (remainingSeconds > 5 && !gameState.warning10sTriggered) || (remainingSeconds > 30 && !gameState.warning30sTriggered) || (remainingSeconds > 60 && !gameState.warning60sTriggered)) {
-                    if (gameState.currentLevel === 3) {
-                        statusText.textContent = gameState.bossDefeated ? 'Boss defeated! Get the key and escape! 🔑🚪' : 'Defeat the Final Boss!';
-                    } else {
-                        statusText.textContent = gameState.hasKey ? 'Key found! Find the exit! 🚪' : 'Find the key 🔑 and escape through the door🚪!';
-                    }
-                    statusText.style.color = '#000000';
+                if (gameState.currentLevel === 3) {
+                    statusText.textContent = gameState.bossDefeated ? 'Key dropped! Find the exit! 🔑🚪' : 'Defeat the Dragon Boss! 🐲';
+                } else {
+                    statusText.textContent = gameState.hasKey ? 'Key found! Find the exit! 🚪' : 'Find the key 🔑 and escape through the door🚪!';
                 }
+                statusText.style.color = '#000000';
             } else if (gameState.showingLevelTransition) {
                 statusText.textContent = gameState.levelTransitionMessage;
                 statusText.style.color = '#FFFFFF';
@@ -1046,12 +1111,23 @@ button#resetButton:hover {
         bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
         bombText.style.color = gameState.player.bombs > 0 ? '#FFA500' : '#dc3545';
 
-        const remainingSeconds = Math.max(0, Math.floor(gameState.remainingTime / 1000));
-        const minutes = Math.floor(remainingSeconds / 60);
-        const seconds = remainingSeconds % 60;
+        // Timer display logic
+        if (gameState.glitchingTimer) {
+            // Glitching timer display for boss fight
+            const glitchChars = '!@#$%^&*()-+=~`{}[]|\\:;"<>,.?/';
+            let glitchString = '';
+            for (let i = 0; i < 5; i++) {
+                glitchString += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+            }
+            timerText.textContent = `Time: ${glitchString}`;
+            timerText.style.fontSize = '1.2em';
+            timerText.style.color = '#ff00ff'; // Bright pink/magenta for glitch
+        } else {
+            // Normal timer display for other levels
+            const remainingSeconds = Math.max(0, Math.floor(gameState.remainingTime / 1000));
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
 
-        // Ensure timer text is only updated if not in intro sequence
-        if (!gameState.bossIntroCountdownActive && !gameState.dragonMasterIntroCinematicActive) {
             if (gameState.countdownActive) {
                 timerText.textContent = `${remainingSeconds}!`;
                 timerText.style.fontSize = '2em';
@@ -1061,10 +1137,6 @@ button#resetButton:hover {
                 timerText.style.fontSize = '1.2em';
                 timerText.style.color = remainingSeconds > 10 ? '#FFFFFF' : '#dc3545';
             }
-        } else {
-            timerText.textContent = `Time: --:--`;
-            timerText.style.color = '#FFFFFF';
-            timerText.style.fontSize = '1.2em';
         }
     }
 
@@ -1104,6 +1176,7 @@ button#resetButton:hover {
         if (gameState.player.hp <= 0 && !gameState.gameOver) {
             gameState.gameOver = true;
             gameState.gameOverReason = 'hp';
+            stopSuspenseMusic();
         }
     }
 
@@ -1165,7 +1238,7 @@ button#resetButton:hover {
             if (gameState.bossDefeated && !gameState.hasKey &&
                 gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
                 gameState.hasKey = true;
-                statusText.textContent = 'Key picked up! Head to the exit! 🔑';
+                statusText.textContent = 'Key dropped! Find the exit! 🔑🚪';
                 statusText.style.color = '#000000';
             }
         } else {
@@ -1221,6 +1294,7 @@ button#resetButton:hover {
                 if (gameState.bossDefeated) {
                     gameState.gameWon = true;
                     gameState.completionTime = gameState.elapsedTime;
+                    stopSuspenseMusic();
                 }
             }
         }
@@ -1261,6 +1335,7 @@ button#resetButton:hover {
         let holdDuration = 1000;
         let fadeOutDuration = 1000;
         let startTime = performance.now();
+        playExplosionSound(); // Play explosion sound when cinematic starts
 
         function animateCinematic(currentTime) {
             const elapsed = currentTime - startTime;
@@ -1323,6 +1398,13 @@ button#resetButton:hover {
     function startGlitchTransition() {
         gameState.glitchActive = true;
         gameState.glitchStartTime = performance.now();
+
+        // Start glitch sound
+        Tone.start();
+        if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
+        gameState.glitchSoundInterval = setInterval(() => {
+            glitchSynth.triggerAttackRelease("16n");
+        }, 100);
     }
 
     /**
@@ -1357,7 +1439,12 @@ button#resetButton:hover {
             }
         } else {
             gameState.glitchActive = false;
-            setupLevel(3); // Setup level 3 map and entities
+            clearInterval(gameState.glitchSoundInterval); // Stop the glitch sound
+            gameState.glitchSoundInterval = null;
+
+            // FIX: Set the current level to 3 before setting up the level.
+            gameState.currentLevel = 3;
+            setupLevel(gameState.currentLevel); // Setup level 3 map and entities
             startDragonMasterIntroCinematic(); // Start the new intro cinematic after glitch
         }
     }
@@ -1434,7 +1521,8 @@ button#resetButton:hover {
             gameState.bossIntroCountdownMessage = 'GO!';
         } else {
             gameState.bossIntroCountdownActive = false;
-            gameState.startTime = performance.now(); // Start the main game timer AFTER intro cinematic and countdown
+            // The timer will not start for level 3, but we set a start time for game loop to know the game is active.
+            gameState.startTime = performance.now();
             return;
         }
         ctx.fillText(gameState.bossIntroCountdownMessage, canvas.width / 2, canvas.height / 2);
@@ -1459,7 +1547,7 @@ button#resetButton:hover {
 
         let enemiesStunnedOrDamaged = false;
 
-        const bombRadius = 2;
+        const bombRadius = 1;
 
         for (let yOffset = -bombRadius; yOffset <= bombRadius; yOffset++) {
             for (let xOffset = -bombRadius; xOffset <= bombRadius; xOffset++) {
@@ -1594,7 +1682,7 @@ button#resetButton:hover {
         showModal(); // Then show the modal
     };
 </script>
-    <audio controls autoplay loop>
+<audio controls autoplay loop>
   <source src="back.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
