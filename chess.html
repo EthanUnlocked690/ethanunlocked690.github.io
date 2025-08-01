@@ -1,1104 +1,373 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess</title>
-<style>
-/* Provided Navbar CSS */
-ul {
-    list-style-type: none;
-    margin: 0px;
-    padding: 0px;
-    overflow: hidden;
-    background-color: #fa07e2;
-    width: 800px; /* Adjust width for chess game */
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-li {
-    float: left; /* Make list items go side-by-side */
-}
-li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none; /* No underline for links */
-}
-li a:hover {
-    background-color: #60fa07;
-    color: #000000
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            margin: 0;
+            user-select: none;
+        }
 
-/* Game & Page Styling */
-body {
-    font-family: 'Arial', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #282c34; /* Dark background */
-    color: #f0f0f0;
-    margin-top: 20px;
+        h1 {
+            color: #f1c40f;
+            text-shadow: 2px 2px #34495e;
+            margin-bottom: 20px;
+        }
 
-    /* Added Rickroll background */
-    background-image: url('rickroll.gif'); /* Set the background image */
-    background-size: cover; /* Ensures the image covers the entire background */
-    background-position: center center; /* Centers the image */
-    background-repeat: no-repeat; /* Prevents the image from repeating */
-    background-attachment: fixed; /* Keeps the background image fixed when scrolling */
-}
+        #board-container {
+            border: 8px solid #f39c12;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            margin-bottom: 20px;
+        }
 
-#game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #3a3f47;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-    padding: 20px;
-}
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px; /* Emoji size */
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
 
-canvas {
-    border: 5px solid #61dafb; /* Chess board border */
-    background-color: #ccc; /* Light square default */
-    display: block;
-    box-shadow: 0 0 15px rgba(97, 218, 251, 0.7);
-    cursor: pointer; /* Default cursor for click-to-move */
-}
+        .light {
+            background-color: #ecf0f1;
+        }
 
-canvas.dragging {
-    cursor: grabbing; /* Indicate currently dragging */
-}
+        .dark {
+            background-color: #bdc3c7;
+        }
 
-#game-info {
-    width: 100%;
-    max-width: 800px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 15px;
-    padding: 0 10px;
-    font-size: 1.2em;
-    font-weight: bold;
-}
+        .piece {
+            /* No specific piece styling needed, emojis handle it */
+        }
 
-#game-controls {
-    margin-top: 20px;
-    display: flex;
-    gap: 15px;
-}
+        .selected {
+            background-color: #27ae60;
+        }
 
-.game-button {
-    background-color: #61dafb;
-    color: #282c34;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+        .possible-move {
+            background-color: #2ecc71;
+            box-shadow: inset 0 0 0 5px rgba(46, 204, 113, 0.5);
+        }
 
-.game-button:hover {
-    background-color: #4fa3d1;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
+        .possible-capture {
+            background-color: #e74c3c;
+            box-shadow: inset 0 0 0 5px rgba(231, 76, 60, 0.5);
+        }
+        
+        .check {
+            background-color: #c0392b !important;
+        }
 
-.game-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+        #status-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+            font-size: 1.2em;
+            text-align: center;
+        }
 
-/* Piece styling */
-.piece {
-    font-size: 40px; /* Adjust as needed for TILE_SIZE */
-    text-align: center;
-    line-height: 1; /* Ensure vertical centering */
-}
+        #status-message {
+            background-color: #34495e;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
 
-/* Highlight for selected piece (re-added for click-to-move) */
-.selected-square {
-    background-color: rgba(255, 255, 0, 0.5); /* Yellow highlight */
-}
+        #undo-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
 
-/* Highlight for valid moves (re-added for both) */
-.valid-move-square {
-    background-color: rgba(0, 255, 0, 0.3); /* Green highlight */
-}
+        #undo-button:hover {
+            background-color: #2980b9;
+        }
 
-/* Check highlight */
-.check-square {
-    background-color: rgba(255, 0, 0, 0.5); /* Red highlight for king in check */
-}
+        #new-game-button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
 
-/* Promotion Modal Styles */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.8);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: #3a3f47;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    color: #f0f0f0;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-    color: #61dafb;
-}
-
-.promotion-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.promotion-buttons button {
-    background-color: #61dafb;
-    color: #282c34;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
-    transition: background-color 0.3s ease, transform 0.1s ease;
-}
-
-.promotion-buttons button:hover {
-    background-color: #4fa3d1;
-    transform: translateY(-2px);
-}
-</style>
+        #new-game-button:hover {
+            background-color: #d35400;
+        }
+    </style>
 </head>
 <body>
-<ul>
-    <li><a href="turtle.html">⬅ Back to game selection</a></li>
-</ul>
-
-<div id="game-container">
-    <canvas id="chessCanvas" width="640" height="640"></canvas>
-    <div id="game-info">
-        <span id="turn-display">White's Turn</span>
-        <span id="status-message"></span>
+    <h1>Chess</h1>
+    <div id="board-container"></div>
+    <div id="status-container">
+        <div id="status-message">White's Turn</div>
+        <button id="undo-button">Undo</button>
+        <button id="new-game-button">New Game</button>
     </div>
-    <div id="game-controls">
-        <button id="resetButton" class="game-button">New Game</button>
-        <button id="undoButton" class="game-button">Undo</button>
-        <button id="resignButton" class="game-button">Resign</button> <!-- Resign Button -->
-    </div>
-</div>
 
-<!-- Pawn Promotion Modal -->
-<div id="promotionModal" class="modal">
-    <div class="modal-content">
-        <h2>Promotion</h2>
-        <p>Choose your transformation!!</p>
-        <div class="promotion-buttons">
-            <button id="promoteQueen">Queen ♕</button>
-            <button id="promoteRook">Rook ♖</button>
-            <button id="promoteBishop">Bishop ♗</button>
-            <button id="promoteKnight">Knight ♘</button>
-        </div>
-    </div>
-</div>
+    <script>
+        // --- CHESS LOGIC ---
+        // Piece representation using emojis
+        const PIECES = {
+            'wR': '♜', 'wN': '♞', 'wB': '♝', 'wQ': '♛', 'wK': '♚', 'wP': '♟',
+            'bR': '♖', 'bN': '♘', 'bB': '♗', 'bQ': '♕', 'bK': '♔', 'bP': '♙'
+        };
 
-<script>
-    const canvas = document.getElementById('chessCanvas');
-    const ctx = canvas.getContext('2d');
-    const turnDisplay = document.getElementById('turn-display');
-    const statusMessage = document.getElementById('status-message');
-    const resetButton = document.getElementById('resetButton');
-    const undoButton = document.getElementById('undoButton');
-    const resignButton = document.getElementById('resignButton');
+        const boardContainer = document.getElementById('board-container');
+        const statusMessage = document.getElementById('status-message');
+        const undoButton = document.getElementById('undo-button');
+        const newGameButton = document.getElementById('new-game-button');
 
-    // Promotion modal elements
-    const promotionModal = document.getElementById('promotionModal');
-    const promoteQueenButton = document.getElementById('promoteQueen');
-    const promoteRookButton = document.getElementById('promoteRook');
-    const promoteBishopButton = document.getElementById('promoteBishop');
-    const promoteKnightButton = document.getElementById('promoteKnight');
+        let board = [];
+        let history = []; // Stores past board states for the undo function
+        let turn = 'white';
+        let selectedPiece = null;
+        let possibleMoves = [];
+        let gameOver = false;
 
-
-    const BOARD_SIZE = 8;
-    const TILE_SIZE = canvas.width / BOARD_SIZE;
-
-    // Piece Unicode characters
-    const PIECES = {
-        'white': {
-            'pawn': '♙', 'rook': '♖', 'knight': '♘',
-            'bishop': '♗', 'queen': '♕', 'king': '♔'
-        },
-        'black': {
-            'pawn': '♟', 'rook': '♜', 'knight': '♞',
-            'bishop': '♝', 'queen': '♛', 'king': '♚'
-        }
-    };
-
-    let board = [];
-    let currentPlayer = 'white'; // 'white' or 'black'
-
-    // Variables for click-to-move
-    let selectedPiece = null; // { x, y, piece }
-    let validMoves = []; // Array of {x, y} for selected piece
-
-    // Variables for drag-and-drop
-    let draggedPiece = null; // { piece: {}, startY: number, startX: number }
-    let isDragging = false;
-    let currentMousePos = { x: 0, y: 0 };
-    let validMovesForDraggedPiece = []; // Store valid moves for the currently dragged piece
-
-    let gameOver = false;
-    let history = []; // To store board states for undo
-
-    // Promotion specific state
-    let isPromoting = false;
-    let promotionTarget = { row: -1, col: -1, color: '' }; // Stores where the pawn needs to be promoted
-
-    // --- Game Initialization ---
-    function initGame() {
-        board = createInitialBoard();
-        currentPlayer = 'white';
-        
-        // Reset all interaction states
-        selectedPiece = null;
-        validMoves = [];
-        draggedPiece = null;
-        isDragging = false;
-        currentMousePos = { x: 0, y: 0 };
-        validMovesForDraggedPiece = [];
-
-        gameOver = false;
-        isPromoting = false;
-        promotionTarget = { row: -1, col: -1, color: '' };
-
-        history = [];
-        saveBoardState(); // Save initial state
-        drawBoard();
-        updateGameInfo();
-    }
-
-    /**
-     * Creates the initial chess board setup.
-     * @returns {Array<Array<Object|null>>} The 2D board array.
-     */
-    function createInitialBoard() {
-        let newBoard = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-
-        // Pawns
-        for (let i = 0; i < BOARD_SIZE; i++) {
-            newBoard[1][i] = { type: 'pawn', color: 'black', hasMoved: false };
-            newBoard[6][i] = { type: 'pawn', color: 'white', hasMoved: false };
-        }
-
-        // Rooks
-        newBoard[0][0] = { type: 'rook', color: 'black', hasMoved: false };
-        newBoard[0][7] = { type: 'rook', color: 'black', hasMoved: false };
-        newBoard[7][0] = { type: 'rook', color: 'white', hasMoved: false };
-        newBoard[7][7] = { type: 'rook', color: 'white', hasMoved: false };
-
-        // Knights
-        newBoard[0][1] = { type: 'knight', color: 'black' };
-        newBoard[0][6] = { type: 'knight', color: 'black' };
-        newBoard[7][1] = { type: 'knight', color: 'white' };
-        newBoard[7][6] = { type: 'knight', color: 'white' };
-
-        // Bishops
-        newBoard[0][2] = { type: 'bishop', color: 'black' };
-        newBoard[0][5] = { type: 'bishop', color: 'black' };
-        newBoard[7][2] = { type: 'bishop', color: 'white' };
-        newBoard[7][5] = { type: 'bishop', color: 'white' };
-
-        // Queens
-        newBoard[0][3] = { type: 'queen', color: 'black' };
-        newBoard[7][3] = { type: 'queen', color: 'white' };
-
-        // Kings
-        newBoard[0][4] = { type: 'king', color: 'black', hasMoved: false };
-        newBoard[7][4] = { type: 'king', color: 'white', hasMoved: false };
-
-        return newBoard;
-    }
-
-    /**
-     * Saves the current board state to history for undo functionality.
-     */
-    function saveBoardState() {
-        history.push(JSON.parse(JSON.stringify({ board, currentPlayer, gameOver }))); // Simplified state for history
-        // Limit history size to prevent excessive memory usage
-        if (history.length > 20) {
-            history.shift();
-        }
-    }
-
-    /**
-     * Restores the previous board state from history.
-     */
-    function undoMove() {
-        if (gameOver || isPromoting) return; // Prevent undoing if game over or during promotion
-        if (history.length > 1) { // Need at least two states to undo (current and previous)
-            history.pop(); // Remove current state
-            const prevState = history[history.length - 1]; // Get previous state
-            board = JSON.parse(JSON.stringify(prevState.board));
-            currentPlayer = prevState.currentPlayer;
-            gameOver = prevState.gameOver;
-
-            // Clear all interaction states
+        function initBoard() {
+            // Initial chess board setup
+            board = [
+                ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+                ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                [null, null, null, null, null, null, null, null],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
+            ];
+            history = [JSON.stringify(board)];
+            turn = 'white';
             selectedPiece = null;
-            validMoves = [];
-            draggedPiece = null;
-            isDragging = false;
-            validMovesForDraggedPiece = [];
-
+            possibleMoves = [];
+            gameOver = false;
+            statusMessage.textContent = "White's Turn";
             drawBoard();
-            updateGameInfo();
-
-            // After undo, if it's the bot's turn, trigger bot move
-            if (!gameOver && currentPlayer === 'black') {
-                statusMessage.textContent = "Bot is thinking...";
-                setTimeout(botMove, 1000);
-            }
-        } else {
-            statusMessage.textContent = "Cannot undo further.";
-        }
-    }
-
-    /**
-     * Handles the resign action, ending the game.
-     */
-    function resignGame() {
-        if (gameOver || isPromoting) return; // Prevent resigning during promotion
-
-        gameOver = true;
-        statusMessage.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} Resigns! ${currentPlayer === 'white' ? 'Black' : 'White'} Wins!`;
-        turnDisplay.textContent = "Game Over!";
-
-        // Clear any active interaction states
-        selectedPiece = null;
-        validMoves = [];
-        draggedPiece = null;
-        isDragging = false;
-        validMovesForDraggedPiece = [];
-
-        drawBoard(); // Redraw to finalize the board state
-    }
-
-    // --- Drawing Functions ---
-    /**
-     * Draws the chess board and all pieces.
-     */
-    function drawBoard() {
-        for (let row = 0; row < BOARD_SIZE; row++) {
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                const isLightSquare = (row + col) % 2 === 0;
-                ctx.fillStyle = isLightSquare ? '#f0d9b5' : '#b58863'; // Chess board colors
-                ctx.fillRect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-
-                // Highlight for selected piece (click-to-move)
-                if (!isDragging && selectedPiece && selectedPiece.x === col && selectedPiece.y === row) {
-                    ctx.fillStyle = 'rgba(255, 255, 0, 0.5)'; // Yellow highlight
-                    ctx.fillRect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                }
-
-                // Highlight for valid moves (both click-to-move and drag-and-drop)
-                if ((!isDragging && validMoves.some(move => move.x === col && move.y === row)) ||
-                    (isDragging && validMovesForDraggedPiece.some(move => move.x === col && move.y === row))) {
-                    ctx.fillStyle = 'rgba(0, 255, 0, 0.3)'; // Green highlight
-                    ctx.fillRect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                }
-
-                // Draw pieces, but skip the one being dragged from its original spot
-                const piece = board[row][col];
-                if (piece && !(isDragging && draggedPiece.startY === row && draggedPiece.startX === col)) {
-                    ctx.font = `${TILE_SIZE * 0.7}px Arial`; // Adjust font size for pieces
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillStyle = piece.color === 'white' ? '#FFFFFF' : '#000000'; // Piece color
-                    ctx.fillText(PIECES[piece.color][piece.type], col * TILE_SIZE + TILE_SIZE / 2, row * TILE_SIZE + TILE_SIZE / 2);
-                }
-            }
         }
 
-        // Highlight king in check
-        const kingPos = findKing(currentPlayer);
-        if (kingPos && isKingInCheck(kingPos.y, kingPos.x, currentPlayer, board)) {
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Red highlight
-            ctx.fillRect(kingPos.x * TILE_SIZE, kingPos.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        function saveState() {
+            // Save the current board state to history
+            history.push(JSON.stringify(board));
         }
 
-        // Draw the dragged piece at the mouse position
-        if (isDragging && draggedPiece) {
-            ctx.font = `${TILE_SIZE * 0.7}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillStyle = draggedPiece.piece.color === 'white' ? '#FFFFFF' : '#000000';
-            ctx.fillText(PIECES[draggedPiece.piece.color][draggedPiece.piece.type], currentMousePos.x, currentMousePos.y);
-        }
-    }
-
-    /**
-     * Updates the game info display (turn and status message).
-     */
-    function updateGameInfo() {
-        turnDisplay.textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s Turn`;
-        if (gameOver) {
-            turnDisplay.textContent = "Game Over!";
-        }
-
-        const whiteKingPos = findKing('white');
-        const blackKingPos = findKing('black');
-
-        if (!whiteKingPos || !blackKingPos) {
-            statusMessage.textContent = `Game Over! ${!whiteKingPos ? 'Black' : 'White'} wins by King capture!`;
-            gameOver = true;
-            return;
-        }
-
-        if (isKingInCheck(whiteKingPos.y, whiteKingPos.x, 'white', board)) {
-            if (isCheckmate('white')) {
-                statusMessage.textContent = "Checkmate! Black Wins!";
-                gameOver = true;
-            } else {
-                statusMessage.textContent = "White King in Check!";
-            }
-        } else if (isKingInCheck(blackKingPos.y, blackKingPos.x, 'black', board)) {
-            if (isCheckmate('black')) {
-                statusMessage.textContent = "Checkmate! White Wins!";
-                gameOver = true;
-            } else {
-                statusMessage.textContent = "Black King in Check!";
-            }
-        } else if (isStalemate(currentPlayer)) {
-            statusMessage.textContent = "Stalemate! It's a Draw!";
-            gameOver = true;
-        } else {
-            statusMessage.textContent = "";
-        }
-    }
-
-    // --- Game Logic ---
-
-    /**
-     * Handles a click on the canvas, processing piece selection and movement (for click-to-move).
-     * This function will only execute if not currently dragging or promoting.
-     * @param {MouseEvent} event The click event.
-     */
-    function handleCanvasClick(event) {
-        if (gameOver || currentPlayer === 'black' || isDragging || isPromoting) return;
-
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
-        const col = Math.floor(mouseX / TILE_SIZE);
-        const row = Math.floor(mouseY / TILE_SIZE);
-
-        const clickedPiece = board[row][col];
-
-        if (selectedPiece) {
-            // A piece is already selected, try to move it
-            const targetMove = { x: col, y: row };
-            if (validMoves.some(move => move.x === targetMove.x && move.y === targetMove.y)) {
-                makeMove(selectedPiece.y, selectedPiece.x, row, col);
+        function undoMove() {
+            if (history.length > 1) {
+                history.pop();
+                board = JSON.parse(history[history.length - 1]);
+                turn = turn === 'white' ? 'black' : 'white';
+                statusMessage.textContent = turn === 'white' ? "White's Turn" : "Bot's Turn";
                 selectedPiece = null;
-                validMoves = [];
-                drawBoard(); // Redraw after move
-                updateGameInfo();
-                if (!gameOver && !isPromoting && currentPlayer === 'black') { // Only trigger bot if not promoting and it's bot's turn
-                    statusMessage.textContent = "Bot is thinking...";
-                    setTimeout(botMove, 1000); // Delay bot move for better UX
-                }
-            } else {
-                // Clicked on a non-valid square or another own piece, deselect current piece
-                selectedPiece = null;
-                validMoves = [];
-                drawBoard(); // Redraw to remove highlights
-                // If clicked on a new piece of the current player, select it
-                if (clickedPiece && clickedPiece.color === currentPlayer) {
-                    selectedPiece = { x: col, y: row, piece: clickedPiece };
-                    validMoves = getValidMoves(row, col, board, currentPlayer);
-                    drawBoard(); // Redraw to show new highlights
-                }
-            }
-        } else {
-            // No piece selected, try to select one
-            if (clickedPiece && clickedPiece.color === currentPlayer) {
-                selectedPiece = { x: col, y: row, piece: clickedPiece };
-                validMoves = getValidMoves(row, col, board, currentPlayer);
-                drawBoard(); // Redraw to show highlights
-            }
-        }
-    }
-
-    /**
-     * Handles mouse down event for dragging.
-     */
-    function handleMouseDown(event) {
-        if (gameOver || currentPlayer === 'black' || isPromoting) return; // Prevent interaction during promotion
-
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
-        const col = Math.floor(mouseX / TILE_SIZE);
-        const row = Math.floor(mouseY / TILE_SIZE);
-
-        const clickedPiece = board[row][col];
-
-        if (clickedPiece && clickedPiece.color === currentPlayer) {
-            isDragging = true;
-            canvas.classList.add('dragging');
-            draggedPiece = { piece: clickedPiece, startY: row, startX: col };
-            currentMousePos = { x: mouseX, y: mouseY };
-            validMovesForDraggedPiece = getValidMoves(row, col, board, currentPlayer);
-
-            // Clear click-to-move selection when dragging starts
-            selectedPiece = null;
-            validMoves = [];
-
-            drawBoard(); // Redraw to remove piece from original spot and show valid moves
-        }
-    }
-
-    /**
-     * Handles mouse move event for dragging.
-     */
-    function handleMouseMove(event) {
-        if (!isDragging) return;
-
-        const rect = canvas.getBoundingClientRect();
-        currentMousePos = {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
-        };
-        drawBoard(); // Redraw to show dragged piece at new position
-    }
-
-    /**
-     * Handles mouse up event for dropping.
-     */
-    function handleMouseUp(event) {
-        if (!isDragging) return;
-
-        isDragging = false;
-        canvas.classList.remove('dragging');
-
-        const rect = canvas.getBoundingClientRect();
-        const dropX = event.clientX - rect.left;
-        const dropY = event.clientY - rect.top;
-
-        const endCol = Math.floor(dropX / TILE_SIZE);
-        const endRow = Math.floor(dropY / TILE_SIZE);
-
-        const targetMove = { x: endCol, y: endRow };
-
-        // Check if the drop target is a valid move
-        const isValidDrop = validMovesForDraggedPiece.some(move => move.x === targetMove.x && move.y === targetMove.y);
-
-        if (isValidDrop) {
-            makeMove(draggedPiece.startY, draggedPiece.startX, endRow, endCol);
-        } else {
-            // Invalid move, return piece to original position
-            statusMessage.textContent = "Invalid move. Try again!";
-        }
-
-        // Clear dragging state
-        draggedPiece = null;
-        validMovesForDraggedPiece = [];
-        drawBoard(); // Final redraw
-        updateGameInfo();
-
-        if (!gameOver && !isPromoting && currentPlayer === 'black') { // Only trigger bot if not promoting and it's bot's turn
-            // If game is not over and it's bot's turn, trigger bot move
-            statusMessage.textContent = "Bot is thinking...";
-            setTimeout(botMove, 1000); // Delay bot move for better UX
-        }
-    }
-
-    /**
-     * Makes a move on the board.
-     * @param {number} startY Start row.
-     * @param {number} startX Start column.
-     * @param {number} endY End row.
-     * @param {number} endX End column.
-     */
-    function makeMove(startY, startX, endY, endX) {
-        saveBoardState(); // Save state before making the move
-
-        const piece = board[startY][startX];
-        board[endY][endX] = piece;
-        board[startY][startX] = null;
-
-        // Update hasMoved property for pawns, rooks, and kings
-        if (piece.type === 'pawn' || piece.type === 'rook' || piece.type === 'king') {
-            piece.hasMoved = true;
-        }
-
-        // Pawn Promotion
-        if (piece.type === 'pawn' && ((piece.color === 'white' && endY === 0) || (piece.color === 'black' && endY === BOARD_SIZE - 1))) {
-            // If it's the player's pawn, show promotion modal
-            if (piece.color === 'white') {
-                handlePawnPromotion(endY, endX, piece.color);
-            } else { // Bot's pawn promotion (always to Queen for simplicity)
-                board[endY][endX] = { type: 'queen', color: piece.color };
-                switchPlayer(); // Switch turn after bot's promotion
-            }
-        } else {
-            switchPlayer(); // Normal turn switch
-        }
-    }
-
-    /**
-     * Handles pawn promotion by showing the modal.
-     * @param {number} row The row where the pawn is promoting.
-     * @param {number} col The column where the pawn is promoting.
-     * @param {string} color The color of the pawn.
-     */
-    function handlePawnPromotion(row, col, color) {
-        isPromoting = true;
-        promotionTarget = { row, col, color };
-        promotionModal.style.display = 'flex';
-        statusMessage.textContent = "Pawn Promotion! Choose your piece.";
-    }
-
-    /**
-     * Promotes the pawn to the chosen piece type.
-     * @param {string} type The type of piece to promote to ('queen', 'rook', 'bishop', 'knight').
-     */
-    function promotePawn(type) {
-        board[promotionTarget.row][promotionTarget.col] = { type: type, color: promotionTarget.color };
-        promotionModal.style.display = 'none';
-        isPromoting = false;
-        promotionTarget = { row: -1, col: -1, color: '' }; // Reset promotion target
-
-        // Switch player after promotion is complete
-        switchPlayer();
-
-        drawBoard();
-        updateGameInfo();
-
-        // After promotion, it's the bot's turn
-        if (!gameOver && currentPlayer === 'black') {
-            statusMessage.textContent = "Bot is thinking...";
-            setTimeout(botMove, 1000);
-        }
-    }
-
-
-    /**
-     * Switches the current player.
-     */
-    function switchPlayer() {
-        currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
-        updateGameInfo();
-    }
-
-    /**
-     * Finds the king of a given color on the board.
-     * @param {string} color The color of the king to find.
-     * @param {Array<Array<Object|null>>} currentBoard The board to search.
-     * @returns {Object|null} The {x, y} position of the king, or null if not found.
-     */
-    function findKing(color, currentBoard = board) {
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                const piece = currentBoard[r][c];
-                if (piece && piece.type === 'king' && piece.color === color) {
-                    return { y: r, x: c };
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Checks if a given square is attacked by the opponent.
-     * @param {number} row The row of the square.
-     * @param {number} col The column of the square.
-     * @param {string} attackingColor The color of the pieces that would be attacking.
-     * @param {Array<Array<Object|null>>} currentBoard The board to check.
-     * @returns {boolean} True if the square is attacked, false otherwise.
-     */
-    function isSquareAttacked(row, col, attackingColor, currentBoard) {
-        // This function needs to check if *any* opponent piece can move to (row, col)
-        // It does this by iterating through all opponent pieces and getting their *possible* moves (ignoring check rules for the attacking piece itself)
-        // and seeing if (row, col) is among them.
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                const piece = currentBoard[r][c];
-                if (piece && piece.color === attackingColor) {
-                    // Get possible moves for the attacking piece (ignore if it puts its own king in check for this check)
-                    const moves = getPossibleMoves(r, c, currentBoard, true); // Pass true to indicate 'raw' moves
-                    if (moves.some(move => move.y === row && move.x === col)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the king of a given color is currently in check.
-     * @param {number} kingY The row of the king.
-     * @param {number} kingX The column of the king.
-     * @param {string} kingColor The color of the king.
-     * @param {Array<Array<Object|null>>} currentBoard The board to check.
-     * @returns {boolean} True if the king is in check, false otherwise.
-     */
-    function isKingInCheck(kingY, kingX, kingColor, currentBoard) {
-        const opponentColor = kingColor === 'white' ? 'black' : 'white';
-        return isSquareAttacked(kingY, kingX, opponentColor, currentBoard);
-    }
-
-    /**
-     * Checks if the current player is in checkmate.
-     * @param {string} color The color of the player to check.
-     * @returns {boolean} True if in checkmate, false otherwise.
-     */
-    function isCheckmate(color) {
-        const kingPos = findKing(color);
-        if (!kingPos || !isKingInCheck(kingPos.y, kingPos.x, color, board)) {
-            return false; // Not in check, so not checkmate
-        }
-
-        // Iterate through all pieces of the current player
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                const piece = board[r][c];
-                if (piece && piece.color === color) {
-                    const moves = getValidMoves(r, c, board, color); // Get only moves that resolve check
-                    if (moves.length > 0) {
-                        return false; // Found a valid move that gets out of check
-                    }
-                }
-            }
-        }
-        return true; // No valid moves found, so it's checkmate
-    }
-
-    /**
-     * Checks if the current player is in stalemate.
-     * @param {string} color The color of the player to check.
-     * @returns {boolean} True if in stalemate, false otherwise.
-     */
-    function isStalemate(color) {
-        const kingPos = findKing(color);
-        if (!kingPos || isKingInCheck(kingPos.y, kingPos.x, color, board)) {
-            return false; // If king is not on board or is in check, it's not stalemate
-        }
-
-        // Check if the current player has any legal moves
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                const piece = board[r][c];
-                if (piece && piece.color === color) {
-                    const moves = getValidMoves(r, c, board, color);
-                    if (moves.length > 0) {
-                        return false; // Found a legal move, not stalemate
-                    }
-                }
-            }
-        }
-        return true; // No legal moves and not in check, so it's stalemate
-    }
-
-    /**
-     * Gets all valid moves for a piece at (row, col) on a given board,
-     * ensuring the move does not leave the king in check.
-     * @param {number} row The row of the piece.
-     * @param {number} col The column of the piece.
-     * @param {Array<Array<Object|null>>} currentBoard The board to evaluate.
-     * @param {string} pieceColor The color of the piece.
-     * @returns {Array<Object>} An array of valid move {x, y} coordinates.
-     */
-    function getValidMoves(row, col, currentBoard, pieceColor) {
-        const piece = currentBoard[row][col];
-        if (!piece || piece.color !== pieceColor) return [];
-
-        const possibleMoves = getPossibleMoves(row, col, currentBoard);
-        const legalMoves = [];
-
-        for (const move of possibleMoves) {
-            // Simulate the move on a temporary board
-            const tempBoard = JSON.parse(JSON.stringify(currentBoard));
-            tempBoard[move.y][move.x] = tempBoard[row][col];
-            tempBoard[row][col] = null;
-
-            // Check if the king is in check after the simulated move
-            const kingPos = findKing(pieceColor, tempBoard);
-            if (kingPos && !isKingInCheck(kingPos.y, kingPos.x, pieceColor, tempBoard)) {
-                legalMoves.push(move);
-            }
-        }
-        return legalMoves;
-    }
-
-    /**
-     * Gets all theoretically possible moves for a piece at (row, col)
-     * without considering check (unless explicitly for `isSquareAttacked`).
-     * @param {number} row The row of the piece.
-     * @param {number} col The column of the piece.
-     * @param {Array<Array<Object|null>>} currentBoard The board to evaluate.
-     * @param {boolean} rawMoves If true, returns all possible moves even if they put own king in check.
-     * @returns {Array<Object>} An array of possible move {x, y} coordinates.
-     */
-    function getPossibleMoves(row, col, currentBoard, rawMoves = false) {
-        const piece = currentBoard[row][col];
-        const moves = [];
-        const opponentColor = piece.color === 'white' ? 'black' : 'white';
-
-        function addMoveIfValid(r, c) {
-            if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
-                const targetPiece = currentBoard[r][c];
-                if (!targetPiece || targetPiece.color !== piece.color) {
-                    moves.push({ y: r, x: c });
-                    return true; // Move was added
-                }
-            }
-            return false; // Invalid or blocked
-        }
-
-        function addSlidingMoves(dr, dc) {
-            let r = row + dr;
-            let c = col + dc;
-            while (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
-                const targetPiece = currentBoard[r][c];
-                if (!targetPiece) {
-                    moves.push({ y: r, x: c });
-                } else {
-                    if (targetPiece.color !== piece.color) {
-                        moves.push({ y: r, x: c }); // Capture
-                    }
-                    break; // Blocked by any piece
-                }
-                r += dr;
-                c += dc;
-            }
-        }
-
-        switch (piece.type) {
-            case 'pawn':
-                const direction = piece.color === 'white' ? -1 : 1;
-                const startRow = piece.color === 'white' ? 6 : 1;
-
-                // Single step forward
-                const oneStepY = row + direction;
-                if (oneStepY >= 0 && oneStepY < BOARD_SIZE && !currentBoard[oneStepY][col]) {
-                    moves.push({ y: oneStepY, x: col });
-                }
-
-                // Double step forward (first move)
-                const twoStepY = row + 2 * direction;
-                if (row === startRow && !piece.hasMoved &&
-                    oneStepY >= 0 && oneStepY < BOARD_SIZE && !currentBoard[oneStepY][col] &&
-                    twoStepY >= 0 && twoStepY < BOARD_SIZE && !currentBoard[twoStepY][col]) {
-                    moves.push({ y: twoStepY, x: col });
-                }
-
-                // Captures
-                const captureLeftX = col - 1;
-                const captureRightX = col + 1;
-
-                if (oneStepY >= 0 && oneStepY < BOARD_SIZE && captureLeftX >= 0 && captureLeftX < BOARD_SIZE &&
-                    currentBoard[oneStepY][captureLeftX] && currentBoard[oneStepY][captureLeftX].color === opponentColor) {
-                    moves.push({ y: oneStepY, x: captureLeftX });
-                }
-                if (oneStepY >= 0 && oneStepY < BOARD_SIZE && captureRightX >= 0 && captureRightX < BOARD_SIZE &&
-                    currentBoard[oneStepY][captureRightX] && currentBoard[oneStepY][captureRightX].color === opponentColor) {
-                    moves.push({ y: oneStepY, x: captureRightX });
-                }
-                // En passant and promotion are complex and omitted for this basic version.
-                break;
-
-            case 'rook':
-                addSlidingMoves(1, 0); addSlidingMoves(-1, 0); // Vertical
-                addSlidingMoves(0, 1); addSlidingMoves(0, -1); // Horizontal
-                break;
-
-            case 'knight':
-                const knightMoves = [
-                    { dr: -2, dc: -1 }, { dr: -2, dc: 1 }, { dr: -1, dc: -2 },
-                    { dr: -1, dc: 2 }, { dr: 1, dc: -2 }, { dr: 1, dc: 2 },
-                    { dr: 2, dc: -1 }, { dr: 2, dc: 1 }
-                ];
-                for (const move of knightMoves) {
-                    addMoveIfValid(row + move.dr, col + move.dc);
-                }
-                break;
-
-            case 'bishop':
-                addSlidingMoves(1, 1); addSlidingMoves(1, -1); // Diagonal
-                addSlidingMoves(-1, 1); addSlidingMoves(-1, -1);
-                break;
-
-            case 'queen':
-                addSlidingMoves(1, 0); addSlidingMoves(-1, 0); // Vertical
-                addSlidingMoves(0, 1); addSlidingMoves(0, -1); // Horizontal
-                addSlidingMoves(1, 1); addSlidingMoves(1, -1); // Diagonal
-                addSlidingMoves(-1, 1); addSlidingMoves(-1, -1);
-                break;
-
-            case 'king':
-                for (let dr = -1; dr <= 1; dr++) {
-                    for (let dc = -1; dc <= 1; dc++) {
-                        if (dr === 0 && dc === 0) continue;
-                        addMoveIfValid(row + dr, col + dc);
-                    }
-                }
-                // Castling is complex and omitted for this basic version.
-                break;
-        }
-        return moves;
-    }
-
-    /**
-     * Evaluates the given board state from the perspective of a specific color.
-     * Higher score is better for the given color.
-     * @param {Array<Array<Object|null>>} currentBoard The board to evaluate.
-     * @param {string} color The color whose perspective the evaluation is from.
-     * @returns {number} The evaluated score of the board.
-     */
-    function evaluateBoard(currentBoard, color) {
-        let score = 0;
-        const pieceValues = {
-            'pawn': 10,
-            'knight': 30,
-            'bishop': 30,
-            'rook': 50,
-            'queen': 90,
-            'king': 900 // King value is high to represent game-ending importance
-        };
-
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                const piece = currentBoard[r][c];
-                if (piece) {
-                    if (piece.color === color) {
-                        score += pieceValues[piece.type];
-                    } else {
-                        score -= pieceValues[piece.type];
-                    }
-                }
-            }
-        }
-        return score;
-    }
-
-    // --- Bot AI ---
-    /**
-     * Makes a move for the bot (black player) using a simple evaluation.
-     */
-    function botMove() {
-        if (gameOver || currentPlayer !== 'black' || isPromoting) return; // Prevent bot move during promotion
-
-        let allBotMoves = [];
-        for (let r = 0; r < BOARD_SIZE; r++) {
-            for (let c = 0; c < BOARD_SIZE; c++) {
-                const piece = board[r][c];
-                if (piece && piece.color === 'black') {
-                    const moves = getValidMoves(r, c, board, 'black');
-                    moves.forEach(move => allBotMoves.push({ startY: r, startX: c, endY: move.y, endX: move.x }));
-                }
-            }
-        }
-
-        if (allBotMoves.length > 0) {
-            let bestMove = null;
-            let bestScore = -Infinity; // Bot wants to maximize its score
-
-            for (const move of allBotMoves) {
-                // Simulate the move
-                const tempBoard = JSON.parse(JSON.stringify(board));
-                const pieceToMove = tempBoard[move.startY][move.startX];
-                tempBoard[move.endY][move.endX] = pieceToMove;
-                tempBoard[move.startY][move.startX] = null;
-
-                // Simulate pawn promotion for bot (always to Queen for simplicity in AI lookahead)
-                if (pieceToMove.type === 'pawn' && move.endY === BOARD_SIZE - 1) {
-                    tempBoard[move.endY][move.endX] = { type: 'queen', color: 'black' };
-                }
-
-                // Evaluate the board after the simulated move
-                const currentScore = evaluateBoard(tempBoard, 'black');
-
-                if (currentScore > bestScore) {
-                    bestScore = currentScore;
-                    bestMove = move;
-                }
-            }
-
-            if (bestMove) {
-                makeMove(bestMove.startY, bestMove.startX, bestMove.endY, bestMove.endX);
+                possibleMoves = [];
                 drawBoard();
-                updateGameInfo();
-            } else {
-                // Fallback if no best move found (shouldn't happen if allBotMoves.length > 0 and game not over)
-                statusMessage.textContent = "Bot couldn't find a legal move. Stalemate or Checkmate?";
-                // This scenario should ideally be caught by isStalemate/isCheckmate
-                // but as a fallback, we can set game over here if no moves are truly possible.
-                const blackKingPos = findKing('black');
-                if (blackKingPos && isKingInCheck(blackKingPos.y, blackKingPos.x, 'black', board)) {
-                    statusMessage.textContent = "Checkmate! White Wins!";
-                    gameOver = true;
-                } else {
-                    statusMessage.textContent = "Stalemate! It's a Draw!";
-                    gameOver = true;
+            }
+        }
+
+        function getPieceMoves(row, col) {
+            const piece = board[row][col];
+            if (!piece) return [];
+            const pieceType = piece[1];
+            const pieceColor = piece[0];
+            const moves = [];
+
+            // A very simple rule set for basic movement
+            // This is not a complete chess engine, but enough for a simple bot
+            switch (pieceType) {
+                case 'P': // Pawns
+                    // ... (Pawn logic - simplified)
+                    if (pieceColor === 'w') {
+                        if (row > 0 && !board[row - 1][col]) moves.push({ row: row - 1, col: col });
+                    } else { // 'b'
+                        if (row < 7 && !board[row + 1][col]) moves.push({ row: row + 1, col: col });
+                    }
+                    break;
+                case 'R': // Rooks
+                    // ... (Rook logic - simplified)
+                    // Up
+                    for (let i = row - 1; i >= 0; i--) { if (!board[i][col]) moves.push({ row: i, col: col }); else break; }
+                    // Down
+                    for (let i = row + 1; i < 8; i++) { if (!board[i][col]) moves.push({ row: i, col: col }); else break; }
+                    // Left
+                    for (let j = col - 1; j >= 0; j--) { if (!board[row][j]) moves.push({ row: row, col: j }); else break; }
+                    // Right
+                    for (let j = col + 1; j < 8; j++) { if (!board[row][j]) moves.push({ row: row, col: j }); else break; }
+                    break;
+                case 'N': // Knights
+                    // ... (Knight logic - simplified)
+                    const knightMoves = [
+                        [-2, -1], [-2, 1], [-1, -2], [-1, 2],
+                        [1, -2], [1, 2], [2, -1], [2, 1]
+                    ];
+                    for (const [dr, dc] of knightMoves) {
+                        const newRow = row + dr;
+                        const newCol = col + dc;
+                        if (newRow >= 0 && newRow < 8 && newCol >= 0 && newCol < 8) {
+                            if (!board[newRow][newCol] || board[newRow][newCol][0] !== pieceColor) {
+                                moves.push({ row: newRow, col: newCol });
+                            }
+                        }
+                    }
+                    break;
+            }
+            return moves;
+        }
+
+        function drawBoard() {
+            boardContainer.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.classList.add((i + j) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.row = i;
+                    square.dataset.col = j;
+
+                    const piece = board[i][j];
+                    if (piece) {
+                        square.textContent = PIECES[piece];
+                        square.classList.add('piece');
+                    }
+
+                    if (selectedPiece && selectedPiece.row === i && selectedPiece.col === j) {
+                        square.classList.add('selected');
+                    }
+                    if (possibleMoves.some(move => move.row === i && move.col === j)) {
+                        const targetPiece = board[i][j];
+                        if (targetPiece && targetPiece[0] !== turn) {
+                            square.classList.add('possible-capture');
+                        } else {
+                            square.classList.add('possible-move');
+                        }
+                    }
+
+                    square.addEventListener('click', () => handleSquareClick(i, j));
+                    boardContainer.appendChild(square);
                 }
             }
-        } else {
-            // No moves available for bot, check for stalemate or checkmate
-            const blackKingPos = findKing('black');
-            if (blackKingPos && isKingInCheck(blackKingPos.y, blackKingPos.x, 'black', board)) {
-                statusMessage.textContent = "Checkmate! White Wins!";
-                gameOver = true;
+        }
+
+        function handleSquareClick(row, col) {
+            if (gameOver || turn !== 'white') return;
+
+            const piece = board[row][col];
+            
+            // If a piece is already selected
+            if (selectedPiece) {
+                // Check if the clicked square is a valid move
+                const isMoveValid = possibleMoves.some(move => move.row === row && move.col === col);
+                if (isMoveValid) {
+                    // Make the move
+                    board[row][col] = board[selectedPiece.row][selectedPiece.col];
+                    board[selectedPiece.row][selectedPiece.col] = null;
+                    
+                    // Check for check or checkmate (simplified)
+                    // ...
+
+                    saveState();
+                    turn = 'black';
+                    statusMessage.textContent = "Bot's Turn";
+                    selectedPiece = null;
+                    possibleMoves = [];
+                    drawBoard();
+                    
+                    // Trigger bot's turn after a short delay
+                    setTimeout(botMove, 1000);
+                } else {
+                    // Deselect
+                    selectedPiece = null;
+                    possibleMoves = [];
+                    drawBoard();
+                }
             } else {
-                statusMessage.textContent = "Stalemate! It's a Draw!";
+                // Select a piece if it's the right color
+                if (piece && piece[0] === turn[0]) {
+                    selectedPiece = { row, col };
+                    possibleMoves = getPieceMoves(row, col);
+                    drawBoard();
+                }
+            }
+        }
+
+        // --- BOT LOGIC (Deterministic & Simple) ---
+        function botMove() {
+            if (gameOver || turn !== 'black') return;
+            
+            // Hardcoded opening moves for the bot - THIS IS THE PROBLEM
+            let chosenMove = null;
+            if (history.length === 2) { // First move of the bot
+                // For simplicity, the bot always moves the same pawn
+                chosenMove = {
+                    from: { row: 1, col: 4 }, // Black pawn at E7
+                    to: { row: 3, col: 4 } // Move to E5
+                };
+            } else {
+                // For other moves, the bot just finds a random valid move
+                const allBotMoves = [];
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const piece = board[r][c];
+                        if (piece && piece[0] === 'b') {
+                            const moves = getPieceMoves(r, c);
+                            moves.forEach(move => {
+                                allBotMoves.push({ from: { row: r, col: c }, to: move });
+                            });
+                        }
+                    }
+                }
+                if (allBotMoves.length > 0) {
+                    chosenMove = allBotMoves[Math.floor(Math.random() * allBotMoves.length)];
+                }
+            }
+
+            if (chosenMove) {
+                board[chosenMove.to.row][chosenMove.to.col] = board[chosenMove.from.row][chosenMove.from.col];
+                board[chosenMove.from.row][chosenMove.from.col] = null;
+                saveState();
+                turn = 'white';
+                statusMessage.textContent = "White's Turn";
+                drawBoard();
+            } else {
+                // No moves found, game over (simplified)
+                statusMessage.textContent = "Bot has no moves. Game over.";
                 gameOver = true;
             }
         }
-    }
 
-    // --- Event Listeners ---
-    // Click-to-move listener
-    canvas.addEventListener('click', handleCanvasClick);
+        // --- Event Listeners ---
+        undoButton.addEventListener('click', undoMove);
+        newGameButton.addEventListener('click', initBoard);
 
-    // Drag-and-drop listeners
-    canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('mouseup', handleMouseUp); // For mouseup outside canvas
-
-    resetButton.addEventListener('click', initGame);
-    undoButton.addEventListener('click', undoMove);
-    resignButton.addEventListener('click', resignGame);
-
-    // Promotion button listeners
-    promoteQueenButton.addEventListener('click', () => promotePawn('queen'));
-    promoteRookButton.addEventListener('click', () => promotePawn('rook'));
-    promoteBishopButton.addEventListener('click', () => promotePawn('bishop'));
-    promoteKnightButton.addEventListener('click', () => promotePawn('knight'));
-
-    // Initial game setup - directly start the game as white
-    initGame();
-</script>
+        // Initial call to set up the game
+        initBoard();
+    </script>
 </body>
 </html>
