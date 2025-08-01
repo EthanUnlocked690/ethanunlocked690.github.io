@@ -6,7 +6,7 @@
 <title>Dungeon Escape</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-    /* Global styles for the body */
+    /* Global styles for the body - REMOVED HEIGHT AND OVERFLOW RESTRICTIONS */
     body {
         font-family: 'Courier New', Courier, monospace;
         display: flex;
@@ -15,8 +15,6 @@
         background-color: #2c2c2c;
         color: white;
         margin-top: 20px;
-        height: 100vh;
-        overflow: hidden; /* Prevent scrolling */
     }
 
     /* Navbar and header styling */
@@ -1044,7 +1042,7 @@
         if (gameState.currentLevel === 3) {
             if (gameState.bossDefeated && !gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
                 gameState.hasKey = true;
-                statusText.textContent = 'Key dropped! Find the exit! 🔑🚪';
+                statusText.textContent = 'Key dropped! Find the exit! 🔑�';
                 statusText.style.color = '#f3f4f6';
             }
         } else {
@@ -1327,6 +1325,11 @@
 
     // --- Event Listeners ---
     document.addEventListener('keydown', (e) => {
+        // Prevent default scrolling for arrow keys and WASD keys
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
+            e.preventDefault();
+        }
+
         if (e.key === 'r' || e.key === 'R') { initGame(); return; }
         if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition || gameState.cinematicActive || gameState.explosionActive || gameState.glitchActive || gameState.dragonMasterIntroCinematicActive || gameState.bossIntroCountdownActive) { return; }
         switch (e.key) {
