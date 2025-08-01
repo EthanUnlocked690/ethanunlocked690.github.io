@@ -6,7 +6,7 @@
 <title>Dungeon Escape</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-    /* Global styles for the body - REMOVED HEIGHT AND OVERFLOW RESTRICTIONS */
+    /* Global styles for the body */
     body {
         font-family: 'Courier New', Courier, monospace;
         display: flex;
@@ -310,13 +310,14 @@
     const Enemy = '🐉';
     const GIANT_DRAGON_BOSS = '🐲';
     const Key = '🔑';
-    const Exit = '�';
+    const Exit = '🚪';
     const Potion = '❤️';
     const FrozenEnemy = '❄️';
     const PlayerWin = '🥳';
 
     let gameState = {};
     let animationFrameId;
+    let audioContextStarted = false; // Flag to track if the AudioContext has been started
 
     // --- Sound Effects with Tone.js ---
     // Background music for Levels 1 & 2
@@ -330,19 +331,22 @@
     }, "1n");
 
     function playBackgroundMusic() {
-        Tone.start();
+        if (!audioContextStarted) return;
         backgroundLoop.start();
     }
     function stopBackgroundMusic() {
         backgroundLoop.stop();
     }
 
-    // Glitching sound effect for level transition
-    const bitCrusher = new Tone.BitCrusher(4).toDestination();
+    // Glitching sound effect for level transition - REFINED FOR MORE AUTHENTIC GLITCH
     const glitchSynth = new Tone.NoiseSynth({
-        noise: { type: 'white' },
+        noise: { type: 'pink' },
         envelope: { attack: 0.001, decay: 0.1, sustain: 0.05, release: 0.1 }
-    }).connect(bitCrusher);
+    });
+    const bitCrusher = new Tone.BitCrusher(4).toDestination();
+    const pingPongDelay = new Tone.PingPongDelay("4n", 0.5).connect(bitCrusher);
+    const filter = new Tone.Filter(300, 'lowpass').connect(pingPongDelay);
+    glitchSynth.connect(filter);
 
     // Boss music (more intense and dramatic)
     const suspenseSynth = new Tone.FMSynth({
@@ -358,7 +362,7 @@
     }, "1n");
 
     function playSuspenseMusic() {
-        Tone.start();
+        if (!audioContextStarted) return;
         suspenseLoop.start();
     }
     function stopSuspenseMusic() {
@@ -371,7 +375,7 @@
     }).toDestination();
 
     function playExplosionSound() {
-        Tone.start();
+        if (!audioContextStarted) return;
         explosionSynth.triggerAttackRelease("C1", "2n");
     }
 
@@ -420,7 +424,7 @@
             countdownActive: false,
             glitchActive: false,
             glitchStartTime: 0,
-            glitchDuration: 1500, // Increased glitch duration
+            glitchDuration: 1500,
             glitchSoundInterval: null,
             glitchingTimer: false,
             bossIntroCountdownActive: false,
@@ -465,6 +469,7 @@
         gameState.bossIntroCountdownActive = false;
         gameState.dragonMasterIntroCinematicActive = false;
         gameState.glitchingTimer = false;
+        gameState.explosionActive = false; // Ensure this is false on level setup
 
         // Start appropriate background music
         if (level < 3) {
@@ -755,6 +760,7 @@
 
         // Draw level-specific entities
         if (gameState.currentLevel === 3) {
+            // Draw the key only after the boss is defeated and before it's picked up
             if (gameState.bossDefeated && !gameState.hasKey) { drawEntity(gameState.key, Key); }
             if (gameState.boss && !gameState.bossDefeated) {
                 for (let by = 0; by < gameState.boss.size; by++) {
@@ -1044,6 +1050,7 @@
     }
 
     function checkPickupsAndGoals() {
+        // Fix: Corrected the typo in key pickup logic
         if (gameState.currentLevel === 3) {
             if (gameState.bossDefeated && !gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
                 gameState.hasKey = true;
@@ -1051,7 +1058,7 @@
                 statusText.style.color = '#f3f4f6';
             }
         } else {
-            if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.player.y) {
+            if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
                 gameState.hasKey = true;
             }
         }
@@ -1117,7 +1124,7 @@
         const bossCenter = { x: gameState.boss.x + Math.floor(gameState.boss.size / 2), y: gameState.boss.y + Math.floor(gameState.boss.size / 2) };
         gameState.explosionX = bossCenter.x;
         gameState.explosionY = bossCenter.y;
-        gameState.boss = null; // IMPORTANT: Boss is now gone, isOccupiedByBoss() will return false.
+        gameState.boss = null; // Boss is now gone.
         gameState.explosionRadius = 0;
         gameState.explosionAlpha = 1;
         let explosionDuration = 1000;
@@ -1149,10 +1156,20 @@
     function startGlitchTransition() {
         gameState.glitchActive = true;
         gameState.glitchStartTime = performance.now();
-        Tone.start();
-        glitchSynth.triggerAttackRelease("16n"); // Play immediately
-        if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
-        gameState.glitchSoundInterval = setInterval(() => { glitchSynth.triggerAttackRelease("16n"); }, 100);
+        
+        // Refined glitch sound: triggers a single, more complex sound on start.
+        if (audioContextStarted) {
+            glitchSynth.triggerAttackRelease("16n");
+            filter.frequency.linearRampToValueAtTime(1000, Tone.now() + 0.1);
+            filter.frequency.linearRampToValueAtTime(200, Tone.now() + 0.2);
+            
+            if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
+            gameState.glitchSoundInterval = setInterval(() => {
+                // Randomize filter frequency for more varied glitch sound
+                filter.frequency.value = Math.random() * 2000 + 100;
+                glitchSynth.triggerAttackRelease("16n");
+            }, 100);
+        }
     }
 
     /**
@@ -1179,7 +1196,7 @@
             else { ctx.filter = 'none'; }
         } else {
             gameState.glitchActive = false;
-            clearInterval(gameState.glitchSoundInterval);
+            if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
             gameState.glitchSoundInterval = null;
             gameState.currentLevel = 3;
             setupLevel(gameState.currentLevel);
@@ -1332,15 +1349,13 @@
     function showModal() { warningModal.classList.add('show'); }
     function closeModal() {
         warningModal.classList.remove('show');
-        // Start the game logic only after the user closes the modal
-        initGame();
-        // Since the user has interacted, we can try to start the audio
+        // This is the critical change: Start the AudioContext on user interaction
         Tone.start().then(() => {
-            if (gameState.currentLevel < 3) {
-                playBackgroundMusic();
-            }
+            audioContextStarted = true;
+            initGame();
         });
     }
+
     window.onload = showModal;
 </script>
 </body>
