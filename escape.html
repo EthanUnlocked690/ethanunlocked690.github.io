@@ -310,7 +310,7 @@
     const Enemy = '🐉';
     const GIANT_DRAGON_BOSS = '🐲';
     const Key = '🔑';
-    const Exit = '🚪';
+    const Exit = '�';
     const Potion = '❤️';
     const FrozenEnemy = '❄️';
     const PlayerWin = '🥳';
@@ -338,19 +338,24 @@
     }
 
     // Glitching sound effect for level transition
+    const bitCrusher = new Tone.BitCrusher(4).toDestination();
     const glitchSynth = new Tone.NoiseSynth({
-        noise: { type: 'pink' },
+        noise: { type: 'white' },
         envelope: { attack: 0.001, decay: 0.1, sustain: 0.05, release: 0.1 }
-    }).chain(new Tone.PingPongDelay("4n", 0.5)).toDestination();
+    }).connect(bitCrusher);
 
-    const suspenseSynth = new Tone.Synth({
-        oscillator: { type: 'sawtooth' },
-        envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.5 }
+    // Boss music (more intense and dramatic)
+    const suspenseSynth = new Tone.FMSynth({
+        harmonicity: 3.0, modulationIndex: 10,
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 0.5 },
+        modulation: { type: 'square' },
+        modulationEnvelope: { attack: 0.5, decay: 0, sustain: 1, release: 0.5 }
     }).toDestination();
     const suspenseLoop = new Tone.Loop(time => {
-        suspenseSynth.triggerAttackRelease("C3", "4n", time);
-        suspenseSynth.triggerAttackRelease("Eb3", "4n", time + Tone.Time("8n"));
-    }, "2n");
+        suspenseSynth.triggerAttackRelease("C2", "2n", time);
+        suspenseSynth.triggerAttackRelease("G#1", "2n", time + Tone.Time("2n"));
+    }, "1n");
 
     function playSuspenseMusic() {
         Tone.start();
@@ -1042,7 +1047,7 @@
         if (gameState.currentLevel === 3) {
             if (gameState.bossDefeated && !gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
                 gameState.hasKey = true;
-                statusText.textContent = 'Key dropped! Find the exit! 🔑�';
+                statusText.textContent = 'Key dropped! Find the exit! 🔑🚪';
                 statusText.style.color = '#f3f4f6';
             }
         } else {
@@ -1097,38 +1102,11 @@
         if (boss.hp <= 0) {
             boss.hp = 0;
             gameState.bossDefeated = true;
-            // Place key where boss center was
             gameState.key.x = boss.x + Math.floor(boss.size / 2);
             gameState.key.y = boss.y + Math.floor(boss.size / 2);
-            startBossDefeatCinematic();
+            playExplosionSound();
+            startExplosion();
         }
-    }
-
-    /**
-     * Initiates the boss defeat cinematic.
-     */
-    function startBossDefeatCinematic() {
-        gameState.cinematicActive = true;
-        gameState.bossCinematicText = 'The Dragon falls!';
-        gameState.bossCinematicAlpha = 0;
-        let fadeDuration = 1000;
-        let holdDuration = 1000;
-        let fadeOutDuration = 1000;
-        let startTime = performance.now();
-        playExplosionSound();
-        function animateCinematic(currentTime) {
-            const elapsed = currentTime - startTime;
-            if (elapsed < fadeDuration) { gameState.bossCinematicAlpha = elapsed / fadeDuration; }
-            else if (elapsed < fadeDuration + holdDuration) { gameState.bossCinematicAlpha = 1; }
-            else if (elapsed < fadeDuration + holdDuration + fadeOutDuration) { gameState.bossCinematicAlpha = 1 - ((elapsed - (fadeDuration + holdDuration)) / fadeOutDuration); }
-            else {
-                gameState.cinematicActive = false;
-                startExplosion();
-                return;
-            }
-            requestAnimationFrame(animateCinematic);
-        }
-        requestAnimationFrame(animateCinematic);
     }
 
     /**
@@ -1136,7 +1114,6 @@
      */
     function startExplosion() {
         gameState.explosionActive = true;
-        // Fix: Removed boss from game state before starting explosion to free up tiles
         const bossCenter = { x: gameState.boss.x + Math.floor(gameState.boss.size / 2), y: gameState.boss.y + Math.floor(gameState.boss.size / 2) };
         gameState.explosionX = bossCenter.x;
         gameState.explosionY = bossCenter.y;
@@ -1173,6 +1150,7 @@
         gameState.glitchActive = true;
         gameState.glitchStartTime = performance.now();
         Tone.start();
+        glitchSynth.triggerAttackRelease("16n"); // Play immediately
         if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
         gameState.glitchSoundInterval = setInterval(() => { glitchSynth.triggerAttackRelease("16n"); }, 100);
     }
@@ -1315,7 +1293,8 @@
                 gameState.bossDefeated = true;
                 gameState.key.x = gameState.boss.x + Math.floor(gameState.boss.size / 2);
                 gameState.key.y = gameState.boss.y + Math.floor(gameState.boss.size / 2);
-                startBossDefeatCinematic();
+                playExplosionSound();
+                startExplosion();
             }
         }
         if (!enemiesStunnedOrDamaged) { takeDamage(10); statusText.textContent = 'Bomb missed! Took 10 damage!'; statusText.style.color = '#dc3545'; }
