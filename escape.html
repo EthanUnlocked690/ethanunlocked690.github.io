@@ -1019,7 +1019,7 @@ button#resetButton:hover {
                 const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
                 if (remainingSeconds > 10 || (remainingSeconds > 5 && !gameState.warning10sTriggered) || (remainingSeconds > 30 && !gameState.warning30sTriggered) || (remainingSeconds > 60 && !gameState.warning60sTriggered)) {
                     if (gameState.currentLevel === 3) {
-                        statusText.textContent = gameState.bossDefeated ? 'Key dropped! Find the exit! 🔑🚪' : 'Defeat the Dragon Boss! 🐲';
+                        statusText.textContent = gameState.bossDefeated ? 'Boss defeated! Get the key and escape! 🔑🚪' : 'Defeat the Final Boss!';
                     } else {
                         statusText.textContent = gameState.hasKey ? 'Key found! Find the exit! 🚪' : 'Find the key 🔑 and escape through the door🚪!';
                     }
@@ -1459,7 +1459,7 @@ button#resetButton:hover {
 
         let enemiesStunnedOrDamaged = false;
 
-        const bombRadius = 1;
+        const bombRadius = 2;
 
         for (let yOffset = -bombRadius; yOffset <= bombRadius; yOffset++) {
             for (let xOffset = -bombRadius; xOffset <= bombRadius; xOffset++) {
@@ -1594,5 +1594,9 @@ button#resetButton:hover {
         showModal(); // Then show the modal
     };
 </script>
+    <audio controls autoplay loop>
+  <source src="back.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
 </body>
 </html>
