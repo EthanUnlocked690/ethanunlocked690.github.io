@@ -42,7 +42,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            position: relative; /* Important for positioning the floating scores */
+            position: relative;
         }
 
         #cookie {
@@ -59,6 +59,7 @@
             background-color: transparent;
             overflow: hidden;
             transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+            margin-bottom: 20px; /* Add margin to separate from the new indicator */
         }
 
         #cookie:active {
@@ -77,6 +78,13 @@
             font-size: 3em;
             margin: 20px 0;
             font-weight: bold;
+        }
+        
+        /* New style for the CPS indicator */
+        #cps-indicator {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 20px;
         }
 
         .upgrades-container {
@@ -107,14 +115,13 @@
             opacity: 0.5;
         }
         
-        /* New styles for the floating text animation */
         .floating-score {
             position: absolute;
             font-size: 2em;
             font-weight: bold;
             color: #fff;
             text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
-            pointer-events: none; /* Prevents the text from blocking clicks on the cookie */
+            pointer-events: none;
             animation: floatup 1.5s forwards;
         }
 
@@ -141,6 +148,7 @@
     <div id="cookie">
         <img src="my-cookie.png" alt="Cookie" id="cookie-image">
     </div>
+    <div id="cps-indicator">0 Cookies per second</div>
 
     <div class="upgrades-container">
         <h3>Upgrades</h3>
@@ -156,7 +164,7 @@
 
     const scoreDisplay = document.getElementById('score');
     const cookie = document.getElementById('cookie');
-    const gameContainer = document.querySelector('.game-container');
+    const cpsIndicator = document.getElementById('cps-indicator');
     const grandmaUpgradeBtn = document.getElementById('grandma-upgrade');
     const factoryUpgradeBtn = document.getElementById('factory-upgrade');
 
@@ -171,19 +179,16 @@
         clickSound.currentTime = 0;
         clickSound.play();
 
-        // New code to create and animate the floating score
         const floatingScore = document.createElement('span');
         floatingScore.textContent = `+${clickValue}`;
         floatingScore.classList.add('floating-score');
 
-        // Position the floating score relative to the cookie's click position
         const cookieRect = cookie.getBoundingClientRect();
         floatingScore.style.left = `${cookieRect.left + (cookieRect.width / 2)}px`;
         floatingScore.style.top = `${cookieRect.top + (cookieRect.height / 2)}px`;
 
         document.body.appendChild(floatingScore);
 
-        // Remove the element after the animation is complete (1.5s)
         setTimeout(() => {
             floatingScore.remove();
         }, 1500);
@@ -211,6 +216,7 @@
 
     function updateDisplay() {
         scoreDisplay.textContent = `${Math.floor(score)} Cookies`;
+        cpsIndicator.textContent = `${cookiesPerSecond} Cookies per second`;
         checkUpgrades();
     }
 
