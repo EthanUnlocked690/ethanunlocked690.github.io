@@ -42,6 +42,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            position: relative; /* Important for positioning the floating scores */
         }
 
         #cookie {
@@ -105,6 +106,28 @@
             cursor: not-allowed;
             opacity: 0.5;
         }
+        
+        /* New styles for the floating text animation */
+        .floating-score {
+            position: absolute;
+            font-size: 2em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+            pointer-events: none; /* Prevents the text from blocking clicks on the cookie */
+            animation: floatup 1.5s forwards;
+        }
+
+        @keyframes floatup {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-80px);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -133,21 +156,37 @@
 
     const scoreDisplay = document.getElementById('score');
     const cookie = document.getElementById('cookie');
+    const gameContainer = document.querySelector('.game-container');
     const grandmaUpgradeBtn = document.getElementById('grandma-upgrade');
     const factoryUpgradeBtn = document.getElementById('factory-upgrade');
 
     let grandmaCost = 10;
     let factoryCost = 100;
 
-    // This line creates an audio object that looks for a file named 'click.mp3'
-    // You need to have this file in the same folder as this HTML file for the sound to work.
     const clickSound = new Audio('click.mp3');
 
-    cookie.addEventListener('click', () => {
+    cookie.addEventListener('click', (event) => {
         score += clickValue;
         updateDisplay();
         clickSound.currentTime = 0;
         clickSound.play();
+
+        // New code to create and animate the floating score
+        const floatingScore = document.createElement('span');
+        floatingScore.textContent = `+${clickValue}`;
+        floatingScore.classList.add('floating-score');
+
+        // Position the floating score relative to the cookie's click position
+        const cookieRect = cookie.getBoundingClientRect();
+        floatingScore.style.left = `${cookieRect.left + (cookieRect.width / 2)}px`;
+        floatingScore.style.top = `${cookieRect.top + (cookieRect.height / 2)}px`;
+
+        document.body.appendChild(floatingScore);
+
+        // Remove the element after the animation is complete (1.5s)
+        setTimeout(() => {
+            floatingScore.remove();
+        }, 1500);
     });
 
     grandmaUpgradeBtn.addEventListener('click', () => {
