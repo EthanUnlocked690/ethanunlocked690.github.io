@@ -59,7 +59,7 @@
             background-color: transparent;
             overflow: hidden;
             transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-            margin-bottom: 20px; /* Add margin to separate from the new indicator */
+            margin-bottom: 20px;
         }
 
         #cookie:active {
@@ -80,7 +80,6 @@
             font-weight: bold;
         }
         
-        /* New style for the CPS indicator */
         #cps-indicator {
             font-size: 1.2em;
             color: #555;
@@ -148,19 +147,19 @@
     <div id="cookie">
         <img src="my-cookie.png" alt="Cookie" id="cookie-image">
     </div>
-    <div id="cps-indicator">0 Cookies per second</div>
+    <div id="cps-indicator">0 Clicks per second</div>
 
     <div class="upgrades-container">
         <h3>Upgrades</h3>
-        <button class="upgrade-button" id="grandma-upgrade">Grandma (Cost: 10) - +1 Cookie/sec</button>
-        <button class="upgrade-button" id="factory-upgrade">Factory (Cost: 100) - +10 Cookies/sec</button>
+        <button class="upgrade-button" id="grandma-upgrade">Grandma (Cost: 10) - +1 Cookie per click</button>
+        <button class="upgrade-button" id="factory-upgrade">Factory (Cost: 100) - +10 Cookies per click</button>
     </div>
 </div>
 
 <script>
     let score = 0;
-    let cookiesPerSecond = 0;
     let clickValue = 1;
+    let clickTimestamps = [];
 
     const scoreDisplay = document.getElementById('score');
     const cookie = document.getElementById('cookie');
@@ -179,6 +178,9 @@
         clickSound.currentTime = 0;
         clickSound.play();
 
+        // New code to track clicks for the indicator
+        clickTimestamps.push(Date.now());
+        
         const floatingScore = document.createElement('span');
         floatingScore.textContent = `+${clickValue}`;
         floatingScore.classList.add('floating-score');
@@ -197,9 +199,9 @@
     grandmaUpgradeBtn.addEventListener('click', () => {
         if (score >= grandmaCost) {
             score -= grandmaCost;
-            cookiesPerSecond += 1;
+            clickValue += 1;
             grandmaCost = Math.floor(grandmaCost * 1.5);
-            grandmaUpgradeBtn.innerHTML = `Grandma (Cost: ${grandmaCost}) - +1 Cookie/sec`;
+            grandmaUpgradeBtn.innerHTML = `Grandma (Cost: ${grandmaCost}) - +1 Cookie per click`;
             updateDisplay();
         }
     });
@@ -207,30 +209,41 @@
     factoryUpgradeBtn.addEventListener('click', () => {
         if (score >= factoryCost) {
             score -= factoryCost;
-            cookiesPerSecond += 10;
+            clickValue += 10;
             factoryCost = Math.floor(factoryCost * 1.5);
-            factoryUpgradeBtn.innerHTML = `Factory (Cost: ${factoryCost}) - +10 Cookies/sec`;
+            factoryUpgradeBtn.innerHTML = `Factory (Cost: ${factoryCost}) - +10 Cookies per click`;
             updateDisplay();
         }
     });
 
     function updateDisplay() {
         scoreDisplay.textContent = `${Math.floor(score)} Cookies`;
-        cpsIndicator.textContent = `${cookiesPerSecond} Cookies per second`;
         checkUpgrades();
+    }
+    
+    // New function to update the Clicks per second indicator
+    function updateCpsIndicator() {
+        const now = Date.now();
+        // Filter out clicks older than 1 second (or a defined window)
+        const recentClicks = clickTimestamps.filter(timestamp => now - timestamp < 1000);
+        clickTimestamps = recentClicks;
+        const clicksPerSecond = recentClicks.length;
+        cpsIndicator.textContent = `${clicksPerSecond} Clicks per second`;
     }
 
     function checkUpgrades() {
         grandmaUpgradeBtn.disabled = score < grandmaCost;
         factoryUpgradeBtn.disabled = score < factoryCost;
     }
-
+    
+    // The main loop now updates the CPS indicator and the display
     setInterval(() => {
-        score += cookiesPerSecond;
         updateDisplay();
+        updateCpsIndicator();
     }, 1000);
 
     updateDisplay();
+    updateCpsIndicator();
 </script>
 
 </body>
