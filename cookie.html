@@ -48,14 +48,30 @@
             width: 250px;
             height: 250px;
             cursor: pointer;
-            transition: transform 0.1s ease-in-out;
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
             user-select: none;
+            /* New styles for the button effect */
+            border-radius: 50%;
+            border: 5px solid #a0522d;
+            box-shadow: 0 10px 0 #8b4513, inset 0 -5px 10px rgba(0,0,0,0.2);
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: transparent;
         }
-
+        
+        /* This is the key part for the "pressed" effect */
         #cookie:active {
-            transform: scale(0.95);
+            transform: translateY(5px);
+            box-shadow: 0 5px 0 #8b4513, inset 0 -2px 5px rgba(0,0,0,0.2);
         }
-
+        
+        /* The image inside the cookie */
+        #cookie-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
         #score {
             font-size: 3em;
             margin: 20px 0;
@@ -99,7 +115,9 @@
 
 <div class="game-container">
     <div id="score">0 Cookies</div>
-    <img src="https://www.freeiconspng.com/uploads/chocolate-chip-cookie-25.png" alt="Cookie" id="cookie">
+    <div id="cookie">
+        <img src="https://www.freeiconspng.com/uploads/chocolate-chip-cookie-25.png" alt="Cookie" id="cookie-image">
+    </div>
 
     <div class="upgrades-container">
         <h3>Upgrades</h3>
@@ -121,9 +139,13 @@
     let grandmaCost = 10;
     let factoryCost = 100;
 
+    const clickSound = new Audio('click.mp3');
+
     cookie.addEventListener('click', () => {
         score += clickValue;
         updateDisplay();
+        clickSound.currentTime = 0;
+        clickSound.play();
     });
 
     grandmaUpgradeBtn.addEventListener('click', () => {
@@ -161,7 +183,7 @@
         updateDisplay();
     }, 1000);
 
-    updateDisplay(); // Initial display update
+    updateDisplay();
 </script>
 
 </body>
