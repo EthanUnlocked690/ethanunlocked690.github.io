@@ -1,306 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roast Bot</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a202c; /* Dark background for the body */
-            color: #e2e8f0; /* Light text color */
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roast Bot</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark background for the body */
+            color: #e2e8f0; /* Light text color */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-        /* Navbar Styling (Dungeon Escape inspired) */
-        .navbar {
-            background-image: linear-gradient(to right, #2d3748, #1a202c); /* Darker gradient */
-            padding: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            display: flex;
-            justify-content: space-between; /* Space out items */
-            align-items: center;
-            border-bottom-left-radius: 1rem;
-            border-bottom-right-radius: 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .navbar-title {
-            color: #a78bfa; /* Purple-ish color for title */
-            font-size: 2rem; /* Larger font for title */
-            font-weight: 800; /* Extra bold */
-            letter-spacing: 0.1em; /* Wider tracking */
-            text-transform: uppercase;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Subtle shadow */
-            flex-grow: 1; /* Allow title to grow */
-            text-align: center; /* Center the title */
-        }
-        .navbar-link {
-            color: #cbd5e0; /* Light gray for links */
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s ease-in-out;
-            text-decoration: none; /* Remove underline */
-        }
-        .navbar-link:hover {
-            background-color: rgba(255, 255, 255, 0.1); /* Slight highlight on hover */
-        }
+        /* Navbar Styling (Dungeon Escape inspired) */
+        .navbar {
+            background-image: linear-gradient(to right, #2d3748, #1a202c); /* Darker gradient */
+            padding: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: space-between; /* Space out items */
+            align-items: center;
+            border-bottom-left-radius: 1rem;
+            border-bottom-right-radius: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-title {
+            color: #a78bfa; /* Purple-ish color for title */
+            font-size: 2rem; /* Larger font for title */
+            font-weight: 800; /* Extra bold */
+            letter-spacing: 0.1em; /* Wider tracking */
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Subtle shadow */
+            flex-grow: 1; /* Allow title to grow */
+            text-align: center; /* Center the title */
+        }
+        .navbar-link {
+            color: #cbd5e0; /* Light gray for links */
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease-in-out;
+            text-decoration: none; /* Remove underline */
+        }
+        .navbar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1); /* Slight highlight on hover */
+        }
 
-        /* Chat Container Styling */
-        .chat-container {
-            background-color: #2d3748; /* Slightly lighter dark background for container */
-            border-radius: 1rem; /* Rounded corners */
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); /* Subtle shadow */
-            padding: 1.5rem;
-            max-width: 700px;
-            width: 95%;
-            margin: 2rem auto; /* Center the container with margin */
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            flex-grow: 1; /* Allow container to grow */
-        }
+        /* Chat Container Styling */
+        .chat-container {
+            background-color: #2d3748; /* Slightly lighter dark background for container */
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+            padding: 1.5rem;
+            max-width: 700px;
+            width: 95%;
+            margin: 2rem auto; /* Center the container with margin */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex-grow: 1; /* Allow container to grow */
+        }
 
-        /* Chat Messages Area */
-        #chatMessages {
-            flex-grow: 1;
-            overflow-y: auto; /* Enable scrolling for chat history */
-            padding-right: 0.5rem; /* Space for scrollbar */
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            min-height: 250px; /* Minimum height for chat area */
-            max-height: 60vh; /* Max height to prevent it from taking too much space */
-        }
+        /* Chat Messages Area */
+        #chatMessages {
+            flex-grow: 1;
+            overflow-y: auto; /* Enable scrolling for chat history */
+            padding-right: 0.5rem; /* Space for scrollbar */
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-height: 250px; /* Minimum height for chat area */
+            max-height: 60vh; /* Max height to prevent it from taking too much space */
+        }
 
-        /* Individual Message Styling */
-        .message-bubble {
-            max-width: 80%; /* Limit bubble width */
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            word-wrap: break-word; /* Ensure long words wrap */
-        }
-        .user-message {
-            background-color: #4c51bf; /* Blue for user messages */
-            align-self: flex-end; /* Align to the right */
-            border-bottom-right-radius: 0.25rem; /* Sharper corner on one side */
-        }
-        .bot-message {
-            background-color: #6b46c1; /* Purple for bot messages */
-            align-self: flex-start; /* Align to the left */
-            border-bottom-left-radius: 0.25rem; /* Sharper corner on one side */
-        }
+        /* Individual Message Styling */
+        .message-bubble {
+            max-width: 80%; /* Limit bubble width */
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word; /* Ensure long words wrap */
+        }
+        .user-message {
+            background-color: #4c51bf; /* Blue for user messages */
+            align-self: flex-end; /* Align to the right */
+            border-bottom-right-radius: 0.25rem; /* Sharper corner on one side */
+        }
+        .bot-message {
+            background-color: #6b46c1; /* Purple for bot messages */
+            align-self: flex-start; /* Align to the left */
+            border-bottom-left-radius: 0.25rem; /* Sharper corner on one side */
+        }
 
-        /* Input and Button Area */
-        .input-area {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-        #userInput {
-            flex-grow: 1; /* Allow input to take available space */
-            background-color: #4a5568; /* Darker input background */
-            border: 1px solid #6b7280; /* Border color */
-            color: #e2e8f0; /* Text color */
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            outline: none; /* Remove outline on focus */
-        }
-        #userInput:focus {
-            border-color: #a78bfa; /* Highlight border on focus */
-        }
-        #sendMessageButton {
-            background-image: linear-gradient(to right, #6b46c1, #805ad5); /* Purple gradient for button */
-            color: white;
-            font-weight: bold;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            white-space: nowrap; /* Prevent button text from wrapping */
-        }
-        #sendMessageButton:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
-        }
-        #sendMessageButton:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
+        /* Input and Button Area */
+        .input-area {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        #userInput {
+            flex-grow: 1; /* Allow input to take available space */
+            background-color: #4a5568; /* Darker input background */
+            border: 1px solid #6b7280; /* Border color */
+            color: #e2e8f0; /* Text color */
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            outline: none; /* Remove outline on focus */
+        }
+        #userInput:focus {
+            border-color: #a78bfa; /* Highlight border on focus */
+        }
+        #sendMessageButton {
+            background-image: linear-gradient(to right, #6b46c1, #805ad5); /* Purple gradient for button */
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            white-space: nowrap; /* Prevent button text from wrapping */
+        }
+        #sendMessageButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+        }
+        #sendMessageButton:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
 
-        /* Loading and Error Indicators (still present for consistency, though less likely to be used) */
-        .loading-indicator, .error-message {
-            text-align: center;
-            font-weight: bold;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .loading-indicator {
-            color: #a0aec0; /* Gray-ish color */
-        }
-        .error-message {
-            color: #fc8181; /* Red color for errors */
-            background-color: #c5303020; /* Light red background */
-            border: 1px solid #c53030;
-        }
-    </style>
+        /* Loading and Error Indicators (still present for consistency, though less likely to be used) */
+        .loading-indicator, .error-message {
+            text-align: center;
+            font-weight: bold;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .loading-indicator {
+            color: #a0aec0; /* Gray-ish color */
+        }
+        .error-message {
+            color: #fc8181; /* Red color for errors */
+            background-color: #c5303020; /* Light red background */
+            border: 1px solid #c53030;
+        }
+    </style>
 </head>
 <body>
-    <!-- Navbar - Mimicking Dungeon Escape style -->
-    <nav class="navbar">
-        <a href="turtle.html" class="navbar-link">Back to Games</a>
-        <div class="navbar-title">Roast Bot</div>
-        <!-- Placeholder for symmetry, or add another link/icon if needed -->
-        <div class="w-24 text-right"></div>
-    </nav>
+        <nav class="navbar">
+        <a href="turtle.html" class="navbar-link">Back to Games</a>
+        <div class="navbar-title">Roast Bot</div>
+                <div class="w-24 text-right"></div>
+    </nav>
 
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div class="chat-container">
-            <h1 class="text-3xl font-extrabold text-center text-purple-300 mb-4">Chat with the Roast Bot!</h1>
-            <div id="chatMessages" class="overflow-y-auto">
-                <!-- Chat messages will be appended here -->
-            </div>
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="chat-container">
+            <h1 class="text-3xl font-extrabold text-center text-purple-300 mb-4">Chat with the Roast Bot!</h1>
+            <div id="chatMessages" class="overflow-y-auto">
+                            </div>
 
-            <div id="loadingIndicator" class="loading-indicator hidden">Thinking...</div>
-            <div id="errorMessage" class="error-message hidden"></div>
+            <div id="loadingIndicator" class="loading-indicator hidden">Thinking...</div>
+            <div id="errorMessage" class="error-message hidden"></div>
 
-            <div class="input-area">
-                <input type="text" id="userInput" placeholder="Ask for a roast or chat..." class="w-full">
-                <button id="sendMessageButton">Send Roast</button>
-            </div>
-        </div>
-    </main>
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Start your conversation with the Roast Bot!" class="w-full">
+                <button id="sendMessageButton">Send Roast</button>
+            </div>
+        </div>
+    </main>
 
-    <script>
-        // Get references to HTML elements
-        const userInput = document.getElementById('userInput');
-        const sendMessageButton = document.getElementById('sendMessageButton');
-        const chatMessages = document.getElementById('chatMessages');
-        const loadingIndicator = document.getElementById('loadingIndicator');
-        const errorMessage = document.getElementById('errorMessage');
+    <script>
+        // Get references to HTML elements
+        const userInput = document.getElementById('userInput');
+        const sendMessageButton = document.getElementById('sendMessageButton');
+        const chatMessages = document.getElementById('chatMessages');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
 
-        // Pre-defined list of roasts
-        const roasts = [
-            "Is your brain made of cotton candy? Because it's sweet, but not very dense.",
-            "I've seen more exciting conversations with a brick wall.",
-            "You're not the sharpest tool in the shed, but at least you're consistent.",
-            "If brains were dynamite, you couldn't blow your nose.",
-            "I'm not saying you're lazy, but if laziness was a sport, you'd be an Olympic gold medalist.",
-            "Your fashion sense is so unique, it makes me question my own eyesight.",
-            "I've heard better comebacks from a broken record.",
-            "You're like a WiFi signal: strong at first, but quickly fades into nothing.",
-            "Did you get dressed in the dark, or is that a new style I don't understand?",
-            "I'd agree with you, but then we'd both be wrong.",
-            "You're proof that evolution can sometimes go in reverse.",
-            "I'm not insulting you, I'm describing you.",
-            "You're about as useful as a screen door on a submarine.",
-            "Some people are like clouds. When they disappear, it's a brighter day.",
-            "You have a face for radio, and a voice for silent movies.",
-            "If you were any slower, you'd be going backward.",
-            "I've had more intelligent conversations with my cat.",
-            "You're like a dull pencil, pointless.",
-            "Is your life a joke? Because I don't get it.",
-            "I'm not saying you're ugly, but you make onions cry.",
-            "I'd say you're dumb as a rock, but at least a rock can hold the door open.",
-            "You're like a human participation trophy – everyone's happy you showed up, but nobody really knows why.",
-            "Your brain cells must be on a permanent coffee break.",
-            "I've seen more charisma in a wet sock.",
-            "You're the reason they put instructions on shampoo bottles.",
-            "You have a face that would make an onion cry.",
-            "If ignorance is bliss, you must be the happiest person on Earth."
-        ];
+        // Pre-defined list of roasts
+        const roasts = [
+            "Is your brain made of cotton candy? Because it's sweet, but not very dense.",
+            "I've seen more exciting conversations with a brick wall.",
+            "You're not the sharpest tool in the shed, but at least you're consistent.",
+            "If brains were dynamite, you couldn't blow your nose.",
+            "I'm not saying you're lazy, but if laziness was a sport, you'd be an Olympic gold medalist.",
+            "Your fashion sense is so unique, it makes me question my own eyesight.",
+            "I've heard better comebacks from a broken record.",
+            "You're like a WiFi signal: strong at first, but quickly fades into nothing.",
+            "Did you get dressed in the dark, or is that a new style I don't understand?",
+            "I'd agree with you, but then we'd both be wrong.",
+            "You're proof that evolution can sometimes go in reverse.",
+            "I'm not insulting you, I'm describing you.",
+            "You're about as useful as a screen door on a submarine.",
+            "Some people are like clouds. When they disappear, it's a brighter day.",
+            "You have a face for radio, and a voice for silent movies.",
+            "If you were any slower, you'd be going backward.",
+            "I've had more intelligent conversations with my cat.",
+            "You're like a dull pencil, pointless.",
+            "Is your life a joke? Because I don't get it.",
+            "I'm not saying you're ugly, but you make onions cry.",
+            "I'd say you're dumb as a rock, but at least a rock can hold the door open.",
+            "You're like a human participation trophy – everyone's happy you showed up, but nobody really knows why.",
+            "Your brain cells must be on a permanent coffee break.",
+            "I've seen more charisma in a wet sock.",
+            "You're the reason they put instructions on shampoo bottles.",
+            "You have a face that would make an onion cry.",
+            "If ignorance is bliss, you must be the happiest person on Earth."
+        ];
 
-        // Function to get a random roast
-        function getRandomRoast() {
-            return roasts[Math.floor(Math.random() * roasts.length)];
-        }
+        // Pre-defined list of non-roast replies
+        const friendlyReplies = [
+            "Hey, what's up?",
+            "Nice to chat with you!",
+            "How's your day going?",
+            "That's interesting. What else can I help with?",
+            "I'm a bot, but I appreciate the conversation!",
+            "Thanks for the message.",
+            "Tell me more."
+        ];
 
-        // Function to display messages in the chat interface
-        function displayMessage(role, text) {
-            const messageBubble = document.createElement('div');
-            messageBubble.classList.add('message-bubble');
-            messageBubble.textContent = text;
+        // Function to get a random roast
+        function getRandomRoast() {
+            return roasts[Math.floor(Math.random() * roasts.length)];
+        }
 
-            if (role === 'user') {
-                messageBubble.classList.add('user-message');
-            } else {
-                messageBubble.classList.add('bot-message');
-            }
-            chatMessages.appendChild(messageBubble);
+        // Function to get a random friendly reply
+        function getRandomFriendlyReply() {
+            return friendlyReplies[Math.floor(Math.random() * friendlyReplies.length)];
+        }
 
-            // Scroll to the bottom of the chat
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        // Function to display messages in the chat interface
+        function displayMessage(role, text) {
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('message-bubble');
+            messageBubble.textContent = text;
 
-        // Display initial bot message
-        displayMessage('model', "Hello there! I'm the Roast Bot. I've got a collection of lighthearted roasts ready for you. Just type something!");
+            if (role === 'user') {
+                messageBubble.classList.add('user-message');
+            } else {
+                messageBubble.classList.add('bot-message');
+            }
+            chatMessages.appendChild(messageBubble);
 
-        // Function to send message and get roast
-        async function sendMessage() {
-            const userText = userInput.value.trim();
+            // Scroll to the bottom of the chat
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
 
-            // Clear previous error messages
-            errorMessage.textContent = '';
-            errorMessage.classList.add('hidden');
+        // Display initial bot message
+        displayMessage('model', "Hello there! I'm the Roast Bot of TheUnlockedWeb! I'll help give you roasts to use on your friends, family, anyone! Try typing 'roast me' or 'give me a roast'! Also, before we start our roasting, don't forget to subscribe to Ethan and Isabella Unlocked on YT!");
 
-            if (!userText) {
-                errorMessage.textContent = 'Please type a message!';
-                errorMessage.classList.remove('hidden');
-                return;
-            }
+        // Function to send message and get roast or friendly reply
+        async function sendMessage() {
+            const userText = userInput.value.trim();
 
-            // Display user message
-            displayMessage('user', userText);
+            // Clear previous error messages
+            errorMessage.textContent = '';
+            errorMessage.classList.add('hidden');
 
-            // Clear input field
-            userInput.value = '';
+            if (!userText) {
+                errorMessage.textContent = 'Please type a message!';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
 
-            // Show thinking indicator (simulating processing time)
-            loadingIndicator.classList.remove('hidden');
-            sendMessageButton.disabled = true;
+            // Display user message
+            displayMessage('user', userText);
 
-            // Simulate a short delay before responding
-            await new Promise(resolve => setTimeout(resolve, 800)); // 0.8 second delay
+            // Clear input field
+            userInput.value = '';
 
-            try {
-                const botResponse = getRandomRoast();
-                displayMessage('model', botResponse);
-            } catch (error) {
-                console.error('Error getting roast:', error);
-                errorMessage.textContent = `An unexpected error occurred: ${error.message}.`;
-                errorMessage.classList.remove('hidden');
-            } finally {
-                // Hide loading indicator and enable button
-                loadingIndicator.classList.add('hidden');
-                sendMessageButton.disabled = false;
-                userInput.focus(); // Keep input focused for continuous chat
-            }
-        }
+            // Show thinking indicator (simulating processing time)
+            loadingIndicator.classList.remove('hidden');
+            sendMessageButton.disabled = true;
 
-        // Event listeners for sending messages
-        sendMessageButton.addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
+            // Simulate a short delay before responding
+            await new Promise(resolve => setTimeout(resolve, 800)); // 0.8 second delay
 
-        // Focus on input when page loads
-        userInput.focus();
-    </script>
-    <audio autoplay loop>
-  <source src="slim.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
+            try {
+                let botResponse;
+                // Check if the user is asking for a roast
+                if (userText.toLowerCase().includes("roast me") || userText.toLowerCase().includes("give me a roast")) {
+                    botResponse = getRandomRoast();
+                } else {
+                    botResponse = getRandomFriendlyReply();
+                }
+                displayMessage('model', botResponse);
+            } catch (error) {
+                console.error('Error getting response:', error);
+                errorMessage.textContent = `An unexpected error occurred: ${error.message}.`;
+                errorMessage.classList.remove('hidden');
+            } finally {
+                // Hide loading indicator and enable button
+                loadingIndicator.classList.add('hidden');
+                sendMessageButton.disabled = false;
+                userInput.focus(); // Keep input focused for continuous chat
+            }
+        }
+
+        // Event listeners for sending messages
+        sendMessageButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Focus on input when page loads
+        userInput.focus();
+    </script>
+    <audio autoplay loop>
+  <source src="slim.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
 </audio>
 </body>
 </html>
