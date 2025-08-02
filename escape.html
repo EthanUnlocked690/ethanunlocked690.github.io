@@ -322,6 +322,7 @@
     // --- Sound Effects with Tone.js ---
     // Background music for Levels 1 & 2
     const backgroundSynth = new Tone.PolySynth(Tone.Synth, {
+        volume: -10, // Increased volume
         oscillator: { type: 'sine' },
         envelope: { attack: 0.5, decay: 0.1, sustain: 0.7, release: 0.5 }
     }).toDestination();
@@ -331,17 +332,21 @@
     }, "1n");
 
     function playBackgroundMusic() {
-        if (!audioContextStarted) return;
-        backgroundLoop.start();
+        // No check needed here, as we only call this function after the audio context is started
+        if (backgroundLoop.state !== "started") {
+            backgroundLoop.start();
+        }
     }
     function stopBackgroundMusic() {
-        backgroundLoop.stop();
+        if (backgroundLoop.state === "started") {
+            backgroundLoop.stop();
+        }
     }
 
-    // Glitching sound effect for level transition - REFINED FOR MORE AUTHENTIC GLITCH
+    // Glitching sound effect for level transition
     const glitchSynth = new Tone.NoiseSynth({
         noise: { type: 'pink' },
-        envelope: { attack: 0.001, decay: 0.1, sustain: 0.05, release: 0.1 }
+        envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.05 }
     });
     const bitCrusher = new Tone.BitCrusher(4).toDestination();
     const pingPongDelay = new Tone.PingPongDelay("4n", 0.5).connect(bitCrusher);
@@ -350,6 +355,7 @@
 
     // Boss music (more intense and dramatic)
     const suspenseSynth = new Tone.FMSynth({
+        volume: -5, // Increased volume
         harmonicity: 3.0, modulationIndex: 10,
         oscillator: { type: 'sine' },
         envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 0.5 },
@@ -362,11 +368,14 @@
     }, "1n");
 
     function playSuspenseMusic() {
-        if (!audioContextStarted) return;
-        suspenseLoop.start();
+        if (suspenseLoop.state !== "started") {
+            suspenseLoop.start();
+        }
     }
     function stopSuspenseMusic() {
-        suspenseLoop.stop();
+        if (suspenseLoop.state === "started") {
+            suspenseLoop.stop();
+        }
     }
 
     const explosionSynth = new Tone.MembraneSynth({
@@ -375,7 +384,6 @@
     }).toDestination();
 
     function playExplosionSound() {
-        if (!audioContextStarted) return;
         explosionSynth.triggerAttackRelease("C1", "2n");
     }
 
@@ -450,7 +458,14 @@
         gameState.player.x = 0;
         gameState.player.y = 0;
         gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
-        gameState.player.bombs += 2;
+        
+        // **Fix for bomb count in boss fight**
+        if (level === 3) {
+            gameState.player.bombs = 8; // Set a specific, generous number of bombs for the boss level
+        } else {
+            gameState.player.bombs += 2; // Add 2 bombs for other levels
+        }
+        
         gameState.player.attackDamage = 15;
 
         // Reset level-specific state
@@ -1157,18 +1172,11 @@
         gameState.glitchActive = true;
         gameState.glitchStartTime = performance.now();
         
-        // Refined glitch sound: triggers a single, more complex sound on start.
+        // **Fix for glitch sound timing**
+        // Play a short, single glitch sound at the start of the transition
         if (audioContextStarted) {
+            filter.frequency.value = 1000; // Reset filter frequency
             glitchSynth.triggerAttackRelease("16n");
-            filter.frequency.linearRampToValueAtTime(1000, Tone.now() + 0.1);
-            filter.frequency.linearRampToValueAtTime(200, Tone.now() + 0.2);
-            
-            if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
-            gameState.glitchSoundInterval = setInterval(() => {
-                // Randomize filter frequency for more varied glitch sound
-                filter.frequency.value = Math.random() * 2000 + 100;
-                glitchSynth.triggerAttackRelease("16n");
-            }, 100);
         }
     }
 
@@ -1196,8 +1204,7 @@
             else { ctx.filter = 'none'; }
         } else {
             gameState.glitchActive = false;
-            if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
-            gameState.glitchSoundInterval = null;
+            // No need to stop a loop, as it's a single sound event now.
             gameState.currentLevel = 3;
             setupLevel(gameState.currentLevel);
             startDragonMasterIntroCinematic();
@@ -1349,9 +1356,10 @@
     function showModal() { warningModal.classList.add('show'); }
     function closeModal() {
         warningModal.classList.remove('show');
-        // This is the critical change: Start the AudioContext on user interaction
+        // Start the AudioContext and the game
         Tone.start().then(() => {
             audioContextStarted = true;
+            Tone.Transport.start(); // Explicitly start the transport
             initGame();
         });
     }
