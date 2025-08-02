@@ -254,6 +254,9 @@
 <p class="mt-2 text-sm">Use arrow keys, WASD, or the on-screen buttons</p>
 <p class="text-sm">Press 'R' or click "New Game" to reset</p>
 
+<!-- The audio element for the glitch sound effect. You need to replace the `src` with a valid URL to your glitch.mp3 file. -->
+<audio id="glitchAudio" src="glitch.mp3" preload="auto"></audio>
+
 <div id="game-container">
     <canvas id="gameCanvas" width="1000" height="750"></canvas>
     <canvas id="confettiCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
@@ -302,6 +305,9 @@
     const timerText = document.getElementById('timer-text');
     const bombButton = document.getElementById('bombButton');
 
+    // Get the new glitch audio element
+    const glitchAudio = document.getElementById('glitchAudio');
+
     const TILE_SIZE = 40;
     const MAP_WIDTH_TILES = Math.floor(1000 / TILE_SIZE);
     const MAP_HEIGHT_TILES = Math.floor(750 / TILE_SIZE);
@@ -310,7 +316,7 @@
     const Wall = '🪨';
     const Floor = ' ';
     const Player = '🚶';
-    const Enemy = '🐉';
+    const Enemy = '�';
     const GIANT_DRAGON_BOSS = '🐲';
     const Key = '🔑';
     const Exit = '🚪';
@@ -445,17 +451,7 @@
             backgroundLoop.stop();
         }
     }
-
-    // Glitching sound effect for level transition
-    const glitchSynth = new Tone.NoiseSynth({
-        noise: { type: 'pink' },
-        envelope: { attack: 0.001, decay: 0.05, sustain: 0.01, release: 0.05 }
-    });
-    const bitCrusher = new Tone.BitCrusher(4).toDestination();
-    const pingPongDelay = new Tone.PingPongDelay("4n", 0.5).connect(bitCrusher);
-    const filter = new Tone.Filter(300, 'lowpass').connect(pingPongDelay);
-    glitchSynth.connect(filter);
-
+    
     // New, more intense boss music
     const bassSynth = new Tone.MonoSynth({
         volume: -10,
@@ -1396,16 +1392,14 @@
     }
 
     /**
-     * Starts the glitch transition effect.
+     * Starts the glitch transition effect using the audio file.
      */
     function startGlitchTransition() {
         gameState.glitchActive = true;
         gameState.glitchStartTime = performance.now();
-        
-        // This is the fix for the late glitch sound
-        if (audioContextStarted) {
-            filter.frequency.value = 1000;
-            glitchSynth.triggerAttackRelease("16n");
+        if (glitchAudio) {
+            glitchAudio.currentTime = 0;
+            glitchAudio.play().catch(e => console.error("Error playing glitch audio:", e));
         }
     }
 
@@ -1433,6 +1427,8 @@
             else { ctx.filter = 'none'; }
         } else {
             gameState.glitchActive = false;
+            // Stop audio when glitch effect ends
+            if (glitchAudio) { glitchAudio.pause(); }
             gameState.currentLevel = 3;
             setupLevel(gameState.currentLevel);
             startDragonMasterIntroCinematic();
