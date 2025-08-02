@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎯 Random Gun Game</title>
+  <style>
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Navigation Bar */
+
+    ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+
+    }
+
+
+
+    li {
+      float: left;
+    }
+
+
+
+    li a {
+      display: block;
+      color: white;
+      text-align: center;
+      padding: 14px 16px;
+      text-decoration: none;
+    }
+
+
+
+    li a:hover {
+      background-color: #111;
+    }
+
+    h1 {
+      margin: 10px 0;
+    }
+
+    #ui {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 10px;
+    }
+
+    canvas {
+      display: block;
+      margin: 0 auto;
+      border: 2px solid #fff;
+      background-color: #222;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <ul>
+    <li><a href="turtle.html" style="background-color:black">Back to game selection</a></li>
+  </ul>
+
+  <h1>🎯 Random Gun Game</h1>
+  <div id="ui">
+    <p>Weapon: <span id="weaponName">None</span></p>
+    <p>Score: <span id="score">0</span></p>
+  </div>
+  <canvas id="gameCanvas" width="800" height="500"></canvas>
+  
+  <!-- Background Music -->
+  <b style="color:white;">Background music toggle</b><br>
+  <audio id="bgMusic" src="welcome2detroit.mp3" controls autoplay loop></audio><br>
+
+  <!-- Sound Effects -->
+  <audio id="pistolSound" src="pistol.mp3"></audio>
+  <audio id="shotgunSound" src="shotgun.mp3"></audio>
+  <audio id="laserSound" src="laser.mp3"></audio>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const weaponNameText = document.getElementById('weaponName');
+    const scoreText = document.getElementById('score');
+
+    const music = document.getElementById('bgMusic');
+    const pistolSound = document.getElementById('pistolSound');
+    const shotgunSound = document.getElementById('shotgunSound');
+    const laserSound = document.getElementById('laserSound');
+
+
+    const player = {
+      x: 400,
+      y: 450,
+      width: 40,
+      height: 40,
+      speed: 5,
+      color: 'blue'
+    };
+
+    const bullets = [];
+    const enemies = [];
+    let keys = {};
+    let score = 0;
+    let currentWeapon = null;
+
+    const weapons = [
+      {
+        name: 'Pistol',
+        fireRate: 500,
+        bulletSpeed: 7,
+        shoot() {
+          pistolSound.currentTime = 0;
+          pistolSound.play();
+          bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'white' });
+        }
+      },
+      {
+        name: 'Shotgun',
+        fireRate: 800,
+        bulletSpeed: 5,
+        shoot() {
+          shotgunSound.currentTime = 0;
+          shotgunSound.play();
+          [-1, 0, 1].forEach(offset =>
+            bullets.push({ x: player.x + 18 + offset * 10, y: player.y, speed: -this.bulletSpeed, dx: offset, color: 'yellow' })
+          );
+        }
+      },
+      {
+        name: 'Laser',
+        fireRate: 200,
+        bulletSpeed: 10,
+        shoot() {
+          laserSound.currentTime = 0;
+          laserSound.play();
+          bullets.push({ x: player.x + 18, y: player.y, speed: -this.bulletSpeed, color: 'red' });
+        }
+      },
+    ];
+
+    function switchWeapon() {
+      currentWeapon = weapons[Math.floor(Math.random() * weapons.length)];
+      weaponNameText.textContent = currentWeapon.name;
+    }
+
+    let lastShot = 0;
+    let lastEnemySpawn = 0;
+    let weaponSwitchTime = 0;
+
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawBullets() {
+      bullets.forEach((b, i) => {
+        b.y += b.speed;
+        if (b.dx) b.x += b.dx;
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x, b.y, 4, 10);
+        if (b.y < 0) bullets.splice(i, 1);
+      });
+    }
+
+    function drawEnemies() {
+      enemies.forEach((e, i) => {
+        e.y += e.speed;
+        ctx.fillStyle = e.color;
+        ctx.fillRect(e.x, e.y, e.size, e.size);
+
+        // Collision with player
+        if (
+          e.x < player.x + player.width &&
+          e.x + e.size > player.x &&
+          e.y < player.y + player.height &&
+          e.y + e.size > player.y
+        ) {
+          alert('Game Over!\n\nYour final score: ' + score + '\n\nPlease wait for tab to refresh to play again!');
+          document.location.reload();
+        }
+
+        // Collision with bullets
+        bullets.forEach((b, j) => {
+          if (
+            b.x > e.x && b.x < e.x + e.size &&
+            b.y > e.y && b.y < e.y + e.size
+          ) {
+            enemies.splice(i, 1);
+            bullets.splice(j, 1);
+            score += 10;
+            scoreText.textContent = score;
+          }
+        });
+
+        if (e.y > canvas.height) enemies.splice(i, 1);
+      });
+    }
+
+    function spawnEnemy() {
+      const size = Math.random() * 20 + 20;
+      enemies.push({
+        x: Math.random() * (canvas.width - size),
+        y: -size,
+        size,
+        speed: Math.random() * 2 + 1,
+        color: 'red'
+      });
+    }
+
+    function gameLoop(timestamp) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Player movement
+
+      if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+      if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += player.speed;
+
+      // Shooting
+
+      if (keys[' '] && currentWeapon && timestamp - lastShot > currentWeapon.fireRate) {
+        currentWeapon.shoot();
+        lastShot = timestamp;
+      }
+
+      // Switch weapon every 3 seconds
+      if (timestamp - weaponSwitchTime > 3000) {
+        switchWeapon();
+        weaponSwitchTime = timestamp;
+      }
+
+      // Spawn enemy
+      if (timestamp - lastEnemySpawn > 1000) {
+        spawnEnemy();
+        lastEnemySpawn = timestamp;
+      }
+
+      drawPlayer();
+      drawBullets();
+      drawEnemies();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', e => keys[e.key] = true);
+    document.addEventListener('keyup', e => keys[e.key] = false);
+
+    window.onload = () => {
+      alert("Welcome to Random GunGame!\n\nHow the game works is, you start off with a random gun and every few seconds, the weapon changes.\n\nControls:\n← Left arrow key = Move Left\n→ Right arrow key = Move Right\n⎵ Spacebar = Shoot\n\nPress OK to start.");
+
+      music.volume = 0.4;
+      switchWeapon();
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
