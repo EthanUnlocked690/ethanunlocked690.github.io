@@ -60,12 +60,22 @@
         box-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
         margin-bottom: 20px;
         position: relative;
+        z-index: 5;
     }
-    canvas {
+    #gameCanvas {
         background-color: #111;
         display: block;
         width: 1000px;
         height: 750px;
+        z-index: 10;
+        position: relative;
+    }
+    #confettiCanvas {
+        z-index: 15;
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
     }
 
     /* Game UI (status, buttons) styling */
@@ -254,12 +264,16 @@
 <p class="mt-2 text-sm">Use arrow keys, WASD, or the on-screen buttons</p>
 <p class="text-sm">Press 'R' or click "New Game" to reset</p>
 
-<!-- The audio element for the glitch sound effect -->
+<!-- Audio elements -->
 <audio id="glitchAudio" src="glitch.mp3" preload="auto"></audio>
+<audio id="backgroundMusic" loop autoplay>
+    <source src="dungeon.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
 
 <div id="game-container">
     <canvas id="gameCanvas" width="1000" height="750"></canvas>
-    <canvas id="confettiCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none;"></canvas>
+    <canvas id="confettiCanvas" width="1000" height="750"></canvas>
 </div>
 <div id="game-ui">
     <span id="status-text">Find the key 🔑 and escape through the door🚪!</span>
@@ -304,9 +318,8 @@
     const bombText = document.getElementById('bomb-text');
     const timerText = document.getElementById('timer-text');
     const bombButton = document.getElementById('bombButton');
-
-    // Get the new glitch audio element
     const glitchAudio = document.getElementById('glitchAudio');
+    const backgroundMusic = document.getElementById('backgroundMusic');
 
     const TILE_SIZE = 40;
     const MAP_WIDTH_TILES = Math.floor(1000 / TILE_SIZE);
@@ -428,31 +441,7 @@
     }
 
     // --- Sound Effects with Tone.js ---
-    // New, more adventurous background music
-    const backgroundSynth = new Tone.PolySynth(Tone.Synth, {
-        volume: -10,
-        oscillator: { type: 'triangle' },
-        envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.5 }
-    }).toDestination();
-    const backgroundLoop = new Tone.Loop(time => {
-        backgroundSynth.triggerAttackRelease(["E4", "G#4", "B4"], "4n", time);
-        backgroundSynth.triggerAttackRelease(["C#4", "E4", "G#4"], "4n", time + Tone.Time("4n"));
-        backgroundSynth.triggerAttackRelease(["A4", "C#5", "E5"], "4n", time + Tone.Time("2n"));
-        backgroundSynth.triggerAttackRelease(["F#4", "A4", "C#5"], "4n", time + Tone.Time("2n") + Tone.Time("4n"));
-    }, "1n");
-
-    function playBackgroundMusic() {
-        if (backgroundLoop.state !== "started") {
-            backgroundLoop.start();
-        }
-    }
-    function stopBackgroundMusic() {
-        if (backgroundLoop.state === "started") {
-            backgroundLoop.stop();
-        }
-    }
-    
-    // New, more intense boss music
+    // Boss music for Level 3
     const bassSynth = new Tone.MonoSynth({
         volume: -10,
         oscillator: { type: "square" },
@@ -476,7 +465,6 @@
         melodySynth.triggerAttackRelease("C4", "16n", time + Tone.Time("4n") + Tone.Time("8n"));
         melodySynth.triggerAttackRelease("C#4", "16n", time + Tone.Time("2n") + Tone.Time("8n"));
         melodySynth.triggerAttackRelease("C#4", "16n", time + Tone.Time("2n") + Tone.Time("4n") + Tone.Time("8n"));
-
     }, "1n");
 
     function playBossMusic() {
@@ -490,7 +478,25 @@
         }
     }
 
-    // New victory music
+    // Background music for Levels 1 and 2
+    function playBackgroundMusic() {
+        if (gameState.currentLevel < 3 && backgroundMusic) {
+            backgroundMusic.volume = 0.5;
+            backgroundMusic.play().catch(e => console.error("Error playing background music:", e));
+        } else if (gameState.currentLevel === 3) {
+            playBossMusic();
+        }
+    }
+
+    function stopBackgroundMusic() {
+        if (backgroundMusic) {
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0;
+        }
+        stopBossMusic();
+    }
+
+    // Victory music
     const victorySynth = new Tone.PolySynth(Tone.Synth, {
         volume: -8,
         oscillator: { type: 'sine' },
@@ -503,7 +509,7 @@
         victorySynth.triggerAttackRelease(["F5", "A5", "C6"], "1n", Tone.Time("1n"));
     }
 
-    // Proper explosion sound with multiple synths
+    // Explosion sound
     const explosionNoise = new Tone.NoiseSynth({
         noise: { type: 'white' },
         envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
@@ -521,7 +527,6 @@
         resonance: 4000,
         octaves: 1.5
     }).toDestination();
-    const explosionReverb = new Tone.Reverb(2).toDestination();
 
     function playExplosionSound() {
         explosionNoise.triggerAttackRelease("4n");
@@ -529,138 +534,141 @@
         explosionMetal.triggerAttackRelease("8n");
     }
 
-
     // --- Game Logic ---
     /**
      * Initializes or resets the game state.
      */
     function initGame() {
-        if(animationFrameId) { cancelAnimationFrame(animationFrameId); }
-
-        gameState = {
-            map: [],
-            player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 5, attackDamage: 15 },
-            enemies: [],
-            key: { x: 0, y: 0 },
-            exit: { x: 0, y: 0 },
-            potions: [],
-            hasKey: false,
-            gameOver: false,
-            gameWon: false,
-            gameOverReason: null,
-            turn: 0,
-            startTime: null,
-            initialTime: 0,
-            elapsedTime: 0,
-            completionTime: null,
-            isTypingTime: false,
-            typedCompletionTime: '',
-            typedTimeLeft: '',
-            currentLevel: 1,
-            boss: null,
-            bossDefeated: false,
-            showingLevelTransition: false,
-            levelTransitionMessage: '',
-            cinematicActive: false,
-            bossCinematicText: '',
-            bossCinematicAlpha: 0,
-            explosionActive: false,
-            explosion: null,
-            warning60sTriggered: false,
-            warning30sTriggered: false,
-            warning10sTriggered: false,
-            countdownActive: false,
-            glitchActive: false,
-            glitchStartTime: 0,
-            glitchDuration: 1500,
-            glitchSoundInterval: null,
-            glitchingTimer: false,
-            bossIntroCountdownActive: false,
-            bossIntroCountdownValue: 3,
-            bossIntroCountdownStartTime: 0,
-            bossIntroCountdownMessage: '',
-            dragonMasterIntroCinematicActive: false,
-            dragonMasterIntroCinematicText: '',
-            dragonMasterIntroCinematicAlpha: 0,
-            dragonMasterIntroCinematicStartTime: 0,
-            confettiActive: false
-        };
-        stopBackgroundMusic();
-        stopBossMusic();
-        setupLevel(gameState.currentLevel);
-        gameLoop();
+        try {
+            if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
+            gameState = {
+                map: [],
+                player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 5, attackDamage: 15 },
+                enemies: [],
+                key: { x: 0, y: 0 },
+                exit: { x: 0, y: 0 },
+                potions: [],
+                hasKey: false,
+                gameOver: false,
+                gameWon: false,
+                gameOverReason: null,
+                turn: 0,
+                startTime: null,
+                initialTime: 0,
+                elapsedTime: 0,
+                completionTime: null,
+                isTypingTime: false,
+                typedCompletionTime: '',
+                typedTimeLeft: '',
+                currentLevel: 1,
+                boss: null,
+                bossDefeated: false,
+                showingLevelTransition: false,
+                levelTransitionMessage: '',
+                cinematicActive: false,
+                bossCinematicText: '',
+                bossCinematicAlpha: 0,
+                explosionActive: false,
+                explosion: null,
+                warning60sTriggered: false,
+                warning30sTriggered: false,
+                warning10sTriggered: false,
+                countdownActive: false,
+                glitchActive: false,
+                glitchStartTime: 0,
+                glitchDuration: 1500,
+                glitchSoundInterval: null,
+                glitchingTimer: false,
+                bossIntroCountdownActive: false,
+                bossIntroCountdownValue: 3,
+                bossIntroCountdownStartTime: 0,
+                bossIntroCountdownMessage: '',
+                dragonMasterIntroCinematicActive: false,
+                dragonMasterIntroCinematicText: '',
+                dragonMasterIntroCinematicAlpha: 0,
+                dragonMasterIntroCinematicStartTime: 0,
+                confettiActive: false
+            };
+            stopBackgroundMusic();
+            setupLevel(gameState.currentLevel);
+            gameLoop();
+        } catch (e) {
+            console.error("Error initializing game:", e);
+        }
     }
 
     /**
      * Sets up the game for a specific level.
      */
     function setupLevel(level) {
-        gameState.player.x = 0;
-        gameState.player.y = 0;
-        gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
-        
-        if (level === 3) {
-            gameState.player.bombs = 8;
-        } else {
-            gameState.player.bombs += 2;
-        }
-        
-        gameState.player.attackDamage = 15;
-
-        gameState.hasKey = false;
-        gameState.enemies = [];
-        gameState.potions = [];
-        gameState.boss = null;
-        gameState.bossDefeated = false;
-
-        gameState.warning60sTriggered = false;
-        gameState.warning30sTriggered = false;
-        gameState.warning10sTriggered = false;
-        gameState.countdownActive = false;
-        gameState.glitchActive = false;
-        gameState.bossIntroCountdownActive = false;
-        gameState.dragonMasterIntroCinematicActive = false;
-        gameState.glitchingTimer = false;
-        gameState.explosionActive = false;
-        gameState.explosion = null;
-        gameState.confettiActive = false;
-
-        if (level < 3) {
-            playBackgroundMusic();
-        } else {
-            stopBackgroundMusic();
-        }
-
-        switch(level) {
-            case 1: gameState.initialTime = 90 * 1000; break;
-            case 2: gameState.initialTime = 120 * 1000; break;
-            case 3: gameState.initialTime = Infinity; gameState.glitchingTimer = true; break;
-            default: gameState.initialTime = 60 * 1000;
-        }
-
-        let isMapValid = false;
-        while (!isMapValid) {
+        try {
+            gameState.player.x = 0;
+            gameState.player.y = 0;
+            gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
             if (level === 3) {
-                gameState.map = generateBossMap();
+                gameState.player.bombs = 8;
             } else {
-                gameState.map = generateMap();
+                gameState.player.bombs += 2;
             }
-            if (placeEntitiesForLevel(level)) {
-                if (checkConnectivity()) {
-                    isMapValid = true;
+            gameState.player.attackDamage = 15;
+            gameState.hasKey = false;
+            gameState.enemies = [];
+            gameState.potions = [];
+            gameState.boss = null;
+            gameState.bossDefeated = false;
+            gameState.warning60sTriggered = false;
+            gameState.warning30sTriggered = false;
+            gameState.warning10sTriggered = false;
+            gameState.countdownActive = false;
+            gameState.glitchActive = false;
+            gameState.bossIntroCountdownActive = false;
+            gameState.dragonMasterIntroCinematicActive = false;
+            gameState.glitchingTimer = false;
+            gameState.explosionActive = false;
+            gameState.explosion = null;
+            gameState.confettiActive = false;
+
+            if (level < 3) {
+                playBackgroundMusic();
+            } else {
+                stopBackgroundMusic();
+                playBossMusic();
+            }
+
+            switch(level) {
+                case 1: gameState.initialTime = 90 * 1000; break;
+                case 2: gameState.initialTime = 120 * 1000; break;
+                case 3: gameState.initialTime = Infinity; gameState.glitchingTimer = true; break;
+                default: gameState.initialTime = 60 * 1000;
+            }
+
+            let isMapValid = false;
+            while (!isMapValid) {
+                if (level === 3) {
+                    gameState.map = generateBossMap();
                 } else {
-                    console.log("Map not connected. Regenerating...");
+                    gameState.map = generateMap();
+                }
+                if (placeEntitiesForLevel(level)) {
+                    if (checkConnectivity()) {
+                        isMapValid = true;
+                    } else {
+                        console.log("Map not connected. Regenerating...");
+                    }
+                } else {
+                    console.error("Failed to place entities for level:", level);
                 }
             }
+            
+            if (level !== 3) {
+                gameState.startTime = performance.now();
+            } else {
+                gameState.startTime = null;
+            }
+            updateUI();
+        } catch (e) {
+            console.error("Error setting up level:", e);
         }
-        
-        if (level !== 3) {
-            gameState.startTime = performance.now();
-        } else {
-            gameState.startTime = null;
-            playBossMusic();
-        }
-        updateUI();
     }
 
     /**
@@ -672,7 +680,6 @@
         const key = {x: gameState.key.x, y: gameState.key.y};
         const exit = {x: gameState.exit.x, y: gameState.exit.y};
 
-        // Check if player can reach the key and exit
         if (!canReach(start, key) || !canReach(start, exit)) {
             return false;
         }
@@ -803,7 +810,6 @@
             if (!exitPos) return false;
             Object.assign(gameState.exit, exitPos);
             gameState.hasKey = false;
-            // Key is placed at the boss's location, will be updated on defeat
             gameState.key.x = bossCenter.x;
             gameState.key.y = bossCenter.y;
         }
@@ -811,8 +817,7 @@
     }
 
     /**
-     * Main game loop, handles updates and drawing. This is a requestAnimationFrame loop,
-     * but the game logic is turn-based, so `update()` only runs after player input.
+     * Main game loop, handles updates and drawing.
      */
     function gameLoop(currentTime) {
         const isGameActive = !gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.glitchActive && !gameState.dragonMasterIntroCinematicActive && !gameState.bossIntroCountdownActive && !gameState.gameWon && !gameState.gameOver;
@@ -848,8 +853,7 @@
     }
 
     /**
-     * Moves all enemies and the boss. This function is called only after the player
-     * has made a move, making the game turn-based.
+     * Moves all enemies and the boss.
      */
     function moveGameEntities() {
         if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
@@ -955,6 +959,15 @@
      * Renders the entire game state to the canvas.
      */
     function draw(currentTime) {
+        console.log("Game state:", {
+            gameOver: gameState.gameOver,
+            gameWon: gameState.gameWon,
+            showingLevelTransition: gameState.showingLevelTransition,
+            cinematicActive: gameState.cinematicActive,
+            glitchActive: gameState.glitchActive,
+            dragonMasterIntroCinematicActive: gameState.dragonMasterIntroCinematicActive,
+            bossIntroCountdownActive: gameState.bossIntroCountdownActive
+        });
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = `${TILE_SIZE * 0.8}px monospace`;
         ctx.filter = 'none';
@@ -1040,7 +1053,7 @@
             ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
-            ctx.font = 'bold 40px Courier New'; // Font size changed from 60px to 40px
+            ctx.font = 'bold 40px Courier New';
             ctx.textAlign = 'center';
             let message = '';
             if (gameState.gameWon) {
@@ -1178,7 +1191,7 @@
     }
 
     /**
-     * Checks if a tile is walkable (not a wall and within bounds).
+     * Checks if a tile is walkable.
      */
     function isWalkable(x, y) {
         return x >= 0 && x < MAP_WIDTH_TILES && y >= 0 && y < MAP_HEIGHT_TILES && gameState.map[y][x] === Floor && !isOccupiedByEnemy(x, y) && (gameState.currentLevel !== 3 || !isOccupiedByBoss(x, y));
@@ -1197,13 +1210,11 @@
             gameState.gameOver = true;
             gameState.gameOverReason = 'hp';
             stopBackgroundMusic();
-            stopBossMusic();
         }
     }
 
     /**
      * Handles player actions based on input.
-     * This function now calls `moveGameEntities()` to trigger the enemy turn.
      */
     function handlePlayerMove(dx, dy) {
         if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition ||
@@ -1286,7 +1297,7 @@
                 if (gameState.bossDefeated) {
                     gameState.gameWon = true;
                     gameState.completionTime = gameState.elapsedTime;
-                    stopBossMusic();
+                    stopBackgroundMusic();
                     startConfetti();
                 }
             }
@@ -1316,7 +1327,7 @@
     }
 
     /**
-     * Initiates the boss explosion animation with more graphics.
+     * Initiates the boss explosion animation.
      */
     function startExplosion() {
         gameState.explosionActive = true;
@@ -1334,7 +1345,6 @@
                 { radius: 0, maxRadius: TILE_SIZE * 1, color: '#FFFFFF', alpha: 1 }
             ]
         };
-        // Add particles
         for (let i = 0; i < 50; i++) {
             gameState.explosion.particles.push(new ExplosionParticle(
                 gameState.explosion.x,
@@ -1364,9 +1374,7 @@
             }
         }
         
-        // Draw method for the new explosion object
         gameState.explosion.draw = (ctx) => {
-            // Draw main explosion rings
             gameState.explosion.rings.forEach(ring => {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, ring.alpha);
@@ -1376,7 +1384,6 @@
                 ctx.fill();
                 ctx.restore();
             });
-            // Draw particles
             gameState.explosion.particles.forEach(p => p.draw(ctx));
         };
 
@@ -1392,7 +1399,7 @@
     }
 
     /**
-     * Starts the glitch transition effect using the audio file.
+     * Starts the glitch transition effect.
      */
     function startGlitchTransition() {
         gameState.glitchActive = true;
@@ -1400,11 +1407,13 @@
         if (glitchAudio) {
             glitchAudio.currentTime = 0;
             glitchAudio.play().catch(e => console.error("Error playing glitch audio:", e));
+        } else {
+            console.error("glitchAudio element not found");
         }
     }
 
     /**
-     * Draws the visual glitch effect on the canvas.
+     * Draws the visual glitch effect.
      */
     function drawGlitchEffect(currentTime) {
         const elapsed = currentTime - gameState.glitchStartTime;
@@ -1427,7 +1436,6 @@
             else { ctx.filter = 'none'; }
         } else {
             gameState.glitchActive = false;
-            // Stop audio when glitch effect ends
             if (glitchAudio) { glitchAudio.pause(); }
             gameState.currentLevel = 3;
             setupLevel(gameState.currentLevel);
@@ -1539,7 +1547,7 @@
             if (gameState.boss.hp <= 0 && !gameState.bossDefeated) {
                 gameState.boss.hp = 0;
                 gameState.bossDefeated = true;
-                const bossCenter = { x: gameState.boss.x + Math.floor(gameState.boss.size / 2), y: gameState.boss.y + Math.floor(gameState.boss.size / 2) };
+                const bossCenter = { x: gameState.boss.x + Math.floor(boss.size / 2), y: gameState.boss.y + Math.floor(boss.size / 2) };
                 gameState.key.x = bossCenter.x;
                 gameState.key.y = bossCenter.y;
                 playExplosionSound();
@@ -1553,7 +1561,6 @@
 
     // --- Event Listeners ---
     document.addEventListener('keydown', (e) => {
-        // Prevent default scrolling for arrow keys and WASD keys
         if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
             e.preventDefault();
         }
@@ -1584,10 +1591,14 @@
         confettiCanvas.width = canvas.width;
         confettiCanvas.height = canvas.height;
         Tone.start().then(() => {
+            console.log("Tone.js audio context started");
             audioContextStarted = true;
             Tone.Transport.start();
             initGame();
-        });
+            if (gameState.currentLevel < 3) {
+                playBackgroundMusic();
+            }
+        }).catch(e => console.error("Error starting Tone.js:", e));
     }
 
     window.onload = showModal;
