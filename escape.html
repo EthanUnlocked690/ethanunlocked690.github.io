@@ -6,1458 +6,1347 @@
 <title>Dungeon Escape</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-    body {
-        font-family: 'Courier New', Courier, monospace;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background-color: #2c2c2c;
-        color: white;
-        margin-top: 20px;
-    }
-    ul {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background-color: #fa07e2;
-        width: 1000px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    li {
-        float: left;
-    }
-    li a {
-        display: block;
-        color: white;
-        text-align: center;
-        padding: 14px 16px;
-        text-decoration: none;
-        transition: background-color 0.3s;
-    }
-    li a:hover {
-        background-color: #60fa07;
-        color: #000000;
-    }
-    h1, p {
-        color: #f3f4f6;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        text-align: center;
-    }
-    #game-container {
-        border: 4px solid #ff0000;
-        border-radius: 12px;
-        padding: 10px;
-        background-color: #000;
-        box-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
-        margin-bottom: 20px;
-        position: relative;
-        z-index: 5;
-    }
-    #gameCanvas {
-        background-color: #111;
-        display: block;
-        width: 1000px;
-        height: 750px;
-        z-index: 10;
-        position: relative;
-    }
-    #confettiCanvas {
-        z-index: 15;
-        position: absolute;
-        top: 0;
-        left: 0;
-        pointer-events: none;
-    }
-    #game-ui {
-        width: 1000px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 10px;
-        padding: 0 5px;
-    }
-    #status-text {
-        font-size: 1.2em;
-        font-weight: bold;
-        color: #f3f4f6;
-        flex-grow: 1;
-        text-align: left;
-        margin-right: 10px;
-    }
-    #bomb-text, #hp-text, #timer-text {
-        font-size: 1.2em;
-        font-weight: bold;
-        margin: 0 10px;
-        white-space: nowrap;
-    }
-    #hp-text { color: #28a745; }
-    #bomb-text { color: #FFA500; }
-    #timer-text { color: #FFFFFF; }
-    button#resetButton {
-        background-color: #ff0000;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-family: inherit;
-        font-size: 1em;
-        font-weight: bold;
-        transition: background-color 0.3s, transform 0.2s;
-    }
-    button#resetButton:hover {
-        background-color: #32a852;
-        color: black;
-        transform: scale(1.05);
-    }
-    #mobile-controls {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        padding-bottom: 20px;
-    }
-    .d-pad-row {
-        display: flex;
-        gap: 10px;
-    }
-    .arrow-button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 15px 20px;
-        border-radius: 12px;
-        cursor: pointer;
-        font-size: 1.5em;
-        font-weight: bold;
-        transition: background-color 0.3s, transform 0.1s, box-shadow 0.2s;
-        min-width: 65px;
-        min-height: 65px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-    .arrow-button:hover {
-        background-color: #45a049;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-    }
-    .arrow-button:active {
-        transform: translateY(0);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    #bombButton {
-        background-color: #FF4500;
-        border: 2px solid #CD3333;
-    }
-    #bombButton:hover {
-        background-color: #E04000;
-    }
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.8);
-        justify-content: center;
-        align-items: center;
-        transition: opacity 0.5s;
-        opacity: 0;
-    }
-    .modal.show {
-        display: flex;
-        opacity: 1;
-    }
-    .modal-content {
-        background-color: #333;
-        color: #f3f4f6;
-        padding: 30px;
-        border: 2px solid #60fa07;
-        border-radius: 15px;
-        width: 90%;
-        max-width: 550px;
-        text-align: center;
-        position: relative;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .modal-content h2 {
-        color: #ff0000;
-        margin-top: 0;
-        font-size: 2em;
-    }
-    .modal-content p {
-        color: #ccc;
-        font-size: 1.1em;
-    }
-    .modal-content button {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 1.1em;
-        margin-top: 20px;
-        transition: background-color 0.3s, transform 0.2s;
-    }
-    .modal-content button:hover {
-        background-color: #45a049;
-        transform: scale(1.05);
-    }
-    .close-button {
-        color: #aaa;
-        position: absolute;
-        top: 15px;
-        right: 20px;
-        font-size: 32px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: color 0.3s;
-    }
-    .close-button:hover, .close-button:focus {
-        color: white;
-    }
-    @keyframes bounceIn {
-        0% { transform: scale(0.8); opacity: 0; }
-        60% { transform: scale(1.1); opacity: 1; }
-        100% { transform: scale(1); }
-    }
+    body {
+        font-family: 'Courier New', Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #2c2c2c;
+        color: white;
+        margin-top: 20px;
+    }
+    ul {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #fa07e2;
+        width: 1000px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    li {
+        float: left;
+    }
+    li a {
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    li a:hover {
+        background-color: #60fa07;
+        color: #000000;
+    }
+    h1, p {
+        color: #f3f4f6;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        text-align: center;
+    }
+    #game-container {
+        border: 4px solid #ff0000;
+        border-radius: 12px;
+        padding: 10px;
+        background-color: #000;
+        box-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
+        margin-bottom: 20px;
+        position: relative;
+        z-index: 5;
+    }
+    #gameCanvas {
+        background-color: #111;
+        display: block;
+        width: 1000px;
+        height: 750px;
+        z-index: 10;
+        position: relative;
+    }
+    #confettiCanvas {
+        z-index: 15;
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+    }
+    #game-ui {
+        width: 1000px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        padding: 0 5px;
+    }
+    #status-text {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #f3f4f6;
+        flex-grow: 1;
+        text-align: left;
+        margin-right: 10px;
+    }
+    #bomb-text, #hp-text, #timer-text {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin: 0 10px;
+        white-space: nowrap;
+    }
+    #hp-text { color: #28a745; }
+    #bomb-text { color: #FFA500; }
+    #timer-text { color: #FFFFFF; }
+    button#resetButton {
+        background-color: #ff0000;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 1em;
+        font-weight: bold;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+    button#resetButton:hover {
+        background-color: #32a852;
+        color: black;
+        transform: scale(1.05);
+    }
+    #mobile-controls {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 20px;
+    }
+    .d-pad-row {
+        display: flex;
+        gap: 10px;
+    }
+    .arrow-button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 1.5em;
+        font-weight: bold;
+        transition: background-color 0.3s, transform 0.1s, box-shadow 0.2s;
+        min-width: 65px;
+        min-height: 65px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .arrow-button:hover {
+        background-color: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    }
+    .arrow-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    #bombButton {
+        background-color: #FF4500;
+        border: 2px solid #CD3333;
+    }
+    #bombButton:hover {
+        background-color: #E04000;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.5s;
+        opacity: 0;
+    }
+    .modal.show {
+        display: flex;
+        opacity: 1;
+    }
+    .modal-content {
+        background-color: #333;
+        color: #f3f4f6;
+        padding: 30px;
+        border: 2px solid #60fa07;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 550px;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modal-content h2 {
+        color: #ff0000;
+        margin-top: 0;
+        font-size: 2em;
+    }
+    .modal-content p {
+        color: #ccc;
+        font-size: 1.1em;
+    }
+    .modal-content button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.1em;
+        margin-top: 20px;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+    .modal-content button:hover {
+        background-color: #45a049;
+        transform: scale(1.05);
+    }
+    .close-button {
+        color: #aaa;
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 32px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+    .close-button:hover, .close-button:focus {
+        color: white;
+    }
+    @keyframes bounceIn {
+        0% { transform: scale(0.8); opacity: 0; }
+        60% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(1); }
+    }
 </style>
 </head>
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <ul>
-    <li><a href="turtle.html">⬅ Back to game selection</a></li>
+    <li><a href="turtle.html">⬅ Back to game selection</a></li>
 </ul>
 <h1 class="text-3xl font-bold">Dungeon Escape</h1>
 <p class="mt-2 text-sm">Use arrow keys, WASD, or the on-screen buttons</p>
 <p class="text-sm">Press 'R' or click "New Game" to reset</p>
 <audio id="glitchAudio" src="glitch.mp3" preload="auto"></audio>
 <audio id="backgroundMusic" loop autoplay>
-    <source src="dungeon.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
+    <source src="dungeon.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
 </audio>
+<audio id="explodeAudio" src="explode.mp3" preload="auto"></audio>
+<img id="explosionImage" src="https://media.tenor.com/URShj_JWaS8AAAAM/explos%C3%A3o-meme.gif" style="display: none;" onload="console.log('Explosion GIF loaded');" onerror="console.error('Failed to load explosion GIF');">
 <div id="game-container">
-    <canvas id="gameCanvas" width="1000" height="750"></canvas>
-    <canvas id="confettiCanvas" width="1000" height="750"></canvas>
+    <canvas id="gameCanvas" width="1000" height="750"></canvas>
+    <canvas id="confettiCanvas" width="1000" height="750"></canvas>
 </div>
 <div id="game-ui">
-    <span id="status-text">Find the key 🔑 and escape through the door🚪!</span>
-    <span id="bomb-text">Bombs: 3 💣</span>
-    <button id="resetButton">New Game</button>
-    <span id="hp-text">HP: 100</span>
-    <span id="timer-text">Time: 01:00</span>
+    <span id="status-text">Find the key 🔑 and escape through the door🚪!</span>
+    <span id="bomb-text">Bombs: 3 💣</span>
+    <button id="resetButton">New Game</button>
+    <span id="hp-text">HP: 100</span>
+    <span id="timer-text">Time: 01:00</span>
 </div>
 <div id="mobile-controls">
-    <div class="d-pad-row">
-        <button id="upButton" class="arrow-button">⬆️</button>
-    </div>
-    <div class="d-pad-row">
-        <button id="leftButton" class="arrow-button">⬅️</button>
-        <button id="bombButton" class="arrow-button">💣</button>
-        <button id="rightButton" class="arrow-button">➡️</button>
-    </div>
-    <div class="d-pad-row">
-        <button id="downButton" class="arrow-button">⬇️</button>
-    </div>
+    <div class="d-pad-row">
+        <button id="upButton" class="arrow-button">⬆️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="leftButton" class="arrow-button">⬅️</button>
+        <button id="bombButton" class="arrow-button">💣</button>
+        <button id="rightButton" class="arrow-button">➡️</button>
+    </div>
+    <div class="d-pad-row">
+        <button id="downButton" class="arrow-button">⬇️</button>
+    </div>
 </div>
 <div id="warningModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button" onclick="closeModal()">&times;</span>
-        <h2>WARNING!</h2>
-        <p>This game is SO hard that the creator himself could only beat it ONCE!! If you beat it, tell me in the comments of ANY of my videos and I will give you a shoutout!! Good luck and have fun!!</p>
-        <button onclick="closeModal()">Got It!</button>
-    </div>
+    <div class="modal-content">
+        <span class="close-button" onclick="closeModal()">&times;</span>
+        <h2>WARNING!</h2>
+        <p>This game is SO hard that the creator himself could only beat it ONCE!! If you beat it, tell me in the comments of ANY of my videos and I will give you a shoutout!! Good luck and have fun!!</p>
+        <button onclick="closeModal()">Got It!</button>
+    </div>
 </div>
 <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const confettiCanvas = document.getElementById('confettiCanvas');
-    const confettiCtx = confettiCanvas.getContext('2d');
-    const resetButton = document.getElementById('resetButton');
-    const statusText = document.getElementById('status-text');
-    const hpText = document.getElementById('hp-text');
-    const bombText = document.getElementById('bomb-text');
-    const timerText = document.getElementById('timer-text');
-    const bombButton = document.getElementById('bombButton');
-    const glitchAudio = document.getElementById('glitchAudio');
-    const backgroundMusic = document.getElementById('backgroundMusic');
-
-    const TILE_SIZE = 40;
-    const MAP_WIDTH_TILES = Math.floor(1000 / TILE_SIZE);
-    const MAP_HEIGHT_TILES = Math.floor(750 / TILE_SIZE);
-
-    const Wall = '🪨';
-    const Floor = ' ';
-    const Player = '🚶';
-    const Enemy = '🐉';
-    const GIANT_DRAGON_BOSS = '🐲';
-    const Key = '🔑';
-    const Exit = '🚪';
-    const Potion = '❤️';
-    const FrozenEnemy = '❄️';
-    const PlayerWin = '🥳';
-
-    let gameState = {};
-    let animationFrameId;
-    let audioContextStarted = false;
-
-    let confetti = [];
-    const confettiCount = 300;
-    const confettiColors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
-
-    class Confetti {
-        constructor(x, y, color) {
-            this.x = x;
-            this.y = y;
-            this.size = Math.random() * 10 + 5;
-            this.color = color;
-            this.tilt = Math.random() * 360;
-            this.tiltAngle = Math.random() * 0.1 + 0.05;
-            this.velocity = { x: Math.random() * 4 - 2, y: Math.random() * -10 - 5 };
-            this.gravity = 0.3;
-        }
-        update() {
-            this.velocity.y += this.gravity;
-            this.x += this.velocity.x;
-            this.y += this.velocity.y;
-            this.tilt += this.tiltAngle;
-        }
-        draw() {
-            confettiCtx.beginPath();
-            confettiCtx.lineWidth = this.size;
-            confettiCtx.strokeStyle = this.color;
-            confettiCtx.moveTo(this.x, this.y);
-            confettiCtx.lineTo(this.x + this.size, this.y + Math.sin(this.tilt));
-            confettiCtx.stroke();
-        }
-    }
-
-    function startConfetti() {
-        console.log("Starting confetti");
-        confetti = [];
-        for (let i = 0; i < confettiCount; i++) {
-            const x = Math.random() * confettiCanvas.width;
-            const y = Math.random() * confettiCanvas.height / 2;
-            const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-            confetti.push(new Confetti(x, y, color));
-        }
-        playVictoryMusic();
-    }
-
-    function updateConfetti() {
-        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-        confetti = confetti.filter(p => p.y < confettiCanvas.height);
-        confetti.forEach(p => { p.update(); p.draw(); });
-    }
-
-    class ExplosionParticle {
-        constructor(x, y, color, speed) {
-            this.x = x;
-            this.y = y;
-            this.color = color;
-            this.size = Math.random() * 4 + 2;
-            this.angle = Math.random() * 2 * Math.PI;
-            this.speed = speed * (Math.random() * 0.5 + 0.5);
-            this.velocity = { x: Math.cos(this.angle) * this.speed, y: Math.sin(this.angle) * this.speed };
-            this.alpha = 1;
-            this.gravity = 0.1;
-        }
-        update() {
-            this.x += this.velocity.x;
-            this.y += this.velocity.y;
-            this.velocity.y += this.gravity;
-            this.alpha -= 0.02;
-        }
-        draw(ctx) {
-            ctx.save();
-            ctx.globalAlpha = Math.max(0, this.alpha);
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.size, this.size);
-            ctx.restore();
-        }
-    }
-
-    const bassSynth = new Tone.MonoSynth({
-        volume: -10,
-        oscillator: { type: "square" },
-        envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.5 },
-        filter: { Q: 2, type: "lowpass", rolloff: -24 },
-        filterEnvelope: { attack: 0.02, decay: 0.8, sustain: 0.5, release: 0.5, basePath: 200, octaves: 4 }
-    }).toDestination();
-    const melodySynth = new Tone.Synth({
-        volume: -15,
-        oscillator: { type: 'sawtooth' },
-        envelope: { attack: 0.05, decay: 0.3, sustain: 0.6, release: 0.8 }
-    }).toDestination();
-
-    const bossLoop = new Tone.Loop(time => {
-        bassSynth.triggerAttackRelease("A1", "8n", time);
-        bassSynth.triggerAttackRelease("A1", "8n", time + Tone.Time("4n"));
-        bassSynth.triggerAttackRelease("D2", "8n", time + Tone.Time("2n"));
-        bassSynth.triggerAttackRelease("D2", "8n", time + Tone.Time("2n") + Tone.Time("4n"));
-        melodySynth.triggerAttackRelease("C4", "16n", time + Tone.Time("8n"));
-        melodySynth.triggerAttackRelease("C4", "16n", time + Tone.Time("4n") + Tone.Time("8n"));
-        melodySynth.triggerAttackRelease("C#4", "16n", time + Tone.Time("2n") + Tone.Time("8n"));
-        melodySynth.triggerAttackRelease("C#4", "16n", time + Tone.Time("2n") + Tone.Time("4n") + Tone.Time("8n"));
-    }, "1n");
-
-    function playBossMusic() {
-        if (bossLoop.state !== "started") {
-            console.log("Starting boss music");
-            bossLoop.start();
-        }
-    }
-    function stopBossMusic() {
-        if (bossLoop.state === "started") {
-            console.log("Stopping boss music");
-            bossLoop.stop();
-        }
-    }
-
-    function playBackgroundMusic() {
-        if (gameState.currentLevel < 3 && backgroundMusic) {
-            console.log("Playing dungeon.mp3 for Level", gameState.currentLevel);
-            backgroundMusic.volume = 0.5;
-            backgroundMusic.play().catch(e => console.error("Error playing background music:", e));
-        } else if (gameState.currentLevel === 3) {
-            console.log("Switching to boss music for Level 3");
-            playBossMusic();
-        }
-    }
-
-    function stopBackgroundMusic() {
-        if (backgroundMusic) {
-            console.log("Stopping dungeon.mp3");
-            backgroundMusic.pause();
-            backgroundMusic.currentTime = 0;
-        }
-        stopBossMusic();
-    }
-
-    const victorySynth = new Tone.PolySynth(Tone.Synth, {
-        volume: -8,
-        oscillator: { type: 'sine' },
-        envelope: { attack: 0.1, decay: 0.4, sustain: 0.7, release: 1.2 }
-    }).toDestination();
-
-    function playVictoryMusic() {
-        console.log("Playing victory music");
-        victorySynth.triggerAttackRelease(["C5", "E5", "G5"], "2n");
-        victorySynth.triggerAttackRelease(["A5", "C6", "E6"], "2n", Tone.Time("2n"));
-        victorySynth.triggerAttackRelease(["F5", "A5", "C6"], "1n", Tone.Time("1n"));
-    }
-
-    const explosionNoise = new Tone.NoiseSynth({
-        noise: { type: 'white' },
-        envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.1 }
-    }).toDestination();
-    const explosionThump = new Tone.MembraneSynth({
-        pitchDecay: 0.05,
-        octaves: 5,
-        envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 0.4, attackCurve: 'exponential' }
-    }).toDestination();
-    const explosionMetal = new Tone.MetalSynth({
-        frequency: 200,
-        envelope: { attack: 0.001, decay: 0.1, release: 0.1 },
-        harmonicity: 3.1,
-        modulationIndex: 16,
-        resonance: 4000,
-        octaves: 1.5
-    }).toDestination();
-
-    function playExplosionSound() {
-        console.log("Playing explosion sound");
-        explosionNoise.triggerAttackRelease("4n");
-        explosionThump.triggerAttackRelease("C1", "2n");
-        explosionMetal.triggerAttackRelease("8n");
-    }
-
-    function initGame() {
-        try {
-            console.log("Initializing game");
-            if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
-            gameState = {
-                map: [],
-                player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 5, attackDamage: 15 },
-                enemies: [],
-                key: { x: 0, y: 0 },
-                exit: { x: 0, y: 0 },
-                potions: [],
-                hasKey: false,
-                gameOver: false,
-                gameWon: false,
-                gameOverReason: null,
-                turn: 0,
-                startTime: null,
-                initialTime: 0,
-                elapsedTime: 0,
-                completionTime: null,
-                isTypingTime: false,
-                typedCompletionTime: '',
-                typedTimeLeft: '',
-                currentLevel: 1,
-                boss: null,
-                bossDefeated: false,
-                showingLevelTransition: false,
-                levelTransitionMessage: '',
-                cinematicActive: false,
-                bossCinematicText: '',
-                bossCinematicAlpha: 0,
-                explosionActive: false,
-                explosion: null,
-                warning60sTriggered: false,
-                warning30sTriggered: false,
-                warning10sTriggered: false,
-                countdownActive: false,
-                glitchActive: false,
-                glitchStartTime: 0,
-                glitchDuration: 1500,
-                glitchSoundInterval: null,
-                glitchingTimer: false,
-                bossIntroCountdownActive: false,
-                bossIntroCountdownValue: 3,
-                bossIntroCountdownStartTime: 0,
-                bossIntroCountdownMessage: '',
-                dragonMasterIntroCinematicActive: false,
-                dragonMasterIntroCinematicText: '',
-                dragonMasterIntroCinematicAlpha: 0,
-                dragonMasterIntroCinematicStartTime: 0,
-                confettiActive: false
-            };
-            stopBackgroundMusic();
-            setupLevel(gameState.currentLevel);
-            console.log("Game initialized, starting game loop");
-            gameLoop();
-        } catch (e) {
-            console.error("Error initializing game:", e);
-        }
-    }
-
-    function setupLevel(level) {
-        try {
-            console.log("Setting up level", level);
-            gameState.player.x = 0;
-            gameState.player.y = 0;
-            gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
-            gameState.player.bombs = level === 3 ? 8 : gameState.player.bombs + 2;
-            gameState.player.attackDamage = 15;
-            gameState.hasKey = false;
-            gameState.enemies = [];
-            gameState.potions = [];
-            gameState.boss = null;
-            gameState.bossDefeated = false;
-            gameState.warning60sTriggered = false;
-            gameState.warning30sTriggered = false;
-            gameState.warning10sTriggered = false;
-            gameState.countdownActive = false;
-            gameState.glitchActive = false;
-            gameState.bossIntroCountdownActive = false;
-            gameState.dragonMasterIntroCinematicActive = false;
-            gameState.glitchingTimer = false;
-            gameState.explosionActive = false;
-            gameState.explosion = null;
-            gameState.confettiActive = false;
-
-            switch(level) {
-                case 1: gameState.initialTime = 90 * 1000; break;
-                case 2: gameState.initialTime = 120 * 1000; break;
-                case 3: gameState.initialTime = Infinity; gameState.glitchingTimer = true; break;
-                default: gameState.initialTime = 60 * 1000;
-            }
-
-            let isMapValid = false;
-            let attempts = 0;
-            while (!isMapValid && attempts < 100) {
-                if (level === 3) {
-                    gameState.map = generateBossMap();
-                } else {
-                    gameState.map = generateMap();
-                }
-                if (placeEntitiesForLevel(level)) {
-                    if (checkConnectivity()) {
-                        isMapValid = true;
-                    } else {
-                        console.log("Map not connected. Regenerating...");
-                    }
-                } else {
-                    console.error("Failed to place entities for level:", level);
-                }
-                attempts++;
-            }
-            if (!isMapValid) {
-                console.error("Failed to generate valid map after 100 attempts");
-                return;
-            }
-
-            if (level !== 3) {
-                gameState.startTime = performance.now();
-                playBackgroundMusic();
-            } else {
-                gameState.startTime = null;
-                stopBackgroundMusic();
-                playBossMusic();
-            }
-            updateUI();
-            console.log("Level", level, "setup complete");
-        } catch (e) {
-            console.error("Error setting up level:", e);
-        }
-    }
-
-    function checkConnectivity() {
-        const start = {x: gameState.player.x, y: gameState.player.y};
-        const key = {x: gameState.key.x, y: gameState.key.y};
-        const exit = {x: gameState.exit.x, y: gameState.exit.y};
-        return canReach(start, key) && canReach(start, exit);
-    }
-
-    function canReach(start, target) {
-        const queue = [start];
-        const visited = new Set();
-        const key = (x, y) => `${x},${y}`;
-        visited.add(key(start.x, start.y));
-
-        while (queue.length > 0) {
-            const {x, y} = queue.shift();
-            if (x === target.x && y === target.y) return true;
-            const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-            for (const [dx, dy] of directions) {
-                const newX = x + dx;
-                const newY = y + dy;
-                if (
-                    newX >= 0 && newX < MAP_WIDTH_TILES &&
-                    newY >= 0 && newY < MAP_HEIGHT_TILES &&
-                    gameState.map[newY][newX] === Floor &&
-                    !visited.has(key(newX, newY))
-                ) {
-                    visited.add(key(newX, newY));
-                    queue.push({x: newX, y: newY});
-                }
-            }
-        }
-        return false;
-    }
-
-    function generateMap() {
-        let map = Array.from({ length: MAP_HEIGHT_TILES }, () =>
-            Array.from({ length: MAP_WIDTH_TILES }, () => Math.random() < 0.45 ? Wall : Floor)
-        );
-        for (let i = 0; i < 4; i++) {
-            let newMap = JSON.parse(JSON.stringify(map));
-            for (let y = 1; y < MAP_HEIGHT_TILES - 1; y++) {
-                for (let x = 1; x < MAP_WIDTH_TILES - 1; x++) {
-                    let wallCount = 0;
-                    for (let ny = y - 1; ny <= y + 1; ny++) {
-                        for (let nx = x - 1; nx <= x + 1; nx++) {
-                            if (ny >= 0 && ny < MAP_HEIGHT_TILES && nx >= 0 && nx < MAP_WIDTH_TILES && map[ny][nx] === Wall) {
-                                wallCount++;
-                            }
-                        }
-                    }
-                    newMap[y][x] = wallCount > 4 ? Wall : Floor;
-                }
-            }
-            map = newMap;
-        }
-        for(let y = 0; y < MAP_HEIGHT_TILES; y++) { map[y][0] = map[y][MAP_WIDTH_TILES-1] = Wall; }
-        for(let x = 0; x < MAP_WIDTH_TILES; x++) { map[0][x] = map[MAP_HEIGHT_TILES-1][x] = Wall; }
-        return map;
-    }
-
-    function generateBossMap() {
-        let map = Array.from({ length: MAP_HEIGHT_TILES }, () => Array.from({ length: MAP_WIDTH_TILES }, () => Floor));
-        for(let y = 0; y < MAP_HEIGHT_TILES; y++) { map[y][0] = map[y][MAP_WIDTH_TILES-1] = Wall; }
-        for(let x = 0; x < MAP_WIDTH_TILES; x++) { map[0][x] = map[MAP_HEIGHT_TILES-1][x] = Wall; }
-        return map;
-    }
-
-    function placeEntitiesForLevel(level) {
-        const floorTiles = [];
-        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
-            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
-                if (gameState.map[y][x] === Floor) { floorTiles.push({ x, y }); }
-            }
-        }
-        const getRandomTile = () => {
-            if (floorTiles.length === 0) return null;
-            const index = Math.floor(Math.random() * floorTiles.length);
-            return floorTiles.splice(index, 1)[0];
-        };
-
-        const playerPos = getRandomTile();
-        if (!playerPos) return false;
-        Object.assign(gameState.player, playerPos);
-
-        if (level < 3) {
-            const keyPos = getRandomTile();
-            const exitPos = getRandomTile();
-            if (!keyPos || !exitPos) return false;
-            Object.assign(gameState.key, keyPos);
-            Object.assign(gameState.exit, exitPos);
-
-            const NUM_ENEMIES = level === 1 ? 5 : 8;
-            for (let i = 0; i < NUM_ENEMIES; i++) {
-                if (floorTiles.length > 0) { const enemyPos = getRandomTile(); gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 }); }
-            }
-            const NUM_POTIONS = 3;
-            for (let i = 0; i < NUM_POTIONS; i++) {
-                if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
-            }
-        } else {
-            const bossSize = 3;
-            let bossCenter = getRandomTile();
-            while (!bossCenter || (Math.abs(bossCenter.x - gameState.player.x) < 5 && Math.abs(bossCenter.y - gameState.player.y) < 5)) {
-                bossCenter = getRandomTile();
-            }
-            if (!bossCenter) return false;
-
-            let bossX = bossCenter.x - Math.floor(bossSize / 2);
-            let bossY = bossCenter.y - Math.floor(bossSize / 2);
-            for (let by = 0; by < bossSize; by++) {
-                for (let bx = 0; bx < bossSize; bx++) {
-                    const index = floorTiles.findIndex(t => t.x === bossX + bx && t.y === bossY + by);
-                    if (index !== -1) floorTiles.splice(index, 1);
-                }
-            }
-            gameState.boss = { x: bossX, y: bossY, hp: 300, maxHp: 300, damage: 30, frozenTurns: 0, size: bossSize };
-            const exitPos = getRandomTile();
-            if (!exitPos) return false;
-            Object.assign(gameState.exit, exitPos);
-            gameState.hasKey = false;
-            gameState.key.x = bossCenter.x;
-            gameState.key.y = bossCenter.y;
-        }
-        return true;
-    }
-
-    function gameLoop(currentTime) {
-        const isGameActive = !gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.glitchActive && !gameState.dragonMasterIntroCinematicActive && !gameState.bossIntroCountdownActive && !gameState.gameWon && !gameState.gameOver;
-
-        if (isGameActive) {
-            if (!gameState.glitchingTimer) {
-                if (!gameState.startTime) { gameState.startTime = currentTime; }
-                gameState.elapsedTime = currentTime - gameState.startTime;
-                gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
-                if (gameState.remainingTime <= 0) {
-                    gameState.remainingTime = 0;
-                    if (!gameState.gameOver && !gameState.gameWon) {
-                        gameState.gameOver = true;
-                        gameState.gameOverReason = 'time';
-                        stopBackgroundMusic();
-                    }
-                }
-                const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
-                if (remainingSeconds === 60 && !gameState.warning60sTriggered) { statusText.textContent = '1 minute remaining!'; statusText.style.color = 'orange'; gameState.warning60sTriggered = true; }
-                else if (remainingSeconds === 30 && !gameState.warning30sTriggered) { statusText.textContent = '30 seconds remaining!'; statusText.style.color = 'red'; gameState.warning30sTriggered = true; }
-                else if (remainingSeconds === 10 && !gameState.warning10sTriggered) { statusText.textContent = '10 seconds remaining!'; statusText.style.color = 'darkred'; gameState.warning10sTriggered = true; }
-                else if (remainingSeconds <= 5 && remainingSeconds > 0) { gameState.countdownActive = true; }
-                else if (remainingSeconds === 0 && gameState.countdownActive) { gameState.countdownActive = false; }
-            }
-        }
-        draw(currentTime);
-        updateUI();
-        if (gameState.confettiActive) updateConfetti();
-        if (gameState.explosionActive) gameState.explosion.particles.forEach(p => p.update());
-
-        animationFrameId = requestAnimationFrame(gameLoop);
-    }
-
-    function moveGameEntities() {
-        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
-            moveBoss(gameState.boss);
-        } else {
-            moveEnemies();
-        }
-    }
-
-    function moveEnemies() {
-        gameState.enemies.forEach(enemy => {
-            if (enemy.frozenTurns > 0) { enemy.frozenTurns--; return; }
-            const huntPlayer = Math.random() > 0.5;
-            let dx = huntPlayer ? Math.sign(gameState.player.x - enemy.x) : Math.floor(Math.random() * 3) - 1;
-            let dy = huntPlayer ? Math.sign(gameState.player.y - enemy.y) : Math.floor(Math.random() * 3) - 1;
-            const nextX = enemy.x + dx;
-            const nextY = enemy.y + dy;
-            if (isWalkable(nextX, nextY)) {
-                enemy.x = nextX;
-                enemy.y = nextY;
-            }
-            if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
-                takeDamage(15);
-                enemy.frozenTurns = 2;
-            }
-        });
-    }
-
-    function moveBoss(boss) {
-        if (boss.frozenTurns > 0) { boss.frozenTurns--; return; }
-        let dx = Math.sign(gameState.player.x - (boss.x + Math.floor(boss.size / 2)));
-        let dy = Math.sign(gameState.player.y - (boss.y + Math.floor(boss.size / 2)));
-        const originalBossX = boss.x;
-        const originalBossY = boss.y;
-        const potentialBossX = boss.x + dx;
-        const potentialBossY = boss.y + dy;
-        let canMove = false;
-        if (isBossPositionWalkable(potentialBossX, potentialBossY, boss.size)) {
-            canMove = true;
-            boss.x = potentialBossX;
-            boss.y = potentialBossY;
-        } else {
-            if (isBossPositionWalkable(potentialBossX, originalBossY, boss.size)) {
-                canMove = true;
-                boss.x = potentialBossX;
-                boss.y = originalBossY;
-            } else if (isBossPositionWalkable(originalBossX, potentialBossY, boss.size)) {
-                canMove = true;
-                boss.x = originalBossX;
-                boss.y = potentialBossY;
-            }
-        }
-        if (isPlayerCollidingWithBoss(gameState.player, boss)) {
-            takeDamage(boss.damage);
-            boss.frozenTurns = 1;
-        }
-    }
-
-    function isBossPositionWalkable(bossX, bossY, bossSize) {
-        for (let by = 0; by < bossSize; by++) {
-            for (let bx = 0; bx < bossSize; bx++) {
-                const checkX = bossX + bx;
-                const checkY = bossY + by;
-                if (checkX < 0 || checkX >= MAP_WIDTH_TILES || checkY < 0 || checkY >= MAP_HEIGHT_TILES || gameState.map[checkY][checkX] === Wall) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    function isPlayerCollidingWithBoss(player, boss) {
-        if (!boss) return false;
-        return player.x >= boss.x && player.x < (boss.x + boss.size) &&
-               player.y >= boss.y && player.y < (boss.y + boss.size);
-    }
-
-    function draw(currentTime) {
-        console.log("Drawing frame, state:", {
-            gameOver: gameState.gameOver,
-            gameWon: gameState.gameWon,
-            showingLevelTransition: gameState.showingLevelTransition,
-            cinematicActive: gameState.cinematicActive,
-            glitchActive: gameState.glitchActive,
-            dragonMasterIntroCinematicActive: gameState.dragonMasterIntroCinematicActive,
-            bossIntroCountdownActive: gameState.bossIntroCountdownActive,
-            explosionActive: gameState.explosionActive
-        });
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = `${TILE_SIZE * 0.8}px monospace`;
-        ctx.filter = 'none';
-
-        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
-            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
-                if (gameState.map[y][x] === Wall) ctx.fillText(Wall, x * TILE_SIZE, y * TILE_SIZE + TILE_SIZE);
-            }
-        }
-
-        const drawEntity = (entity, symbol) => ctx.fillText(symbol, entity.x * TILE_SIZE, entity.y * TILE_SIZE + TILE_SIZE);
-
-        if (gameState.currentLevel === 3) {
-            if (gameState.bossDefeated && !gameState.hasKey) drawEntity(gameState.key, Key);
-            if (gameState.boss && !gameState.bossDefeated) {
-                for (let by = 0; by < gameState.boss.size; by++) {
-                    for (let bx = 0; bx < gameState.boss.size; bx++) {
-                        ctx.fillText(GIANT_DRAGON_BOSS, (gameState.boss.x + bx) * TILE_SIZE, (gameState.boss.y + by) * TILE_SIZE + TILE_SIZE);
-                    }
-                }
-                drawBossHealthBar();
-            }
-            drawEntity(gameState.exit, Exit);
-        } else {
-            if (!gameState.hasKey) drawEntity(gameState.key, Key);
-            drawEntity(gameState.exit, Exit);
-        }
-
-        gameState.potions.forEach(potion => drawEntity(potion, Potion));
-        gameState.enemies.forEach(enemy => {
-            let enemySymbol = enemy.frozenTurns > 0 ? FrozenEnemy : Enemy;
-            if (gameState.gameWon) enemySymbol = '💀';
-            drawEntity(enemy, enemySymbol);
-        });
-
-        let currentPlayerSymbol = gameState.gameOver ? '💀' : gameState.gameWon ? PlayerWin : Player;
-        drawEntity(gameState.player, currentPlayerSymbol);
-
-        if (gameState.explosionActive) {
-            console.log("Drawing explosion at boss center:", gameState.explosion.x, gameState.explosion.y);
-            gameState.explosion.particles.forEach(p => p.draw(ctx));
-        }
-
-        if (gameState.showingLevelTransition) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 30px Courier New';
-            ctx.textAlign = 'center';
-            ctx.fillText(gameState.levelTransitionMessage, canvas.width / 2, canvas.height / 2);
-            ctx.textAlign = 'left';
-            return;
-        }
-        if (gameState.glitchActive) {
-            drawGlitchEffect(currentTime);
-            return;
-        }
-        if (gameState.dragonMasterIntroCinematicActive) {
-            drawDragonMasterIntroCinematic(currentTime);
-            return;
-        }
-        if (gameState.bossIntroCountdownActive) {
-            drawBossIntroCountdown(currentTime);
-            return;
-        }
-        if (gameState.cinematicActive) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = `rgba(255, 255, 255, ${gameState.bossCinematicAlpha})`;
-            ctx.font = 'bold 40px Courier New';
-            ctx.textAlign = 'center';
-            ctx.fillText(gameState.bossCinematicText, canvas.width / 2, canvas.height / 2);
-            ctx.textAlign = 'left';
-        }
-
-        if (gameState.gameOver || gameState.gameWon) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = gameState.gameWon ? '#28a745' : '#dc3545';
-            ctx.font = 'bold 40px Courier New';
-            ctx.textAlign = 'center';
-            let message = gameState.gameWon ? 
-                (gameState.currentLevel === 3 ? 'The final boss will NEVER return because of YOUR braveness! Well done!' : 'YOU ESCAPED! 🎉') :
-                (gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀');
-            ctx.fillText(message, canvas.width / 2, canvas.height / 2);
-
-            if (gameState.gameWon && gameState.completionTime !== null) {
-                ctx.font = 'bold 30px Courier New';
-                ctx.fillStyle = '#FFFFFF';
-                if (!gameState.isTypingTime) {
-                    gameState.isTypingTime = true;
-                    typeCompletionAndRemainingTime();
-                }
-                ctx.fillText(gameState.typedCompletionTime, canvas.width / 2, canvas.height / 2 + 50);
-                ctx.fillText(gameState.typedTimeLeft, canvas.width / 2, canvas.height / 2 + 100);
-                if (gameState.currentLevel === 3) {
-                    ctx.font = 'bold 25px Courier New';
-                    ctx.fillText("Don't forget to subscribe to Ethan and Isabella Unlocked on YT!!", canvas.width / 2, canvas.height / 2 + 150);
-                }
-            }
-            ctx.textAlign = 'left';
-        }
-    }
-
-    function drawBossHealthBar() {
-        if (!gameState.boss || gameState.bossDefeated) return;
-        const barWidth = 250;
-        const barHeight = 25;
-        const barX = (canvas.width / 2) - (barWidth / 2);
-        const barY = 20;
-        ctx.fillStyle = '#880000';
-        ctx.fillRect(barX, barY, barWidth, barHeight);
-        const currentHealthWidth = (gameState.boss.hp / gameState.boss.maxHp) * barWidth;
-        ctx.fillStyle = '#00FF00';
-        ctx.fillRect(barX, barY, currentHealthWidth, barHeight);
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(barX, barY, barWidth, barHeight);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '18px Courier New';
-        ctx.textAlign = 'center';
-        ctx.fillText(`DRAGON HP: ${gameState.boss.hp}/${gameState.boss.maxHp}`, canvas.width / 2, barY + barHeight + 25);
-        ctx.textAlign = 'left';
-    }
-
-    function typewriterEffect(text, speed, onComplete) {
-        let i = 0;
-        const interval = setInterval(() => {
-            if (i < text.length) {
-                if (text.startsWith("Time: ")) gameState.typedCompletionTime = text.substring(0, i + 1);
-                else if (text.startsWith("Time left: ")) gameState.typedTimeLeft = text.substring(0, i + 1);
-                i++;
-            } else {
-                clearInterval(interval);
-                if (onComplete) onComplete();
-            }
-        }, speed);
-    }
-
-    function typeCompletionAndRemainingTime() {
-        const minutes = Math.floor(gameState.completionTime / 60000);
-        const seconds = Math.floor((gameState.completionTime % 60000) / 1000);
-        const formattedCompletionTime = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        const timeLeftMillis = Math.max(0, gameState.initialTime - gameState.completionTime);
-        const timeLeftMinutes = Math.floor(timeLeftMillis / 60000);
-        const timeLeftSeconds = Math.floor((timeLeftMillis % 60000) / 1000);
-        const formattedTimeLeft = `Time left: ${timeLeftMinutes.toString().padStart(2, '0')}:${timeLeftSeconds.toString().padStart(2, '0')}`;
-        gameState.typedCompletionTime = '';
-        gameState.typedTimeLeft = '';
-        typewriterEffect(formattedCompletionTime, 75, () => {
-            typewriterEffect(formattedTimeLeft, 75, () => {
-                gameState.isTypingTime = false;
-            });
-        });
-    }
-
-    function updateUI() {
-        if (gameState.gameOver) {
-            statusText.textContent = gameState.gameOverReason === 'time' ? 'Times up! ⌛' : 'Game Over! 💀';
-            statusText.style.color = '#dc3545';
-        } else if (gameState.gameWon) {
-            statusText.textContent = gameState.currentLevel < 3 ? 'Level Complete! 🎉' : 'YOU ESCAPED! 🎉';
-            statusText.style.color = '#28a745';
-        } else {
-            if (!gameState.bossIntroCountdownActive && !gameState.dragonMasterIntroCinematicActive && !gameState.showingLevelTransition) {
-                if (gameState.currentLevel === 3) {
-                    statusText.textContent = gameState.bossDefeated ? 'Key dropped! Find the exit! 🔑🚪' : 'Defeat the Dragon Boss! 🐲';
-                } else {
-                    statusText.textContent = gameState.hasKey ? 'Key found! Find the exit! 🚪' : 'Find the key 🔑 and escape through the door🚪!';
-                }
-                statusText.style.color = '#f3f4f6';
-            } else if (gameState.showingLevelTransition) {
-                statusText.textContent = gameState.levelTransitionMessage;
-                statusText.style.color = '#FFFFFF';
-            } else if (gameState.dragonMasterIntroCinematicActive) {
-                statusText.textContent = 'Prepare yourself...';
-                statusText.style.color = '#FFF';
-            } else if (gameState.bossIntroCountdownActive) {
-                statusText.textContent = 'GET READY!';
-                statusText.style.color = '#FF0';
-            }
-        }
-        hpText.textContent = `HP: ${gameState.player.hp}`;
-        hpText.style.color = gameState.player.hp > 30 ? '#28a745' : '#dc3545';
-        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
-        bombText.style.color = gameState.player.bombs > 0 ? '#FFA500' : '#dc3545';
-
-        if (gameState.glitchingTimer) {
-            const glitchChars = '!@#$%^&*()-+=~`{}[]|\\:;"<>,.?/';
-            let glitchString = '';
-            for (let i = 0; i < 5; i++) glitchString += glitchChars[Math.floor(Math.random() * glitchChars.length)];
-            timerText.textContent = `Time: ${glitchString}`;
-            timerText.style.fontSize = '1.2em';
-            timerText.style.color = '#ff00ff';
-        } else {
-            const remainingSeconds = Math.max(0, Math.floor(gameState.remainingTime / 1000));
-            const minutes = Math.floor(remainingSeconds / 60);
-            const seconds = remainingSeconds % 60;
-            if (gameState.countdownActive) {
-                timerText.textContent = `${remainingSeconds}!`;
-                timerText.style.fontSize = '2em';
-                timerText.style.color = 'red';
-            } else {
-                timerText.textContent = `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                timerText.style.fontSize = '1.2em';
-                timerText.style.color = remainingSeconds > 10 ? '#FFFFFF' : '#dc3545';
-            }
-        }
-    }
-
-    function isWalkable(x, y) {
-        return x >= 0 && x < MAP_WIDTH_TILES && y >= 0 && y < MAP_HEIGHT_TILES && 
-               gameState.map[y][x] === Floor && !isOccupiedByEnemy(x, y) && 
-               (gameState.currentLevel !== 3 || !isOccupiedByBoss(x, y));
-    }
-
-    function isOccupiedByEnemy(x, y) {
-        return gameState.enemies.some(enemy => enemy.x === x && enemy.y === y);
-    }
-
-    function isOccupiedByBoss(x, y) {
-        if (!gameState.boss) return false;
-        const boss = gameState.boss;
-        return x >= boss.x && y >= boss.y && x < (boss.x + boss.size) && y < (boss.y + boss.size);
-    }
-
-    function takeDamage(amount) {
-        gameState.player.hp = Math.max(0, gameState.player.hp - amount);
-        if (gameState.player.hp <= 0 && !gameState.gameOver) {
-            gameState.gameOver = true;
-            gameState.gameOverReason = 'hp';
-            stopBackgroundMusic();
-        }
-    }
-
-    function handlePlayerMove(dx, dy) {
-        if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition ||
-            gameState.cinematicActive || gameState.glitchActive ||
-            gameState.dragonMasterIntroCinematicActive || gameState.bossIntroCountdownActive) {
-            return;
-        }
-
-        const newPlayerX = gameState.player.x + dx;
-        const newPlayerY = gameState.player.y + dy;
-
-        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated && isPlayerAttackingBoss(newPlayerX, newPlayerY, gameState.boss)) {
-            attackBoss(gameState.boss);
-            moveGameEntities();
-            return;
-        }
-
-        const targetEnemyIndex = gameState.enemies.findIndex(enemy => enemy.x === newPlayerX && enemy.y === newPlayerY);
-        if (targetEnemyIndex !== -1) {
-            attackEnemy(targetEnemyIndex);
-            moveGameEntities();
-            return;
-        }
-
-        if (isWalkable(newPlayerX, newPlayerY)) {
-            gameState.player.x = newPlayerX;
-            gameState.player.y = newPlayerY;
-        } else if (newPlayerX >= 0 && newPlayerX < MAP_WIDTH_TILES && newPlayerY >= 0 && newPlayerY < MAP_HEIGHT_TILES && gameState.map[newPlayerY][newPlayerX] === Wall) {
-            takeDamage(5);
-        }
-        checkPickupsAndGoals();
-        moveGameEntities();
-    }
-
-    function isPlayerAttackingBoss(x, y, boss) {
-        return x >= boss.x && y >= boss.y && x < (boss.x + boss.size) && y < (boss.y + boss.size);
-    }
-
-    function attackEnemy(enemyIndex) {
-        gameState.enemies.splice(enemyIndex, 1);
-    }
-
-    function attackBoss(boss) {
-        if (!boss || boss.frozenTurns > 0) return;
-        console.log("Attacking boss, current HP:", boss.hp);
-        boss.hp -= gameState.player.attackDamage;
-        if (boss.hp <= 0) {
-            console.log("Boss defeated");
-            boss.hp = 0;
-            gameState.bossDefeated = true;
-            const bossCenter = { x: boss.x + Math.floor(boss.size / 2), y: boss.y + Math.floor(boss.size / 2) };
-            gameState.key.x = bossCenter.x;
-            gameState.key.y = bossCenter.y;
-            playExplosionSound();
-            startExplosion(bossCenter.x, bossCenter.y);
-            gameState.boss = null; // Remove boss immediately after defeat
-        }
-    }
-
-    function startExplosion(bossX, bossY) {
-        console.log("Starting explosion at boss center:", bossX, bossY);
-        gameState.explosionActive = true;
-        gameState.explosion = {
-            x: bossX * TILE_SIZE + TILE_SIZE / 2,
-            y: bossY * TILE_SIZE + TILE_SIZE / 2,
-            particles: []
-        };
-        for (let i = 0; i < 50; i++) {
-            gameState.explosion.particles.push(new ExplosionParticle(
-                gameState.explosion.x,
-                gameState.explosion.y,
-                ['#FF4500', '#FFD700', '#FFA500'][Math.floor(Math.random() * 3)],
-                Math.random() * 5 + 3
-            ));
-        }
-        let explosionDuration = 1000;
-        let startTime = performance.now();
-
-        function animateExplosion(currentTime) {
-            const elapsed = currentTime - startTime;
-            if (elapsed < explosionDuration) {
-                gameState.explosion.particles.forEach(p => p.update());
-                requestAnimationFrame(animateExplosion);
-            } else {
-                console.log("Explosion animation ended");
-                gameState.explosionActive = false;
-                gameState.explosion = null;
-            }
-        }
-        gameState.explosion.draw = ctx => {
-            gameState.explosion.particles.forEach(p => p.draw(ctx));
-        };
-        requestAnimationFrame(animateExplosion);
-    }
-
-    function checkPickupsAndGoals() {
-        if (gameState.currentLevel === 3) {
-            if (gameState.bossDefeated && !gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
-                gameState.hasKey = true;
-                statusText.textContent = 'Key dropped! Find the exit! 🔑🚪';
-                statusText.style.color = '#f3f4f6';
-            }
-        } else {
-            if (!gameState.hasKey && gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y) {
-                gameState.hasKey = true;
-            }
-        }
-        const potionIndex = gameState.potions.findIndex(p => p.x === gameState.player.x && p.y === gameState.player.y);
-        if (potionIndex !== -1) {
-            gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
-            gameState.potions.splice(potionIndex, 1);
-        }
-        if (gameState.hasKey && gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y) {
-            if (gameState.currentLevel < 3) {
-                let message = gameState.currentLevel === 1 ? 'Level 1 complete! Moving to Level 2...' : 'Level 2 complete! Moving on to अंतिम शत्रु...';
-                showLevelTransition(message);
-                if (gameState.currentLevel === 2) {
-                    setTimeout(() => {
-                        gameState.showingLevelTransition = false;
-                        stopBackgroundMusic();
-                        startGlitchTransition();
-                    }, 1500);
-                } else {
-                    setTimeout(() => {
-                        gameState.currentLevel++;
-                        setupLevel(gameState.currentLevel);
-                        gameState.showingLevelTransition = false;
-                        gameState.startTime = performance.now();
-                    }, 1500);
-                }
-            } else {
-                if (gameState.bossDefeated) {
-                    gameState.gameWon = true;
-                    gameState.completionTime = gameState.elapsedTime;
-                    stopBackgroundMusic();
-                    startConfetti();
-                }
-            }
-        }
-    }
-
-    function showLevelTransition(message) {
-        gameState.showingLevelTransition = true;
-        gameState.levelTransitionMessage = message;
-    }
-
-    function startGlitchTransition() {
-        console.log("Starting glitch transition");
-        gameState.glitchActive = true;
-        gameState.glitchStartTime = performance.now();
-        if (glitchAudio) {
-            glitchAudio.currentTime = 0;
-            glitchAudio.play().catch(e => console.error("Error playing glitch audio:", e));
-        } else {
-            console.error("glitchAudio element not found");
-        }
-    }
-
-    function drawGlitchEffect(currentTime) {
-        const elapsed = currentTime - gameState.glitchStartTime;
-        if (elapsed < gameState.glitchDuration) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.filter = 'none';
-            for (let i = 0; i < 50; i++) {
-                ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 0.8 + 0.2})`;
-                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 50 + 10, Math.random() * 50 + 10);
-            }
-            for (let i = 0; i < 10; i++) {
-                ctx.strokeStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.8)`;
-                ctx.lineWidth = Math.random() * 5;
-                ctx.beginPath();
-                ctx.moveTo(0, Math.random() * canvas.height);
-                ctx.lineTo(canvas.width, Math.random() * canvas.height);
-                ctx.stroke();
-            }
-            if (Math.random() < 0.6) ctx.filter = `hue-rotate(${Math.random() * 360}deg) blur(${Math.random() * 3}px) saturate(${Math.random() * 2 + 0.5})`;
-            else ctx.filter = 'none';
-        } else {
-            console.log("Glitch transition ended");
-            gameState.glitchActive = false;
-            if (glitchAudio) glitchAudio.pause();
-            gameState.currentLevel = 3;
-            setupLevel(gameState.currentLevel);
-            startDragonMasterIntroCinematic();
-        }
-    }
-
-    function startDragonMasterIntroCinematic() {
-        console.log("Starting Dragon Master intro cinematic");
-        gameState.dragonMasterIntroCinematicActive = true;
-        gameState.dragonMasterIntroCinematicText = 'As the shadows loom... the Dragon Master appears!';
-        gameState.dragonMasterIntroCinematicAlpha = 0;
-        gameState.dragonMasterIntroCinematicStartTime = performance.now();
-    }
-
-    function drawDragonMasterIntroCinematic(currentTime) {
-        const elapsed = currentTime - gameState.dragonMasterIntroCinematicStartTime;
-        let fadeDuration = 1000;
-        let holdDuration = 2000;
-        let fadeOutDuration = 1000;
-        let totalDuration = fadeDuration + holdDuration + fadeOutDuration;
-        if (elapsed < totalDuration) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if (elapsed < fadeDuration) gameState.dragonMasterIntroCinematicAlpha = elapsed / fadeDuration;
-            else if (elapsed < fadeDuration + holdDuration) gameState.dragonMasterIntroCinematicAlpha = 1;
-            else gameState.dragonMasterIntroCinematicAlpha = 1 - ((elapsed - (fadeDuration + holdDuration)) / fadeOutDuration);
-            ctx.fillStyle = `rgba(255, 255, 255, ${gameState.dragonMasterIntroCinematicAlpha})`;
-            ctx.font = 'bold 40px Courier New';
-            ctx.textAlign = 'center';
-            ctx.fillText(gameState.dragonMasterIntroCinematicText, canvas.width / 2, canvas.height / 2);
-            ctx.textAlign = 'left';
-        } else {
-            console.log("Dragon Master intro cinematic ended");
-            gameState.dragonMasterIntroCinematicActive = false;
-            startBossIntroCountdown();
-        }
-    }
-
-    function startBossIntroCountdown() {
-        console.log("Starting boss intro countdown");
-        gameState.bossIntroCountdownActive = true;
-        gameState.bossIntroCountdownValue = 3;
-        gameState.bossIntroCountdownStartTime = performance.now();
-        gameState.bossIntroCountdownMessage = '3';
-    }
-
-    function drawBossIntroCountdown(currentTime) {
-        const elapsedCountdownTime = currentTime - gameState.bossIntroCountdownStartTime;
-        const remainingCountdownSeconds = 3 - Math.floor(elapsedCountdownTime / 1000);
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 100px Courier New';
-        ctx.textAlign = 'center';
-        if (remainingCountdownSeconds > 0) gameState.bossIntroCountdownMessage = remainingCountdownSeconds.toString();
-        else if (elapsedCountdownTime < 4000) gameState.bossIntroCountdownMessage = 'GO!';
-        else {
-            console.log("Boss intro countdown ended");
-            gameState.bossIntroCountdownActive = false;
-            gameState.startTime = performance.now();
-            return;
-        }
-        ctx.fillText(gameState.bossIntroCountdownMessage, canvas.width / 2, canvas.height / 2);
-        ctx.textAlign = 'left';
-    }
-
-    function useBomb() {
-        if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition ||
-            gameState.cinematicActive || gameState.glitchActive ||
-            gameState.dragonMasterIntroCinematicActive || gameState.bossIntroCountdownActive ||
-            gameState.player.bombs <= 0) {
-            return;
-        }
-        console.log("Using bomb, bombs remaining:", gameState.player.bombs - 1);
-        gameState.player.bombs--;
-        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
-        let enemiesStunnedOrDamaged = false;
-        const bombRadius = 1;
-        for (let yOffset = -bombRadius; yOffset <= bombRadius; yOffset++) {
-            for (let xOffset = -bombRadius; xOffset <= bombRadius; xOffset++) {
-                const targetX = gameState.player.x + xOffset;
-                const targetY = gameState.player.y + yOffset;
-                if (targetX >= 0 && targetX < MAP_WIDTH_TILES && targetY >= 0 && targetY < MAP_HEIGHT_TILES) {
-                    const targetEnemyIndex = gameState.enemies.findIndex(enemy => enemy.x === targetX && enemy.y === targetY);
-                    if (targetEnemyIndex !== -1) {
-                        gameState.enemies[targetEnemyIndex].frozenTurns = 3;
-                        enemiesStunnedOrDamaged = true;
-                    }
-                    const isBorderWall = (targetX === 0 || targetX === MAP_WIDTH_TILES - 1 || targetY === 0 || targetY === MAP_HEIGHT_TILES - 1);
-                    if (gameState.map[targetY][targetX] === Wall && !isBorderWall) {
-                        gameState.map[targetY][targetX] = Floor;
-                        enemiesStunnedOrDamaged = true;
-                    }
-                }
-            }
-        }
-        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
-            let bossAffected = false;
-            for (let by = 0; by < gameState.boss.size; by++) {
-                for (let bx = 0; bx < gameState.boss.size; bx++) {
-                    const bossPartX = gameState.boss.x + bx;
-                    const bossPartY = gameState.boss.y + by;
-                    if (Math.abs(bossPartX - gameState.player.x) <= bombRadius && Math.abs(bossPartY - gameState.player.y) <= bombRadius) {
-                        gameState.boss.hp = Math.max(0, gameState.boss.hp - 50);
-                        gameState.boss.frozenTurns = 2;
-                        bossAffected = true;
-                        enemiesStunnedOrDamaged = true;
-                        console.log("Bomb hit boss, new HP:", gameState.boss.hp);
-                        break;
-                    }
-                }
-                if (bossAffected) break;
-            }
-            if (gameState.boss.hp <= 0 && !gameState.bossDefeated) {
-                console.log("Boss defeated by bomb");
-                gameState.bossDefeated = true;
-                const bossCenter = { x: gameState.boss.x + Math.floor(gameState.boss.size / 2), y: gameState.boss.y + Math.floor(gameState.boss.size / 2) };
-                gameState.key.x = bossCenter.x;
-                gameState.key.y = bossCenter.y;
-                playExplosionSound();
-                startExplosion(bossCenter.x, bossCenter.y);
-                gameState.boss = null; // Remove boss immediately after defeat
-            }
-        }
-        if (!enemiesStunnedOrDamaged) {
-            takeDamage(10);
-            statusText.textContent = 'Bomb missed! Took 10 damage!';
-            statusText.style.color = '#dc3545';
-        } else {
-            statusText.textContent = 'Bomb deployed! Effects applied!';
-            statusText.style.color = '#f3f4f6';
-        }
-        moveGameEntities();
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
-            e.preventDefault();
-        }
-        if (e.key === 'r' || e.key === 'R') {
-            console.log("Resetting game via keypress");
-            initGame();
-            return;
-        }
-        if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition || gameState.cinematicActive || gameState.glitchActive || gameState.dragonMasterIntroCinematicActive || gameState.bossIntroCountdownActive) return;
-        switch (e.key) {
-            case 'ArrowUp': case 'w': case 'W': handlePlayerMove(0, -1); break;
-            case 'ArrowDown': case 's': case 'S': handlePlayerMove(0, 1); break;
-            case 'ArrowLeft': case 'a': case 'A': handlePlayerMove(-1, 0); break;
-            case 'ArrowRight': case 'd': case 'D': handlePlayerMove(1, 0); break;
-            case 'x': case 'X': useBomb(); break;
-        }
-    });
-
-    resetButton.addEventListener('click', () => {
-        console.log("Resetting game via button");
-        initGame();
-    });
-    bombButton.addEventListener('click', useBomb);
-    document.getElementById('upButton').addEventListener('click', () => handlePlayerMove(0, -1));
-    document.getElementById('downButton').addEventListener('click', () => handlePlayerMove(0, 1));
-    document.getElementById('leftButton').addEventListener('click', () => handlePlayerMove(-1, 0));
-    document.getElementById('rightButton').addEventListener('click', () => handlePlayerMove(1, 0));
-
-    const warningModal = document.getElementById('warningModal');
-    function showModal() {
-        console.log("Showing warning modal");
-        warningModal.classList.add('show');
-    }
-    function closeModal() {
-        console.log("Closing modal, starting game");
-        warningModal.classList.remove('show');
-        confettiCanvas.width = canvas.width;
-        confettiCanvas.height = canvas.height;
-        Tone.start().then(() => {
-            console.log("Tone.js audio context started");
-            audioContextStarted = true;
-            Tone.Transport.start();
-            initGame();
-            if (gameState.currentLevel < 3) playBackgroundMusic();
-        }).catch(e => console.error("Error starting Tone.js:", e));
-    }
-
-    window.onload = showModal;
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    const resetButton = document.getElementById('resetButton');
+    const statusText = document.getElementById('status-text');
+    const hpText = document.getElementById('hp-text');
+    const bombText = document.getElementById('bomb-text');
+    const timerText = document.getElementById('timer-text');
+    const bombButton = document.getElementById('bombButton');
+    const glitchAudio = document.getElementById('glitchAudio');
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const explodeAudio = document.getElementById('explodeAudio');
+    const explosionImage = document.getElementById('explosionImage');
+
+    const TILE_SIZE = 40;
+    const MAP_WIDTH_TILES = Math.floor(1000 / TILE_SIZE);
+    const MAP_HEIGHT_TILES = Math.floor(750 / TILE_SIZE);
+
+    const Wall = '🪨';
+    const Floor = ' ';
+    const Player = '🚶';
+    const Enemy = '🐉';
+    const GIANT_DRAGON_BOSS = '🐲';
+    const Key = '🔑';
+    const Exit = '🚪';
+    const Potion = '❤️';
+    const FrozenEnemy = '❄️';
+    const PlayerWin = '🥳';
+
+    let gameState = {};
+    let animationFrameId;
+    let audioContextStarted = false;
+
+    let confetti = [];
+    const confettiCount = 300;
+    const confettiColors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+
+    class Confetti {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.size = Math.random() * 10 + 5;
+            this.color = color;
+            this.tilt = Math.random() * 360;
+            this.tiltAngle = Math.random() * 0.1 + 0.05;
+            this.velocity = { x: Math.random() * 4 - 2, y: Math.random() * -10 - 5 };
+            this.gravity = 0.3;
+        }
+        update() {
+            this.velocity.y += this.gravity;
+            this.x += this.velocity.x;
+            this.y += this.velocity.y;
+            this.tilt += this.tiltAngle;
+        }
+        draw() {
+            confettiCtx.beginPath();
+            confettiCtx.lineWidth = this.size;
+            confettiCtx.strokeStyle = this.color;
+            confettiCtx.moveTo(this.x, this.y);
+            confettiCtx.lineTo(this.x + this.size, this.y + Math.sin(this.tilt));
+            confettiCtx.stroke();
+        }
+    }
+
+    function startConfetti() {
+        console.log("Starting confetti");
+        confetti = [];
+        for (let i = 0; i < confettiCount; i++) {
+            const x = Math.random() * confettiCanvas.width;
+            const y = Math.random() * confettiCanvas.height / 2;
+            const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+            confetti.push(new Confetti(x, y, color));
+        }
+        playVictoryMusic();
+    }
+
+    function updateConfetti() {
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        confetti = confetti.filter(p => p.y < confettiCanvas.height);
+        confetti.forEach(p => { p.update(); p.draw(); });
+    }
+
+    class Explosion {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.scale = 0.5; // Start small
+            this.alpha = 1; // Fully opaque
+            this.startTime = performance.now();
+        }
+        update(currentTime) {
+            const elapsed = currentTime - this.startTime;
+            const duration = 1200; // Match GIF duration (~1.2s)
+            if (elapsed < duration) {
+                this.scale = 0.5 + (elapsed / duration); // Scale from 0.5x to 1.5x
+                this.alpha = 1 - (elapsed / duration); // Fade out
+            } else {
+                this.alpha = 0; // End explosion
+            }
+        }
+        draw(ctx) {
+            if (this.alpha <= 0) return;
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            const size = TILE_SIZE * 3 * this.scale; // Size relative to boss (3x3 tiles)
+            const offsetX = this.x - size / 2;
+            const offsetY = this.y - size / 2;
+            try {
+                ctx.drawImage(explosionImage, offsetX, offsetY, size, size);
+                console.log("Drawing explosion at:", this.x, this.y, "scale:", this.scale, "alpha:", this.alpha);
+            } catch (e) {
+                console.error("Error drawing explosion image:", e);
+            }
+            ctx.restore();
+        }
+    }
+
+    const bassSynth = new Tone.MonoSynth({
+        volume: -10,
+        oscillator: { type: "square" },
+        envelope: { attack: 0.1, decay: 0.2, sustain: 0.8, release: 0.5 },
+        filter: { Q: 2, type: "lowpass", rolloff: -24 },
+        filterEnvelope: { attack: 0.02, decay: 0.8, sustain: 0.5, release: 0.5, basePath: 200, octaves: 4 }
+    }).toDestination();
+    const melodySynth = new Tone.Synth({
+        volume: -15,
+        oscillator: { type: 'sawtooth' },
+        envelope: { attack: 0.05, decay: 0.3, sustain: 0.6, release: 0.8 }
+    }).toDestination();
+
+    const bossLoop = new Tone.Loop(time => {
+        bassSynth.triggerAttackRelease("A1", "8n", time);
+        bassSynth.triggerAttackRelease("A1", "8n", time + Tone.Time("4n"));
+        bassSynth.triggerAttackRelease("D2", "8n", time + Tone.Time("2n"));
+        bassSynth.triggerAttackRelease("D2", "8n", time + Tone.Time("2n") + Tone.Time("4n"));
+        melodySynth.triggerAttackRelease("C4", "16n", time + Tone.Time("8n"));
+        melodySynth.triggerAttackRelease("C4", "16n", time + Tone.Time("4n") + Tone.Time("8n"));
+        melodySynth.triggerAttackRelease("C#4", "16n", time + Tone.Time("2n") + Tone.Time("8n"));
+        melodySynth.triggerAttackRelease("C#4", "16n", time + Tone.Time("2n") + Tone.Time("4n") + Tone.Time("8n"));
+    }, "1n");
+
+    function playBossMusic() {
+        if (bossLoop.state !== "started") {
+            console.log("Starting boss music");
+            bossLoop.start();
+        }
+    }
+    function stopBossMusic() {
+        if (bossLoop.state === "started") {
+            console.log("Stopping boss music");
+            bossLoop.stop();
+        }
+    }
+
+    function playBackgroundMusic() {
+        if (gameState.currentLevel < 3 && backgroundMusic) {
+            console.log("Playing dungeon.mp3 for Level", gameState.currentLevel);
+            backgroundMusic.volume = 0.5;
+            backgroundMusic.play().catch(e => console.error("Error playing background music:", e));
+        } else if (gameState.currentLevel === 3) {
+            console.log("Switching to boss music for Level 3");
+            playBossMusic();
+        }
+    }
+
+    function stopBackgroundMusic() {
+        if (backgroundMusic) {
+            console.log("Stopping dungeon.mp3");
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0;
+        }
+        stopBossMusic();
+    }
+
+    const victorySynth = new Tone.PolySynth(Tone.Synth, {
+        volume: -8,
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.1, decay: 0.4, sustain: 0.7, release: 1.2 }
+    }).toDestination();
+
+    function playVictoryMusic() {
+        console.log("Playing victory music");
+        victorySynth.triggerAttackRelease(["C5", "E5", "G5"], "2n");
+        victorySynth.triggerAttackRelease(["A5", "C6", "E6"], "2n", Tone.Time("2n"));
+        victorySynth.triggerAttackRelease(["F5", "A5", "C6"], "1n", Tone.Time("1n"));
+    }
+
+    function playExplosionSound() {
+        console.log("Playing explode.mp3");
+        if (explodeAudio) {
+            explodeAudio.currentTime = 0;
+            explodeAudio.play().catch(e => console.error("Error playing explosion sound:", e));
+        } else {
+            console.error("explodeAudio element not found");
+        }
+    }
+
+    function initGame() {
+        try {
+            console.log("Initializing game");
+            if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
+            gameState = {
+                map: [],
+                player: { x: 0, y: 0, hp: 100, maxHp: 100, bombs: 5, attackDamage: 15 },
+                enemies: [],
+                key: { x: 0, y: 0 },
+                exit: { x: 0, y: 0 },
+                potions: [],
+                hasKey: false,
+                gameOver: false,
+                gameWon: false,
+                gameOverReason: null,
+                turn: 0,
+                startTime: null,
+                initialTime: 0,
+                elapsedTime: 0,
+                completionTime: null,
+                isTypingTime: false,
+                typedCompletionTime: '',
+                typedTimeLeft: '',
+                currentLevel: 1,
+                boss: null,
+                bossDefeated: false,
+                showingLevelTransition: false,
+                levelTransitionMessage: '',
+                cinematicActive: false,
+                bossCinematicText: '',
+                bossCinematicAlpha: 0,
+                explosionActive: false,
+                explosion: null,
+                warning60sTriggered: false,
+                warning30sTriggered: false,
+                warning10sTriggered: false,
+                countdownActive: false,
+                glitchActive: false,
+                glitchStartTime: 0,
+                glitchDuration: 1500,
+                glitchSoundInterval: null,
+                glitchingTimer: false,
+                bossIntroCountdownActive: false,
+                bossIntroCountdownValue: 3,
+                bossIntroCountdownStartTime: 0,
+                bossIntroCountdownMessage: '',
+                dragonMasterIntroCinematicActive: false,
+                dragonMasterIntroCinematicText: '',
+                dragonMasterIntroCinematicAlpha: 0,
+                dragonMasterIntroCinematicStartTime: 0,
+                confettiActive: false
+            };
+            stopBackgroundMusic();
+            setupLevel(gameState.currentLevel);
+            console.log("Game initialized, starting game loop");
+            gameLoop();
+        } catch (e) {
+            console.error("Error initializing game:", e);
+        }
+    }
+
+    function setupLevel(level) {
+        try {
+            console.log("Setting up level", level);
+            gameState.player.x = 0;
+            gameState.player.y = 0;
+            gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 20);
+            gameState.player.bombs = level === 3 ? 8 : gameState.player.bombs + 2;
+            gameState.player.attackDamage = 15;
+            gameState.hasKey = false;
+            gameState.enemies = [];
+            gameState.potions = [];
+            gameState.boss = null;
+            gameState.bossDefeated = false;
+            gameState.warning60sTriggered = false;
+            gameState.warning30sTriggered = false;
+            gameState.warning10sTriggered = false;
+            gameState.countdownActive = false;
+            gameState.glitchActive = false;
+            gameState.bossIntroCountdownActive = false;
+            gameState.dragonMasterIntroCinematicActive = false;
+            gameState.glitchingTimer = false;
+            gameState.explosionActive = false;
+            gameState.explosion = null;
+            gameState.confettiActive = false;
+
+            switch(level) {
+                case 1: gameState.initialTime = 90 * 1000; break;
+                case 2: gameState.initialTime = 120 * 1000; break;
+                case 3: gameState.initialTime = Infinity; gameState.glitchingTimer = true; break;
+                default: gameState.initialTime = 60 * 1000;
+            }
+
+            let isMapValid = false;
+            let attempts = 0;
+            while (!isMapValid && attempts < 100) {
+                if (level === 3) {
+                    gameState.map = generateBossMap();
+                } else {
+                    gameState.map = generateMap();
+                }
+                if (placeEntitiesForLevel(level)) {
+                    if (checkConnectivity()) {
+                        isMapValid = true;
+                    } else {
+                        console.log("Map not connected. Regenerating...");
+                    }
+                } else {
+                    console.error("Failed to place entities for level:", level);
+                }
+                attempts++;
+            }
+            if (!isMapValid) {
+                console.error("Failed to generate valid map after 100 attempts");
+                return;
+            }
+
+            if (level !== 3) {
+                gameState.startTime = performance.now();
+                playBackgroundMusic();
+            } else {
+                gameState.startTime = null;
+                stopBackgroundMusic();
+                playBossMusic();
+            }
+            updateUI();
+            console.log("Level", level, "setup complete");
+        } catch (e) {
+            console.error("Error setting up level:", e);
+        }
+    }
+
+    function checkConnectivity() {
+        const start = {x: gameState.player.x, y: gameState.player.y};
+        const key = {x: gameState.key.x, y: gameState.key.y};
+        const exit = {x: gameState.exit.x, y: gameState.exit.y};
+        return canReach(start, key) && canReach(start, exit);
+    }
+
+    function canReach(start, target) {
+        const queue = [start];
+        const visited = new Set();
+        const key = (x, y) => `${x},${y}`;
+        visited.add(key(start.x, start.y));
+
+        while (queue.length > 0) {
+            const {x, y} = queue.shift();
+            if (x === target.x && y === target.y) return true;
+            const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+            for (const [dx, dy] of directions) {
+                const newX = x + dx;
+                const newY = y + dy;
+                if (
+                    newX >= 0 && newX < MAP_WIDTH_TILES &&
+                    newY >= 0 && newY < MAP_HEIGHT_TILES &&
+                    gameState.map[newY][newX] === Floor &&
+                    !visited.has(key(newX, newY))
+                ) {
+                    visited.add(key(newX, newY));
+                    queue.push({x: newX, y: newY});
+                }
+            }
+        }
+        return false;
+    }
+
+    function generateMap() {
+        let map = Array.from({ length: MAP_HEIGHT_TILES }, () =>
+            Array.from({ length: MAP_WIDTH_TILES }, () => Math.random() < 0.45 ? Wall : Floor)
+        );
+        for (let i = 0; i < 4; i++) {
+            let newMap = JSON.parse(JSON.stringify(map));
+            for (let y = 1; y < MAP_HEIGHT_TILES - 1; y++) {
+                for (let x = 1; x < MAP_WIDTH_TILES - 1; x++) {
+                    let wallCount = 0;
+                    for (let ny = y - 1; ny <= y + 1; ny++) {
+                        for (let nx = x - 1; nx <= x + 1; nx++) {
+                            if (ny >= 0 && ny < MAP_HEIGHT_TILES && nx >= 0 && nx < MAP_WIDTH_TILES && map[ny][nx] === Wall) {
+                                wallCount++;
+                            }
+                        }
+                    }
+                    newMap[y][x] = wallCount > 4 ? Wall : Floor;
+                }
+            }
+            map = newMap;
+        }
+        for(let y = 0; y < MAP_HEIGHT_TILES; y++) { map[y][0] = map[y][MAP_WIDTH_TILES-1] = Wall; }
+        for(let x = 0; x < MAP_WIDTH_TILES; x++) { map[0][x] = map[MAP_HEIGHT_TILES-1][x] = Wall; }
+        return map;
+    }
+
+    function generateBossMap() {
+        let map = Array.from({ length: MAP_HEIGHT_TILES }, () => Array.from({ length: MAP_WIDTH_TILES }, () => Floor));
+        for(let y = 0; y < MAP_HEIGHT_TILES; y++) { map[y][0] = map[y][MAP_WIDTH_TILES-1] = Wall; }
+        for(let x = 0; x < MAP_WIDTH_TILES; x++) { map[0][x] = map[MAP_HEIGHT_TILES-1][x] = Wall; }
+        return map;
+    }
+
+    function placeEntitiesForLevel(level) {
+        const floorTiles = [];
+        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                if (gameState.map[y][x] === Floor) { floorTiles.push({ x, y }); }
+            }
+        }
+        const getRandomTile = () => {
+            if (floorTiles.length === 0) return null;
+            const index = Math.floor(Math.random() * floorTiles.length);
+            return floorTiles.splice(index, 1)[0];
+        };
+
+        const playerPos = getRandomTile();
+        if (!playerPos) return false;
+        Object.assign(gameState.player, playerPos);
+
+        if (level < 3) {
+            const keyPos = getRandomTile();
+            const exitPos = getRandomTile();
+            if (!keyPos || !exitPos) return false;
+            Object.assign(gameState.key, keyPos);
+            Object.assign(gameState.exit, exitPos);
+
+            const NUM_ENEMIES = level === 1 ? 5 : 8;
+            for (let i = 0; i < NUM_ENEMIES; i++) {
+                if (floorTiles.length > 0) { const enemyPos = getRandomTile(); gameState.enemies.push({ x: enemyPos.x, y: enemyPos.y, frozenTurns: 0 }); }
+            }
+            const NUM_POTIONS = 3;
+            for (let i = 0; i < NUM_POTIONS; i++) {
+                if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
+            }
+        } else {
+            const bossSize = 3;
+            let bossCenter = getRandomTile();
+            while (!bossCenter || (Math.abs(bossCenter.x - gameState.player.x) < 5 && Math.abs(bossCenter.y - gameState.player.y) < 5)) {
+                bossCenter = getRandomTile();
+            }
+            if (!bossCenter) return false;
+
+            let bossX = bossCenter.x - Math.floor(bossSize / 2);
+            let bossY = bossCenter.y - Math.floor(bossSize / 2);
+            for (let by = 0; by < bossSize; by++) {
+                for (let bx = 0; bx < bossSize; bx++) {
+                    const index = floorTiles.findIndex(t => t.x === bossX + bx && t.y === bossY + by);
+                    if (index !== -1) floorTiles.splice(index, 1);
+                }
+            }
+            gameState.boss = { x: bossX, y: bossY, hp: 300, maxHp: 300, damage: 30, frozenTurns: 0, size: bossSize };
+            const exitPos = getRandomTile();
+            if (!exitPos) return false;
+            Object.assign(gameState.exit, exitPos);
+            gameState.hasKey = false;
+            gameState.key.x = bossCenter.x;
+            gameState.key.y = bossCenter.y;
+        }
+        return true;
+    }
+
+    function gameLoop(currentTime) {
+        const isGameActive = !gameState.showingLevelTransition && !gameState.cinematicActive && !gameState.glitchActive && !gameState.dragonMasterIntroCinematicActive && !gameState.bossIntroCountdownActive && !gameState.gameWon && !gameState.gameOver;
+
+        if (isGameActive) {
+            if (!gameState.glitchingTimer) {
+                if (!gameState.startTime) { gameState.startTime = currentTime; }
+                gameState.elapsedTime = currentTime - gameState.startTime;
+                gameState.remainingTime = gameState.initialTime - gameState.elapsedTime;
+                if (gameState.remainingTime <= 0) {
+                    gameState.remainingTime = 0;
+                    if (!gameState.gameOver && !gameState.gameWon) {
+                        gameState.gameOver = true;
+                        gameState.gameOverReason = 'time';
+                        stopBackgroundMusic();
+                    }
+                }
+                const remainingSeconds = Math.floor(gameState.remainingTime / 1000);
+                if (remainingSeconds === 60 && !gameState.warning60sTriggered) { statusText.textContent = '1 minute remaining!'; statusText.style.color = 'orange'; gameState.warning60sTriggered = true; }
+                else if (remainingSeconds === 30 && !gameState.warning30sTriggered) { statusText.textContent = '30 seconds remaining!'; statusText.style.color = 'red'; gameState.warning30sTriggered = true; }
+                else if (remainingSeconds === 10 && !gameState.warning10sTriggered) { statusText.textContent = '10 seconds remaining!'; statusText.style.color = 'darkred'; gameState.warning10sTriggered = true; }
+                else if (remainingSeconds <= 5 && remainingSeconds > 0) { gameState.countdownActive = true; }
+                else if (remainingSeconds === 0 && gameState.countdownActive) { gameState.countdownActive = false; }
+            }
+        }
+        draw(currentTime);
+        updateUI();
+        if (gameState.confettiActive) updateConfetti();
+        if (gameState.explosionActive) gameState.explosion.update(currentTime);
+
+        animationFrameId = requestAnimationFrame(gameLoop);
+    }
+
+    function moveGameEntities() {
+        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+            moveBoss(gameState.boss);
+        } else {
+            moveEnemies();
+        }
+    }
+
+    function moveEnemies() {
+        gameState.enemies.forEach(enemy => {
+            if (enemy.frozenTurns > 0) { enemy.frozenTurns--; return; }
+            const huntPlayer = Math.random() > 0.5;
+            let dx = huntPlayer ? Math.sign(gameState.player.x - enemy.x) : Math.floor(Math.random() * 3) - 1;
+            let dy = huntPlayer ? Math.sign(gameState.player.y - enemy.y) : Math.floor(Math.random() * 3) - 1;
+            const nextX = enemy.x + dx;
+            const nextY = enemy.y + dy;
+            if (isWalkable(nextX, nextY)) {
+                enemy.x = nextX;
+                enemy.y = nextY;
+            }
+            if (enemy.x === gameState.player.x && enemy.y === gameState.player.y) {
+                takeDamage(15);
+                enemy.frozenTurns = 2;
+            }
+        });
+    }
+
+    function moveBoss(boss) {
+        if (boss.frozenTurns > 0) { boss.frozenTurns--; return; }
+        let dx = Math.sign(gameState.player.x - (boss.x + Math.floor(boss.size / 2)));
+        let dy = Math.sign(gameState.player.y - (boss.y + Math.floor(boss.size / 2)));
+        const originalBossX = boss.x;
+        const originalBossY = boss.y;
+        const potentialBossX = boss.x + dx;
+        const potentialBossY = boss.y + dy;
+        let canMove = false;
+        if (isBossPositionWalkable(potentialBossX, potentialBossY, boss.size)) {
+            canMove = true;
+            boss.x = potentialBossX;
+            boss.y = potentialBossY;
+        } else {
+            if (isBossPositionWalkable(potentialBossX, originalBossY, boss.size)) {
+                canMove = true;
+                boss.x = potentialBossX;
+                boss.y = originalBossY;
+            } else if (isBossPositionWalkable(originalBossX, potentialBossY, boss.size)) {
+                canMove = true;
+                boss.x = originalBossX;
+                boss.y = potentialBossY;
+            }
+        }
+        if (isPlayerCollidingWithBoss(gameState.player, boss)) {
+            takeDamage(boss.damage);
+            boss.frozenTurns = 1;
+        }
+    }
+
+    function isBossPositionWalkable(bossX, bossY, bossSize) {
+        for (let by = 0; by < bossSize; by++) {
+            for (let bx = 0; bx < bossSize; bx++) {
+                const checkX = bossX + bx;
+                const checkY = bossY + by;
+                if (checkX < 0 || checkX >= MAP_WIDTH_TILES || checkY < 0 || checkY >= MAP_HEIGHT_TILES || gameState.map[checkY][checkX] === Wall) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function isPlayerCollidingWithBoss(player, boss) {
+        if (!boss) return false;
+        return player.x >= boss.x && player.x < (boss.x + boss.size) &&
+               player.y >= boss.y && player.y < (boss.y + boss.size);
+    }
+
+    function draw(currentTime) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawMap();
+        drawPlayer();
+        if (gameState.currentLevel === 3) {
+            drawBoss(gameState.boss);
+            if (gameState.explosionActive && gameState.explosion) {
+                gameState.explosion.draw(ctx);
+                if (gameState.explosion.alpha <= 0) {
+                    gameState.explosionActive = false;
+                    gameState.explosion = null;
+                }
+            }
+        } else {
+            drawEnemies();
+        }
+        drawItems();
+        if (gameState.showingLevelTransition) {
+            drawLevelTransition();
+        } else if (gameState.cinematicActive) {
+            drawBossCinematic(currentTime);
+        } else if (gameState.bossIntroCountdownActive) {
+            drawBossIntroCountdown(currentTime);
+        } else if (gameState.dragonMasterIntroCinematicActive) {
+            drawDragonMasterIntroCinematic(currentTime);
+        } else if (gameState.gameOver || gameState.gameWon) {
+            drawGameOverScreen();
+        } else {
+            drawTimerCountdown(currentTime);
+        }
+        if (gameState.glitchActive) {
+            applyGlitchEffect(currentTime);
+        }
+    }
+
+    function drawMap() {
+        for (let y = 0; y < MAP_HEIGHT_TILES; y++) {
+            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                const tile = gameState.map[y][x];
+                if (tile === Wall) {
+                    ctx.fillStyle = '#4a4a4a';
+                    ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    ctx.fillStyle = '#3a3a3a';
+                    ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                }
+            }
+        }
+    }
+
+    function drawPlayer() {
+        drawTile(gameState.player.x, gameState.player.y, Player);
+    }
+
+    function drawEnemies() {
+        gameState.enemies.forEach(enemy => {
+            drawTile(enemy.x, enemy.y, enemy.frozenTurns > 0 ? FrozenEnemy : Enemy);
+        });
+    }
+
+    function drawBoss(boss) {
+        if (!boss) return;
+        const bossSymbol = gameState.bossDefeated ? '💀' : (boss.frozenTurns > 0 ? FrozenEnemy : GIANT_DRAGON_BOSS);
+        for (let by = 0; by < boss.size; by++) {
+            for (let bx = 0; bx < boss.size; bx++) {
+                const tileSymbol = bossSymbol;
+                drawTile(boss.x + bx, boss.y + by, tileSymbol);
+            }
+        }
+        if (!gameState.bossDefeated) {
+            drawHealthBar(boss.x, boss.y - 0.5, boss.size, boss.hp, boss.maxHp);
+        }
+    }
+
+    function drawItems() {
+        if (!gameState.hasKey) {
+            drawTile(gameState.key.x, gameState.key.y, Key);
+        }
+        if (gameState.hasKey || gameState.bossDefeated) {
+            drawTile(gameState.exit.x, gameState.exit.y, Exit);
+        }
+        gameState.potions.forEach(potion => drawTile(potion.x, potion.y, Potion));
+    }
+
+    function drawTile(x, y, char) {
+        ctx.font = `${TILE_SIZE * 0.8}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'white';
+        ctx.fillText(char, x * TILE_SIZE + TILE_SIZE / 2, y * TILE_SIZE + TILE_SIZE / 2);
+    }
+
+    function drawHealthBar(x, y, width, current, max) {
+        const barWidth = width * TILE_SIZE;
+        const barHeight = 10;
+        const barX = x * TILE_SIZE;
+        const barY = y * TILE_SIZE;
+        const healthRatio = current / max;
+
+        ctx.fillStyle = 'red';
+        ctx.fillRect(barX, barY, barWidth, barHeight);
+        ctx.fillStyle = 'green';
+        ctx.fillRect(barX, barY, barWidth * healthRatio, barHeight);
+        ctx.strokeStyle = 'black';
+        ctx.strokeRect(barX, barY, barWidth, barHeight);
+    }
+
+    function updateUI() {
+        if (gameState.gameOver) {
+            if (gameState.gameOverReason === 'hp') { statusText.textContent = "You died! Game Over."; }
+            else if (gameState.gameOverReason === 'time') { statusText.textContent = "You ran out of time! Game Over."; }
+            hpText.textContent = `HP: ${gameState.player.hp}`;
+            timerText.textContent = `Time: 00:00`;
+            bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
+            return;
+        }
+        if (gameState.gameWon) {
+            statusText.textContent = "You Win! Press 'R' to play again!";
+            hpText.textContent = `HP: ${gameState.player.hp}`;
+            bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
+            return;
+        }
+        if (gameState.showingLevelTransition) {
+            statusText.textContent = gameState.levelTransitionMessage;
+        } else if (gameState.hasKey && gameState.currentLevel < 3) {
+            statusText.textContent = `The exit is open! Go to the door 🚪!`;
+            statusText.style.color = '#ffcc00';
+        } else if (gameState.bossDefeated) {
+            statusText.textContent = 'The exit is open! Go to the door 🚪!';
+            statusText.style.color = '#ffcc00';
+        } else if (gameState.currentLevel === 3) {
+            statusText.textContent = 'Defeat the GIANT DRAGON BOSS! 🐲';
+            statusText.style.color = 'crimson';
+        } else {
+            statusText.textContent = `Find the key 🔑 and escape through the door🚪!`;
+            statusText.style.color = '#f3f4f6';
+        }
+        hpText.textContent = `HP: ${gameState.player.hp}`;
+        bombText.textContent = `Bombs: ${gameState.player.bombs} 💣`;
+        if (gameState.glitchingTimer) {
+            timerText.textContent = 'TIME: UNKNOWN';
+            timerText.style.color = '#00ff00';
+        } else {
+            const remainingSeconds = Math.max(0, Math.floor(gameState.remainingTime / 1000));
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            timerText.textContent = `Time: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timerText.style.color = remainingSeconds <= 10 ? '#ff0000' : '#FFFFFF';
+        }
+    }
+
+    function drawTimerCountdown(currentTime) {
+        if (!gameState.countdownActive) return;
+        const remainingSeconds = Math.max(0, Math.floor(gameState.remainingTime / 1000));
+        if (remainingSeconds > 0 && remainingSeconds <= 5) {
+            const countdownText = remainingSeconds.toString();
+            ctx.font = '200px monospace';
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(countdownText, canvas.width / 2, canvas.height / 2);
+        }
+    }
+
+    function drawGameOverScreen() {
+        const message = gameState.gameOver ? "GAME OVER" : "YOU WIN!";
+        const color = gameState.gameOver ? 'rgba(255, 0, 0, 0.7)' : 'rgba(0, 255, 0, 0.7)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = color;
+        ctx.font = '80px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(message, canvas.width / 2, canvas.height / 2 - 50);
+        if (gameState.gameWon) {
+            if (!gameState.isTypingTime) {
+                const finalTime = (gameState.completionTime / 1000).toFixed(2);
+                gameState.typedCompletionTime = '';
+                gameState.isTypingTime = true;
+                let i = 0;
+                const typeInterval = setInterval(() => {
+                    if (i < finalTime.length) {
+                        gameState.typedCompletionTime += finalTime.charAt(i);
+                        i++;
+                    } else {
+                        clearInterval(typeInterval);
+                    }
+                }, 50);
+            }
+            ctx.font = '30px monospace';
+            ctx.fillStyle = 'white';
+            ctx.fillText(`Completion time: ${gameState.typedCompletionTime}s`, canvas.width / 2, canvas.height / 2 + 50);
+        } else {
+            ctx.font = '30px monospace';
+            ctx.fillStyle = 'white';
+            const reason = gameState.gameOverReason === 'hp' ? 'You ran out of HP!' : 'You ran out of time!';
+            ctx.fillText(reason, canvas.width / 2, canvas.height / 2 + 50);
+        }
+    }
+
+    function drawLevelTransition() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.font = '60px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(gameState.levelTransitionMessage, canvas.width / 2, canvas.height / 2);
+    }
+
+    function drawBossCinematic(currentTime) {
+        const duration = 4000;
+        const fadeInDuration = 1000;
+        const elapsed = currentTime - gameState.bossCinematicStartTime;
+        if (elapsed < fadeInDuration) {
+            gameState.bossCinematicAlpha = elapsed / fadeInDuration;
+        } else if (elapsed > duration - fadeInDuration) {
+            gameState.bossCinematicAlpha = (duration - elapsed) / fadeInDuration;
+        } else {
+            gameState.bossCinematicAlpha = 1;
+        }
+        if (elapsed > duration) {
+            gameState.cinematicActive = false;
+            gameState.bossIntroCountdownActive = true;
+            gameState.bossIntroCountdownStartTime = performance.now();
+            return;
+        }
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = `rgba(255, 255, 255, ${gameState.bossCinematicAlpha})`;
+        ctx.font = '40px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(gameState.bossCinematicText, canvas.width / 2, canvas.height / 2);
+    }
+
+    function drawBossIntroCountdown(currentTime) {
+        const elapsed = currentTime - gameState.bossIntroCountdownStartTime;
+        const countdown = 3 - Math.floor(elapsed / 1000);
+        const messages = ["GIANT DRAGON BOSS!", "Get ready!", "3", "2", "1", "GO!"];
+        let message;
+        if (countdown > 0) {
+            message = countdown.toString();
+            gameState.bossIntroCountdownMessage = messages[countdown + 2];
+        } else {
+            message = "GO!";
+            gameState.bossIntroCountdownMessage = messages[5];
+        }
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'red';
+        ctx.font = '100px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(message, canvas.width / 2, canvas.height / 2 - 50);
+        ctx.fillStyle = 'white';
+        ctx.font = '50px monospace';
+        ctx.fillText(messages[0], canvas.width / 2, canvas.height / 2 + 50);
+
+        if (elapsed > 4000) {
+            gameState.bossIntroCountdownActive = false;
+            gameState.glitchActive = true;
+            gameState.glitchStartTime = performance.now();
+            playGlitchSound();
+            gameState.startTime = performance.now();
+        }
+    }
+
+    function drawDragonMasterIntroCinematic(currentTime) {
+        const duration = 6000;
+        const fadeInDuration = 1000;
+        const elapsed = currentTime - gameState.dragonMasterIntroCinematicStartTime;
+        if (elapsed < fadeInDuration) {
+            gameState.dragonMasterIntroCinematicAlpha = elapsed / fadeInDuration;
+        } else if (elapsed > duration - fadeInDuration) {
+            gameState.dragonMasterIntroCinematicAlpha = (duration - elapsed) / fadeInDuration;
+        } else {
+            gameState.dragonMasterIntroCinematicAlpha = 1;
+        }
+        if (elapsed > duration) {
+            gameState.dragonMasterIntroCinematicActive = false;
+            gameState.gameWon = true;
+            gameState.completionTime = gameState.elapsedTime;
+            stopBackgroundMusic();
+            startConfetti();
+            return;
+        }
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = `rgba(255, 255, 255, ${gameState.dragonMasterIntroCinematicAlpha})`;
+        ctx.font = '40px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(gameState.dragonMasterIntroCinematicText, canvas.width / 2, canvas.height / 2);
+    }
+
+    function applyGlitchEffect(currentTime) {
+        const elapsed = currentTime - gameState.glitchStartTime;
+        if (elapsed > gameState.glitchDuration) {
+            gameState.glitchActive = false;
+            if (gameState.glitchSoundInterval) clearInterval(gameState.glitchSoundInterval);
+            gameState.glitchSoundInterval = null;
+            return;
+        }
+        ctx.filter = `saturate(3) hue-rotate(${Math.random() * 360}deg) contrast(150%)`;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const numGlitchLines = 10;
+        for (let i = 0; i < numGlitchLines; i++) {
+            const y = Math.random() * canvas.height;
+            const height = Math.random() * 20;
+            const offset = Math.random() * 30 - 15;
+            ctx.drawImage(canvas, 0, y, canvas.width, height, offset, y, canvas.width, height);
+        }
+        ctx.filter = 'none';
+        if (Math.random() < 0.1) {
+            playGlitchSound();
+        }
+    }
+
+    function playGlitchSound() {
+        if (glitchAudio) {
+            glitchAudio.currentTime = 0;
+            glitchAudio.play().catch(e => console.error("Error playing glitch sound:", e));
+        }
+    }
+
+    function isWalkable(x, y) {
+        if (x < 0 || x >= MAP_WIDTH_TILES || y < 0 || y >= MAP_HEIGHT_TILES) { return false; }
+        if (gameState.map[y][x] === Wall) { return false; }
+        if (gameState.currentLevel === 3 && gameState.boss && isPlayerCollidingWithBoss({x, y}, gameState.boss)) { return false; }
+        return true;
+    }
+
+    function takeDamage(amount) {
+        if (gameState.gameWon || gameState.gameOver) return;
+        gameState.player.hp -= amount;
+        if (gameState.player.hp <= 0) {
+            gameState.player.hp = 0;
+            gameOver('hp');
+        }
+        updateUI();
+    }
+
+    function handleBomb(dx, dy) {
+        if (gameState.player.bombs <= 0) {
+            statusText.textContent = "No bombs left!";
+            statusText.style.color = '#ffcc00';
+            setTimeout(() => { statusText.textContent = 'Find the key 🔑 and escape through the door🚪!'; statusText.style.color = '#f3f4f6'; }, 1500);
+            return;
+        }
+        gameState.player.bombs--;
+        playExplosionSound();
+        const explosionX = gameState.player.x + dx;
+        const explosionY = gameState.player.y + dy;
+        const isPlayerNearBoss = (gameState.currentLevel === 3 && gameState.boss && Math.abs(gameState.player.x - (gameState.boss.x + 1)) <= 1 && Math.abs(gameState.player.y - (gameState.boss.y + 1)) <= 1);
+        if (gameState.currentLevel === 3 && isPlayerNearBoss) {
+            const damage = gameState.player.attackDamage * 5;
+            gameState.boss.hp -= damage;
+            console.log("Boss takes bomb damage:", damage, "remaining HP:", gameState.boss.hp);
+            if (gameState.boss.hp <= 0) {
+                gameState.bossDefeated = true;
+                gameState.key.x = gameState.boss.x + 1;
+                gameState.key.y = gameState.boss.y + 1;
+                gameState.explosionActive = true;
+                gameState.explosion = new Explosion((gameState.boss.x + 1) * TILE_SIZE, (gameState.boss.y + 1) * TILE_SIZE);
+                stopBossMusic();
+            }
+        }
+        updateUI();
+    }
+
+    function handlePlayerMove(dx, dy) {
+        if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition || gameState.cinematicActive) return;
+        const newX = gameState.player.x + dx;
+        const newY = gameState.player.y + dy;
+
+        if (isWalkable(newX, newY)) {
+            gameState.player.x = newX;
+            gameState.player.y = newY;
+            handleInteractions();
+            moveGameEntities();
+            gameState.turn++;
+            updateUI();
+        }
+    }
+
+    function handleInteractions() {
+        if (gameState.player.x === gameState.key.x && gameState.player.y === gameState.key.y && !gameState.hasKey) {
+            gameState.hasKey = true;
+            statusText.textContent = "You found the key! Now find the door!";
+            statusText.style.color = '#ffcc00';
+        }
+        if (gameState.player.x === gameState.exit.x && gameState.player.y === gameState.exit.y && (gameState.hasKey || gameState.bossDefeated)) {
+            if (gameState.currentLevel < 3) {
+                levelUp();
+            } else {
+                winGame();
+            }
+        }
+        gameState.potions = gameState.potions.filter(p => {
+            if (gameState.player.x === p.x && gameState.player.y === p.y) {
+                gameState.player.hp = Math.min(gameState.player.maxHp, gameState.player.hp + 25);
+                statusText.textContent = "You found a potion! +25 HP";
+                statusText.style.color = '#28a745';
+                setTimeout(() => { statusText.textContent = ''; }, 1500);
+                return false;
+            }
+            return true;
+        });
+        if (gameState.currentLevel === 3 && gameState.boss && !gameState.bossDefeated) {
+            const dx = Math.sign(gameState.player.x - (gameState.boss.x + 1));
+            const dy = Math.sign(gameState.player.y - (gameState.boss.y + 1));
+            if (Math.abs(gameState.player.x - (gameState.boss.x + 1)) <= 1 && Math.abs(gameState.player.y - (gameState.boss.y + 1)) <= 1) {
+                takeDamage(gameState.boss.damage);
+            }
+        }
+    }
+
+    function gameOver(reason) {
+        gameState.gameOver = true;
+        gameState.gameOverReason = reason;
+        stopBackgroundMusic();
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    }
+
+    function winGame() {
+        stopBackgroundMusic();
+        gameState.dragonMasterIntroCinematicActive = true;
+        gameState.dragonMasterIntroCinematicStartTime = performance.now();
+        gameState.dragonMasterIntroCinematicText = "YOU HAVE DEFEATED THE DRAGON MASTER!!";
+    }
+
+    function levelUp() {
+        gameState.currentLevel++;
+        gameState.showingLevelTransition = true;
+        gameState.levelTransitionMessage = `Level ${gameState.currentLevel}`;
+        stopBackgroundMusic();
+        setTimeout(() => {
+            gameState.showingLevelTransition = false;
+            if (gameState.currentLevel === 3) {
+                startBossCinematic();
+            } else {
+                setupLevel(gameState.currentLevel);
+            }
+        }, 2000);
+    }
+
+    function startBossCinematic() {
+        gameState.cinematicActive = true;
+        gameState.bossCinematicText = "THE DRAGON MASTER AWAITS YOU!";
+        gameState.bossCinematicStartTime = performance.now();
+        setupLevel(gameState.currentLevel);
+        stopBackgroundMusic();
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (!audioContextStarted) { Tone.start(); audioContextStarted = true; playBackgroundMusic(); }
+        if (gameState.gameOver || gameState.gameWon || gameState.showingLevelTransition || gameState.cinematicActive) {
+            if (e.key === 'r' || e.key === 'R' || e.key === ' ') {
+                initGame();
+            }
+            return;
+        }
+        switch (e.key) {
+            case 'ArrowUp': case 'w': handlePlayerMove(0, -1); break;
+            case 'ArrowDown': case 's': handlePlayerMove(0, 1); break;
+            case 'ArrowLeft': case 'a': handlePlayerMove(-1, 0); break;
+            case 'ArrowRight': case 'd': handlePlayerMove(1, 0); break;
+            case ' ': case 'b': handleBomb(0, 0); break;
+            case 'r': case 'R': initGame(); break;
+        }
+    });
+    
+    resetButton.addEventListener('click', () => { initGame(); });
+    
+    document.getElementById('upButton').addEventListener('click', () => handlePlayerMove(0, -1));
+    document.getElementById('downButton').addEventListener('click', () => handlePlayerMove(0, 1));
+    document.getElementById('leftButton').addEventListener('click', () => handlePlayerMove(-1, 0));
+    document.getElementById('rightButton').addEventListener('click', () => handlePlayerMove(1, 0));
+    bombButton.addEventListener('click', () => handleBomb(0, 0));
+
+    window.onload = () => {
+        openModal();
+        initGame();
+    };
+
+    function openModal() {
+        const modal = document.getElementById('warningModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+        }
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('warningModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => { modal.style.display = 'none'; }, 500);
+        }
+    }
 </script>
 </body>
 </html>
