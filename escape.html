@@ -254,7 +254,7 @@
 <p class="mt-2 text-sm">Use arrow keys, WASD, or the on-screen buttons</p>
 <p class="text-sm">Press 'R' or click "New Game" to reset</p>
 
-<!-- The audio element for the glitch sound effect. You need to replace the `src` with a valid URL to your glitch.mp3 file. -->
+<!-- The audio element for the glitch sound effect -->
 <audio id="glitchAudio" src="glitch.mp3" preload="auto"></audio>
 
 <div id="game-container">
@@ -316,7 +316,7 @@
     const Wall = '🪨';
     const Floor = ' ';
     const Player = '🚶';
-    const Enemy = '�';
+    const Enemy = '🐉';
     const GIANT_DRAGON_BOSS = '🐲';
     const Key = '🔑';
     const Exit = '🚪';
@@ -860,7 +860,7 @@
     }
 
     /**
-     * Moves all regular enemies based on simple AI.
+     * Moves all regular enemies.
      */
     function moveEnemies() {
         gameState.enemies.forEach(enemy => {
@@ -888,7 +888,7 @@
     }
 
     /**
-     * Moves the boss based on simple AI.
+     * Moves the boss.
      */
     function moveBoss(boss) {
         if (boss.frozenTurns > 0) { boss.frozenTurns--; return; }
