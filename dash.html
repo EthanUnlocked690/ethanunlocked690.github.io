@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Dash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            background-color: #1a202c; /* Dark background */
+            color: #ffffff;
+        }
+
+        nav {
+            width: 100%;
+            background-color: #2d3748; /* Darker navy */
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        nav a {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #a0aec0;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        nav a:hover {
+            background-color: #4a5568;
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 2rem;
+            background-color: #2d3748;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+        }
+
+        .game-info {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .game-over h1 {
+            font-size: 3rem;
+            color: #fc8181;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px #000000;
+        }
+
+        .game-over button {
+            background-color: #48bb78; /* Green button */
+            color: #fff;
+            padding: 0.75rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .game-over button:hover {
+            background-color: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #gameCanvas {
+            background-color: #000;
+            border-radius: 0.75rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        #progressBarContainer {
+            width: 100%;
+            height: 10px;
+            background-color: #4a5568;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        #progressBar {
+            height: 100%;
+            width: 0;
+            background-color: #48bb78;
+            transition: width 0.1s ease;
+        }
+
+        .skin-selection {
+            text-align: center;
+            padding: 2rem;
+            background-color: #2d3748;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .skin-selection h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .skin-options {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .skin-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .skin-button:hover {
+            transform: scale(1.1);
+            border-color: #48bb78;
+        }
+
+        .skin-button.selected {
+            border-color: #48bb78;
+            box-shadow: 0 0 10px #48bb78;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="turtle.html" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Back to game selection</a>
+    </nav>
+
+    <div class="game-container hidden" id="gameUI">
+        <div class="game-info">
+            Score: <span id="scoreDisplay">0</span>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="progressBarContainer">
+            <div id="progressBar"></div>
+        </div>
+    </div>
+
+    <div class="skin-selection" id="skinSelectionUI">
+        <h2>Choose Your Skin</h2>
+        <div class="skin-options">
+            <div class="skin-button" style="background-color: #e53e3e;" data-color="#e53e3e"></div>
+            <div class="skin-button" style="background-color: #3182ce;" data-color="#3182ce"></div>
+            <div class="skin-button" style="background-color: #f6ad55;" data-color="#f6ad55"></div>
+            <div class="skin-button" style="background-color: #48bb78;" data-color="#48bb78"></div>
+        </div>
+    </div>
+
+    <script>
+        // Get the canvas and its 2D context
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gameUI = document.getElementById('gameUI');
+        const skinSelectionUI = document.getElementById('skinSelectionUI');
+        const skinOptions = document.querySelector('.skin-options');
+        const progressBar = document.getElementById('progressBar');
+
+        // Set canvas dimensions
+        canvas.width = 800;
+        canvas.height = 400;
+
+        // --- Game Variables ---
+        let gameFrame = 0;
+        let score = 0;
+        let gameOver = false;
+        let obstacles = [];
+        let obstacleInterval = 120; // How often obstacles appear
+        let obstacleSpeed = 5;
+        const gameLength = 5000; // Total game frames to reach max progress
+
+        // Gravity and jump physics
+        const GRAVITY = 0.5;
+        const JUMP_POWER = -12;
+        let selectedSkinColor = '#e53e3e';
+
+        // --- Player Object ---
+        class Player {
+            constructor(color) {
+                this.width = 50;
+                this.height = 50;
+                this.x = 50;
+                this.y = canvas.height - this.height; // Start on the ground
+                this.color = color;
+                this.vy = 0; // Vertical velocity
+                this.isJumping = false;
+                this.rotation = 0;
+                this.rotationSpeed = Math.PI / 10; // 90 degrees in 5 frames
+                this.jumpsRemaining = 2; // New property for double jump
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.rotate(this.rotation);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                ctx.restore();
+            }
+
+            update() {
+                // Apply gravity
+                this.vy += GRAVITY;
+                this.y += this.vy;
+
+                // Prevent player from falling off the bottom of the screen
+                if (this.y + this.height > canvas.height) {
+                    this.y = canvas.height - this.height;
+                    this.vy = 0; // Reset velocity when on the ground
+                    this.isJumping = false;
+                    this.rotation = 0; // Reset rotation on landing
+                    this.jumpsRemaining = 2; // Reset jumps on landing
+                }
+
+                // Update rotation during jump
+                if (this.isJumping) {
+                    this.rotation = (this.rotation + this.rotationSpeed) % (2 * Math.PI);
+                }
+            }
+
+            jump() {
+                // Only allow jumping if the player has jumps remaining
+                if (this.jumpsRemaining > 0) {
+                    this.vy = JUMP_POWER;
+                    this.isJumping = true;
+                    this.jumpsRemaining--; // Decrement jumps
+                }
+            }
+        }
+
+        let player;
+
+        // --- Obstacle Classes ---
+        
+        // Base class for a single spike obstacle
+        class Obstacle {
+            constructor() {
+                this.width = 40;
+                this.height = 40;
+                this.x = canvas.width; // Start off-screen to the right
+                this.y = canvas.height - this.height; // Start on the ground
+                this.color = '#3182ce'; // Blue
+                this.type = 'spike';
+            }
+
+            draw() {
+                // Draw a triangle (spike)
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y + this.height);
+                ctx.lineTo(this.x + this.width / 2, this.y);
+                ctx.lineTo(this.x + this.width, this.y + this.height);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            update() {
+                // Move obstacle to the left
+                this.x -= obstacleSpeed;
+            }
+        }
+
+        // New class for a flying square obstacle
+        class FlyingObstacle {
+            constructor() {
+                this.width = 50;
+                this.height = 50;
+                this.x = canvas.width;
+                this.y = canvas.height - this.height - Math.random() * (canvas.height - 150);
+                this.color = '#f6ad55'; // Orange
+                this.type = 'flying';
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+
+            update() {
+                this.x -= obstacleSpeed;
+            }
+        }
+        
+        // New class for a group of spikes
+        class SpikeGroup {
+            constructor() {
+                this.numSpikes = 3;
+                this.spacing = 30;
+                this.spikeWidth = 40;
+                this.spikeHeight = 40;
+                this.width = (this.spikeWidth + this.spacing) * this.numSpikes;
+                this.height = this.spikeHeight;
+                this.x = canvas.width;
+                this.y = canvas.height - this.height;
+                this.color = '#3182ce';
+                this.type = 'spikeGroup';
+            }
+            
+            draw() {
+                ctx.fillStyle = this.color;
+                for (let i = 0; i < this.numSpikes; i++) {
+                    const spikeX = this.x + i * (this.spikeWidth + this.spacing);
+                    ctx.beginPath();
+                    ctx.moveTo(spikeX, this.y + this.spikeHeight);
+                    ctx.lineTo(spikeX + this.spikeWidth / 2, this.y);
+                    ctx.lineTo(spikeX + this.spikeWidth, this.y + this.spikeHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+            
+            update() {
+                this.x -= obstacleSpeed;
+            }
+        }
+        
+        // New class for a large pillar obstacle
+        class Pillar {
+            constructor() {
+                this.width = 60;
+                this.height = canvas.height / 2;
+                this.x = canvas.width;
+                this.y = canvas.height - this.height;
+                this.color = '#4a5568'; // Gray
+                this.type = 'pillar';
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+
+            update() {
+                this.x -= obstacleSpeed;
+            }
+        }
+
+        // New class for a stack of obstacles
+        class StackedObstacle {
+            constructor() {
+                this.numBlocks = Math.floor(Math.random() * 3) + 2; // 2 to 4 blocks high
+                this.blockHeight = 50;
+                this.blockWidth = 50;
+                this.x = canvas.width;
+                this.y = canvas.height - (this.numBlocks * this.blockHeight);
+                this.color = '#9f7aea'; // Purple
+                this.type = 'stacked';
+                this.obstacles = [];
+                for (let i = 0; i < this.numBlocks; i++) {
+                    const blockY = canvas.height - (i + 1) * this.blockHeight;
+                    this.obstacles.push({
+                        x: this.x,
+                        y: blockY,
+                        width: this.blockWidth,
+                        height: this.blockHeight
+                    });
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                this.obstacles.forEach(block => {
+                    ctx.fillRect(block.x, block.y, block.width, block.height);
+                });
+            }
+
+            update() {
+                this.x -= obstacleSpeed;
+                this.obstacles.forEach(block => {
+                    block.x = this.x;
+                });
+            }
+        }
+
+        // --- Game Logic Functions ---
+
+        // Function to handle keyboard input
+        function handleInput(e) {
+            if (e.code === 'Space' && !gameOver) {
+                player.jump();
+            }
+        }
+
+        // Function to spawn obstacles
+        function spawnObstacles() {
+            if (gameFrame % obstacleInterval === 0) {
+                const rand = Math.random();
+                if (rand < 0.3) {
+                    obstacles.push(new Obstacle()); // 30% chance for a single spike
+                } else if (rand < 0.5) {
+                    obstacles.push(new FlyingObstacle()); // 20% chance for a flying obstacle
+                } else if (rand < 0.7) {
+                    obstacles.push(new SpikeGroup()); // 20% chance for a spike group
+                } else if (rand < 0.85) {
+                    obstacles.push(new Pillar()); // 15% chance for a pillar
+                } else {
+                    obstacles.push(new StackedObstacle()); // 15% chance for a stacked block
+                }
+            }
+        }
+
+        // Function to check for collisions (using a simplified bounding box)
+        function checkCollisions() {
+            for (let i = 0; i < obstacles.length; i++) {
+                const obs = obstacles[i];
+                let isColliding = false;
+
+                if (obs.type === 'spikeGroup') {
+                    // Check collision with each spike in the group
+                    for (let j = 0; j < obs.numSpikes; j++) {
+                        const spikeX = obs.x + j * (obs.spikeWidth + obs.spacing);
+                        if (
+                            player.x < spikeX + obs.spikeWidth &&
+                            player.x + player.width > spikeX &&
+                            player.y < obs.y + obs.height &&
+                            player.y + player.height > obs.y
+                        ) {
+                            isColliding = true;
+                            break;
+                        }
+                    }
+                } else if (obs.type === 'stacked') {
+                     // Check collision with each block in the stack
+                    for (let j = 0; j < obs.obstacles.length; j++) {
+                        const block = obs.obstacles[j];
+                        if (
+                            player.x < block.x + block.width &&
+                            player.x + player.width > block.x &&
+                            player.y < block.y + block.height &&
+                            player.y + player.height > block.y
+                        ) {
+                            isColliding = true;
+                            break;
+                        }
+                    }
+                } else {
+                    // Check collision for regular, flying, and pillar obstacles
+                    if (
+                        player.x < obs.x + obs.width &&
+                        player.x + player.width > obs.x &&
+                        player.y < obs.y + obs.height &&
+                        player.y + player.height > obs.y
+                    ) {
+                        isColliding = true;
+                    }
+                }
+
+                if (isColliding) {
+                    // Collision detected!
+                    gameOver = true;
+                    showGameOverScreen();
+                    break;
+                }
+            }
+        }
+        
+        function showGameOverScreen() {
+            const gameOverDiv = document.createElement('div');
+            gameOverDiv.className = 'game-over';
+            gameOverDiv.innerHTML = `
+                <h1>Game Over!</h1>
+                <button onclick="restartGame()">Restart</button>
+            `;
+            document.body.appendChild(gameOverDiv);
+        }
+
+        // Function to restart the game
+        function restartGame() {
+            // Remove the game over screen
+            const gameOverDiv = document.querySelector('.game-over');
+            if (gameOverDiv) {
+                gameOverDiv.remove();
+            }
+            
+            // Reset game variables
+            gameFrame = 0;
+            score = 0;
+            gameOver = false;
+            obstacles = [];
+            
+            // Reset player and start over from skin selection
+            skinSelectionUI.classList.remove('hidden');
+            gameUI.classList.add('hidden');
+            document.getElementById('scoreDisplay').textContent = score;
+            progressBar.style.width = '0%';
+        }
+        
+        function updateProgressBar() {
+            const progress = (gameFrame / gameLength) * 100;
+            progressBar.style.width = Math.min(progress, 100) + '%';
+        }
+        
+        function startGame() {
+            skinSelectionUI.classList.add('hidden');
+            gameUI.classList.remove('hidden');
+            player = new Player(selectedSkinColor);
+            animate();
+        }
+
+        // Main game loop
+        function animate() {
+            if (gameOver) return;
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw player
+            player.update();
+            player.draw();
+
+            // Spawn obstacles
+            spawnObstacles();
+
+            // Update and draw obstacles
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].update();
+                obstacles[i].draw();
+            }
+
+            // Remove obstacles that have gone off-screen
+            obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
+
+            // Check for collisions
+            checkCollisions();
+
+            // Update score
+            if (gameFrame % 60 === 0) {
+                score++;
+                document.getElementById('scoreDisplay').textContent = score;
+            }
+
+            // Increase difficulty over time
+            if (gameFrame % 1000 === 0) {
+                obstacleSpeed += 0.5;
+                obstacleInterval = Math.max(80, obstacleInterval - 5);
+            }
+
+            // Update progress bar
+            updateProgressBar();
+
+            gameFrame++;
+            requestAnimationFrame(animate);
+        }
+        
+        // --- Skin Selection Logic ---
+        skinOptions.addEventListener('click', (e) => {
+            const button = e.target.closest('.skin-button');
+            if (button) {
+                // Deselect all other buttons
+                document.querySelectorAll('.skin-button').forEach(btn => btn.classList.remove('selected'));
+                // Select the clicked button
+                button.classList.add('selected');
+                selectedSkinColor = button.dataset.color;
+                
+                // Start the game after a slight delay
+                setTimeout(startGame, 300);
+            }
+        });
+
+        // Initial setup and event listeners
+        window.onload = function() {
+            window.addEventListener('keydown', handleInput);
+        }
+        
+        // Note on the subscription feature:
+        // Due to browser security and privacy policies, it is not possible for
+        // this web application to check a user's YouTube subscription status.
+        // Therefore, all skins are available for selection.
+    </script>
+<audio controls autoplay loop>
+  <source src="dash.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+</body>
+</html>
