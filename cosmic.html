@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Clash</title>
+    <link href="tailwind.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #0a0a23;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            width: 100%;
+            background-color: #1a1a1a;
+            padding: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0, 255, 255, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 1rem;
+        }
+        .navbar-links a {
+            color: #00ffff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        .navbar-links a:hover {
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
+        }
+        #game-container {
+            border: 4px solid #00ffff;
+            border-radius: 12px;
+            padding: 10px;
+            background-color: #000033;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
+            position: relative;
+            margin-top: 20px;
+        }
+        #gameCanvas {
+            background-color: #000066;
+            width: 1000px;
+            height: 750px;
+        }
+        #game-ui {
+            width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+        #p1-hp, #p2-hp, #round-text, #score-text {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        #p1-hp { color: #ff4500; }
+        #p2-hp { color: #00ff00; }
+        #round-text { color: #ffd700; }
+        #score-text { color: #00b7eb; }
+        #resetButton {
+            background-color: #ff00ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        #resetButton:hover {
+            background-color: #ff69b4;
+            transform: scale(1.05);
+        }
+        #mobile-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .control-row {
+            display: flex;
+            gap: 10px;
+        }
+        .control-button {
+            background-color: #00b7eb;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.5em;
+            font-weight: bold;
+            min-width: 65px;
+            min-height: 65px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .control-button:hover {
+            background-color: #0096c7;
+            transform: translateY(-2px);
+        }
+        .control-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        #p1-attack, #p2-attack, #p1-special, #p2-special {
+            background-color: #ff4500;
+        }
+        #p1-attack:hover, #p2-attack:hover, #p1-special:hover, #p2-special:hover {
+            background-color: #e04000;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-links">
+                <a href="turtle.html">Back to Game Selection</a>
+            </div>
+        </div>
+    </nav>
+    <audio id="backgroundMusic" loop autoplay>
+        <source src="dungeon.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <audio id="explodeAudio" src="explode.mp3" preload="auto"></audio>
+    <img id="explosionImage" src="explode.gif" style="display: none;" onload="console.log('Explosion GIF loaded');" onerror="console.error('Failed to load explosion GIF');">
+    <div id="game-container">
+        <canvas id="gameCanvas" width="1000" height="750"></canvas>
+    </div>
+    <div id="game-ui">
+        <span id="p1-hp">P1 HP: 100</span>
+        <span id="round-text">Round 1: 0 - 0</span>
+        <button id="resetButton">New Match</button>
+        <span id="score-text">High Score: 0</span>
+        <span id="p2-hp">P2 HP: 100</span>
+    </div>
+    <div id="mobile-controls">
+        <div class="control-row">
+            <button id="p1-left" class="control-button">⬅️</button>
+            <button id="p1-jump" class="control-button">⬆️</button>
+            <button id="p1-right" class="control-button">➡️</button>
+        </div>
+        <div class="control-row">
+            <button id="p1-attack" class="control-button">⚔️</button>
+            <button id="p1-special" class="control-button">🌟</button>
+        </div>
+        <div class="control-row">
+            <button id="p2-left" class="control-button">⬅️</button>
+            <button id="p2-jump" class="control-button">⬆️</button>
+            <button id="p2-right" class="control-button">➡️</button>
+        </div>
+        <div class="control-row">
+            <button id="p2-attack" class="control-button">⚔️</button>
+            <button id="p2-special" class="control-button">🌟</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const p1HpText = document.getElementById('p1-hp');
+        const p2HpText = document.getElementById('p2-hp');
+        const roundText = document.getElementById('round-text');
+        const scoreText = document.getElementById('score-text');
+        const resetButton = document.getElementById('resetButton');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const explodeAudio = document.getElementById('explodeAudio');
+        const explosionImage = document.getElementById('explosionImage');
+
+        const TILE_SIZE = 40;
+        const MAP_WIDTH_TILES = 25;
+        const MAP_HEIGHT_TILES = 19;
+        const FLOOR_Y = MAP_HEIGHT_TILES - 3;
+
+        const Player1 = '🤺';
+        const Player2 = '👾';
+        const Meteor = '☄️';
+        const SpeedPowerUp = '⚡';
+        const PowerPowerUp = '💪';
+
+        let gameState = {};
+        let particles = [];
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 5 + 5;
+                this.color = color;
+                this.vx = Math.random() * 4 - 2;
+                this.vy = Math.random() * -4 - 2;
+                this.alpha = 1;
+                this.life = 1000;
+            }
+            update(deltaTime) {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= deltaTime;
+                this.alpha = this.life / 1000;
+            }
+            draw(ctx) {
+                if (this.alpha <= 0) return;
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class Explosion {
+            constructor(x, y) {
+                this.x = x * TILE_SIZE + TILE_SIZE / 2;
+                this.y = y * TILE_SIZE + TILE_SIZE / 2;
+                this.scale = 0.5;
+                this.alpha = 1;
+                this.startTime = performance.now();
+                this.imageLoaded = explosionImage.complete && explosionImage.naturalWidth !== 0;
+                if (!this.imageLoaded) console.warn("Explosion GIF not loaded, using fallback");
+            }
+            update(currentTime) {
+                const elapsed = currentTime - this.startTime;
+                const duration = 1200;
+                if (elapsed < duration) {
+                    this.scale = 0.5 + (elapsed / duration);
+                    this.alpha = 1 - (elapsed / duration);
+                } else {
+                    this.alpha = 0;
+                }
+            }
+            draw(ctx) {
+                if (this.alpha <= 0) return;
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                const size = TILE_SIZE * 2 * this.scale;
+                const offsetX = this.x - size / 2;
+                const offsetY = this.y - size / 2;
+                if (this.imageLoaded) {
+                    try {
+                        ctx.drawImage(explosionImage, offsetX, offsetY, size, size);
+                    } catch (e) {
+                        console.error("Error drawing explosion GIF:", e);
+                        this.drawFallback(ctx, offsetX, offsetY, size);
+                    }
+                } else {
+                    this.drawFallback(ctx, offsetX, offsetY, size);
+                }
+                ctx.restore();
+            }
+            drawFallback(ctx, offsetX, offsetY, size) {
+                ctx.fillStyle = `rgba(255, 165, 0, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(offsetX + size / 2, offsetY + size / 2, size / 2, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        function initGame() {
+            console.log("Initializing Cosmic Clash");
+            gameState = {
+                player1: { x: 5, y: FLOOR_Y, hp: 100, attackCooldown: 0, specialCooldown: 0, jumpHeight: 0, isJumping: false, speedBoost: 0, powerBoost: 0, facingRight: true, lastMoveTime: 0, lastMoveDir: 0 },
+                player2: { x: 20, y: FLOOR_Y, hp: 100, attackCooldown: 0, specialCooldown: 0, jumpHeight: 0, isJumping: false, speedBoost: 0, powerBoost: 0, facingRight: false, lastMoveTime: 0, lastMoveDir: 0 },
+                hazards: [],
+                powerUps: [],
+                round: 1,
+                p1Wins: 0,
+                p2Wins: 0,
+                gameOver: false,
+                highScore: localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0,
+                lastHazard: 0,
+                lastPowerUp: 0,
+                explosions: [],
+                isSinglePlayer: true // Toggle for AI mode; set to false for 2-player
+            };
+            backgroundMusic.play().catch(e => console.error("Error playing background music:", e));
+            gameLoop();
+        }
+
+        function gameLoop(currentTime) {
+            if (!gameState.lastTime) gameState.lastTime = currentTime;
+            const deltaTime = currentTime - gameState.lastTime;
+            gameState.lastTime = currentTime;
+
+            if (!gameState.gameOver) {
+                updateGame(deltaTime, currentTime);
+            }
+            draw(currentTime);
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateGame(deltaTime, currentTime) {
+            // Update players
+            updatePlayer(gameState.player1, deltaTime);
+            if (gameState.isSinglePlayer) {
+                updateAI(gameState.player2, deltaTime);
+            } else {
+                updatePlayer(gameState.player2, deltaTime);
+            }
+
+            // Spawn hazards
+            gameState.lastHazard += deltaTime;
+            if (gameState.lastHazard > 5000 && Math.random() < 0.02) {
+                gameState.hazards.push({ x: Math.floor(Math.random() * MAP_WIDTH_TILES), y: 0, vy: 0.1 });
+                gameState.lastHazard = 0;
+            }
+
+            // Spawn power-ups
+            gameState.lastPowerUp += deltaTime;
+            if (gameState.lastPowerUp > 10000 && Math.random() < 0.01) {
+                gameState.powerUps.push({
+                    x: Math.floor(Math.random() * MAP_WIDTH_TILES),
+                    y: FLOOR_Y - 1,
+                    type: Math.random() < 0.5 ? SpeedPowerUp : PowerPowerUp
+                });
+                gameState.lastPowerUp = 0;
+            }
+
+            // Update hazards
+            gameState.hazards = gameState.hazards.filter(h => h.y < MAP_HEIGHT_TILES);
+            gameState.hazards.forEach(h => {
+                h.y += h.vy * deltaTime;
+                if (Math.abs(h.y - gameState.player1.y) < 0.5 && Math.abs(h.x - gameState.player1.x) < 0.5) {
+                    gameState.player1.hp -= 20;
+                    gameState.hazards.splice(gameState.hazards.indexOf(h), 1);
+                    gameState.explosions.push(new Explosion(h.x, h.y));
+                    explodeAudio.play().catch(e => console.error("Error playing explosion sound:", e));
+                }
+                if (Math.abs(h.y - gameState.player2.y) < 0.5 && Math.abs(h.x - gameState.player2.x) < 0.5) {
+                    gameState.player2.hp -= 20;
+                    gameState.hazards.splice(gameState.hazards.indexOf(h), 1);
+                    gameState.explosions.push(new Explosion(h.x, h.y));
+                    explodeAudio.play().catch(e => console.error("Error playing explosion sound:", e));
+                }
+            });
+
+            // Update power-ups
+            gameState.powerUps = gameState.powerUps.filter(p => {
+                if (Math.abs(p.x - gameState.player1.x) < 0.5 && Math.abs(p.y - gameState.player1.y) < 0.5) {
+                    if (p.type === SpeedPowerUp) gameState.player1.speedBoost = 5000;
+                    else gameState.player1.powerBoost = 10000;
+                    return false;
+                }
+                if (Math.abs(p.x - gameState.player2.x) < 0.5 && Math.abs(p.y - gameState.player2.y) < 0.5) {
+                    if (p.type === SpeedPowerUp) gameState.player2.speedBoost = 5000;
+                    else gameState.player2.powerBoost = 10000;
+                    return false;
+                }
+                return true;
+            });
+
+            // Update particles and explosions
+            particles = particles.filter(p => p.life > 0);
+            particles.forEach(p => p.update(deltaTime));
+            gameState.explosions = gameState.explosions.filter(e => e.alpha > 0);
+            gameState.explosions.forEach(e => e.update(currentTime));
+
+            // Check round end
+            if (gameState.player1.hp <= 0 || gameState.player2.hp <= 0) {
+                if (gameState.player1.hp <= 0) gameState.p2Wins++;
+                if (gameState.player2.hp <= 0) gameState.p1Wins++;
+                if (gameState.p1Wins >= 3 || gameState.p2Wins >= 3) {
+                    gameState.gameOver = true;
+                    const score = gameState.p1Wins * 100 + gameState.p2Wins * 50;
+                    if (score > gameState.highScore) {
+                        gameState.highScore = score;
+                        localStorage.setItem('highScore', score);
+                    }
+                    backgroundMusic.pause();
+                } else {
+                    gameState.round++;
+                    gameState.player1.hp = 100;
+                    gameState.player2.hp = 100;
+                    gameState.player1.x = 5;
+                    gameState.player2.x = 20;
+                    gameState.player1.y = gameState.player2.y = FLOOR_Y;
+                    gameState.hazards = [];
+                    gameState.powerUps = [];
+                }
+            }
+
+            // Update UI
+            p1HpText.textContent = `P1 HP: ${gameState.player1.hp}`;
+            p2HpText.textContent = `P2 HP: ${gameState.player2.hp}`;
+            roundText.textContent = `Round ${gameState.round}: ${gameState.p1Wins} - ${gameState.p2Wins}`;
+            scoreText.textContent = `High Score: ${gameState.highScore}`;
+        }
+
+        function updatePlayer(player, deltaTime) {
+            if (player.isJumping) {
+                player.jumpHeight += 0.2;
+                if (player.jumpHeight >= 2) player.isJumping = false;
+            } else if (player.jumpHeight > 0) {
+                player.jumpHeight -= 0.2;
+            }
+            if (player.attackCooldown > 0) player.attackCooldown -= deltaTime;
+            if (player.specialCooldown > 0) player.specialCooldown -= deltaTime;
+            if (player.speedBoost > 0) player.speedBoost -= deltaTime;
+            if (player.powerBoost > 0) player.powerBoost -= deltaTime;
+        }
+
+        function updateAI(player, deltaTime) {
+            updatePlayer(player, deltaTime);
+            const dx = gameState.player1.x - player.x;
+            if (Math.abs(dx) > 2) {
+                player.x += Math.sign(dx) * (player.speedBoost > 0 ? 0.2 : 0.1);
+            }
+            if (Math.random() < 0.01 && !player.isJumping) {
+                player.isJumping = true;
+                player.jumpHeight = 0;
+            }
+            if (Math.abs(dx) < 2 && player.attackCooldown <= 0) {
+                attack(player, gameState.player1);
+            }
+            if (Math.random() < 0.005 && player.specialCooldown <= 0) {
+                specialAttack(player, gameState.player1);
+            }
+        }
+
+        function attack(attacker, target) {
+            if (attacker.attackCooldown > 0) return;
+            const dx = target.x - attacker.x;
+            if (Math.abs(dx) < 2 && Math.abs(target.y - attacker.y) < 0.5) {
+                const damage = attacker.powerBoost > 0 ? 15 : 10;
+                target.hp -= damage;
+                particles.push(new Particle(target.x * TILE_SIZE, target.y * TILE_SIZE, '#ff4500'));
+                attacker.attackCooldown = 500;
+            }
+        }
+
+        function specialAttack(attacker, target) {
+            if (attacker.specialCooldown > 0) return;
+            const dx = target.x - attacker.x;
+            if (Math.abs(dx) < 4 && Math.abs(target.y - attacker.y) < 0.5) {
+                const damage = attacker.powerBoost > 0 ? 35 : 30;
+                target.hp -= damage;
+                gameState.explosions.push(new Explosion(target.x, target.y));
+                explodeAudio.play().catch(e => console.error("Error playing explosion sound:", e));
+                attacker.specialCooldown = 5000;
+            }
+        }
+
+        function draw(currentTime) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = `${TILE_SIZE * 0.8}px monospace`;
+
+            // Draw arena
+            for (let x = 0; x < MAP_WIDTH_TILES; x++) {
+                ctx.fillText('⬛', x * TILE_SIZE, FLOOR_Y * TILE_SIZE + TILE_SIZE);
+            }
+
+            // Draw players
+            ctx.fillText(Player1, gameState.player1.x * TILE_SIZE, (FLOOR_Y - gameState.player1.jumpHeight) * TILE_SIZE + TILE_SIZE);
+            ctx.fillText(Player2, gameState.player2.x * TILE_SIZE, (FLOOR_Y - gameState.player2.jumpHeight) * TILE_SIZE + TILE_SIZE);
+
+            // Draw hazards and power-ups
+            gameState.hazards.forEach(h => ctx.fillText(Meteor, h.x * TILE_SIZE, h.y * TILE_SIZE + TILE_SIZE));
+            gameState.powerUps.forEach(p => ctx.fillText(p.type, p.x * TILE_SIZE, p.y * TILE_SIZE + TILE_SIZE));
+
+            // Draw particles and explosions
+            particles.forEach(p => p.draw(ctx));
+            gameState.explosions.forEach(e => e.draw(ctx));
+
+            // Draw game over
+            if (gameState.gameOver) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ff00ff';
+                ctx.font = 'bold 40px Courier New';
+                ctx.textAlign = 'center';
+                const winner = gameState.p1Wins >= 3 ? 'Player 1 Wins!' : 'Player 2 Wins!';
+                ctx.fillText(winner, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(`Final Score: ${gameState.p1Wins} - ${gameState.p2Wins}`, canvas.width / 2, canvas.height / 2 + 50);
+                ctx.fillText(`High Score: ${gameState.highScore}`, canvas.width / 2, canvas.height / 2 + 100);
+                ctx.textAlign = 'left';
+            }
+        }
+
+        const keyState = { p1: {}, p2: {} };
+        document.addEventListener('keydown', (e) => {
+            e.preventDefault();
+            if (e.key === 'r' || e.key === 'R') {
+                initGame();
+                return;
+            }
+            if (gameState.gameOver) return;
+            keyState.p1[e.key.toLowerCase()] = true;
+            if (!gameState.isSinglePlayer) keyState.p2[e.key.toLowerCase()] = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            keyState.p1[e.key.toLowerCase()] = false;
+            if (!gameState.isSinglePlayer) keyState.p2[e.key.toLowerCase()] = false;
+        });
+
+        function handlePlayerInput(player, keys, deltaTime) {
+            const speed = player.speedBoost > 0 ? 0.2 : 0.1;
+            if (keys['a'] || keys['arrowleft']) {
+                player.x = Math.max(0, player.x - speed);
+                player.facingRight = false;
+                if (keys.lastMoveDir === -1 && performance.now() - keys.lastMoveTime < 300) {
+                    player.x = Math.max(0, player.x - speed * 2); // Dash
+                }
+                keys.lastMoveDir = -1;
+                keys.lastMoveTime = performance.now();
+            }
+            if (keys['d'] || keys['arrowright']) {
+                player.x = Math.min(MAP_WIDTH_TILES - 1, player.x + speed);
+                player.facingRight = true;
+                if (keys.lastMoveDir === 1 && performance.now() - keys.lastMoveTime < 300) {
+                    player.x = Math.min(MAP_WIDTH_TILES - 1, player.x + speed * 2); // Dash
+                }
+                keys.lastMoveDir = 1;
+                keys.lastMoveTime = performance.now();
+            }
+            if ((keys['w'] || keys['arrowup']) && !player.isJumping && player.jumpHeight === 0) {
+                player.isJumping = true;
+                player.jumpHeight = 0;
+            }
+            if (keys['j'] || keys[' ']) attack(player, player === gameState.player1 ? gameState.player2 : gameState.player1);
+            if (keys['k'] || keys['shift']) specialAttack(player, player === gameState.player1 ? gameState.player2 : gameState.player1);
+        }
+
+        setInterval(() => {
+            if (!gameState.gameOver) {
+                handlePlayerInput(gameState.player1, keyState.p1, 16);
+                if (!gameState.isSinglePlayer) handlePlayerInput(gameState.player2, keyState.p2, 16);
+            }
+        }, 16);
+
+        document.getElementById('p1-left').addEventListener('click', () => handlePlayerInput(gameState.player1, { 'a': true, lastMoveDir: -1, lastMoveTime: performance.now() }, 16));
+        document.getElementById('p1-right').addEventListener('click', () => handlePlayerInput(gameState.player1, { 'd': true, lastMoveDir: 1, lastMoveTime: performance.now() }, 16));
+        document.getElementById('p1-jump').addEventListener('click', () => handlePlayerInput(gameState.player1, { 'w': true }, 16));
+        document.getElementById('p1-attack').addEventListener('click', () => handlePlayerInput(gameState.player1, { 'j': true }, 16));
+        document.getElementById('p1-special').addEventListener('click', () => handlePlayerInput(gameState.player1, { 'k': true }, 16));
+        document.getElementById('p2-left').addEventListener('click', () => handlePlayerInput(gameState.player2, { 'arrowleft': true, lastMoveDir: -1, lastMoveTime: performance.now() }, 16));
+        document.getElementById('p2-right').addEventListener('click', () => handlePlayerInput(gameState.player2, { 'arrowright': true, lastMoveDir: 1, lastMoveTime: performance.now() }, 16));
+        document.getElementById('p2-jump').addEventListener('click', () => handlePlayerInput(gameState.player2, { 'arrowup': true }, 16));
+        document.getElementById('p2-attack').addEventListener('click', () => handlePlayerInput(gameState.player2, { ' ': true }, 16));
+        document.getElementById('p2-special').addEventListener('click', () => handlePlayerInput(gameState.player2, { 'shift': true }, 16));
+        resetButton.addEventListener('click', initGame);
+
+        initGame();
+    </script>
+</body>
+</html>
