@@ -93,7 +93,7 @@
         .game-over button:hover {
             background-color: #38a169;
             transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 6px 8px rgba(0, 0, 0, 0.2);
         }
 
         #gameCanvas {
@@ -410,6 +410,65 @@
             }
         }
 
+        // New class for a moving vertical obstacle
+        class MovingObstacle {
+            constructor() {
+                this.width = 60;
+                this.height = 40;
+                this.x = canvas.width;
+                this.y = canvas.height - 100;
+                this.color = '#e53e3e';
+                this.type = 'moving';
+                this.moveDirection = 1;
+                this.moveSpeed = 1.5;
+                this.topBound = 100;
+                this.bottomBound = canvas.height - 100;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+
+            update() {
+                this.x -= obstacleSpeed;
+                this.y += this.moveDirection * this.moveSpeed;
+
+                if (this.y <= this.topBound || this.y >= this.bottomBound - this.height) {
+                    this.moveDirection *= -1;
+                }
+            }
+        }
+
+        // New class for a rotating platform
+        class RotatingPlatform {
+            constructor() {
+                this.width = 70;
+                this.height = 70;
+                this.x = canvas.width;
+                this.y = canvas.height - this.height - 80;
+                this.color = '#a0aec0';
+                this.type = 'rotating';
+                this.rotation = 0;
+                this.rotationSpeed = 0.05;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.rotate(this.rotation);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                ctx.restore();
+            }
+
+            update() {
+                this.x -= obstacleSpeed;
+                this.rotation += this.rotationSpeed;
+            }
+        }
+
+
         // --- Game Logic Functions ---
 
         // Function to handle keyboard input
@@ -423,16 +482,18 @@
         function spawnObstacles() {
             if (gameFrame % obstacleInterval === 0) {
                 const rand = Math.random();
-                if (rand < 0.3) {
-                    obstacles.push(new Obstacle()); // 30% chance for a single spike
-                } else if (rand < 0.5) {
-                    obstacles.push(new FlyingObstacle()); // 20% chance for a flying obstacle
-                } else if (rand < 0.7) {
-                    obstacles.push(new SpikeGroup()); // 20% chance for a spike group
-                } else if (rand < 0.85) {
+                if (rand < 0.25) {
+                    obstacles.push(new Obstacle()); // 25% chance for a single spike
+                } else if (rand < 0.40) {
+                    obstacles.push(new FlyingObstacle()); // 15% chance for a flying obstacle
+                } else if (rand < 0.55) {
+                    obstacles.push(new SpikeGroup()); // 15% chance for a spike group
+                } else if (rand < 0.70) {
                     obstacles.push(new Pillar()); // 15% chance for a pillar
+                } else if (rand < 0.85) {
+                    obstacles.push(new MovingObstacle()); // 15% chance for a moving block
                 } else {
-                    obstacles.push(new StackedObstacle()); // 15% chance for a stacked block
+                    obstacles.push(new RotatingPlatform()); // 15% chance for a rotating platform
                 }
             }
         }
@@ -443,44 +504,62 @@
                 const obs = obstacles[i];
                 let isColliding = false;
 
-                if (obs.type === 'spikeGroup') {
-                    // Check collision with each spike in the group
-                    for (let j = 0; j < obs.numSpikes; j++) {
-                        const spikeX = obs.x + j * (obs.spikeWidth + obs.spacing);
-                        if (
-                            player.x < spikeX + obs.spikeWidth &&
-                            player.x + player.width > spikeX &&
-                            player.y < obs.y + obs.height &&
-                            player.y + player.height > obs.y
-                        ) {
-                            isColliding = true;
-                            break;
-                        }
-                    }
-                } else if (obs.type === 'stacked') {
-                     // Check collision with each block in the stack
-                    for (let j = 0; j < obs.obstacles.length; j++) {
-                        const block = obs.obstacles[j];
-                        if (
-                            player.x < block.x + block.width &&
-                            player.x + player.width > block.x &&
-                            player.y < block.y + block.height &&
-                            player.y + player.height > block.y
-                        ) {
-                            isColliding = true;
-                            break;
-                        }
-                    }
-                } else {
-                    // Check collision for regular, flying, and pillar obstacles
-                    if (
-                        player.x < obs.x + obs.width &&
+                // Collision detection for non-rotating obstacles
+                if (obs.type !== 'rotating') {
+                    // Check for general overlap
+                    if (player.x < obs.x + obs.width &&
                         player.x + player.width > obs.x &&
                         player.y < obs.y + obs.height &&
-                        player.y + player.height > obs.y
-                    ) {
-                        isColliding = true;
+                        player.y + player.height > obs.y) {
+
+                        // Check if player is landing on top of the obstacle
+                        if (player.vy > 0 && player.y + player.height - obs.y <= 10) {
+                            player.y = obs.y - player.height;
+                            player.vy = 0;
+                            player.isJumping = false;
+                            player.rotation = 0;
+                            player.jumpsRemaining = 2;
+                            isColliding = false; // It's a landing, not a crash
+                        } else {
+                            // It's a side or bottom collision
+                            isColliding = true;
+                        }
+
+                        // Special case for spikes (always a collision)
+                        if (obs.type === 'spike' || obs.type === 'spikeGroup') {
+                            isColliding = true;
+                        }
                     }
+                } else if (obs.type === 'rotating') {
+                     // Get the player's bounding box and the platform's bounding box
+                     const playerTop = player.y;
+                     const playerBottom = player.y + player.height;
+                     const playerLeft = player.x;
+                     const playerRight = player.x + player.width;
+                     
+                     const obsTop = obs.y;
+                     const obsBottom = obs.y + obs.height;
+                     const obsLeft = obs.x;
+                     const obsRight = obs.x + obs.width;
+
+                     // Check for general overlap with the rotating platform's bounding box
+                     if (playerRight > obsLeft &&
+                         playerLeft < obsRight &&
+                         playerBottom > obsTop &&
+                         playerTop < obsBottom) {
+                         
+                         // Check for top collision (landing)
+                         if (player.vy > 0 && playerBottom < obsBottom && playerBottom > obsTop && player.y + player.height - obs.y <= 15) {
+                             player.y = obs.y - player.height;
+                             player.vy = 0;
+                             player.isJumping = false;
+                             player.rotation = 0;
+                             player.jumpsRemaining = 2;
+                             isColliding = false;
+                         } else {
+                             isColliding = true; // Side collision with rotating platform
+                         }
+                     }
                 }
 
                 if (isColliding) {
@@ -605,9 +684,5 @@
         // this web application to check a user's YouTube subscription status.
         // Therefore, all skins are available for selection.
     </script>
-<audio controls autoplay loop>
-  <source src="dash.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
-</audio>
 </body>
 </html>
