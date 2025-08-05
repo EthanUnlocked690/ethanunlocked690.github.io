@@ -190,6 +190,45 @@ li a:hover {
     justify-content: center;
     align-items: center;
 }
+    .section5 {
+    display: flex; /* Correct: Makes direct children arrange side-by-side */
+    /* Add this for spacing between items, it's cleaner than margins on children */
+    gap: 20px; /* Adjust value as needed for space between divs */
+
+    /* Optional: If you want the .section1 container to manage its own width and wrap items */
+    flex-wrap: wrap; /* Allows items to wrap to the next line on smaller screens */
+    justify-content: center; /* Centers items if they don't fill the row (when wrapped) */
+}
+
+.section5 > div {
+    background-image: url('webpage-backdrop.jpg');
+    /* Recommended additions for background images: */
+    background-size: cover;       /* Ensures image covers the entire div */
+    background-position: center;  /* Centers the image within the div */
+    background-repeat: no-repeat; /* Prevents the image from tiling */
+
+    /* FIX HERE: Remove width: 200%; and use flex properties */
+    flex: 1; /* This is the key fix. It tells each div to grow and shrink
+                equally to fill the available space in the .section1 container.
+                It's shorthand for: flex-grow: 1; flex-shrink: 1; flex-basis: 0; */
+
+    /* ADJUST MARGIN: If you use 'gap' on .section1, you typically set margin on children to 0 */
+    margin: 0; /* Changed from 10px to 0 to prevent double-spacing if 'gap' is used */
+
+    padding: 20px;
+    font-size: 30px;
+    color: white; /* Add this if your background image is dark, so text is visible */
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7); /* Adds contrast for text on image */
+
+    /* Optional: Set a minimum width for each div before it wraps, or for its initial size */
+    min-width: 250px; /* Example: Each div will try to be at least 250px wide */
+    min-height: 150px; /* Just for visual demonstration, ensures content area */
+
+    /* Optional: If you want to center content *inside* each div */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 .bouncy-text {
             font-size: 50px !important;
             font-weight: bold;
