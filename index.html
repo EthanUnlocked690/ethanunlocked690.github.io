@@ -135,56 +135,117 @@
         .chatbot-close-button:hover {
             color: #ef4444; /* Tailwind red-500 */
         }
+
+        /* Custom Alert/Prompt Modal styles */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+        .custom-modal-content {
+            background-color: #2d3748; /* Dark gray */
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #e2e8f0; /* Light gray text */
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        .custom-modal-content h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .custom-modal-content input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0.25rem;
+            border: 1px solid #4a5568;
+            background-color: #1a202c; /* Darker gray */
+            color: #e2e8f0;
+        }
+        .custom-modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        .custom-modal-buttons button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .custom-modal-buttons .ok-button {
+            background-color: #48bb78; /* Green */
+            color: white;
+        }
+        .custom-modal-buttons .ok-button:hover {
+            background-color: #38a169;
+        }
+        .custom-modal-buttons .cancel-button {
+            background-color: #e53e3e; /* Red */
+            color: white;
+        }
+        .custom-modal-buttons .cancel-button:hover {
+            background-color: #c53030;
+        }
+
+        /* Message box styling */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 9999;
+            text-align: center;
+            display: none;
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 
-<body>
-    <!-- User's original script for alert on load -->
-    <script>
-        window.alert("WAIT! Before you come in, have you liked and subscribed to Ethan and Isabella Unlocked? If you haven't, go onto YouTube and do it right now! And if you have, click OK. Welcome to TheUnlockedWeb!");
-    </script>
-
-    <!-- User's original cookie scripts -->
-    <script>
-        function setCookie(cname, cvalue, exdays) {
-            const d = new Date();
-            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-            let expires = "expires=" + d.toUTCString();
-            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-        }
-
-        function getCookie(cname) {
-            let name = cname + "=";
-            let decodedCookie = decodeURIComponent(document.cookie);
-            let ca = decodedCookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) == ' ') {
-                    c = c.substring(1);
-                }
-                if (c.indexOf(name) == 0) {
-                    return c.substring(name.length, c.length);
-                }
-            }
-            return "";
-        }
-
-        function checkCookie() {
-            let user = getCookie("username");
-            if (user != "") {
-                alert("Hello again " + user + "! Welcome back to TheUnlockedWeb!");
-            } else {
-                user = prompt("Please enter your name:", "");
-                if (user != "" && user != null) {
-                    setCookie("username", user, 7); // Changed from 30 to 7
-                }
-            }
-        }
-    </script>
+<body onload="checkCookie()">
+    <!-- Custom Alert and Prompt Modals -->
+    <div id="custom-alert-modal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3 id="alert-message"></h3>
+            <div class="custom-modal-buttons">
+                <button class="ok-button" onclick="hideAlert()">OK</button>
+            </div>
+        </div>
+    </div>
     
+    <div id="custom-prompt-modal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3 id="prompt-message"></h3>
+            <input type="text" id="prompt-input" placeholder="Enter your name">
+            <div class="custom-modal-buttons">
+                <button class="ok-button" onclick="handlePromptResult(true)">OK</button>
+                <button class="cancel-button" onclick="handlePromptResult(false)">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message box for specific messages -->
+    <div id="message-box" class="message-box"></div>
+
     <!-- Navigation menu -->
     <ul>
-        <li><a class="active" href="index.html" img src="house.png" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
+        <li><a class="active" href="index.html" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
         <li><a href="news.html">News</a></li>
         <li><a href="subscribe.html">Subscribe</a></li>
         <li><a href="about.html">About</a></li>
@@ -197,7 +258,7 @@
     </ul>
 
     <!-- Main content starts here -->
-    <div style="text-align: center; font-size: 100px;">
+    <div style="text-align: center; font-size: 10px;">
         <b id="demo" style="color:white;">Good Evening! Welcome to...</b>
     </div>
 
@@ -257,9 +318,9 @@
     <h1 style="color:green;">Website code</h1>
     <a style="color:white;" href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io/blob/main/index.html" class="button">To view the code for this website, click F12 with Fn on (Make sure the light's on) and click elements, or, click me</a>
 
-    <button type="button" onclick="alert('To get to me blooket, go to: https://dashboard.blooket.com/set/683d291a46fe0cb8b31dbb81')">Click Me to see how to get to my blooket</button>
+    <button type="button" onclick="showAlert('To get to my blooket, go to: https://dashboard.blooket.com/set/683d291a46fe0cb8b31dbb81')">Click Me to see how to get to my blooket</button>
     <h1 style="color:yellow;">Announcements</h1>
-    <button type="button" onclick="alert('Hey guys, coming soon is... a new GAME!! This game will not have AI to help me create it. Stick around to see it when it comes out')">Click Me to get the latest announcement</button>
+    <button type="button" onclick="showAlert('Hey guys, coming soon is... a new GAME!! This game will not have AI to help me create it. Stick around to see it when it comes out')">Click Me to get the latest announcement</button>
 
     <button id="theButton">Tap Me!</button>
     <p id="theWords" style="color:white;"></p>
@@ -318,11 +379,10 @@
             <span class="chatbot-close-button">&times;</span>
             <!-- The content of the chatbot will be injected here by JavaScript -->
             <div id="chatbot-container" class="flex flex-col h-full">
-                <!-- Chatbot HTML from the original immersive will go here -->
                 <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">Chat with TheUnlockedBot</h1>
 
                 <!-- Chat history display area -->
-                <div id="chat-history" class="flex-1 overflow-y-auto space-y-4 pr-2 mb-4">
+                <div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
                     <!-- Messages will be injected here by JavaScript -->
                 </div>
 
@@ -348,6 +408,83 @@
 
     <!-- Combined JavaScript for chatbot and page functionality -->
     <script>
+        // Custom Alert/Prompt Modals Logic
+        const alertModal = document.getElementById('custom-alert-modal');
+        const alertMessage = document.getElementById('alert-message');
+        const promptModal = document.getElementById('custom-prompt-modal');
+        const promptMessage = document.getElementById('prompt-message');
+        const promptInput = document.getElementById('prompt-input');
+        let promptResolve;
+
+        // Replaces window.alert()
+        function showAlert(message) {
+            alertMessage.textContent = message;
+            alertModal.style.display = 'flex';
+        }
+
+        function hideAlert() {
+            alertModal.style.display = 'none';
+        }
+
+        // Replaces window.prompt() and returns a Promise
+        function showPrompt(message, defaultValue = "") {
+            return new Promise(resolve => {
+                promptMessage.textContent = message;
+                promptInput.value = defaultValue;
+                promptInput.focus();
+                promptModal.style.display = 'flex';
+                promptResolve = resolve;
+            });
+        }
+
+        function handlePromptResult(isOk) {
+            promptModal.style.display = 'none';
+            if (isOk) {
+                promptResolve(promptInput.value);
+            } else {
+                promptResolve(null); // Return null on cancel
+            }
+        }
+        
+        // --- Custom Alert on page load, replaces original window.alert() ---
+        showAlert("WAIT! Before you come in, have you liked and subscribed to Ethan and Isabella Unlocked? If you haven't, go onto YouTube and do it right now! And if you have, click OK. Welcome to TheUnlockedWeb!");
+
+        // --- User's original cookie scripts, modified to use custom modals ---
+        function setCookie(cname, cvalue, exdays) {
+            const d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            let expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+        function getCookie(cname) {
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        async function checkCookie() {
+            let user = getCookie("username");
+            if (user != "") {
+                showAlert("Hello again " + user + "! Welcome back to TheUnlockedWeb!");
+            } else {
+                user = await showPrompt("Please enter your name:", "");
+                if (user != "" && user != null) {
+                    setCookie("username", user, 7);
+                }
+            }
+        }
+
         // --- Chatbot UI References ---
         const chatbotButton = document.getElementById('chatbot-button');
         const chatbotModal = document.getElementById('chatbot-modal');
@@ -373,7 +510,7 @@
                         ${role === 'user' ? 'You' : 'TheUnlockedBot'}
                     </div>
                     <div class="mt-1 p-3 rounded-xl ${role === 'user' ? 'bg-teal-600 text-white' : 'bg-gray-700 text-gray-200'}">
-                        ${text}
+                        ${text.replace(/\n/g, '<br>')}
                     </div>
                 </div>
             `;
@@ -383,43 +520,63 @@
 
         async function fetchGeminiResponse(prompt) {
             loadingIndicator.classList.remove('hidden');
+            
+            // Create a temporary chat history for the API call to avoid mutation issues
+            let currentChatHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
+            
+            const payload = { contents: currentChatHistory };
+
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
             
-            // Add user prompt to chat history for the API call
-            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-            const payload = {
-                contents: chatHistory,
-            };
+            let backoffDelay = 1000; // Start with 1 second delay
+            const maxRetries = 5;
+            let retryCount = 0;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                    if (response.status === 429) { // Too Many Requests
+                        retryCount++;
+                        if (retryCount < maxRetries) {
+                            await new Promise(resolve => setTimeout(resolve, backoffDelay));
+                            backoffDelay *= 2; // Exponential backoff
+                            continue; // Retry the loop
+                        } else {
+                            throw new Error("API request limit exceeded. Please try again later.");
+                        }
+                    }
 
-                if (!response.ok) {
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
+                    if (!response.ok) {
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
 
-                const result = await response.json();
-                
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
+                    const result = await response.json();
                     
-                    // Add model's response to chat history
-                    chatHistory.push({ role: "model", parts: [{ text }] });
-                    addMessageToChat('model', text);
-                } else {
-                    addMessageToChat('model', "Sorry, I couldn't generate a response. Please try again.");
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        
+                        // Update the persistent chat history
+                        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                        chatHistory.push({ role: "model", parts: [{ text }] });
+                        addMessageToChat('model', text);
+                    } else {
+                        addMessageToChat('model', "Sorry, I couldn't generate a response. The response was empty or malformed.");
+                    }
+                    break; // Break the retry loop on success
+                } catch (error) {
+                    console.error("Error fetching Gemini response:", error);
+                    addMessageToChat('model', `An error occurred: ${error.message}`);
+                    break; // Exit the loop on other errors
+                } finally {
+                    loadingIndicator.classList.add('hidden');
                 }
-            } catch (error) {
-                console.error("Error fetching Gemini response:", error);
-                addMessageToChat('model', "An error occurred. Please check the console for details.");
-            } finally {
-                loadingIndicator.classList.add('hidden');
             }
         }
 
@@ -431,10 +588,10 @@
 
                 // Check for "who are you" before calling the API
                 if (prompt.toLowerCase().includes('who are you')) {
-                    const hardcodedResponse = "I'm TheUnlockedBot, created by TheUnlockedWeb.";
-                    addMessageToChat('model', hardcodedResponse);
-                    // Add hardcoded response to chat history to maintain context
+                    const hardcodedResponse = "I'm TheUnlockedBot, an AI assistant created by TheUnlockedWeb. How can I help?";
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     chatHistory.push({ role: "model", parts: [{ text: hardcodedResponse }] });
+                    addMessageToChat('model', hardcodedResponse);
                 } else {
                     fetchGeminiResponse(prompt);
                 }
