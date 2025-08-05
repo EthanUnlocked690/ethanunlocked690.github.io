@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dungeon Escape</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<link href="tailwind.css" rel="stylesheet">
 <style>
     body {
         font-family: 'Courier New', Courier, monospace;
@@ -247,7 +247,7 @@
     Your browser does not support the audio element.
 </audio>
 <audio id="explodeAudio" src="explode.mp3" preload="auto"></audio>
-<img id="explosionImage" src="https://media.tenor.com/URShj_JWaS8AAAAM/explos%C3%A3o-meme.gif" style="display: none;" onload="console.log('Explosion GIF loaded');" onerror="console.error('Failed to load explosion GIF');">
+<img id="explosionImage" src="explode.gif" style="display: none;" onload="console.log('Explosion GIF loaded successfully');" onerror="console.error('Failed to load explosion GIF. Check file path or server setup.');">
 <div id="game-container">
     <canvas id="gameCanvas" width="1000" height="750"></canvas>
     <canvas id="confettiCanvas" width="1000" height="750"></canvas>
@@ -371,6 +371,10 @@
             this.scale = 0.5; // Start small
             this.alpha = 1; // Fully opaque
             this.startTime = performance.now();
+            this.imageLoaded = explosionImage.complete && explosionImage.naturalWidth !== 0;
+            if (!this.imageLoaded) {
+                console.warn("Explosion GIF not loaded, using fallback rectangle animation");
+            }
         }
         update(currentTime) {
             const elapsed = currentTime - this.startTime;
@@ -389,13 +393,26 @@
             const size = TILE_SIZE * 3 * this.scale; // Size relative to boss (3x3 tiles)
             const offsetX = this.x - size / 2;
             const offsetY = this.y - size / 2;
-            try {
-                ctx.drawImage(explosionImage, offsetX, offsetY, size, size);
-                console.log("Drawing explosion at:", this.x, this.y, "scale:", this.scale, "alpha:", this.alpha);
-            } catch (e) {
-                console.error("Error drawing explosion image:", e);
+            if (this.imageLoaded) {
+                try {
+                    ctx.drawImage(explosionImage, offsetX, offsetY, size, size);
+                    console.log("Drawing explosion GIF at:", this.x, this.y, "scale:", this.scale, "alpha:", this.alpha);
+                } catch (e) {
+                    console.error("Error drawing explosion GIF:", e);
+                    // Fallback to rectangle animation
+                    this.drawFallback(ctx, offsetX, offsetY, size);
+                }
+            } else {
+                this.drawFallback(ctx, offsetX, offsetY, size);
             }
             ctx.restore();
+        }
+        drawFallback(ctx, offsetX, offsetY, size) {
+            ctx.fillStyle = `rgba(255, 165, 0, ${this.alpha})`; // Orange explosion color
+            ctx.beginPath();
+            ctx.arc(offsetX + size / 2, offsetY + size / 2, size / 2, 0, 2 * Math.PI);
+            ctx.fill();
+            console.log("Drawing fallback explosion circle at:", offsetX, offsetY, "size:", size, "alpha:", this.alpha);
         }
     }
 
