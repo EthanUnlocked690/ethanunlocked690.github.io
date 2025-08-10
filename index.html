@@ -11,7 +11,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
         
-        /* User's existing styles */
+        /* User's original styles */
         ul {
             list-style-type: none;
             margin: 0px;
@@ -76,7 +76,7 @@
         .bouncy-text span:nth-child(13) { animation-delay: 0.60s; }
         .bouncy-text span:nth-child(14) { animation-delay: 0.65s; }
 
-        /* Floating chatbot button styles */
+        /* Floating chatbot button styles (kept) */
         .chatbot-button-container {
             position: fixed;
             bottom: 20px;
@@ -96,7 +96,7 @@
             border-radius: 50%;
         }
 
-        /* Chatbot modal styles */
+        /* Chatbot modal styles (kept) */
         .chatbot-modal {
             position: fixed;
             top: 0;
@@ -136,7 +136,7 @@
             color: #ef4444; /* Tailwind red-500 */
         }
 
-        /* Custom Alert/Prompt Modal styles */
+        /* Custom Alert/Prompt Modal styles (kept) */
         .custom-modal {
             position: fixed;
             top: 0;
@@ -199,7 +199,7 @@
             background-color: #c53030;
         }
 
-        /* Message box styling */
+        /* Message box for specific messages (kept) */
         .message-box {
             position: fixed;
             top: 50%;
@@ -245,7 +245,7 @@
 
     <!-- Navigation menu -->
     <ul>
-        <li><a class="active" href="index.html" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
+        <li><a class="active" href="index.html" img src="house.png" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
         <li><a href="news.html">News</a></li>
         <li><a href="subscribe.html">Subscribe</a></li>
         <li><a href="about.html">About</a></li>
@@ -258,7 +258,7 @@
     </ul>
 
     <!-- Main content starts here -->
-    <div style="text-align: center; font-size: 10px;">
+    <div style="text-align: center; font-size: 100px;">
         <b id="demo" style="color:white;">Good Evening! Welcome to...</b>
     </div>
 
@@ -496,6 +496,17 @@
 
         // --- Chat History State ---
         let chatHistory = [];
+        
+        // --- Hardcoded responses for basic conversation ---
+        const hardcodedResponses = {
+            'hello': "Hello there! How can I help you today?",
+            'hi': "Hi! What's on your mind?",
+            'how are you': "I'm doing great, thanks for asking! I'm here to help you with anything on this website.",
+            'who are you': "I'm TheUnlockedBot, an AI assistant created by TheUnlockedWeb. How can I help you?",
+            'what is this site': "This is TheUnlockedWeb! It's a website with videos, games, and information about the YouTube channel.",
+            'thanks': "You're welcome!",
+            'thank you': "You're welcome!"
+        };
 
         // --- Helper Functions ---
         function addMessageToChat(role, text) {
@@ -525,8 +536,8 @@
             let currentChatHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
             
             const payload = { contents: currentChatHistory };
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=`;
+            const apiKey = ""; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             
             let backoffDelay = 1000; // Start with 1 second delay
             const maxRetries = 5;
@@ -586,13 +597,21 @@
                 addMessageToChat('user', prompt);
                 userInput.value = '';
 
-                // Check for "who are you" before calling the API
-                if (prompt.toLowerCase().includes('who are you')) {
-                    const hardcodedResponse = "I'm TheUnlockedBot, an AI assistant created by TheUnlockedWeb. How can I help?";
-                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                    chatHistory.push({ role: "model", parts: [{ text: hardcodedResponse }] });
-                    addMessageToChat('model', hardcodedResponse);
-                } else {
+                // Check for hardcoded responses first
+                const normalizedPrompt = prompt.toLowerCase().trim();
+                let hardcodedResponseFound = false;
+                for (const key in hardcodedResponses) {
+                    if (normalizedPrompt.includes(key)) {
+                        const response = hardcodedResponses[key];
+                        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                        chatHistory.push({ role: "model", parts: [{ text: response }] });
+                        addMessageToChat('model', response);
+                        hardcodedResponseFound = true;
+                        break;
+                    }
+                }
+
+                if (!hardcodedResponseFound) {
                     fetchGeminiResponse(prompt);
                 }
             }
