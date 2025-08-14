@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+        }
+        .navbar {
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            padding: 10px 20px;
+        }
+        .calculator {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+            width: 300px;
+        }
+        #display {
+            width: 100%;
+            height: 50px;
+            background-color: #eee;
+            border: none;
+            font-size: 2em;
+            text-align: right;
+            padding: 5px 10px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            height: 60px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+        }
+        button:hover {
+            background-color: #d4d4d4;
+        }
+        .operator {
+            background-color: #ff9500;
+            color: white;
+        }
+        .operator:hover {
+            background-color: #e08c00;
+        }
+        .equals {
+            background-color: #007aff;
+            color: white;
+            grid-column: span 2;
+        }
+        .equals:hover {
+            background-color: #0069e0;
+        }
+        .clear {
+            background-color: #ff3b30;
+            color: white;
+        }
+        .clear:hover {
+            background-color: #e03228;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="turtle.html">Back to Others</a>
+    </div>
+
+    <div class="calculator">
+        <input type="text" id="display" disabled>
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="operator" onclick="appendInput('÷')">÷</button>
+            <button class="operator" onclick="appendInput('x')">X</button>
+            <button onclick="appendInput('7')">7</button>
+            <button onclick="appendInput('8')">8</button>
+            <button onclick="appendInput('9')">9</button>
+            <button class="operator" onclick="appendInput('-')">-</button>
+            <button onclick="appendInput('4')">4</button>
+            <button onclick="appendInput('5')">5</button>
+            <button onclick="appendInput('6')">6</button>
+            <button class="operator" onclick="appendInput('+')">+</button>
+            <button onclick="appendInput('1')">1</button>
+            <button onclick="appendInput('2')">2</button>
+            <button onclick="appendInput('3')">3</button>
+            <button class="equals" onclick="calculate()">=</button>
+            <button onclick="appendInput('0')">0</button>
+            <button onclick="appendInput('.')">.</button>
+        </div>
+    </div>
+    
+    <script>
+        const display = document.getElementById('display');
+        let currentInput = '';
+        let resultShown = false;
+
+        function appendInput(value) {
+            if (resultShown) {
+                currentInput = '';
+                resultShown = false;
+            }
+            currentInput += value;
+            display.value = currentInput;
+        }
+
+        function clearDisplay() {
+            currentInput = '';
+            resultShown = false;
+            display.value = '';
+        }
+
+        function backspace() {
+            if (resultShown) {
+                currentInput = '';
+                resultShown = false;
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            display.value = currentInput;
+        }
+
+        function calculate() {
+            try {
+                let expression = currentInput.replace(/x/g, '*').replace(/÷/g, '/');
+                let result = eval(expression);
+                display.value = result;
+                currentInput = result.toString();
+                resultShown = true;
+            } catch (error) {
+                display.value = 'Error';
+                currentInput = '';
+                resultShown = true;
+            }
+        }
+        
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            if (/[0-9]/.test(key) || key === '.') {
+                appendInput(key);
+            } else if (key === '+' || key === '-') {
+                appendInput(key);
+            } else if (key === '/' || key === '÷') {
+                appendInput('÷');
+            } else if (key === '*' || key.toLowerCase() === 'x') {
+                appendInput('x');
+            } else if (key === 'Enter' || key === '=') {
+                calculate();
+            } else if (key === 'Backspace') {
+                backspace();
+            } else if (key === 'Delete') {
+                clearDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
