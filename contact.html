@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact TheUnlockedWeb</title>
+    <title>Contact</title>
     <!-- We're using Tailwind CSS for a modern look, but also including the user's custom styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -83,6 +83,73 @@
             border-radius: 0.5rem;
             cursor: pointer;
         }
+
+        /* Styling for the new email choice modal */
+        #email-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .email-modal-content {
+            width: 95%;
+            max-width: 500px;
+            background-color: #1f2937; /* Tailwind gray-800 */
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            text-align: center;
+        }
+
+        .email-modal-content h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .email-modal-content button {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: white;
+            border-radius: 0.75rem;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .email-modal-content button:hover {
+            transform: translateY(-2px);
+        }
+
+        .email-modal-content .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            color: #d1d5db; /* Tailwind gray-400 */
+            cursor: pointer;
+            line-height: 1;
+        }
+        .email-modal-content .close-button:hover {
+            color: #ef4444; /* Tailwind red-500 */
+        }
+
+        /* Specific button colors for email clients */
+        .email-modal-content .gmail-button { background-color: #ea4335; }
+        .email-modal-content .yahoo-button { background-color: #6a00c6; }
+        .email-modal-content .outlook-button { background-color: #0078d4; }
+        .email-modal-content .other-button { background-color: #4b5563; }
     </style>
 </head>
 <body>
@@ -92,10 +159,22 @@
         <button onclick="hideMessage()">OK</button>
     </div>
 
+    <!-- Email Choice Modal -->
+    <div id="email-modal">
+        <div class="email-modal-content">
+            <span class="close-button" onclick="hideEmailModal()">&times;</span>
+            <h3>Choose your email client</h3>
+            <button class="gmail-button" onclick="openEmail('gmail')">Gmail</button>
+            <button class="yahoo-button" onclick="openEmail('yahoo')">Yahoo Mail</button>
+            <button class="outlook-button" onclick="openEmail('outlook')">Outlook/Hotmail (Web)</button>
+            <button class="other-button" onclick="openEmail('default')">Default Mail App</button>
+        </div>
+    </div>
+
     <!-- Container to hold and center the buttons -->
     <div class="button-container">
         <!-- The email button. The href attribute has been removed. -->
-        <button class="giant-button" id="button1" onclick="handleEmailClick()">
+        <button class="giant-button" id="button1" onclick="showEmailModal()">
             ✉️Email
         </button>
         <!-- The SMS button. The href attribute has been removed. -->
@@ -105,6 +184,8 @@
     </div>
 
     <script>
+        const emailModal = document.getElementById('email-modal');
+
         // Function to show the custom message box
         function showMessage(text) {
             const messageBox = document.getElementById('message-box');
@@ -119,11 +200,38 @@
             messageBox.style.display = 'none';
         }
 
-        // Function to handle the email button click
-        function handleEmailClick() {
-            // Using the mailto: protocol to open the default email client
+        // Functions for the email choice modal
+        function showEmailModal() {
+            emailModal.style.display = 'flex';
+        }
+
+        function hideEmailModal() {
+            emailModal.style.display = 'none';
+        }
+
+        function openEmail(client) {
             const emailAddress = "ethan.unlocked@gmail.com";
-            window.location.href = "mailto:" + emailAddress;
+            const subject = "Contact from TheUnlockedWeb";
+
+            // Hide the modal after a choice is made
+            hideEmailModal();
+
+            switch(client) {
+                case 'gmail':
+                    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${emailAddress}&su=${encodeURIComponent(subject)}`, '_blank');
+                    break;
+                case 'yahoo':
+                    window.open(`https://mail.yahoo.com/d/compose-mail?to=${emailAddress}&subject=${encodeURIComponent(subject)}`, '_blank');
+                    break;
+                case 'outlook':
+                    window.open(`https://outlook.live.com/mail/0/compose?to=${emailAddress}&subject=${encodeURIComponent(subject)}`, '_blank');
+                    break;
+                case 'default':
+                default:
+                    // This is the original 'mailto' link that opens the desktop app
+                    window.location.href = `mailto:${emailAddress}?subject=${encodeURIComponent(subject)}`;
+                    break;
+            }
         }
 
         // Function to handle the SMS button click with device detection
@@ -142,7 +250,7 @@
                 window.location.href = `sms:${phoneNumber}?body=${encodedMessage}`;
             } else {
                 // If not on an iOS device, show the custom message box
-                showMessage("Only available on Phone");
+                showMessage("Only available on Phone, iPad, or any form of messages");
             }
         }
     </script>
