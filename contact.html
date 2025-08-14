@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact</title>
+    <title>Contact TheUnlockedWeb</title>
     <!-- We're using Tailwind CSS for a modern look, but also including the user's custom styles -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -242,15 +242,15 @@
             
             // Check if the user is on an iOS device (iPhone or iPad)
             if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                // The pre-filled message you requested, URL-encoded
-                const message = "Hello! Start your conversation with THE EthanUnlocked himself! If you haven't subscribed to his youtube channel, do it now! Ethan and Isabella Unlocked. To start conversation, send Hi or Hello and Ethan will reply shortly.";
+                // This is the updated message for the user to send.
+                const message = "Hi Ethan! I'm reaching out from TheUnlockedWeb. Let's chat! My name is...";
                 const encodedMessage = encodeURIComponent(message);
                 
                 // Use the sms: protocol to open the messaging app
                 window.location.href = `sms:${phoneNumber}?body=${encodedMessage}`;
             } else {
                 // If not on an iOS device, show the custom message box
-                showMessage("Only available on Phone, iPad, or any form of messages");
+                showMessage("Only available on Phone");
             }
         }
     </script>
