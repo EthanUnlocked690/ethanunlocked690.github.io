@@ -84,8 +84,8 @@
             cursor: pointer;
         }
 
-        /* Styling for the new email choice modal */
-        #email-modal {
+        /* Styling for the new email and SMS choice modals */
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -99,7 +99,7 @@
             backdrop-filter: blur(5px);
         }
 
-        .email-modal-content {
+        .modal-content {
             width: 95%;
             max-width: 500px;
             background-color: #1f2937; /* Tailwind gray-800 */
@@ -110,14 +110,14 @@
             text-align: center;
         }
 
-        .email-modal-content h3 {
+        .modal-content h3 {
             font-size: 1.5rem;
             font-weight: bold;
             color: white;
             margin-bottom: 1.5rem;
         }
 
-        .email-modal-content button {
+        .modal-content button {
             width: 100%;
             padding: 1rem;
             margin-bottom: 1rem;
@@ -128,11 +128,11 @@
             transition: background-color 0.2s, transform 0.2s;
         }
 
-        .email-modal-content button:hover {
+        .modal-content button:hover {
             transform: translateY(-2px);
         }
 
-        .email-modal-content .close-button {
+        .modal-content .close-button {
             position: absolute;
             top: 1rem;
             right: 1rem;
@@ -141,15 +141,19 @@
             cursor: pointer;
             line-height: 1;
         }
-        .email-modal-content .close-button:hover {
+        .modal-content .close-button:hover {
             color: #ef4444; /* Tailwind red-500 */
         }
 
         /* Specific button colors for email clients */
-        .email-modal-content .gmail-button { background-color: #ea4335; }
-        .email-modal-content .yahoo-button { background-color: #6a00c6; }
-        .email-modal-content .outlook-button { background-color: #0078d4; }
-        .email-modal-content .other-button { background-color: #4b5563; }
+        .gmail-button { background-color: #ea4335; }
+        .yahoo-button { background-color: #6a00c6; }
+        .outlook-button { background-color: #0078d4; }
+        .default-button { background-color: #4b5563; }
+        
+        /* Specific colors for SMS options */
+        .conversation-button { background-color: #22c55e; /* Tailwind green-500 */ }
+        .questions-button { background-color: #f97316; /* Tailwind orange-500 */ }
     </style>
 </head>
 <body>
@@ -160,14 +164,24 @@
     </div>
 
     <!-- Email Choice Modal -->
-    <div id="email-modal">
-        <div class="email-modal-content">
+    <div id="email-modal" class="modal">
+        <div class="modal-content">
             <span class="close-button" onclick="hideEmailModal()">&times;</span>
             <h3>Choose your email client</h3>
             <button class="gmail-button" onclick="openEmail('gmail')">Gmail</button>
             <button class="yahoo-button" onclick="openEmail('yahoo')">Yahoo Mail</button>
             <button class="outlook-button" onclick="openEmail('outlook')">Outlook/Hotmail (Web)</button>
-            <button class="other-button" onclick="openEmail('default')">Default Mail App</button>
+            <button class="default-button" onclick="openEmail('default')">Default Mail App</button>
+        </div>
+    </div>
+
+    <!-- SMS Choice Modal -->
+    <div id="sms-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="hideSmsModal()">&times;</span>
+            <h3>How would you like to chat?</h3>
+            <button class="conversation-button" onclick="openSms('conversation')">Normal Conversation</button>
+            <button class="questions-button" onclick="openSms('questions')">Questions</button>
         </div>
     </div>
 
@@ -184,7 +198,9 @@
     </div>
 
     <script>
+        // Get modal elements
         const emailModal = document.getElementById('email-modal');
+        const smsModal = document.getElementById('sms-modal');
 
         // Function to show the custom message box
         function showMessage(text) {
@@ -234,23 +250,80 @@
             }
         }
 
-        // Function to handle the SMS button click with device detection
+        // Functions for the SMS choice modal
+        function showSmsModal() {
+            const now = new Date();
+            const estOffset = now.getTimezoneOffset() + 300; // TimezoneOffset is minutes from UTC. EST is 300 minutes (5 hours).
+            const estHour = (now.getUTCHours() - 5 + 24) % 24;
+            const estMinute = now.getUTCMinutes();
+            const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+            let canMessage = false;
+            let disabledMessage = "";
+
+            // Check if it's a weekend (Saturday or Sunday)
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                // Weekend hours: 7am to 7pm EST
+                if (estHour >= 7 && estHour < 19) {
+                    canMessage = true;
+                } else {
+                    disabledMessage = "Sorry, messages cannot be sent between 7 PM and 7 AM EST on weekends.";
+                }
+            } else { // Weekdays (Monday to Friday)
+                // Weekday hours: 3:01pm to 4:59pm EST
+                const totalMinutes = estHour * 60 + estMinute;
+                const enabledStart = 15 * 60 + 1; // 3:01 PM in minutes
+                const enabledEnd = 16 * 60 + 59; // 4:59 PM in minutes
+                
+                if (totalMinutes >= enabledStart && totalMinutes <= enabledEnd) {
+                    canMessage = true;
+                } else {
+                    disabledMessage = "Sorry, messages cannot be sent between 5 PM and 3 PM EST on weekdays.";
+                }
+            }
+            
+            if (canMessage) {
+                smsModal.style.display = 'flex';
+            } else {
+                showMessage(disabledMessage);
+            }
+        }
+
+        function hideSmsModal() {
+            smsModal.style.display = 'none';
+        }
+
+        function openSms(option) {
+            const phoneNumber = "0490892714";
+            let message = "";
+
+            // Hide the modal after a choice is made
+            hideSmsModal();
+
+            switch(option) {
+                case 'conversation':
+                    message = "Hello EthanUnlocked! I have found your website contact page and want to chat with you! Say hello!";
+                    break;
+                case 'questions':
+                    message = "Hello EthanUnlocked! I have found your contact page on your website and want to ask some questions. Get your answers ready!";
+                    break;
+            }
+            const encodedMessage = encodeURIComponent(message);
+            window.location.href = `sms:${phoneNumber}?body=${encodedMessage}`;
+        }
+
+        // Function to handle the initial SMS button click with device detection and time check
         function handlePhoneClick() {
             // The user agent string helps us detect the type of device
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const phoneNumber = "0490892714";
             
             // Check if the user is on an iOS device (iPhone or iPad)
             if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                // This is the updated message for the user to send.
-                const message = "Hi Ethan! I'm reaching out from TheUnlockedWeb. Let's chat! My name is...";
-                const encodedMessage = encodeURIComponent(message);
-                
-                // Use the sms: protocol to open the messaging app
-                window.location.href = `sms:${phoneNumber}?body=${encodedMessage}`;
+                // If it's a mobile device, show the SMS modal
+                showSmsModal();
             } else {
                 // If not on an iOS device, show the custom message box
-                showMessage("Only available on Phone");
+                showMessage("Only available on Phone, iPad, or any form of messaging");
             }
         }
     </script>
