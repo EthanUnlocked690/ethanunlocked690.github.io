@@ -3,19 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <title>Contact TheUnlockedWeb</title>
+    <!-- We're using Tailwind CSS for a modern look, but also including the user's custom styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* This is the user's original background style */
         body {
-            margin:0px;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
             background-image: url('webpage-backdrop.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+        }
+
+        /* Container to center and stack the buttons */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            gap: 2rem; /* Adds space between the buttons */
+            padding: 1rem;
+        }
+
+        /* Styling for the massive buttons */
+        .giant-button {
+            width: 80%;
+            max-width: 500px;
+            padding: 3rem 2rem; /* Massive padding to make it big */
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .giant-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Specific colors for each button */
+        #button1 {
+            background-color: #3b82f6; /* Tailwind blue-500 */
+        }
+        #button2 {
+            background-color: #10b981; /* Tailwind green-500 */
+        }
+
+        /* Custom message box for desktop/PC users */
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 9999;
+            text-align: center;
+            display: none; /* Hidden by default */
+            backdrop-filter: blur(5px);
+        }
+        .message-box button {
+            margin-top: 1rem;
+            padding: 0.5rem 1.5rem;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
         }
     </style>
+</head>
 <body>
-    <div class="button-container">
-        <button href="ethan.unlocked@gmail.com" class="giant-button" id="button1">✉️Email</button>
-        <button href="0490 892 714" class="giant-button" id="button2">💬SMS</button>
+    <!-- Custom Message Box, instead of using alert() -->
+    <div id="message-box" class="message-box">
+        <p id="message-text"></p>
+        <button onclick="hideMessage()">OK</button>
     </div>
+
+    <!-- Container to hold and center the buttons -->
+    <div class="button-container">
+        <!-- The email button. The href attribute has been removed. -->
+        <button class="giant-button" id="button1" onclick="handleEmailClick()">
+            ✉️Email
+        </button>
+        <!-- The SMS button. The href attribute has been removed. -->
+        <button class="giant-button" id="button2" onclick="handlePhoneClick()">
+            💬SMS
+        </button>
+    </div>
+
+    <script>
+        // Function to show the custom message box
+        function showMessage(text) {
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = text;
+            messageBox.style.display = 'block';
+        }
+
+        // Function to hide the custom message box
+        function hideMessage() {
+            const messageBox = document.getElementById('message-box');
+            messageBox.style.display = 'none';
+        }
+
+        // Function to handle the email button click
+        function handleEmailClick() {
+            // Using the mailto: protocol to open the default email client
+            const emailAddress = "ethan.unlocked@gmail.com";
+            window.location.href = "mailto:" + emailAddress;
+        }
+
+        // Function to handle the SMS button click with device detection
+        function handlePhoneClick() {
+            // The user agent string helps us detect the type of device
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const phoneNumber = "0490892714";
+            
+            // Check if the user is on an iOS device (iPhone or iPad)
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                // The pre-filled message you requested, URL-encoded
+                const message = "Hello! Start your conversation with THE EthanUnlocked himself! If you haven't subscribed to his youtube channel, do it now! Ethan and Isabella Unlocked. To start conversation, send Hi or Hello and Ethan will reply shortly.";
+                const encodedMessage = encodeURIComponent(message);
+                
+                // Use the sms: protocol to open the messaging app
+                window.location.href = `sms:${phoneNumber}?body=${encodedMessage}`;
+            } else {
+                // If not on an iOS device, show the custom message box
+                showMessage("Only available on Phone, iPad, or any form of messages");
+            }
+        }
+    </script>
 </body>
 </html>
