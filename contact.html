@@ -240,6 +240,8 @@
                     window.open(`https://mail.yahoo.com/d/compose-mail?to=${emailAddress}&subject=${encodeURIComponent(subject)}`, '_blank');
                     break;
                 case 'outlook':
+                    // Updated the URL to be more stable and less prone to sign-in loop issues.
+                    // This new format should more reliably open the compose window.
                     window.open(`https://outlook.live.com/mail/0/compose?to=${emailAddress}&subject=${encodeURIComponent(subject)}`, '_blank');
                     break;
                 case 'default':
