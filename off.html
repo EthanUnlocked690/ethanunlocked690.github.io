@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Games</title>
+    <style>
+        /* General body and container styling for a clean, centered layout */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121213;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Navbar styling */
+        .navbar {
+            width: 100%;
+            background-color: #1a1a1b;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .navbar a:hover {
+            color: #55acee; /* A vibrant blue for hover effect */
+        }
+
+        /* Main content container */
+        .games-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        /* Styling for each game card */
+        .game-card {
+            background-color: #1a1a1b;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            padding: 1.5rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .game-card h2 {
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        .game-card button, .game-card input[type="number"] {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Game button styling */
+        .game-card button {
+            background-color: #55acee;
+            color: white;
+        }
+        .game-card button:hover {
+            background-color: #449ada;
+        }
+
+        /* Tic-Tac-Toe specific styling */
+        #tictactoe-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto 1rem;
+            position: relative; /* Crucial for positioning the winning line */
+        }
+        .cell {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* Ensures the cell remains a square */
+            background-color: #3a3a3c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem; /* Adjusted font size to fit better */
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+        .cell:hover {
+            background-color: #555555;
+        }
+        #tictactoe-status {
+            min-height: 2rem;
+            font-size: 1.2rem;
+        }
+        .mode-selection {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* New styling for the winning line */
+        #winning-line {
+            position: absolute;
+            background-color: #f0f0f0;
+            height: 5px;
+            border-radius: 2px;
+            z-index: 5;
+            transition: all 0.5s ease-in-out;
+            visibility: hidden;
+            width: 0;
+        }
+        
+        #winning-line.visible {
+            visibility: visible;
+        }
+
+        /* Rock, Paper, Scissors specific styling */
+        #rps-options {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .rps-button {
+            padding: 1rem 1.5rem;
+            font-size: 2rem;
+            border: 2px solid #55acee;
+            background-color: transparent;
+            color: #ffffff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .rps-button:hover {
+            background-color: #55acee;
+            transform: translateY(-2px);
+        }
+        #rps-results {
+            min-height: 3rem;
+            font-size: 1.2rem;
+        }
+
+        /* Guess the Number styling */
+        #guess-number-game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        #guess-input {
+            width: 100px;
+            text-align: center;
+            background-color: #3a3a3c;
+            color: white;
+            border: 1px solid #55acee;
+        }
+        
+        /* Memory Match styling */
+        #memory-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 1rem;
+        }
+        .card {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* Ensures the card remains a square */
+            background-color: #3a3a3c;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .card-front {
+            transform: rotateY(180deg);
+        }
+        .card.matched {
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar with a single link as requested -->
+    <nav class="navbar">
+        <a href="turtle.html">Back to Others</a>
+    </nav>
+
+    <div class="games-container">
+
+        <!-- Tic-Tac-Toe Game Card -->
+        <div class="game-card">
+            <h2>Tic-Tac-Toe</h2>
+            <div class="mode-selection">
+                <button onclick="setTictactoeMode('player')">Player vs. Player</button>
+                <button onclick="setTictactoeMode('bot')">Player vs. Bot</button>
+            </div>
+            <div id="tictactoe-board">
+                <!-- Winning line element -->
+                <div id="winning-line"></div>
+            </div>
+            <div id="tictactoe-status">Select a game mode.</div>
+            <button onclick="resetTictactoe()" style="margin-top: 1rem;">Reset Game</button>
+        </div>
+
+        <!-- Rock, Paper, Scissors Game Card -->
+        <div class="game-card">
+            <h2>Rock, Paper, Scissors</h2>
+            <div id="rps-options">
+                <button class="rps-button" onclick="playRPS('rock')">🪨</button>
+                <button class="rps-button" onclick="playRPS('paper')">📄</button>
+                <button class="rps-button" onclick="playRPS('scissors')">✂️</button>
+            </div>
+            <div id="rps-results">Choose your move!</div>
+            <button onclick="resetRPS()" style="margin-top: 1rem;">Reset Game</button>
+        </div>
+
+        <!-- Guess the Number Game Card -->
+        <div class="game-card">
+            <h2>Guess the Number</h2>
+            <p>I'm thinking of a number between 1 and 100.</p>
+            <div id="guess-number-game">
+                <input type="number" id="guess-input" placeholder="Enter guess" min="1" max="100">
+                <button onclick="checkGuess()">Guess</button>
+            </div>
+            <p id="guess-feedback"></p>
+            <button onclick="resetGuessNumber()" style="margin-top: 1rem;">Reset Game</button>
+        </div>
+
+        <!-- Memory Match Game Card -->
+        <div class="game-card">
+            <h2>Memory Match</h2>
+            <div id="memory-board"></div>
+            <p id="memory-message"></p>
+            <button onclick="resetMemoryGame()" style="margin-top: 1rem;">Reset Game</button>
+        </div>
+        
+    </div>
+
+    <script>
+        // --- Tic-Tac-Toe Game Logic ---
+        let ticTacBoard;
+        let ticTacStatus;
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = false; // Game is inactive until a mode is selected
+        let gameMode = null; // 'player' or 'bot'
+        const winningLine = document.getElementById('winning-line');
+
+        // Function to set the game mode and start a new game
+        function setTictactoeMode(mode) {
+            gameMode = mode;
+            resetTictactoe();
+        }
+
+        function initializeTictactoe() {
+            ticTacBoard = document.getElementById('tictactoe-board');
+            ticTacStatus = document.getElementById('tictactoe-status');
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleCellClick);
+                ticTacBoard.appendChild(cell);
+            }
+        }
+
+        function handleCellClick(event) {
+            const clickedCell = event.target;
+            const clickedCellIndex = parseInt(clickedCell.dataset.index);
+
+            // Check if game is active, cell is empty, and it's a human's turn
+            if (!gameActive || board[clickedCellIndex] !== '' || (gameMode === 'bot' && currentPlayer === 'O')) {
+                return;
+            }
+
+            makeMove(clickedCellIndex);
+        }
+
+        function makeMove(index) {
+            board[index] = currentPlayer;
+            document.querySelector(`[data-index='${index}']`).textContent = currentPlayer;
+            checkWinner();
+        }
+
+        function botMove() {
+            // Simple bot logic
+            const availableMoves = board.map((cell, index) => cell === '' ? index : null).filter(val => val !== null);
+            let move = -1;
+
+            // 1. Check if bot can win
+            for (let i = 0; i < availableMoves.length; i++) {
+                const tempBoard = [...board];
+                tempBoard[availableMoves[i]] = 'O';
+                if (checkWinConditions(tempBoard, 'O')) {
+                    move = availableMoves[i];
+                    break;
+                }
+            }
+
+            // 2. Block player from winning
+            if (move === -1) {
+                for (let i = 0; i < availableMoves.length; i++) {
+                    const tempBoard = [...board];
+                    tempBoard[availableMoves[i]] = 'X';
+                    if (checkWinConditions(tempBoard, 'X')) {
+                        move = availableMoves[i];
+                        break;
+                    }
+                }
+            }
+
+            // 3. Take center
+            if (move === -1 && board[4] === '') {
+                move = 4;
+            }
+            
+            // 4. Take a corner
+            if (move === -1) {
+                const corners = [0, 2, 6, 8];
+                const availableCorners = corners.filter(index => board[index] === '');
+                if (availableCorners.length > 0) {
+                    move = availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                }
+            }
+
+            // 5. Take any available spot
+            if (move === -1) {
+                move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            }
+
+            if (move !== -1) {
+                makeMove(move);
+            }
+        }
+
+        function checkWinConditions(currentBoard, player) {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            return winConditions.some(condition => {
+                return condition.every(index => currentBoard[index] === player);
+            });
+        }
+
+        function checkWinner() {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            let winningConditionIndex = -1;
+            for (let i = 0; i < winConditions.length; i++) {
+                const winCondition = winConditions[i];
+                if (board[winCondition[0]] === currentPlayer && 
+                    board[winCondition[1]] === currentPlayer && 
+                    board[winCondition[2]] === currentPlayer) {
+                    winningConditionIndex = i;
+                    break;
+                }
+            }
+
+            if (winningConditionIndex !== -1) {
+                ticTacStatus.textContent = `Player ${currentPlayer} has won! 🎉`;
+                gameActive = false;
+                drawWinningLine(winningConditionIndex);
+                return;
+            }
+
+            let roundDraw = !board.includes('');
+            if (roundDraw) {
+                ticTacStatus.textContent = 'Game is a draw! 🤝';
+                gameActive = false;
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            ticTacStatus.textContent = `Player ${currentPlayer}'s turn`;
+
+            if (gameActive && gameMode === 'bot' && currentPlayer === 'O') {
+                setTimeout(botMove, 500); // Add a slight delay for a better user experience
+            }
+        }
+        
+        // Function to draw the line across the winning combination
+        function drawWinningLine(winIndex) {
+            // Hardcoded styles for each winning combination, based on a percentage grid
+            const lineStyles = [
+                // Horizontal lines
+                { top: '16.6%', left: '0%', width: '100%', transform: 'rotate(0deg)' },
+                { top: '50%', left: '0%', width: '100%', transform: 'rotate(0deg)' },
+                { top: '83.3%', left: '0%', width: '100%', transform: 'rotate(0deg)' },
+                // Vertical lines
+                { top: '0%', left: '16.6%', width: '100%', transform: 'rotate(90deg)' },
+                { top: '0%', left: '50%', width: '100%', transform: 'rotate(90deg)' },
+                { top: '0%', left: '83.3%', width: '100%', transform: 'rotate(90deg)' },
+                // Diagonal lines
+                { top: '0%', left: '0%', width: '141.4%', transform: 'rotate(45deg)' },
+                { top: '0%', left: '-41.4%', width: '141.4%', transform: 'rotate(135deg)' }
+            ];
+
+            const style = lineStyles[winIndex];
+            winningLine.style.top = style.top;
+            winningLine.style.left = style.left;
+            winningLine.style.width = style.width;
+            winningLine.style.transform = style.transform;
+            winningLine.classList.add('visible');
+            
+            // Adjust transform-origin for diagonal lines
+            winningLine.style.transformOrigin = style.transformOrigin || '0% 0%';
+        }
+
+        function resetTictactoe() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            ticTacStatus.textContent = gameMode === 'bot' ? "Player X's turn (You)" : "Player X's turn";
+            document.querySelectorAll('#tictactoe-board .cell').forEach(cell => {
+                cell.textContent = '';
+            });
+            // Hide the winning line
+            winningLine.style.width = '0%';
+            winningLine.classList.remove('visible');
+        }
+
+        // --- Rock, Paper, Scissors Game Logic ---
+        const rpsResults = document.getElementById('rps-results');
+
+        function playRPS(playerChoice) {
+            const choices = ['rock', 'paper', 'scissors'];
+            const computerChoice = choices[Math.floor(Math.random() * choices.length)];
+            
+            let result = '';
+            if (playerChoice === computerChoice) {
+                result = "It's a tie!";
+            } else if (
+                (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                (playerChoice === 'paper' && computerChoice === 'rock') ||
+                (playerChoice === 'scissors' && computerChoice === 'paper')
+            ) {
+                result = 'You win! �';
+            } else {
+                result = 'You lose! 😢';
+            }
+            
+            rpsResults.innerHTML = `You chose ${playerChoice.toUpperCase()}, computer chose ${computerChoice.toUpperCase()}.<br>${result}`;
+        }
+
+        function resetRPS() {
+            rpsResults.textContent = 'Choose your move!';
+        }
+
+        // --- Guess the Number Game Logic ---
+        let secretNumber;
+        let attempts = 0;
+        const guessInput = document.getElementById('guess-input');
+        const guessFeedback = document.getElementById('guess-feedback');
+
+        function initializeGuessNumber() {
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            guessFeedback.textContent = '';
+            guessInput.value = '';
+        }
+
+        function checkGuess() {
+            const userGuess = parseInt(guessInput.value);
+            if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
+                guessFeedback.textContent = 'Please enter a valid number between 1 and 100.';
+                return;
+            }
+
+            attempts++;
+            if (userGuess === secretNumber) {
+                guessFeedback.textContent = `Congratulations! You guessed the number in ${attempts} attempts! 🎉`;
+                guessInput.disabled = true;
+            } else if (userGuess < secretNumber) {
+                guessFeedback.textContent = 'Too low! Try again.';
+            } else {
+                guessFeedback.textContent = 'Too high! Try again.';
+            }
+        }
+
+        function resetGuessNumber() {
+            guessInput.disabled = false;
+            initializeGuessNumber();
+        }
+        
+        // --- Memory Match Game Logic ---
+        const cardEmojis = ['🍎', '🍌', '🍇', '🍉', '🍓', '🍊', '🥝', '🍒'];
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let lockBoard = false;
+
+        const memoryBoard = document.getElementById('memory-board');
+        const memoryMessage = document.getElementById('memory-message');
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initializeMemoryMatch() {
+            cards = shuffle([...cardEmojis, ...cardEmojis]);
+            memoryBoard.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            lockBoard = false;
+            memoryMessage.textContent = 'Match the pairs!';
+            
+            cards.forEach(cardValue => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.value = cardValue;
+                card.innerHTML = `
+                    <div class="card-back" style="background-color: #55acee;"></div>
+                    <div class="card-front">${cardValue}</div>
+                `;
+                card.addEventListener('click', handleCardClick);
+                memoryBoard.appendChild(card);
+            });
+        }
+
+        function handleCardClick(event) {
+            const card = event.currentTarget;
+            
+            if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) {
+                return;
+            }
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                checkForMatch();
+            }
+        }
+        
+        function checkForMatch() {
+            lockBoard = true;
+            const [card1, card2] = flippedCards;
+
+            if (card1.dataset.value === card2.dataset.value) {
+                matchedPairs++;
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                resetFlippedCards();
+                if (matchedPairs === cardEmojis.length) {
+                    memoryMessage.textContent = 'You won! 🎉';
+                }
+            } else {
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    resetFlippedCards();
+                }, 1000);
+            }
+        }
+
+        function resetFlippedCards() {
+            flippedCards = [];
+            lockBoard = false;
+        }
+
+        function resetMemoryGame() {
+            initializeMemoryMatch();
+        }
+
+        // Initialize games on page load
+        window.onload = function() {
+            initializeTictactoe();
+            initializeGuessNumber();
+            initializeMemoryMatch();
+        };
+    </script>
+</body>
+</html>
