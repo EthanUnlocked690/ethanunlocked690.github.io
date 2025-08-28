@@ -304,7 +304,7 @@
     const Floor = ' ';
     const Player = '🚶';
     const Enemy = '🐉';
-    const GIANT_DRAGON_BOSS = '🐲';
+    const GIANT_DRAGON_BOSS = '😈';
     const Key = '🔑';
     const Exit = '🚪';
     const Potion = '❤️';
@@ -728,7 +728,7 @@
                 if(floorTiles.length > 0) gameState.potions.push(getRandomTile());
             }
         } else {
-            const bossSize = 3;
+            const bossSize = 9;
             let bossCenter = getRandomTile();
             while (!bossCenter || (Math.abs(bossCenter.x - gameState.player.x) < 5 && Math.abs(bossCenter.y - gameState.player.y) < 5)) {
                 bossCenter = getRandomTile();
