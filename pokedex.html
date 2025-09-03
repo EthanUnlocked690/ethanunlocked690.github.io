@@ -114,12 +114,6 @@
             height: 150px;
             margin: 10px auto;
             display: block;
-            image-rendering: pixelated;
-        }
-
-        /* Override for official artwork */
-        .pokemon-card.mega-pokemon img, .pokemon-card.regional-pokemon img, .pokemon-card.gmax-pokemon img {
-            image-rendering: auto;
         }
 
         .pokemon-card .pokemon-name {
@@ -233,12 +227,6 @@
             width: 200px;
             height: 200px;
             cursor: pointer;
-            image-rendering: pixelated; 
-        }
-
-        /* Override for official artwork in modal */
-        .modal-info .modal-image.official-artwork {
-            image-rendering: auto;
         }
 
         /* Attack Animation */
@@ -470,46 +458,53 @@
                 displayPokemon(currentPokemonToDisplay, category);
             };
 
+            const getPokemonImageUrl = (pokemonName, isShiny = false) => {
+                const baseShowdownUrl = 'https://play.pokemonshowdown.com/sprites/gen5ani';
+                const baseShowdownShinyUrl = 'https://play.pokemonshowdown.com/sprites/gen5ani-shiny';
+                const baseUrl = isShiny ? baseShowdownShinyUrl : baseShowdownUrl;
+                const normalizedName = pokemonName.replace('♀', '-f').replace('♂', '-m');
+
+                // Special handling for Mega, Primal, and G-Max forms
+                if (normalizedName.includes('-mega') || normalizedName.includes('-primal') || normalizedName.includes('-gmax')) {
+                    return `${baseUrl}/${normalizedName}.gif`;
+                }
+                 // Special handling for regional forms and other special forms
+                const specialForms = [
+                    '-alola', '-galar', '-hisui', '-cosplay', '-libre', '-luchador', '-phd', '-belle', '-heart-trim',
+                    '-star-trim', '-ribbon-trim', '-dandy', '-gorgeous', '-kabuki', '-senjitsu', '-elite', '-totem',
+                    '-hero', '-zenith', '-sky', '-sunny', '-rainy', '-snowy', '-blaze', '-aqua', '-pa-alola', '-original',
+                    '-spiky-eared', '-therian', '-incarnate', '-resolute', '-pirouette', '-ordinary', '-aria', '-elect',
+                    '-pau', '-pom-pom', '-rock-ruff', '-unbound', '-ash', '-meadow', '-sensu', '-baile', '-hangry',
+                    '-full-belly', '-school', '-solo', '-busted', '-dada', '-crowned', '-amped', '-low-key',
+                    '-single-strike', '-rapid-strike', '-ice', '-dark', '-ghost', '-fighting', '-bug', '-ground',
+                    '-fire', '-water', '-grass', '-electric', '-psychic', '-rock', '-steel', '-fairy', '-poison',
+                    '-dragon', '-flying', '-female', '-male', '-battle-bond', '-original-cap', '-dusk'
+                ];
+                for (const form of specialForms) {
+                    if (normalizedName.includes(form)) {
+                        return `${baseUrl}/${normalizedName}.gif`;
+                    }
+                }
+
+                // Fallback to the original PokéAPI sprites
+                return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${isShiny ? 'shiny/' : ''}${pokemonName}.gif`;
+            };
+
             const displayPokemon = (pokemonList, category) => {
                 pokedexContainer.innerHTML = '';
                 pokemonList.forEach(pokemon => {
                     const pokemonCard = document.createElement('div');
-                    const isMega = pokemon.name.includes('-mega');
-                    const isRegional = pokemon.name.includes('-alola') || pokemon.name.includes('-galar') || pokemon.name.includes('-hisui');
-                    const isGmax = pokemon.name.includes('-gmax');
-                    const isPrimal = pokemon.name.includes('-primal');
-
                     pokemonCard.classList.add('pokemon-card');
                     pokemonCard.setAttribute('data-id', pokemon.id);
 
-                    if (isMega || isPrimal) {
-                        pokemonCard.classList.add('mega-pokemon');
-                    } else if (isRegional) {
-                        pokemonCard.classList.add('regional-pokemon');
-                    } else if (isGmax) {
-                        pokemonCard.classList.add('gmax-pokemon');
-                    }
-
                     const name = pokemon.name;
                     const id = pokemon.id.toString().padStart(3, '0');
-                    let imageUrl;
-
-                    if (isMega || isRegional || isGmax || isPrimal) {
-                        imageUrl = pokemon.sprites.other['official-artwork'].front_default;
-                    } else if (category === 'shiny') {
-                        const shinyUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny;
-                        imageUrl = shinyUrl || pokemon.sprites.front_shiny || pokemon.sprites.front_default;
-                    } else {
-                        const animatedUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
-                        imageUrl = animatedUrl || pokemon.sprites.front_default;
-                    }
+                    const imageUrl = getPokemonImageUrl(name, category === 'shiny');
 
                     let displayName;
                     if (category === 'mega' || category === 'gmax') {
-                        // For dedicated form sections, show the full name
                         displayName = name;
                     } else {
-                        // For other sections, show the base name
                         displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '').replace(/-battle-bond/, '').replace(/-original-cap/, '');
                     }
                     
@@ -528,7 +523,6 @@
             const showPokemonDetails = async (pokemon) => {
                 const speciesId = pokemon.name.includes('-gmax') ? pokemon.name.split('-')[0] : pokemon.id;
                 const speciesData = await getSpeciesData(speciesId);
-
                 const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
                 
                 renderModalContent(pokemon, speciesData, varieties);
@@ -541,11 +535,9 @@
 
                 modalImage.addEventListener('click', () => {
                     modalImage.classList.remove('attack');
-                    // Force a reflow to restart the animation
                     void modalImage.offsetWidth; 
                     modalImage.classList.add('attack');
                     
-                    // Play the sound
                     modalAudio.currentTime = 0;
                     modalAudio.play();
                 });
@@ -554,76 +546,44 @@
             const getVarietyButtonName = (varietyName) => {
                 if (varietyName.includes('-mega-x')) return 'Mega X';
                 if (varietyName.includes('-mega-y')) return 'Mega Y';
+                if (varietyName.includes('-mega')) return 'Mega';
                 if (varietyName.includes('-primal')) return 'Primal';
                 if (varietyName.includes('-gmax')) return 'G-Max';
                 if (varietyName.includes('-alola')) return 'Alolan';
                 if (varietyName.includes('-galar')) return 'Galarian';
                 if (varietyName.includes('-hisui')) return 'Hisuian';
                 
-                // Simplified names for other special forms
-                const specialForms = [
-                    'battle-bond', 'original-cap', 'cosplay', 'libre', 'luchador', 'phd', 'belle', 'heart-trim',
-                    'star-trim', 'ribbon-trim', 'dandy', 'gorgeous', 'kabuki', 'senjitsu', 'elite', 'totem',
-                    'hero', 'zenith', 'sky', 'sunny', 'rainy', 'snowy', 'blaze', 'aqua', 'pa-alola', 'original',
-                    'spiky-eared', 'therian', 'incarnate', 'resolute', 'pirouette', 'ordinary', 'aria', 'elect',
-                    'pau', 'pom-pom', 'rock-ruff', 'unbound', 'ash', 'meadow', 'sensu', 'baile', 'hangry',
-                    'full-belly', 'school', 'solo', 'busted', 'dada', 'crowned', 'amped', 'low-key',
-                    'single-strike', 'rapid-strike', 'ice', 'dark', 'ghost', 'fighting', 'bug', 'ground',
-                    'fire', 'water', 'grass', 'electric', 'psychic', 'rock', 'steel', 'fairy', 'poison',
-                    'dragon', 'flying'
-                ];
-                for (const form of specialForms) {
-                    if (varietyName.includes(`-${form}`)) {
-                        return form.replace(/-/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                    }
-                }
-                
                 return 'Normal';
             };
             
             const renderModalContent = (pokemon, speciesData, varieties, isShiny = false) => {
-                const isMega = pokemon.name.includes('-mega');
-                const isRegional = pokemon.name.includes('-alola') || pokemon.name.includes('-galar') || pokemon.name.includes('-hisui');
-                const isGmax = pokemon.name.includes('-gmax');
-                const isPrimal = pokemon.name.includes('-primal');
-
-                const id = pokemon.id.toString().padStart(3, '0');
                 const name = pokemon.name;
+                const id = pokemon.id.toString().padStart(3, '0');
                 const types = pokemon.types.map(typeInfo => typeInfo.type.name);
-                const height = (pokemon.height / 10).toFixed(1); // Decimeters to meters
-                const weight = (pokemon.weight / 10).toFixed(1); // Hectograms to kilograms
+                const height = (pokemon.height / 10).toFixed(1);
+                const weight = (pokemon.weight / 10).toFixed(1);
                 const abilities = pokemon.abilities.map(abilityInfo => abilityInfo.ability.name).join(', ');
                 const stats = pokemon.stats.map(statInfo => ({
                     name: statInfo.stat.name.replace('-', ' '),
                     value: statInfo.base_stat
                 }));
                 
-                let imageUrl;
-                const useOfficialArtwork = isMega || isRegional || isGmax || isPrimal;
-                
-                if (isShiny) {
-                    imageUrl = useOfficialArtwork ? pokemon.sprites.other['official-artwork'].front_shiny : 
-                                       (pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny || pokemon.sprites.front_shiny || pokemon.sprites.front_default);
-                } else {
-                    imageUrl = useOfficialArtwork ? pokemon.sprites.other['official-artwork'].front_default :
-                                       (pokemon.sprites.versions['generation-v']['black-white'].animated.front_default || pokemon.sprites.front_default);
-                }
+                const imageUrl = getPokemonImageUrl(name, isShiny);
                
                 const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
                 const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
-
                 const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
 
-                // Categorize varieties
                 const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
                 const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
                 const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
-                const otherForms = varieties.filter(v => v.name === speciesData.name);
+                const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
 
-                const renderButtons = (forms, currentName) => {
+                const renderButtons = (forms) => {
+                    if (forms.length === 0) return '';
                     return forms.map(v => {
                         const buttonName = getVarietyButtonName(v.name);
-                        const isActive = v.name === currentName;
+                        const isActive = v.name === pokemon.name;
                         return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
                     }).join('');
                 };
@@ -632,7 +592,7 @@
 
                 modalBody.innerHTML = `
                     <div class="modal-info">
-                        <img src="${imageUrl}" alt="${name}" class="modal-image ${useOfficialArtwork ? 'official-artwork' : ''} ${isShiny ? 'shiny-image' : ''}">
+                        <img src="${imageUrl}" alt="${name}" class="modal-image">
                         <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
                         <div class="modal-id">#${id}</div>
                         <div class="modal-types">
@@ -643,7 +603,7 @@
                         <div class="variety-section normal-forms">
                            <h4>Normal Form</h4>
                            <div class="variety-buttons">
-                               ${renderButtons(otherForms, pokemon.name)}
+                               <button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>
                            </div>
                         </div>
 
@@ -651,7 +611,7 @@
                         <div class="variety-section mega-forms">
                            <h4>Mega Forms</h4>
                            <div class="variety-buttons">
-                               ${renderButtons(megaForms, pokemon.name)}
+                               ${renderButtons(megaForms)}
                            </div>
                         </div>` : ''}
                         
@@ -659,7 +619,7 @@
                         <div class="variety-section regional-forms">
                            <h4>Regional Forms</h4>
                            <div class="variety-buttons">
-                               ${renderButtons(regionalForms, pokemon.name)}
+                               ${renderButtons(regionalForms)}
                            </div>
                         </div>` : ''}
 
@@ -667,7 +627,7 @@
                         <div class="variety-section gmax-forms">
                            <h4>G-Max Forms</h4>
                            <div class="variety-buttons">
-                               ${renderButtons(gmaxForms, pokemon.name)}
+                               ${renderButtons(gmaxForms)}
                            </div>
                         </div>` : ''}
 
