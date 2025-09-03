@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokédex - TheUnlockedWeb version</title>
+    <title>Pokédex - The Ultimate Version</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -292,14 +292,22 @@
         }
         
         /* Variety Button Styles */
+        .variety-section {
+            margin-top: 20px;
+        }
+        .variety-section h4 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            color: #555;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
         .variety-buttons {
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 20px;
         }
-
         .variety-button {
             background-color: #6390F0;
             color: white;
@@ -311,7 +319,6 @@
             font-size: 14px;
             transition: background-color 0.3s;
         }
-
         .variety-button.active {
             background-color: #3f65b8;
         }
@@ -544,18 +551,33 @@
                 });
             };
 
-            const getVarietyButtonName = (varietyName, baseName) => {
+            const getVarietyButtonName = (varietyName) => {
                 if (varietyName.includes('-mega-x')) return 'Mega X';
                 if (varietyName.includes('-mega-y')) return 'Mega Y';
-                if (varietyName.includes('-mega')) return 'Mega';
                 if (varietyName.includes('-primal')) return 'Primal';
                 if (varietyName.includes('-gmax')) return 'G-Max';
                 if (varietyName.includes('-alola')) return 'Alolan';
                 if (varietyName.includes('-galar')) return 'Galarian';
                 if (varietyName.includes('-hisui')) return 'Hisuian';
-                if (varietyName.includes('-eternamax')) return 'Eternamax';
-                if (varietyName.includes('-battle-bond')) return 'Battle Bond';
-                if (varietyName.includes('-original-cap')) return 'Original Cap';
+                
+                // Simplified names for other special forms
+                const specialForms = [
+                    'battle-bond', 'original-cap', 'cosplay', 'libre', 'luchador', 'phd', 'belle', 'heart-trim',
+                    'star-trim', 'ribbon-trim', 'dandy', 'gorgeous', 'kabuki', 'senjitsu', 'elite', 'totem',
+                    'hero', 'zenith', 'sky', 'sunny', 'rainy', 'snowy', 'blaze', 'aqua', 'pa-alola', 'original',
+                    'spiky-eared', 'therian', 'incarnate', 'resolute', 'pirouette', 'ordinary', 'aria', 'elect',
+                    'pau', 'pom-pom', 'rock-ruff', 'unbound', 'ash', 'meadow', 'sensu', 'baile', 'hangry',
+                    'full-belly', 'school', 'solo', 'busted', 'dada', 'crowned', 'amped', 'low-key',
+                    'single-strike', 'rapid-strike', 'ice', 'dark', 'ghost', 'fighting', 'bug', 'ground',
+                    'fire', 'water', 'grass', 'electric', 'psychic', 'rock', 'steel', 'fairy', 'poison',
+                    'dragon', 'flying'
+                ];
+                for (const form of specialForms) {
+                    if (varietyName.includes(`-${form}`)) {
+                        return form.replace(/-/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                    }
+                }
+                
                 return 'Normal';
             };
             
@@ -592,22 +614,19 @@
 
                 const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
 
-                // Deduplicate and get unique varieties for buttons
-                const uniqueVarietiesMap = new Map();
-                varieties.forEach(v => {
-                    const buttonName = getVarietyButtonName(v.name, speciesData.name);
-                    if (v.name === speciesData.name) {
-                        uniqueVarietiesMap.set('Normal', v);
-                    } else if (v.name.includes('-primal') || v.name.includes('-mega') || v.name.includes('-gmax') || v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui')) {
-                        uniqueVarietiesMap.set(buttonName, v);
-                    }
-                });
+                // Categorize varieties
+                const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
+                const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
+                const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
+                const otherForms = varieties.filter(v => v.name === speciesData.name);
 
-                const varietyButtonsHTML = Array.from(uniqueVarietiesMap.values()).map(v => {
-                    const buttonName = getVarietyButtonName(v.name, speciesData.name);
-                    const isActive = v.name === pokemon.name && !isShiny;
-                    return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
-                }).join('');
+                const renderButtons = (forms, currentName) => {
+                    return forms.map(v => {
+                        const buttonName = getVarietyButtonName(v.name);
+                        const isActive = v.name === currentName;
+                        return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
+                    }).join('');
+                };
 
                 const isCurrentlyShiny = isShiny ? 'active' : '';
 
@@ -620,10 +639,45 @@
                             ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
                         </div>
                         <p class="description">"${description}"</p>
-                        <div class="variety-buttons">
-                            ${varietyButtonsHTML}
-                            <button class="variety-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
+                        
+                        <div class="variety-section normal-forms">
+                           <h4>Normal Form</h4>
+                           <div class="variety-buttons">
+                               ${renderButtons(otherForms, pokemon.name)}
+                           </div>
                         </div>
+
+                        ${megaForms.length > 0 ? `
+                        <div class="variety-section mega-forms">
+                           <h4>Mega Forms</h4>
+                           <div class="variety-buttons">
+                               ${renderButtons(megaForms, pokemon.name)}
+                           </div>
+                        </div>` : ''}
+                        
+                        ${regionalForms.length > 0 ? `
+                        <div class="variety-section regional-forms">
+                           <h4>Regional Forms</h4>
+                           <div class="variety-buttons">
+                               ${renderButtons(regionalForms, pokemon.name)}
+                           </div>
+                        </div>` : ''}
+
+                        ${gmaxForms.length > 0 ? `
+                        <div class="variety-section gmax-forms">
+                           <h4>G-Max Forms</h4>
+                           <div class="variety-buttons">
+                               ${renderButtons(gmaxForms, pokemon.name)}
+                           </div>
+                        </div>` : ''}
+
+                        <div class="variety-section shiny-toggle">
+                            <h4>Appearance</h4>
+                            <div class="variety-buttons">
+                                <button class="variety-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
+                            </div>
+                        </div>
+
                         <div class="details">
                             <p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
                             <p><strong>Height:</strong> ${height} m</p>
