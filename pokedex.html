@@ -118,7 +118,7 @@
         }
 
         /* Override for official artwork */
-        .pokemon-card.mega-pokemon img {
+        .pokemon-card.mega-pokemon img, .pokemon-card.regional-pokemon img, .pokemon-card.gmax-pokemon img {
             image-rendering: auto;
         }
 
@@ -236,7 +236,7 @@
         }
 
         /* Override for official artwork in modal */
-        .modal-info .modal-image.mega-pokemon-image {
+        .modal-info .modal-image.mega-pokemon-image, .modal-info .modal-image.regional-pokemon-image, .modal-info .modal-image.gmax-pokemon-image {
             image-rendering: auto;
         }
 
@@ -277,6 +277,31 @@
         .modal-info .stats-list span:first-child {
             font-weight: bold;
             text-transform: uppercase;
+        }
+        
+        /* Variety Button Styles */
+        .variety-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .variety-button {
+            background-color: #6390F0;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .variety-button.active {
+            background-color: #3f65b8;
         }
     </style>
 </head>
@@ -333,6 +358,7 @@
             let allPokemon = [];
             const cachedSpeciesData = {};
             const cachedRegionalData = {};
+            const cachedVarietyData = {};
 
             const gmaxPokemonList = [
                 "charizard-gmax", "butterfree-gmax", "pikachu-gmax", "meowth-gmax", "machamp-gmax",
@@ -352,17 +378,34 @@
             };
 
             const getSpeciesData = async (pokemonId) => {
-                if (cachedSpeciesData[pokemonId]) {
-                    return cachedSpeciesData[pokemonId];
+                const speciesId = String(pokemonId).includes('-') ? pokemonId.split('-')[0] : pokemonId;
+                if (cachedSpeciesData[speciesId]) {
+                    return cachedSpeciesData[speciesId];
                 }
                 try {
-                    const url = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
+                    const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesId}`;
                     const response = await fetch(url);
                     const speciesData = await response.json();
-                    cachedSpeciesData[pokemonId] = speciesData;
+                    cachedSpeciesData[speciesId] = speciesData;
                     return speciesData;
                 } catch (error) {
-                    console.error(`Failed to fetch species data for ID ${pokemonId}:`, error);
+                    console.error(`Failed to fetch species data for ID ${speciesId}:`, error);
+                    return null;
+                }
+            };
+            
+            const getPokemonData = async (name) => {
+                if (cachedVarietyData[name]) {
+                    return cachedVarietyData[name];
+                }
+                try {
+                    const url = `https://pokeapi.co/api/v2/pokemon/${name}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    cachedVarietyData[name] = data;
+                    return data;
+                } catch (error) {
+                    console.error(`Failed to fetch variety data for ${name}:`, error);
                     return null;
                 }
             };
@@ -414,7 +457,7 @@
 
                 switch (category) {
                     case 'all':
-                        currentPokemonToDisplay = allPokemon;
+                        currentPokemonToDisplay = allPokemon.filter(p => !p.name.includes('-gmax') && !p.name.includes('-mega'));
                         break;
                     case 'mega':
                         currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega'));
@@ -457,6 +500,7 @@
                 pokemonList.forEach(pokemon => {
                     const pokemonCard = document.createElement('div');
                     let isMega = pokemon.name.includes('-mega');
+                    let isRegional = pokemon.name.includes('-alola') || pokemon.name.includes('-galar') || pokemon.name.includes('-hisui');
                     let isGmax = pokemon.name.includes('-gmax');
 
                     pokemonCard.classList.add('pokemon-card');
@@ -464,13 +508,17 @@
 
                     if (isMega) {
                         pokemonCard.classList.add('mega-pokemon');
+                    } else if (isRegional) {
+                        pokemonCard.classList.add('regional-pokemon');
+                    } else if (isGmax) {
+                        pokemonCard.classList.add('gmax-pokemon');
                     }
 
                     const name = pokemon.name;
                     const id = pokemon.id.toString().padStart(3, '0');
                     let imageUrl;
 
-                    if (isMega) {
+                    if (isMega || isRegional || isGmax) {
                         imageUrl = pokemon.sprites.other['official-artwork'].front_default;
                     } else if (category === 'shiny') {
                         const shinyUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny;
@@ -483,7 +531,7 @@
                     pokemonCard.innerHTML = `
                         <div class="pokemon-id">#${id}</div>
                         <img src="${imageUrl}" alt="${name}">
-                        <h2 class="pokemon-name">${name.replace('-gmax', '').replace('-amped', '').replace('-mega', '')}</h2>
+                        <h2 class="pokemon-name">${name.replace('-gmax', '').replace('-amped', '').replace('-mega', '').replace(/-alola|-galar|-hisui/, '')}</h2>
                         <div class="pokemon-types">
                             ${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
                         </div>
@@ -493,8 +541,28 @@
             };
 
             const showPokemonDetails = async (pokemon) => {
-                const speciesData = await getSpeciesData(pokemon.id);
+                // Get the species ID for G-Max or other special forms
+                const speciesId = pokemon.name.includes('-gmax') ? pokemon.name.split('-')[0] : pokemon.id;
+                const speciesData = await getSpeciesData(speciesId);
+
+                let varieties = [];
+                if (speciesData && speciesData.varieties.length > 1) {
+                    for (const variety of speciesData.varieties) {
+                        const varietyPokemon = await getPokemonData(variety.pokemon.name);
+                        if (varietyPokemon) {
+                            varieties.push(varietyPokemon);
+                        }
+                    }
+                }
+
+                renderModalContent(pokemon, speciesData, varieties);
+                pokemonModal.style.display = 'block';
+            };
+
+            const renderModalContent = (pokemon, speciesData, varieties, isShiny = false) => {
                 const isMega = pokemon.name.includes('-mega');
+                const isRegional = pokemon.name.includes('-alola') || pokemon.name.includes('-galar') || pokemon.name.includes('-hisui');
+                const isGmax = pokemon.name.includes('-gmax');
 
                 const id = pokemon.id.toString().padStart(3, '0');
                 const name = pokemon.name;
@@ -508,7 +576,10 @@
                 }));
 
                 let imageUrl;
-                if (isMega) {
+                if (isShiny) {
+                    const shinyUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny;
+                    imageUrl = shinyUrl || pokemon.sprites.front_shiny || pokemon.sprites.front_default;
+                } else if (isMega || isRegional || isGmax) {
                      imageUrl = pokemon.sprites.other['official-artwork'].front_default;
                 } else {
                     const animatedUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
@@ -522,13 +593,24 @@
                 
                 modalBody.innerHTML = `
                     <div class="modal-info">
-                        <img src="${imageUrl}" alt="${name}" class="modal-image ${isMega ? 'mega-pokemon-image' : ''}">
-                        <h2 class="modal-name">${name.replace('-gmax', '').replace('-mega', '')}</h2>
+                        <img src="${imageUrl}" alt="${name}" class="modal-image ${isMega || isRegional || isGmax ? 'official-artwork' : ''} ${isShiny ? 'shiny-image' : ''}">
+                        <h2 class="modal-name">${name.replace('-gmax', '').replace('-mega', '').replace(/-alola|-galar|-hisui/, '')}</h2>
                         <div class="modal-id">#${id}</div>
                         <div class="modal-types">
                             ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
                         </div>
                         <p class="description">"${description}"</p>
+                        <div class="variety-buttons">
+                            ${varieties.length > 1 ? `
+                                ${varieties.map(v => {
+                                    const buttonName = v.name.includes('-alola') ? 'Alolan' :
+                                                       v.name.includes('-galar') ? 'Galarian' :
+                                                       v.name.includes('-hisui') ? 'Hisuian' : 'Normal';
+                                    return `<button class="variety-button ${v.name === pokemon.name ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
+                                }).join('')}
+                            ` : ''}
+                            <button class="variety-button" data-variety-name="shiny">Shiny</button>
+                        </div>
                         <div class="details">
                             <p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
                             <p><strong>Height:</strong> ${height} m</p>
@@ -541,7 +623,6 @@
                         </ul>
                     </div>
                 `;
-                pokemonModal.style.display = 'block';
             };
 
             pokedexContainer.addEventListener('click', (e) => {
@@ -551,6 +632,30 @@
                     const selectedPokemon = allPokemon.find(p => p.id === pokemonId);
                     if (selectedPokemon) {
                         showPokemonDetails(selectedPokemon);
+                    }
+                }
+            });
+
+            modalBody.addEventListener('click', async (e) => {
+                const button = e.target.closest('.variety-button');
+                if (button) {
+                    const varietyName = button.dataset.varietyName;
+                    const activeButtons = modalBody.querySelectorAll('.variety-button');
+                    activeButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    if (varietyName === 'shiny') {
+                        const currentPokemonName = modalBody.querySelector('.modal-name').textContent.toLowerCase().trim();
+                        const basePokemonData = await getPokemonData(currentPokemonName);
+                        const speciesData = await getSpeciesData(basePokemonData.id);
+                        const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+                        renderModalContent(basePokemonData, speciesData, varieties, true);
+                        button.classList.add('active');
+                    } else {
+                        const pokemonData = await getPokemonData(varietyName);
+                        const speciesData = await getSpeciesData(pokemonData.id);
+                        const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+                        renderModalContent(pokemonData, speciesData, varieties);
+                        button.classList.add('active');
                     }
                 }
             });
