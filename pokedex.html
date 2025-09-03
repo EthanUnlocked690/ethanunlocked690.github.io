@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokédex - The Ultimate Version</title>
+    <title>Pokédex - TheUnlockedWeb version</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -323,16 +323,6 @@
 
     <div class="nav-container">
         <button class="nav-button active" data-category="all">All</button>
-        <button class="nav-button" data-category="kanto">Kanto</button>
-        <button class="nav-button" data-category="johto">Johto</button>
-        <button class="nav-button" data-category="hoenn">Hoenn</button>
-        <button class="nav-button" data-category="sinnoh">Sinnoh</button>
-        <button class="nav-button" data-category="unova">Unova</button>
-        <button class="nav-button" data-category="kalos">Kalos</button>
-        <button class="nav-button" data-category="alola">Alola</button>
-        <button class="nav-button" data-category="galar">Galar</button>
-        <button class="nav-button" data-category="paldea">Paldea</button>
-        <button class="nav-button" data-category="hisui">Hisui</button>
         <button class="nav-button" data-category="mega">Mega</button>
         <button class="nav-button" data-category="shiny">Shiny</button>
         <button class="nav-button" data-category="legendary">Legendary</button>
@@ -371,13 +361,6 @@
             const cachedSpeciesData = {};
             const cachedVarietyData = {};
 
-            const regionalGenerations = {
-                'kanto': 'generation-i', 'johto': 'generation-ii', 'hoenn': 'generation-iii',
-                'sinnoh': 'generation-iv', 'unova': 'generation-v', 'kalos': 'generation-vi',
-                'alola': 'generation-vii', 'galar': 'generation-viii', 'paldea': 'generation-ix',
-                'hisui': 'generation-viii'
-            };
-            
             const gmaxPokemonList = [
                 "charizard-gmax", "butterfree-gmax", "pikachu-gmax", "meowth-gmax", "machamp-gmax",
                 "gengar-gmax", "kingler-gmax", "lapras-gmax", "eevee-gmax", "snorlax-gmax",
@@ -441,19 +424,6 @@
                 }
             };
             
-            const getRegionalPokemon = async (region) => {
-                const gen = regionalGenerations[region];
-                try {
-                    const url = `https://pokeapi.co/api/v2/generation/${gen.split('-')[1]}/`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    return data.pokemon_species.map(p => p.name);
-                } catch (error) {
-                    console.error(`Failed to fetch regional data for ${region}:`, error);
-                    return [];
-                }
-            };
-            
             const filterAndDisplayPokemon = async (category) => {
                 pokedexContainer.innerHTML = '';
                 loadingMessage.style.display = 'block';
@@ -461,10 +431,10 @@
                 let currentPokemonToDisplay;
                 switch (category) {
                     case 'all':
-                        currentPokemonToDisplay = allPokemon.filter(p => !p.name.includes('-gmax') && !p.name.includes('-mega') && !p.name.includes('-primal'));
+                        currentPokemonToDisplay = allPokemon;
                         break;
                     case 'mega':
-                        currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega'));
+                        currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
                         break;
                     case 'shiny':
                         currentPokemonToDisplay = allPokemon;
@@ -485,12 +455,7 @@
                         currentPokemonToDisplay = allPokemon.filter(p => gmaxPokemonList.includes(p.name));
                         break;
                     default:
-                        // Regional filter
-                        const regionalNames = await getRegionalPokemon(category);
-                        currentPokemonToDisplay = allPokemon.filter(p => {
-                            const species = cachedSpeciesData[p.id];
-                            return species && regionalNames.includes(species.name);
-                        });
+                         currentPokemonToDisplay = allPokemon;
                         break;
                 }
                 
@@ -531,11 +496,20 @@
                         const animatedUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
                         imageUrl = animatedUrl || pokemon.sprites.front_default;
                     }
+
+                    let displayName;
+                    if (category === 'mega' || category === 'gmax') {
+                        // For dedicated form sections, show the full name
+                        displayName = name;
+                    } else {
+                        // For other sections, show the base name
+                        displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '').replace(/-battle-bond/, '').replace(/-original-cap/, '');
+                    }
                     
                     pokemonCard.innerHTML = `
                         <div class="pokemon-id">#${id}</div>
                         <img src="${imageUrl}" alt="${name}">
-                        <h2 class="pokemon-name">${name.replace('-gmax', '').replace('-amped', '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '')}</h2>
+                        <h2 class="pokemon-name">${displayName}</h2>
                         <div class="pokemon-types">
                             ${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
                         </div>
@@ -579,9 +553,12 @@
                 if (varietyName.includes('-alola')) return 'Alolan';
                 if (varietyName.includes('-galar')) return 'Galarian';
                 if (varietyName.includes('-hisui')) return 'Hisuian';
+                if (varietyName.includes('-eternamax')) return 'Eternamax';
+                if (varietyName.includes('-battle-bond')) return 'Battle Bond';
+                if (varietyName.includes('-original-cap')) return 'Original Cap';
                 return 'Normal';
             };
-
+            
             const renderModalContent = (pokemon, speciesData, varieties, isShiny = false) => {
                 const isMega = pokemon.name.includes('-mega');
                 const isRegional = pokemon.name.includes('-alola') || pokemon.name.includes('-galar') || pokemon.name.includes('-hisui');
@@ -614,8 +591,19 @@
                 const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
 
                 const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
-                
-                const varietyButtonsHTML = varieties.map(v => {
+
+                // Deduplicate and get unique varieties for buttons
+                const uniqueVarietiesMap = new Map();
+                varieties.forEach(v => {
+                    const buttonName = getVarietyButtonName(v.name, speciesData.name);
+                    if (v.name === speciesData.name) {
+                        uniqueVarietiesMap.set('Normal', v);
+                    } else if (v.name.includes('-primal') || v.name.includes('-mega') || v.name.includes('-gmax') || v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui')) {
+                        uniqueVarietiesMap.set(buttonName, v);
+                    }
+                });
+
+                const varietyButtonsHTML = Array.from(uniqueVarietiesMap.values()).map(v => {
                     const buttonName = getVarietyButtonName(v.name, speciesData.name);
                     const isActive = v.name === pokemon.name && !isShiny;
                     return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
@@ -626,7 +614,7 @@
                 modalBody.innerHTML = `
                     <div class="modal-info">
                         <img src="${imageUrl}" alt="${name}" class="modal-image ${useOfficialArtwork ? 'official-artwork' : ''} ${isShiny ? 'shiny-image' : ''}">
-                        <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '')}</h2>
+                        <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
                         <div class="modal-id">#${id}</div>
                         <div class="modal-types">
                             ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
