@@ -27,6 +27,7 @@
         #loadingMessage {
             font-size: 1.2rem;
             color: #555;
+            display: none; /* Initially hidden */
         }
 
         /* Navigation Bar */
@@ -114,6 +115,11 @@
             margin: 10px auto;
             display: block;
             image-rendering: pixelated;
+        }
+
+        /* Override for official artwork */
+        .pokemon-card.mega-pokemon img {
+            image-rendering: auto;
         }
 
         .pokemon-card .pokemon-name {
@@ -229,6 +235,11 @@
             image-rendering: pixelated; 
         }
 
+        /* Override for official artwork in modal */
+        .modal-info .modal-image.mega-pokemon-image {
+            image-rendering: auto;
+        }
+
         .modal-info .modal-types {
             display: flex;
             justify-content: center;
@@ -320,8 +331,8 @@
             const navButtons = document.querySelectorAll('.nav-button');
 
             let allPokemon = [];
-            let allSpeciesData = [];
             const cachedSpeciesData = {};
+            const cachedRegionalData = {};
 
             const gmaxPokemonList = [
                 "charizard-gmax", "butterfree-gmax", "pikachu-gmax", "meowth-gmax", "machamp-gmax",
@@ -334,15 +345,9 @@
             ];
             
             const regionalGenerations = {
-                'kanto': 'generation-i',
-                'johto': 'generation-ii',
-                'hoenn': 'generation-iii',
-                'sinnoh': 'generation-iv',
-                'unova': 'generation-v',
-                'kalos': 'generation-vi',
-                'alola': 'generation-vii',
-                'galar': 'generation-viii',
-                'paldea': 'generation-ix',
+                'kanto': 'generation-i', 'johto': 'generation-ii', 'hoenn': 'generation-iii',
+                'sinnoh': 'generation-iv', 'unova': 'generation-v', 'kalos': 'generation-vi',
+                'alola': 'generation-vii', 'galar': 'generation-viii', 'paldea': 'generation-ix',
                 'hisui': 'generation-viii'
             };
 
@@ -361,47 +366,61 @@
                     return null;
                 }
             };
-            
+
             const fetchAllPokemon = async () => {
+                loadingMessage.style.display = 'block';
                 try {
                     const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
                     const data = await response.json();
-                    const pokemonList = data.results;
-
-                    const allPokemonPromises = pokemonList.map(async (pokemon) => {
-                        const detailedResponse = await fetch(pokemon.url);
-                        return detailedResponse.json();
-                    });
-
-                    allPokemon = await Promise.all(allPokemonPromises);
-
-                    // Fetch all species data to enable regional and special filtering
-                    const allSpeciesPromises = allPokemon.map(p => getSpeciesData(p.id));
-                    allSpeciesData = await Promise.all(allSpeciesPromises);
+                    
+                    const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
+                    allPokemon = await Promise.all(pokemonPromises);
+                    
+                    const speciesPromises = allPokemon.map(p => getSpeciesData(p.id));
+                    await Promise.all(speciesPromises);
                     
                     loadingMessage.style.display = 'none';
                     filterAndDisplayPokemon('all');
-
                 } catch (error) {
                     console.error('Failed to fetch Pokémon data:', error);
                     loadingMessage.textContent = 'Failed to load Pokédex. Please try again later.';
                 }
             };
+            
+            const getRegionalPokemon = async (region) => {
+                if (cachedRegionalData[region]) {
+                    return cachedRegionalData[region];
+                }
+                const gen = regionalGenerations[region];
+                try {
+                    const url = `https://pokeapi.co/api/v2/generation/${gen.split('-')[1]}/`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    const pokemonNames = data.pokemon_species.map(p => p.name);
+                    cachedRegionalData[region] = pokemonNames;
+                    return pokemonNames;
+                } catch (error) {
+                    console.error(`Failed to fetch regional data for ${region}:`, error);
+                    return [];
+                }
+            };
+            
+            const filterAndDisplayPokemon = async (category) => {
+                pokedexContainer.innerHTML = '';
+                loadingMessage.style.display = 'block';
 
-            const filterAndDisplayPokemon = (category) => {
-                let filteredList = [];
-                let imageType = 'default';
                 let currentPokemonToDisplay;
+                let imageType = 'default';
 
                 switch (category) {
                     case 'all':
-                        currentPokemonToDisplay = allPokemon.filter(p => !p.name.includes('-mega') && !p.name.includes('-gmax'));
+                        currentPokemonToDisplay = allPokemon;
                         break;
                     case 'mega':
                         currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega'));
                         break;
                     case 'shiny':
-                        currentPokemonToDisplay = allPokemon.filter(p => !p.name.includes('-mega') && !p.name.includes('-gmax'));
+                        currentPokemonToDisplay = allPokemon;
                         imageType = 'shiny';
                         break;
                     case 'legendary':
@@ -421,30 +440,39 @@
                         break;
                     default:
                         // Regional filter
-                        const targetGenUrl = `https://pokeapi.co/api/v2/generation/${regionalGenerations[category].split('-')[1]}/`;
+                        const regionalNames = await getRegionalPokemon(category);
                         currentPokemonToDisplay = allPokemon.filter(p => {
                             const species = cachedSpeciesData[p.id];
-                            return species && species.generation.url === targetGenUrl && !p.name.includes('-mega') && !p.name.includes('-gmax');
+                            return species && regionalNames.includes(species.name);
                         });
                         break;
                 }
                 
-                searchInput.style.display = (category === 'all' || category === 'shiny' || category.includes('kanto') || category.includes('johto') || category.includes('hoenn')) ? 'block' : 'none';
-                displayPokemon(currentPokemonToDisplay, imageType);
+                loadingMessage.style.display = 'none';
+                displayPokemon(currentPokemonToDisplay, category);
             };
 
-            const displayPokemon = (pokemonList, imageType) => {
+            const displayPokemon = (pokemonList, category) => {
                 pokedexContainer.innerHTML = '';
                 pokemonList.forEach(pokemon => {
                     const pokemonCard = document.createElement('div');
+                    let isMega = pokemon.name.includes('-mega');
+                    let isGmax = pokemon.name.includes('-gmax');
+
                     pokemonCard.classList.add('pokemon-card');
                     pokemonCard.setAttribute('data-id', pokemon.id);
+
+                    if (isMega) {
+                        pokemonCard.classList.add('mega-pokemon');
+                    }
 
                     const name = pokemon.name;
                     const id = pokemon.id.toString().padStart(3, '0');
                     let imageUrl;
 
-                    if (imageType === 'shiny') {
+                    if (isMega) {
+                        imageUrl = pokemon.sprites.other['official-artwork'].front_default;
+                    } else if (category === 'shiny') {
                         const shinyUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny;
                         imageUrl = shinyUrl || pokemon.sprites.front_shiny || pokemon.sprites.front_default;
                     } else {
@@ -466,11 +494,10 @@
 
             const showPokemonDetails = async (pokemon) => {
                 const speciesData = await getSpeciesData(pokemon.id);
+                const isMega = pokemon.name.includes('-mega');
 
                 const id = pokemon.id.toString().padStart(3, '0');
                 const name = pokemon.name;
-                const animatedUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
-                const imageUrl = animatedUrl || pokemon.sprites.front_default;
                 const types = pokemon.types.map(typeInfo => typeInfo.type.name);
                 const height = (pokemon.height / 10).toFixed(1); // Decimeters to meters
                 const weight = (pokemon.weight / 10).toFixed(1); // Hectograms to kilograms
@@ -480,6 +507,14 @@
                     value: statInfo.base_stat
                 }));
 
+                let imageUrl;
+                if (isMega) {
+                     imageUrl = pokemon.sprites.other['official-artwork'].front_default;
+                } else {
+                    const animatedUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
+                    imageUrl = animatedUrl || pokemon.sprites.front_default;
+                }
+               
                 const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
                 const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
 
@@ -487,8 +522,8 @@
                 
                 modalBody.innerHTML = `
                     <div class="modal-info">
-                        <img src="${imageUrl}" alt="${name}" class="modal-image">
-                        <h2 class="modal-name">${name}</h2>
+                        <img src="${imageUrl}" alt="${name}" class="modal-image ${isMega ? 'mega-pokemon-image' : ''}">
+                        <h2 class="modal-name">${name.replace('-gmax', '').replace('-mega', '')}</h2>
                         <div class="modal-id">#${id}</div>
                         <div class="modal-types">
                             ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
@@ -532,13 +567,13 @@
 
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
+                const currentCategory = document.querySelector('.nav-button.active').dataset.category;
                 const filteredPokemon = allPokemon.filter(pokemon => {
-                    const isAllOrShiny = document.querySelector('.nav-button.active').dataset.category === 'all' || document.querySelector('.nav-button.active').dataset.category === 'shiny';
                     const isNameMatch = pokemon.name.toLowerCase().includes(searchTerm);
                     const isIdMatch = pokemon.id.toString().includes(searchTerm);
-                    return (isNameMatch || isIdMatch) && (isAllOrShiny || true); 
+                    return isNameMatch || isIdMatch;
                 });
-                displayPokemon(filteredPokemon);
+                displayPokemon(filteredPokemon, currentCategory);
             });
 
             navButtons.forEach(button => {
