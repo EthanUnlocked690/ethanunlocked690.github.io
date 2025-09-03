@@ -29,6 +29,32 @@
             color: #555;
         }
 
+        /* Navigation Bar */
+        .nav-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .nav-button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-button:hover,
+        .nav-button.active {
+            background-color: #e4000f;
+        }
+
         /* Search Bar */
         .search-container {
             margin-bottom: 20px;
@@ -87,6 +113,7 @@
             height: 150px;
             margin: 10px auto;
             display: block;
+            image-rendering: pixelated;
         }
 
         .pokemon-card .pokemon-name {
@@ -199,6 +226,7 @@
             margin: 0 auto 20px;
             width: 200px;
             height: 200px;
+            image-rendering: pixelated; 
         }
 
         .modal-info .modal-types {
@@ -210,6 +238,12 @@
 
         .modal-info .details p {
             margin: 5px 0;
+        }
+        
+        .modal-info .description {
+            margin-top: 20px;
+            font-style: italic;
+            text-align: justify;
         }
 
         .modal-info .stats-list {
@@ -239,6 +273,14 @@
 
     <h1>Pokédex</h1>
 
+    <div class="nav-container">
+        <button class="nav-button active" data-category="all">All</button>
+        <button class="nav-button" data-category="shiny">Shiny</button>
+        <button class="nav-button" data-category="legendary">Legendary</button>
+        <button class="nav-button" data-category="mythical">Mythical</button>
+        <button class="nav-button" data-category="gmax">G-Max</button>
+    </div>
+
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search for a Pokémon...">
     </div>
@@ -264,13 +306,27 @@
             const pokemonModal = document.getElementById('pokemonModal');
             const modalBody = document.getElementById('modal-body');
             const closeModal = document.querySelector('.close-button');
+            const navButtons = document.querySelectorAll('.nav-button');
 
             let allPokemon = [];
+            const cachedSpeciesData = {};
+            
+            // Hardcoded list of Gigantamax Pokémon as the API does not provide a direct list
+            const gmaxPokemonList = [
+                "charizard-gmax", "butterfree-gmax", "pikachu-gmax", "meowth-gmax", "machamp-gmax",
+                "gengar-gmax", "kingler-gmax", "lapras-gmax", "eevee-gmax", "snorlax-gmax",
+                "garbodor-gmax", "melmetal-gmax", "corviknight-gmax", "orbeetle-gmax", "drednaw-gmax",
+                "coalossal-gmax", "flapple-gmax", "appletun-gmax", "sandaconda-gmax", "toxtricity-amped-gmax",
+                "centiskorch-gmax", "hatterene-gmax", "grimmsnarl-gmax", "alcremie-gmax", "copperajah-gmax",
+                "duraludon-gmax", "venusaur-gmax", "blastoise-gmax", "rillaboom-gmax", "cinderace-gmax",
+                "inteleon-gmax", "urshifu-single-strike-gmax", "urshifu-rapid-strike-gmax"
+            ];
+            const dmaxPokemonList = []; // All Pokémon can Dynamax, so this list will be all of them.
 
             // Fetches data for a list of Pokémon from the main API endpoint
             const fetchAllPokemon = async () => {
                 try {
-                    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=100000');
+                    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
                     const data = await response.json();
                     const pokemonList = data.results;
 
@@ -283,16 +339,72 @@
                     
                     // Hide loading message and display Pokémon
                     loadingMessage.style.display = 'none';
-                    displayPokemon(allPokemon);
+                    filterAndDisplayPokemon('all');
 
                 } catch (error) {
                     console.error('Failed to fetch Pokémon data:', error);
                     loadingMessage.textContent = 'Failed to load Pokédex. Please try again later.';
                 }
             };
+            
+            // Fetches detailed species info (description, generation)
+            const getSpeciesData = async (pokemonId) => {
+                if (cachedSpeciesData[pokemonId]) {
+                    return cachedSpeciesData[pokemonId];
+                }
+                try {
+                    const url = `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`;
+                    const response = await fetch(url);
+                    const speciesData = await response.json();
+                    cachedSpeciesData[pokemonId] = speciesData;
+                    return speciesData;
+                } catch (error) {
+                    console.error(`Failed to fetch species data for ID ${pokemonId}:`, error);
+                    return null;
+                }
+            };
+
+            const filterAndDisplayPokemon = async (category) => {
+                let filteredList = [];
+                let imageType = 'default';
+
+                switch (category) {
+                    case 'all':
+                        filteredList = allPokemon.filter(p => !p.name.includes('-gmax') && !p.name.includes('-mega') && !p.name.includes('-gigantamax') && !p.name.includes('-alola') && !p.name.includes('-galar') && !p.name.includes('-unova') && !p.name.includes('-hisui') && !p.name.includes('-paldea'));
+                        break;
+                    case 'shiny':
+                        filteredList = allPokemon.filter(p => !p.name.includes('-gmax') && !p.name.includes('-mega') && !p.name.includes('-gigantamax') && !p.name.includes('-alola') && !p.name.includes('-galar') && !p.name.includes('-unova') && !p.name.includes('-hisui') && !p.name.includes('-paldea'));
+                        imageType = 'shiny';
+                        break;
+                    case 'legendary':
+                        const legendaryPromises = allPokemon.map(async (p) => {
+                            const speciesData = await getSpeciesData(p.id);
+                            return speciesData && speciesData.is_legendary && !speciesData.is_mythical ? p : null;
+                        });
+                        filteredList = (await Promise.all(legendaryPromises)).filter(p => p !== null);
+                        break;
+                    case 'mythical':
+                        const mythicalPromises = allPokemon.map(async (p) => {
+                            const speciesData = await getSpeciesData(p.id);
+                            return speciesData && speciesData.is_mythical ? p : null;
+                        });
+                        filteredList = (await Promise.all(mythicalPromises)).filter(p => p !== null);
+                        break;
+                    case 'gmax':
+                        filteredList = allPokemon.filter(p => gmaxPokemonList.includes(p.name));
+                        break;
+                    default:
+                        filteredList = allPokemon;
+                }
+                
+                // Hide search input if not on "All" or "Shiny" pages
+                searchInput.style.display = (category === 'all' || category === 'shiny') ? 'block' : 'none';
+
+                displayPokemon(filteredList, imageType);
+            };
 
             // Creates and displays the Pokémon cards on the main page
-            const displayPokemon = (pokemonList) => {
+            const displayPokemon = (pokemonList, imageType) => {
                 pokedexContainer.innerHTML = '';
                 pokemonList.forEach(pokemon => {
                     const pokemonCard = document.createElement('div');
@@ -301,15 +413,22 @@
 
                     const name = pokemon.name;
                     const id = pokemon.id.toString().padStart(3, '0');
-                    const imageUrl = pokemon.sprites.front_default;
-                    const types = pokemon.types.map(typeInfo => typeInfo.type.name);
+                    let imageUrl;
 
+                    if (imageType === 'shiny') {
+                        const shinyUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny;
+                        imageUrl = shinyUrl || pokemon.sprites.front_shiny || pokemon.sprites.front_default;
+                    } else {
+                        const animatedUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
+                        imageUrl = animatedUrl || pokemon.sprites.front_default;
+                    }
+                    
                     pokemonCard.innerHTML = `
                         <div class="pokemon-id">#${id}</div>
                         <img src="${imageUrl}" alt="${name}">
-                        <h2 class="pokemon-name">${name}</h2>
+                        <h2 class="pokemon-name">${name.replace('-gmax', '').replace('-amped', '')}</h2>
                         <div class="pokemon-types">
-                            ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
+                            ${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
                         </div>
                     `;
                     pokedexContainer.appendChild(pokemonCard);
@@ -317,10 +436,13 @@
             };
 
             // Displays the detailed info in the modal
-            const showPokemonDetails = (pokemon) => {
+            const showPokemonDetails = async (pokemon) => {
+                const speciesData = await getSpeciesData(pokemon.id);
+
                 const id = pokemon.id.toString().padStart(3, '0');
                 const name = pokemon.name;
-                const imageUrl = pokemon.sprites.front_default;
+                const animatedUrl = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
+                const imageUrl = animatedUrl || pokemon.sprites.front_default;
                 const types = pokemon.types.map(typeInfo => typeInfo.type.name);
                 const height = (pokemon.height / 10).toFixed(1); // Decimeters to meters
                 const weight = (pokemon.weight / 10).toFixed(1); // Hectograms to kilograms
@@ -329,6 +451,11 @@
                     name: statInfo.stat.name.replace('-', ' '),
                     value: statInfo.base_stat
                 }));
+
+                const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
+                const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
+
+                const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
                 
                 modalBody.innerHTML = `
                     <div class="modal-info">
@@ -338,7 +465,9 @@
                         <div class="modal-types">
                             ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
                         </div>
+                        <p class="description">"${description}"</p>
                         <div class="details">
+                            <p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
                             <p><strong>Height:</strong> ${height} m</p>
                             <p><strong>Weight:</strong> ${weight} kg</p>
                             <p><strong>Abilities:</strong> ${abilities}</p>
@@ -377,10 +506,19 @@
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const filteredPokemon = allPokemon.filter(pokemon => {
-                    return pokemon.name.toLowerCase().includes(searchTerm) || 
-                           pokemon.id.toString().includes(searchTerm);
+                    return (pokemon.name.toLowerCase().includes(searchTerm) || 
+                           pokemon.id.toString().includes(searchTerm)) && !pokemon.name.includes('-gmax');
                 });
                 displayPokemon(filteredPokemon);
+            });
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    const category = button.getAttribute('data-category');
+                    filterAndDisplayPokemon(category);
+                });
             });
 
             // Initial fetch to populate the Pokédex
