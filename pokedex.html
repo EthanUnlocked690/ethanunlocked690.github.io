@@ -331,6 +331,13 @@
         .variety-button.active {
             background-color: #3f65b8;
         }
+        .variety-button.shiny-button {
+            background-color: #FFD700; /* A shiny color */
+            color: #000;
+        }
+        .variety-button.shiny-button.active {
+            background-color: #e4c200;
+        }
 
         .tcg-card-section {
             margin-top: 20px;
@@ -360,6 +367,7 @@
         <button class="nav-button" data-category="legendary">Legendary</button>
         <button class="nav-button" data-category="mythical">Mythical</button>
         <button class="nav-button" data-category="gmax">G-Max</button>
+        <button class="nav-button" data-category="ultra-beast">Ultra Beast</button>
     </div>
 
     <div class="search-container">
@@ -394,6 +402,7 @@
             let allPokemon = [];
             const cachedSpeciesData = {};
             const cachedVarietyData = {};
+            const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
 
             const getSpeciesData = async (pokemonId) => {
                 const speciesId = String(pokemonId).includes('-') ? pokemonId.split('-')[0] : pokemonId;
@@ -465,13 +474,13 @@
                 let currentPokemonToDisplay;
                 switch (category) {
                     case 'all':
-                        currentPokemonToDisplay = allPokemon;
+                        currentPokemonToDisplay = allPokemon.filter(p => !p.name.includes('-mega') && !p.name.includes('-primal') && !p.name.includes('-gmax') && !p.name.includes('-alola') && !p.name.includes('-galar'));
                         break;
                     case 'mega':
                         currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
                         break;
                     case 'shiny':
-                        currentPokemonToDisplay = allPokemon;
+                        currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
                         break;
                     case 'legendary':
                         currentPokemonToDisplay = allPokemon.filter(p => {
@@ -488,6 +497,9 @@
                     case 'gmax':
                         currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax'));
                         break;
+                    case 'ultra-beast':
+                         currentPokemonToDisplay = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
+                         break;
                     default:
                          currentPokemonToDisplay = allPokemon;
                         break;
@@ -507,14 +519,16 @@
                     // Use official artwork for special forms for stability
                     return isShiny ? pokemon.sprites.other['official-artwork'].front_shiny : pokemon.sprites.other['official-artwork'].front_default;
                 } else {
-                    // Use animated sprites for base forms
-                    const animatedUrl = isShiny ? pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny : pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
+                    // Use animated sprites for base forms if available, otherwise fallback
+                    const animatedSprites = pokemon.sprites.versions['generation-v']['black-white'].animated;
+                    const animatedUrl = isShiny ? animatedSprites.front_shiny : animatedSprites.front_default;
                     return animatedUrl || pokemon.sprites.front_default;
                 }
             };
 
             const displayPokemon = (pokemonList, category) => {
                 pokedexContainer.innerHTML = '';
+                const displayShiny = category === 'shiny';
                 pokemonList.forEach(pokemon => {
                     const pokemonCard = document.createElement('div');
                     pokemonCard.classList.add('pokemon-card');
@@ -522,13 +536,11 @@
 
                     const name = pokemon.name;
                     const id = pokemon.id.toString().padStart(3, '0');
-                    const imageUrl = getPokemonImageUrl(pokemon, category === 'shiny');
+                    const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
 
-                    let displayName;
-                    if (category === 'mega' || category === 'gmax') {
-                        displayName = name;
-                    } else {
-                        displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '').replace(/-battle-bond/, '').replace(/-original-cap/, '');
+                    let displayName = name;
+                    if (category === 'all' || category === 'shiny') {
+                        displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
                     }
                     
                     pokemonCard.innerHTML = `
@@ -559,12 +571,12 @@
                 return null;
             };
 
-            const showPokemonDetails = async (pokemon) => {
+            const showPokemonDetails = async (pokemon, isShiny = false) => {
                 const speciesId = pokemon.name.includes('-gmax') ? pokemon.name.split('-')[0] : pokemon.id;
                 const speciesData = await getSpeciesData(speciesId);
                 const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
                 
-                renderModalContent(pokemon, speciesData, varieties);
+                renderModalContent(pokemon, speciesData, varieties, isShiny);
                 pokemonModal.style.display = 'block';
 
                 const modalImage = document.querySelector('#modal-body .modal-image');
@@ -644,7 +656,7 @@
                 modalBody.innerHTML = `
                     <div class="modal-info">
                         <img src="${imageUrl}" alt="${name}" class="modal-image">
-                        <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x|-mega-y|-mega|-primal/, '').replace(/-alola|-galar|-hisui/, '').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
+                        <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
                         <div class="modal-id">#${id}</div>
                         <div class="modal-types">
                             ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
@@ -685,7 +697,7 @@
                         <div class="variety-section shiny-toggle">
                             <h4>Appearance</h4>
                             <div class="variety-buttons">
-                                <button class="variety-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
+                                <button class="variety-button shiny-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
                             </div>
                         </div>
 
@@ -710,8 +722,10 @@
                 if (card) {
                     const pokemonId = card.getAttribute('data-id');
                     const selectedPokemon = allPokemon.find(p => p.id == pokemonId);
+                    // Check if the current category is shiny to pass the state
+                    const isShiny = document.querySelector('.nav-button.active').dataset.category === 'shiny';
                     if (selectedPokemon) {
-                        showPokemonDetails(selectedPokemon);
+                        showPokemonDetails(selectedPokemon, isShiny);
                     }
                 }
             });
@@ -720,18 +734,19 @@
                 const button = e.target.closest('.variety-button');
                 if (button) {
                     const varietyName = button.dataset.varietyName;
+                    const isShinyActive = modalBody.querySelector('.shiny-button').classList.contains('active');
                     
                     if (varietyName === 'shiny') {
                         const currentName = document.querySelector('.modal-image').alt;
                         const currentPokemonData = await getPokemonData(currentName);
                         const speciesData = await getSpeciesData(currentPokemonData.id);
                         const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-                        renderModalContent(currentPokemonData, speciesData, varieties, true);
+                        renderModalContent(currentPokemonData, speciesData, varieties, !isShinyActive);
                     } else {
                         const pokemonData = await getPokemonData(varietyName);
                         const speciesData = await getSpeciesData(pokemonData.id);
                         const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-                        renderModalContent(pokemonData, speciesData, varieties);
+                        renderModalContent(pokemonData, speciesData, varieties, isShinyActive);
                     }
                 }
             });
@@ -749,7 +764,37 @@
             searchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const currentCategory = document.querySelector('.nav-button.active').dataset.category;
-                const filteredPokemon = allPokemon.filter(pokemon => {
+                let pokemonToSearch = allPokemon;
+                if (currentCategory !== 'all') {
+                    // Filter the list based on the current category first
+                    switch (currentCategory) {
+                        case 'mega':
+                            pokemonToSearch = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
+                            break;
+                        case 'shiny':
+                            pokemonToSearch = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
+                            break;
+                        case 'legendary':
+                            pokemonToSearch = allPokemon.filter(p => {
+                                const species = cachedSpeciesData[p.id];
+                                return species && species.is_legendary && !species.is_mythical;
+                            });
+                            break;
+                        case 'mythical':
+                            pokemonToSearch = allPokemon.filter(p => {
+                                const species = cachedSpeciesData[p.id];
+                                return species && species.is_mythical;
+                            });
+                            break;
+                        case 'gmax':
+                            pokemonToSearch = allPokemon.filter(p => p.name.includes('-gmax'));
+                            break;
+                        case 'ultra-beast':
+                             pokemonToSearch = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
+                             break;
+                    }
+                }
+                const filteredPokemon = pokemonToSearch.filter(pokemon => {
                     const isNameMatch = pokemon.name.toLowerCase().includes(searchTerm);
                     const isIdMatch = pokemon.id.toString().includes(searchTerm);
                     return isNameMatch || isIdMatch;
