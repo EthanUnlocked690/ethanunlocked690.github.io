@@ -310,6 +310,22 @@
         .variety-button.active {
             background-color: #3f65b8;
         }
+
+        .tcg-card-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .tcg-card-section img {
+            max-width: 100%;
+            height: auto;
+            border: 5px solid #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+        .tcg-card-section .card-loading {
+            font-style: italic;
+            color: #888;
+        }
     </style>
 </head>
 <body>
@@ -355,16 +371,6 @@
             let allPokemon = [];
             const cachedSpeciesData = {};
             const cachedVarietyData = {};
-
-            const gmaxPokemonList = [
-                "charizard-gmax", "butterfree-gmax", "pikachu-gmax", "meowth-gmax", "machamp-gmax",
-                "gengar-gmax", "kingler-gmax", "lapras-gmax", "eevee-gmax", "snorlax-gmax",
-                "garbodor-gmax", "melmetal-gmax", "corviknight-gmax", "orbeetle-gmax", "drednaw-gmax",
-                "coalossal-gmax", "flapple-gmax", "appletun-gmax", "sandaconda-gmax", "toxtricity-amped-gmax",
-                "centiskorch-gmax", "hatterene-gmax", "grimmsnarl-gmax", "alcremie-gmax", "copperajah-gmax",
-                "duraludon-gmax", "venusaur-gmax", "blastoise-gmax", "rillaboom-gmax", "cinderace-gmax",
-                "inteleon-gmax", "urshifu-single-strike-gmax", "urshifu-rapid-strike-gmax"
-            ];
 
             const getSpeciesData = async (pokemonId) => {
                 const speciesId = String(pokemonId).includes('-') ? pokemonId.split('-')[0] : pokemonId;
@@ -447,7 +453,7 @@
                         });
                         break;
                     case 'gmax':
-                        currentPokemonToDisplay = allPokemon.filter(p => gmaxPokemonList.includes(p.name));
+                        currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax'));
                         break;
                     default:
                          currentPokemonToDisplay = allPokemon;
@@ -457,37 +463,21 @@
                 loadingMessage.style.display = 'none';
                 displayPokemon(currentPokemonToDisplay, category);
             };
+            
+            const getPokemonImageUrl = (pokemon, isShiny = false) => {
+                const name = pokemon.name;
+                const isMegaOrPrimal = name.includes('-mega') || name.includes('-primal');
+                const isRegional = name.includes('-alola') || name.includes('-galar') || name.includes('-hisui');
+                const isGmax = name.includes('-gmax');
 
-            const getPokemonImageUrl = (pokemonName, isShiny = false) => {
-                const baseShowdownUrl = 'https://play.pokemonshowdown.com/sprites/gen5ani';
-                const baseShowdownShinyUrl = 'https://play.pokemonshowdown.com/sprites/gen5ani-shiny';
-                const baseUrl = isShiny ? baseShowdownShinyUrl : baseShowdownUrl;
-                const normalizedName = pokemonName.replace('♀', '-f').replace('♂', '-m');
-
-                // Special handling for Mega, Primal, and G-Max forms
-                if (normalizedName.includes('-mega') || normalizedName.includes('-primal') || normalizedName.includes('-gmax')) {
-                    return `${baseUrl}/${normalizedName}.gif`;
+                if (isMegaOrPrimal || isRegional || isGmax) {
+                    // Use official artwork for special forms for stability
+                    return isShiny ? pokemon.sprites.other['official-artwork'].front_shiny : pokemon.sprites.other['official-artwork'].front_default;
+                } else {
+                    // Use animated sprites for base forms
+                    const animatedUrl = isShiny ? pokemon.sprites.versions['generation-v']['black-white'].animated.front_shiny : pokemon.sprites.versions['generation-v']['black-white'].animated.front_default;
+                    return animatedUrl || pokemon.sprites.front_default;
                 }
-                 // Special handling for regional forms and other special forms
-                const specialForms = [
-                    '-alola', '-galar', '-hisui', '-cosplay', '-libre', '-luchador', '-phd', '-belle', '-heart-trim',
-                    '-star-trim', '-ribbon-trim', '-dandy', '-gorgeous', '-kabuki', '-senjitsu', '-elite', '-totem',
-                    '-hero', '-zenith', '-sky', '-sunny', '-rainy', '-snowy', '-blaze', '-aqua', '-pa-alola', '-original',
-                    '-spiky-eared', '-therian', '-incarnate', '-resolute', '-pirouette', '-ordinary', '-aria', '-elect',
-                    '-pau', '-pom-pom', '-rock-ruff', '-unbound', '-ash', '-meadow', '-sensu', '-baile', '-hangry',
-                    '-full-belly', '-school', '-solo', '-busted', '-dada', '-crowned', '-amped', '-low-key',
-                    '-single-strike', '-rapid-strike', '-ice', '-dark', '-ghost', '-fighting', '-bug', '-ground',
-                    '-fire', '-water', '-grass', '-electric', '-psychic', '-rock', '-steel', '-fairy', '-poison',
-                    '-dragon', '-flying', '-female', '-male', '-battle-bond', '-original-cap', '-dusk'
-                ];
-                for (const form of specialForms) {
-                    if (normalizedName.includes(form)) {
-                        return `${baseUrl}/${normalizedName}.gif`;
-                    }
-                }
-
-                // Fallback to the original PokéAPI sprites
-                return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${isShiny ? 'shiny/' : ''}${pokemonName}.gif`;
             };
 
             const displayPokemon = (pokemonList, category) => {
@@ -499,7 +489,7 @@
 
                     const name = pokemon.name;
                     const id = pokemon.id.toString().padStart(3, '0');
-                    const imageUrl = getPokemonImageUrl(name, category === 'shiny');
+                    const imageUrl = getPokemonImageUrl(pokemon, category === 'shiny');
 
                     let displayName;
                     if (category === 'mega' || category === 'gmax') {
@@ -518,6 +508,22 @@
                     `;
                     pokedexContainer.appendChild(pokemonCard);
                 });
+            };
+
+            const fetchTcgCard = async (pokemonName) => {
+                try {
+                    const searchName = pokemonName.split('-')[0];
+                    const url = `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.data.length > 0) {
+                        return data.data[0].images.large;
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch TCG card:', error);
+                }
+                return null;
             };
 
             const showPokemonDetails = async (pokemon) => {
@@ -541,6 +547,18 @@
                     modalAudio.currentTime = 0;
                     modalAudio.play();
                 });
+
+                const tcgCardSection = document.getElementById('tcg-card-section');
+                tcgCardSection.innerHTML = '<p class="card-loading">Loading TCG card...</p>';
+                const tcgCardUrl = await fetchTcgCard(pokemon.name);
+                if (tcgCardUrl) {
+                    tcgCardSection.innerHTML = `
+                        <h4>Trading Card</h4>
+                        <img src="${tcgCardUrl}" alt="${pokemon.name} TCG Card">
+                    `;
+                } else {
+                    tcgCardSection.innerHTML = `<h4>Trading Card</h4><p class="card-loading">No TCG card found.</p>`;
+                }
             };
 
             const getVarietyButtonName = (varietyName) => {
@@ -568,7 +586,7 @@
                     value: statInfo.base_stat
                 }));
                 
-                const imageUrl = getPokemonImageUrl(name, isShiny);
+                const imageUrl = getPokemonImageUrl(pokemon, isShiny);
                
                 const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
                 const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
@@ -579,11 +597,11 @@
                 const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
                 const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
 
-                const renderButtons = (forms) => {
+                const renderButtons = (forms, currentName) => {
                     if (forms.length === 0) return '';
                     return forms.map(v => {
                         const buttonName = getVarietyButtonName(v.name);
-                        const isActive = v.name === pokemon.name;
+                        const isActive = v.name === currentName;
                         return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
                     }).join('');
                 };
@@ -603,7 +621,7 @@
                         <div class="variety-section normal-forms">
                            <h4>Normal Form</h4>
                            <div class="variety-buttons">
-                               <button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>
+                               ${normalForm ? `<button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>` : ''}
                            </div>
                         </div>
 
@@ -611,7 +629,7 @@
                         <div class="variety-section mega-forms">
                            <h4>Mega Forms</h4>
                            <div class="variety-buttons">
-                               ${renderButtons(megaForms)}
+                               ${renderButtons(megaForms, name)}
                            </div>
                         </div>` : ''}
                         
@@ -619,7 +637,7 @@
                         <div class="variety-section regional-forms">
                            <h4>Regional Forms</h4>
                            <div class="variety-buttons">
-                               ${renderButtons(regionalForms)}
+                               ${renderButtons(regionalForms, name)}
                            </div>
                         </div>` : ''}
 
@@ -627,7 +645,7 @@
                         <div class="variety-section gmax-forms">
                            <h4>G-Max Forms</h4>
                            <div class="variety-buttons">
-                               ${renderButtons(gmaxForms)}
+                               ${renderButtons(gmaxForms, name)}
                            </div>
                         </div>` : ''}
 
@@ -648,6 +666,7 @@
                         <ul class="stats-list">
                             ${stats.map(stat => `<li><span>${stat.name}</span><span>${stat.value}</span></li>`).join('')}
                         </ul>
+                        <div id="tcg-card-section" class="tcg-card-section"></div>
                     </div>
                     <audio id="pokemon-cry" preload="auto"></audio>
                 `;
