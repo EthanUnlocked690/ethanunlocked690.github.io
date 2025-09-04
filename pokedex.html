@@ -29,6 +29,27 @@
             color: #555;
             display: none; /* Initially hidden */
         }
+        
+        #loadingMessage.error {
+            color: #e4000f;
+        }
+
+        #retryButton {
+            background-color: #e4000f;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #retryButton:hover {
+            background-color: #c2000d;
+        }
 
         /* Navigation Bar */
         .nav-container {
@@ -346,6 +367,7 @@
     </div>
 
     <p id="loadingMessage">Loading Pokédex...</p>
+    <button id="retryButton">Retry</button>
 
     <div id="pokedex-container" class="pokedex-container">
         </div>
@@ -363,6 +385,7 @@
             const pokedexContainer = document.getElementById('pokedex-container');
             const searchInput = document.getElementById('searchInput');
             const loadingMessage = document.getElementById('loadingMessage');
+            const retryButton = document.getElementById('retryButton');
             const pokemonModal = document.getElementById('pokemonModal');
             const modalBody = document.getElementById('modal-body');
             const closeModal = document.querySelector('.close-button');
@@ -407,8 +430,16 @@
 
             const fetchAllPokemon = async () => {
                 loadingMessage.style.display = 'block';
+                loadingMessage.textContent = 'Loading Pokédex...';
+                loadingMessage.classList.remove('error');
+                retryButton.style.display = 'none';
+                pokedexContainer.innerHTML = '';
+
                 try {
                     const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const data = await response.json();
                     
                     const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
@@ -421,7 +452,9 @@
                     filterAndDisplayPokemon('all');
                 } catch (error) {
                     console.error('Failed to fetch Pokémon data:', error);
-                    loadingMessage.textContent = 'Failed to load Pokédex. Please try again later.';
+                    loadingMessage.textContent = 'Failed to load Pokédex. Please check your connection or try again later.';
+                    loadingMessage.classList.add('error');
+                    retryButton.style.display = 'block';
                 }
             };
             
@@ -732,6 +765,8 @@
                     filterAndDisplayPokemon(category);
                 });
             });
+
+            retryButton.addEventListener('click', fetchAllPokemon);
 
             fetchAllPokemon();
         });
