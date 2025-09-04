@@ -363,6 +363,7 @@
     <div class="nav-container">
         <button class="nav-button active" data-category="all">All</button>
         <button class="nav-button" data-category="mega">Mega</button>
+        <button class="nav-button" data-category="regional">Regional</button>
         <button class="nav-button" data-category="shiny">Shiny</button>
         <button class="nav-button" data-category="legendary">Legendary</button>
         <button class="nav-button" data-category="mythical">Mythical</button>
@@ -404,19 +405,30 @@
             const cachedVarietyData = {};
             const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
 
-            const getSpeciesData = async (pokemonId) => {
-                const speciesId = String(pokemonId).includes('-') ? pokemonId.split('-')[0] : pokemonId;
-                if (cachedSpeciesData[speciesId]) {
-                    return cachedSpeciesData[speciesId];
+            const getSpeciesNameFromVarietyName = (name) => {
+                const parts = name.split('-');
+                if (parts.includes('mega') || parts.includes('primal')) {
+                    return parts[0];
+                }
+                if (parts.includes('alola') || parts.includes('galar') || parts.includes('hisui')) {
+                    return parts[0];
+                }
+                return name;
+            };
+
+            const getSpeciesData = async (pokemonIdOrName) => {
+                const speciesName = getSpeciesNameFromVarietyName(pokemonIdOrName);
+                if (cachedSpeciesData[speciesName]) {
+                    return cachedSpeciesData[speciesName];
                 }
                 try {
-                    const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesId}`;
+                    const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesName}`;
                     const response = await fetch(url);
                     const speciesData = await response.json();
-                    cachedSpeciesData[speciesId] = speciesData;
+                    cachedSpeciesData[speciesName] = speciesData;
                     return speciesData;
                 } catch (error) {
-                    console.error(`Failed to fetch species data for ID ${speciesId}:`, error);
+                    console.error(`Failed to fetch species data for ${speciesName}:`, error);
                     return null;
                 }
             };
@@ -454,7 +466,7 @@
                     const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
                     allPokemon = await Promise.all(pokemonPromises);
                     
-                    const speciesPromises = allPokemon.map(p => getSpeciesData(p.id));
+                    const speciesPromises = allPokemon.map(p => getSpeciesData(p.name));
                     await Promise.all(speciesPromises);
                     
                     loadingMessage.style.display = 'none';
@@ -474,23 +486,26 @@
                 let currentPokemonToDisplay;
                 switch (category) {
                     case 'all':
-                        currentPokemonToDisplay = allPokemon.filter(p => !p.name.includes('-mega') && !p.name.includes('-primal') && !p.name.includes('-gmax') && !p.name.includes('-alola') && !p.name.includes('-galar'));
+                        currentPokemonToDisplay = allPokemon;
                         break;
                     case 'mega':
                         currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
+                        break;
+                    case 'regional':
+                        currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
                         break;
                     case 'shiny':
                         currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
                         break;
                     case 'legendary':
                         currentPokemonToDisplay = allPokemon.filter(p => {
-                            const species = cachedSpeciesData[p.id];
+                            const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
                             return species && species.is_legendary && !species.is_mythical;
                         });
                         break;
                     case 'mythical':
                         currentPokemonToDisplay = allPokemon.filter(p => {
-                            const species = cachedSpeciesData[p.id];
+                            const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
                             return species && species.is_mythical;
                         });
                         break;
@@ -539,9 +554,7 @@
                     const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
 
                     let displayName = name;
-                    if (category === 'all' || category === 'shiny') {
-                        displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
-                    }
+                    displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
                     
                     pokemonCard.innerHTML = `
                         <div class="pokemon-id">#${id}</div>
@@ -572,8 +585,8 @@
             };
 
             const showPokemonDetails = async (pokemon, isShiny = false) => {
-                const speciesId = pokemon.name.includes('-gmax') ? pokemon.name.split('-')[0] : pokemon.id;
-                const speciesData = await getSpeciesData(speciesId);
+                const speciesName = getSpeciesNameFromVarietyName(pokemon.name);
+                const speciesData = await getSpeciesData(speciesName);
                 const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
                 
                 renderModalContent(pokemon, speciesData, varieties, isShiny);
@@ -581,8 +594,8 @@
 
                 const modalImage = document.querySelector('#modal-body .modal-image');
                 const modalAudio = document.querySelector('#pokemon-cry');
-                const baseName = pokemon.name.split('-')[0];
-                modalAudio.src = `https://play.pokemonshowdown.com/audio/cries/${baseName}.mp3`;
+                const cryName = speciesData.name;
+                modalAudio.src = `https://play.pokemonshowdown.com/audio/cries/${cryName}.mp3`;
 
                 modalImage.addEventListener('click', () => {
                     modalImage.classList.remove('attack');
@@ -739,12 +752,12 @@
                     if (varietyName === 'shiny') {
                         const currentName = document.querySelector('.modal-image').alt;
                         const currentPokemonData = await getPokemonData(currentName);
-                        const speciesData = await getSpeciesData(currentPokemonData.id);
+                        const speciesData = await getSpeciesData(currentPokemonData.name);
                         const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
                         renderModalContent(currentPokemonData, speciesData, varieties, !isShinyActive);
                     } else {
                         const pokemonData = await getPokemonData(varietyName);
-                        const speciesData = await getSpeciesData(pokemonData.id);
+                        const speciesData = await getSpeciesData(pokemonData.name);
                         const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
                         renderModalContent(pokemonData, speciesData, varieties, isShinyActive);
                     }
@@ -771,18 +784,21 @@
                         case 'mega':
                             pokemonToSearch = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
                             break;
+                        case 'regional':
+                            pokemonToSearch = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
+                            break;
                         case 'shiny':
                             pokemonToSearch = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
                             break;
                         case 'legendary':
                             pokemonToSearch = allPokemon.filter(p => {
-                                const species = cachedSpeciesData[p.id];
+                                const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
                                 return species && species.is_legendary && !species.is_mythical;
                             });
                             break;
                         case 'mythical':
                             pokemonToSearch = allPokemon.filter(p => {
-                                const species = cachedSpeciesData[p.id];
+                                const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
                                 return species && species.is_mythical;
                             });
                             break;
