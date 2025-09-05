@@ -35,10 +35,31 @@
             text-align: center;
             padding: 14px 16px;
             text-decoration: none;
+            position: relative;
         }
 
         li a:hover {
             background-color: #964B00;
+        }
+
+        /* NEW indicator styles */
+        .new-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: #00ff00;
+            color: #000000;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 3px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         /* This gives a bouncy effect on the letters at the top of the page */
@@ -216,223 +237,9 @@
             backdrop-filter: blur(5px);
         }
     </style>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TheUnlockedWeb</title>
-    <meta name="google-site-verification" content="eHA-fyuHNpFO1gxDcH8B29KJYZwD2gO1jATtmFPYaTE" />
-    <meta name="description" content="Welcome to TheUnlockedWeb – your hub that tells you about our channel, has a game, and, some of our videos and shorts!!">
-        <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-        
-        /* User's original styles */
-        ul {
-            list-style-type: none;
-            margin: 0px;
-            padding: 0px;
-            overflow: hidden;
-            background-color: #ff0000;
-        }
-
-        body {
-            margin:0px;
-            background-image: url('webpage-backdrop.jpg');
-        }
-        
-        li {
-            float: left;
-        }
-
-        li a {
-            display: block;
-            color: white;
-            text-align: center;
-            padding: 14px 16px;
-            text-decoration: none;
-        }
-
-        li a:hover {
-            background-color: #964B00;
-        }
-
-        /* This gives a bouncy effect on the letters at the top of the page */
-        .bouncy-text {
-            font-size: 50px !important;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .bouncy-text span {
-            animation: bounce 0.5s infinite alternate;
-            display: inline-block;
-            background: linear-gradient(to bottom, #ff6600, #ffcc33);
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-10px); }
-        }
-
-        .bouncy-text span:nth-child(1) { animation-delay: 0s; }
-        .bouncy-text span:nth-child(2) { animation-delay: 0.05s; }
-        .bouncy-text span:nth-child(3) { animation-delay: 0.1s; }
-        .bouncy-text span:nth-child(4) { animation-delay: 0.15s; }
-        .bouncy-text span:nth-child(5) { animation-delay: 0.20s; }
-        .bouncy-text span:nth-child(6) { animation-delay: 0.25s; }
-        .bouncy-text span:nth-child(7) { animation-delay: 0.30s; }
-        .bouncy-text span:nth-child(8) { animation-delay: 0.35s; }
-        .bouncy-text span:nth-child(9) { animation-delay: 0.40s; }
-        .bouncy-text span:nth-child(10) { animation-delay: 0.45s; }
-        .bouncy-text span:nth-child(11) { animation-delay: 0.50s; }
-        .bouncy-text span:nth-child(12) { animation-delay: 0.55s; }
-        .bouncy-text span:nth-child(13) { animation-delay: 0.60s; }
-        .bouncy-text span:nth-child(14) { animation-delay: 0.65s; }
-
-        /* Floating chatbot button styles (kept) */
-        .chatbot-button-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            transition: transform 0.2s ease-in-out;
-        }
-        .chatbot-button-container:hover {
-            transform: scale(1.1);
-        }
-        .chatbot-button-container img {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-        }
-
-        /* Chatbot modal styles (kept) */
-        .chatbot-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: none; /* Hidden by default */
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            backdrop-filter: blur(5px);
-        }
-
-        .chatbot-modal-content {
-            width: 95%;
-            max-width: 600px;
-            height: 90vh;
-            background-color: #1f2937; /* Tailwind gray-800 */
-            border-radius: 1rem; /* Tailwind rounded-2xl */
-            padding: 1.5rem; /* Tailwind p-6 */
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        .chatbot-close-button {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 2rem;
-            color: #d1d5db; /* Tailwind gray-400 */
-            cursor: pointer;
-            line-height: 1;
-            transition: color 0.2s ease-in-out;
-        }
-        .chatbot-close-button:hover {
-            color: #ef4444; /* Tailwind red-500 */
-        }
-
-        /* Custom Alert/Prompt Modal styles (kept) */
-        .custom-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-        }
-        .custom-modal-content {
-            background-color: #2d3748; /* Dark gray */
-            padding: 2rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            color: #e2e8f0; /* Light gray text */
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        .custom-modal-content h3 {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-        .custom-modal-content input {
-            width: 100%;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            border-radius: 0.25rem;
-            border: 1px solid #4a5568;
-            background-color: #1a202c; /* Darker gray */
-            color: #e2e8f0;
-        }
-        .custom-modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-        .custom-modal-buttons button {
-            padding: 0.5rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        .custom-modal-buttons .ok-button {
-            background-color: #48bb78; /* Green */
-            color: white;
-        }
-        .custom-modal-buttons .ok-button:hover {
-            background-color: #38a169;
-        }
-        .custom-modal-buttons .cancel-button {
-            background-color: #e53e3e; /* Red */
-            color: white;
-        }
-        .custom-modal-buttons .cancel-button:hover {
-            background-color: #c53030;
-        }
-
-        /* Message box for specific messages (kept) */
-        .message-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.85);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            z-index: 9999;
-            text-align: center;
-            display: none;
-            backdrop-filter: blur(5px);
-        }
-    </style>
 </head>
 
-<body onload="checkCookie()">
+<body onload="checkCookie(); checkNewsUpdate();">
     <!-- Custom Alert and Prompt Modals -->
     <div id="custom-alert-modal" class="custom-modal">
         <div class="custom-modal-content">
@@ -460,7 +267,7 @@
     <!-- Navigation menu -->
     <ul>
         <li><a class="active" href="index.html" img src="house.png" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
-        <li><a href="news.html">News</a></li>
+        <li><a href="news.html" id="news-link" onclick="markNewsAsRead()">News<span id="news-indicator" class="new-indicator" style="display: none;">NEW</span></a></li>
         <li><a href="subscribe.html">Subscribe</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="short.html">Shorts</a></li>
@@ -510,18 +317,18 @@
         });
     </script>
     
-    <h2 style="color:red;">My latest video</h2>
-    <h2 style="color:dodgerblue;">Annoying draco and something else...:</h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/wnNoqsgvkC4?si=KhsFOG2MQJ_Vv1QA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <h2 style="color:red;">My most popular video</h2>
-    <h2 style="color:dodgerblue;">Gangnam Style music video:</h2>
-    <iframe width="560" height="400" src="https://www.youtube.com/embed/SrgMCyEV2rc?si=JoT1nb-XuF_5vRlc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <h2 style="color:red;">My least popular video</h2>
-    <h2 style="color:dodgerblue;">Annoying draco and something else...:</h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/wnNoqsgvkC4?si=KhsFOG2MQJ_Vv1QA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <h2 style="color:red;">My favourite video from my channel(s):</h2>
-    <h2 style="color:dodgerblue;">Annoying draco and something else...:</h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/wnNoqsgvkC4?si=KhsFOG2MQJ_Vv1QA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <h2 style="color:red;">Our latest video</h2>
+    <h2 style="color:dodgerblue;">Latest brawl talk:</h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/RrgRQ-PHI60?si=dIYkbxFj3RYIv419" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <h2 style="color:red;">Our most popular video</h2>
+    <h2 style="color:dodgerblue;">All my icon emotes:</h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/82BNfQtdQU8?si=KUIW7yysrETVTRFT" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <h2 style="color:red;">Our least popular video</h2>
+    <h2 style="color:dodgerblue;">Latest brawl stars animation:</h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/SuMJDt16b7c?si=oz39f9QSdurtBH-O" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <h2 style="color:red;">My favourite video from our channel(s):</h2>
+    <h2 style="color:dodgerblue;">EthanUnlocked's event moments:</h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/sQMlm6fnlHo?si=Eg1Ex0dB8QCCv73U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     
     <h1 style="background-color:#ffa500;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe (Main)</h1>
     <h2 style="background-color:#ffa500;" href="https://www.youtube.com/@EthansUnlockedLEGO223">Subscribe (LEGO)</h2>
@@ -623,6 +430,61 @@
 
     <!-- Combined JavaScript for chatbot and page functionality -->
     <script>
+        // News update functionality
+        function setNewsUpdate() {
+            // Call this function whenever you update the news page
+            // You can add this to your GitHub workflow or call it manually
+            const updateTime = new Date().getTime();
+            const newsData = {
+                hasUpdate: true,
+                updateTime: updateTime
+            };
+            
+            // Store in a variable that persists across sessions
+            const existingData = getNewsData();
+            if (!existingData || updateTime > existingData.updateTime) {
+                storeNewsData(newsData);
+                console.log("News update flagged!");
+            }
+        }
+
+        function checkNewsUpdate() {
+            const newsData = getNewsData();
+            const newsIndicator = document.getElementById('news-indicator');
+            
+            if (newsData && newsData.hasUpdate) {
+                newsIndicator.style.display = 'inline-block';
+            } else {
+                newsIndicator.style.display = 'none';
+            }
+        }
+
+        function markNewsAsRead() {
+            const newsData = getNewsData();
+            if (newsData) {
+                newsData.hasUpdate = false;
+                storeNewsData(newsData);
+            }
+            document.getElementById('news-indicator').style.display = 'none';
+        }
+
+        function getNewsData() {
+            try {
+                const stored = getCookie('newsUpdateData');
+                return stored ? JSON.parse(stored) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function storeNewsData(data) {
+            setCookie('newsUpdateData', JSON.stringify(data), 30); // Store for 30 days
+        }
+
+        // Simulate a news update - you would call setNewsUpdate() when you actually update the news
+        // For testing purposes, uncomment the line below:
+        // setNewsUpdate();
+
         // Custom Alert/Prompt Modals Logic
         const alertModal = document.getElementById('custom-alert-modal');
         const alertMessage = document.getElementById('alert-message');
@@ -859,393 +721,5 @@
             }
         });
     </script>
-        <div id="custom-alert-modal" class="custom-modal">
-        <div class="custom-modal-content">
-            <h3 id="alert-message"></h3>
-            <div class="custom-modal-buttons">
-                <button class="ok-button" onclick="hideAlert()">OK</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="custom-prompt-modal" class="custom-modal">
-        <div class="custom-modal-content">
-            <h3 id="prompt-message"></h3>
-            <input type="text" id="prompt-input" placeholder="Enter your name">
-            <div class="custom-modal-buttons">
-                <button class="ok-button" onclick="handlePromptResult(true)">OK</button>
-                <button class="cancel-button" onclick="handlePromptResult(false)">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-        <div id="message-box" class="message-box"></div>
-
-        <ul>
-        <li><a class="active" href="index.html" img src="house.png" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
-        <li><a href="news.html">News</a></li>
-        <li><a href="subscribe.html">Subscribe</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="short.html">Shorts</a></li>
-        <li><a href="videos.html">Video Gallery</a></li>
-        <li><a href="images.html">Image Gallery</a></li>
-        <li><a href="animate.html">LEGO Animations</a></li>
-        <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
-        <li><a href="turtle.html">Others</a></li>
-    </ul>
-
-        <div style="text-align: center; font-size: 100px;">
-        <b id="demo" style="color:white;">Good Evening! Welcome to...</b>
-    </div>
-
-    <script>
-        if (new Date().getHours() < 18) {
-            document.getElementById("demo").innerHTML = "Good day! Welcome to...";
-        }
-    </script>
-    <br>
-
-    <div style="width:100%">
-        <div class="bouncy-text">
-            <span>T</span><span>h</span><span>e</span>
-            <span>U</span><span>n</span><span>l</span><span>o</span><span>c</span><span>k</span><span>e</span><span>d</span>
-            <span>W</span><span>e</span><span>b</span>
-        </div>
-    </div>
-    <br>
-
-    <a href="https://www.youtube.com/watch?v=SVgzuE7293Q" style="color:white;">Watch this video... if you DARE!!! (WARNING: Explicit content in-video)</a>
-    
-    <button type="button" id="playButton">DO NOT CLICK THIS BUTTON!!! (I dare you to click it)</button>
-    <br>
-    <b id="displayText" style="color:white;"></b>
-    <br>
-
-    <script>
-        const playButton = document.getElementById('playButton');
-        const audio = new Audio('do-not-click-me.mp3'); // Replace with your audio file path
-        const textElement = document.getElementById('displayText');
-
-        playButton.addEventListener('click', function() {
-            audio.play();
-            textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!! 🤣🤣🤣'; // Text to display on click
-        });
-    </script>
-    
-    <h2 style="color:red;">Our latest video</h2>
-    <h2 style="color:dodgerblue;">Latest brawl talk:</h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/RrgRQ-PHI60?si=dIYkbxFj3RYIv419" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <h2 style="color:red;">Our most popular video</h2>
-    <h2 style="color:dodgerblue;">All my icon emotes:</h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/82BNfQtdQU8?si=KUIW7yysrETVTRFT" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <h2 style="color:red;">Our least popular video</h2>
-    <h2 style="color:dodgerblue;">Latest brawl stars animation:</h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/SuMJDt16b7c?si=oz39f9QSdurtBH-O" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <h2 style="color:red;">My favourite video from our channel(s):</h2>
-    <h2 style="color:dodgerblue;">EthanUnlocked's event moments:</h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/sQMlm6fnlHo?si=Eg1Ex0dB8QCCv73U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    
-    <h1 style="background-color:#ffa500;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe (Main)</h1>
-    <h2 style="background-color:#ffa500;" href="https://www.youtube.com/@EthansUnlockedLEGO223">Subscribe (LEGO)</h2>
-    <h3 style="background-color:#ffa500;" href="https://www.youtube.com/@EthanUnlockedwithFortmon-lf9hf">Subscribe (Fortmongus!!)</h3>
-    <h4 style="background-color:#ffa500;" href="https://www.youtube.com/@EthansStorytellingRatings">Subscribe (Brick hits)</h4>
-    <h4 style="background-color:#ffa500;" href="https://www.youtube.com/@EthanandBailyUnlockedgames-r5f">Subscribe (Ethan and Baily Unlocked games)</h4>
-    
-    <h1 style="color:green;">Website code</h1>
-    <a style="color:white;" href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io/blob/main/index.html" class="button">To view the code for this website, click F12 with Fn on (Make sure the light's on) and click elements, or, click me</a>
-
-    <button type="button" onclick="showAlert('To get to my blooket, go to: https://dashboard.blooket.com/set/683d291a46fe0cb8b31dbb81')">Click Me to see how to get to my blooket</button>
-    <h1 style="color:yellow;">Announcements</h1>
-    <button type="button" onclick="showAlert('Hey guys, coming soon is... a new GAME!! This game will not have AI to help me create it. Stick around to see it when it comes out')">Click Me to get the latest announcement</button>
-
-    <button id="theButton">Tap Me!</button>
-    <p id="theWords" style="color:white;"></p>
-    
-    <script>
-        // This bit is like finding your button on the paper
-        const theButtonThing = document.getElementById("theButton");
-        const theWordPlace = document.getElementById("theWords");
-
-        // This part says, "Hey computer, listen really carefully for when someone taps the button!"
-        theButtonThing.addEventListener("click", function() {
-            // When they DO tap it, do the stuff inside these curly lines { }
-            // Let's see what words are on the button right now
-            if (theButtonThing.textContent === "Tap Me!") {
-                // If it says "Tap Me!", then CHANGE it to "Don't you see?"
-                theButtonThing.textContent = "Don't you see?";
-                // And let's write a little message down below
-                theWordPlace.textContent = "The button changed its writing!";
-            } else {
-                // If it DOESN'T say "Tap Me!" (it must say "Yay!...")
-                // then change it BACK to "Awesome, right?"
-                theButtonThing.textContent = "Awesome, right?";
-                // And change the message back too
-                theWordPlace.textContent = "The button is now back to normal. Subscribe if this was cool: Ethan and Isabella Unlocked";
-            }
-        });
-    </script>
-    
-    <p1 style="background-color:#ffa500;">You have reached the end of the page.</p1>
-    <a style="background-color:#ffa500;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe</a>
-    <p1 style="color:white">This website was coded and created by EthanUnlocked</p1>
-    <a style="background-color:#008000" href="contact.html">📞Contact Us</a>
-    <a style="background-color:#ffa500;" href="index.html">TheUnlockedWeb© 2025</a>
-
-    <input type="button" value="Back" onclick="goBack()">
-    <script>
-        function goBack() {
-            window.history.back()
-        }
-    </script>
-
-    <input type="button" value="Forward" onclick="goForward()">
-    <script>
-        function goForward() {
-            window.history.forward()
-        }
-    </script>
-
-        <div id="chatbot-button" class="chatbot-button-container">
-        <img src="bot.png" alt="Chatbot button">
-    </div>
-
-        <div id="chatbot-modal" class="chatbot-modal">
-        <div class="chatbot-modal-content">
-            <span class="chatbot-close-button">&times;</span>
-                        <div id="chatbot-container" class="flex flex-col h-full">
-                <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">Chat with TheUnlockedBot</h1>
-
-                                <div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
-                                    </div>
-
-                                <div id="loading-indicator" class="hidden flex items-center justify-center p-2 text-sm text-gray-400">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Thinking...
-                </div>
-
-                                <div class="flex items-center space-x-2 border-t border-gray-700 pt-4">
-                    <textarea id="user-input" class="flex-1 resize-none p-3 bg-gray-700 text-gray-100 placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors duration-200" rows="1" placeholder="Type your message here..."></textarea>
-                    <button id="send-button" class="p-3 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600 transition-colors duration-200">
-                        Send
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-        <script>
-        // Custom Alert/Prompt Modals Logic
-        const alertModal = document.getElementById('custom-alert-modal');
-        const alertMessage = document.getElementById('alert-message');
-        const promptModal = document.getElementById('custom-prompt-modal');
-        const promptMessage = document.getElementById('prompt-message');
-        const promptInput = document.getElementById('prompt-input');
-        let promptResolve;
-
-        // Replaces window.alert()
-        function showAlert(message) {
-            alertMessage.textContent = message;
-            alertModal.style.display = 'flex';
-        }
-
-        function hideAlert() {
-            alertModal.style.display = 'none';
-        }
-
-        // Replaces window.prompt() and returns a Promise
-        function showPrompt(message, defaultValue = "") {
-            return new Promise(resolve => {
-                promptMessage.textContent = message;
-                promptInput.value = defaultValue;
-                promptInput.focus();
-                promptModal.style.display = 'flex';
-                promptResolve = resolve;
-            });
-        }
-
-        function handlePromptResult(isOk) {
-            promptModal.style.display = 'none';
-            if (isOk) {
-                promptResolve(promptInput.value);
-            } else {
-                promptResolve(null); // Return null on cancel
-            }
-        }
-        
-        // --- Custom Alert on page load, replaces original window.alert() ---
-        showAlert("WAIT! Before you come in, have you liked and subscribed to Ethan and Isabella Unlocked? If you haven't, go onto YouTube and do it right now! And if you have, click OK. Welcome to TheUnlockedWeb!");
-
-        // --- User's original cookie scripts, modified to use custom modals ---
-        function setCookie(cname, cvalue, exdays) {
-            const d = new Date();
-            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-            let expires = "expires=" + d.toUTCString();
-            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-        }
-
-        function getCookie(cname) {
-            let name = cname + "=";
-            let decodedCookie = decodeURIComponent(document.cookie);
-            let ca = decodedCookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) == ' ') {
-                    c = c.substring(1);
-                }
-                if (c.indexOf(name) == 0) {
-                    return c.substring(name.length, c.length);
-                }
-            }
-            return "";
-        }
-
-        async function checkCookie() {
-            let user = getCookie("username");
-            if (user != "") {
-                showAlert("Hello again " + user + "! Welcome back to TheUnlockedWeb!");
-            } else {
-                user = await showPrompt("Please enter your name:", "");
-                if (user != "" && user != null) {
-                    setCookie("username", user, 7);
-                }
-            }
-        }
-
-        // --- Chatbot UI References ---
-        const chatbotButton = document.getElementById('chatbot-button');
-        const chatbotModal = document.getElementById('chatbot-modal');
-        const closeButton = document.querySelector('.chatbot-close-button');
-        const userInput = document.getElementById('user-input');
-        const sendButton = document.getElementById('send-button');
-        const chatHistoryDiv = document.getElementById('chat-history');
-        const loadingIndicator = document.getElementById('loading-indicator');
-
-        // --- Chat History State ---
-        let chatHistory = [];
-        
-        // --- Hardcoded responses for basic conversation ---
-        const hardcodedResponses = {
-            'hello': "Hello there! How can I help you today?",
-            'hi': "Hi! What's on your mind?",
-            'how are you': "I'm doing great, thanks for asking! I'm here to help you with anything on this website.",
-            'who are you': "I'm TheUnlockedBot, an AI assistant created by TheUnlockedWeb. How can I help you?",
-            'what is this site': "This is TheUnlockedWeb! It's a website with videos, games, and information about the YouTube channel.",
-            'thanks': "You're welcome!",
-            'thank you': "You're welcome!"
-        };
-
-        // --- Helper Functions ---
-        function addMessageToChat(role, text) {
-            const messageContainer = document.createElement('div');
-            messageContainer.classList.add('flex', 'space-x-3', 'items-start');
-            messageContainer.innerHTML = `
-                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg ${role === 'user' ? 'bg-teal-500' : 'bg-gray-600'}">
-                    ${role === 'user' ? 'U' : 'T'}
-                </div>
-                <div class="flex-1">
-                    <div class="font-semibold text-sm ${role === 'user' ? 'text-teal-300' : 'text-gray-300'}">
-                        ${role === 'user' ? 'You' : 'TheUnlockedBot'}
-                    </div>
-                    <div class="mt-1 p-3 rounded-xl ${role === 'user' ? 'bg-teal-600 text-white' : 'bg-gray-700 text-gray-200'}">
-                        ${text.replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-            `;
-            chatHistoryDiv.appendChild(messageContainer);
-            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
-        }
-
-        async function fetchGeminiResponse(prompt) {
-            loadingIndicator.classList.remove('hidden');
-            
-            // Create a temporary chat history for the API call to avoid mutation issues
-            let currentChatHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
-            
-            const payload = { contents: currentChatHistory };
-            const apiKey = ""; 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            
-            let backoffDelay = 1000; // Start with 1 second delay
-            const maxRetries = 5;
-            let retryCount = 0;
-            
-            while (retryCount < maxRetries) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.status === 429) { // Too Many Requests
-                        retryCount++;
-                        if (retryCount < maxRetries) {
-                            await new Promise(resolve => setTimeout(resolve, backoffDelay));
-                            backoffDelay *= 2; // Exponential backoff
-                            continue; // Retry the loop
-                        } else {
-                            throw new Error("API request limit exceeded. Please try again later.");
-                        }
-                    }
-
-                    if (!response.ok) {
-                        throw new Error(`API call failed with status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.candidates && result.candidates.length > 0 &&
-                        result.candidates[0].content && result.candidates[0].content.parts &&
-                        result.candidates[0].content.parts.length > 0) {
-                        const text = result.candidates[0].content.parts[0].text;
-                        
-                        // Update the persistent chat history
-                        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                        chatHistory.push({ role: "model", parts: [{ text }] });
-                        addMessageToChat('model', text);
-                    } else {
-                        addMessageToChat('model', "Sorry, I couldn't generate a response. The response was empty or malformed.");
-                    }
-                    break; // Break the retry loop on success
-                } catch (error) {
-                    console.error("Error fetching Gemini response:", error);
-                    addMessageToChat('model', `An error occurred: ${error.message}`);
-                    break; // Exit the loop on other errors
-                } finally {
-                    loadingIndicator.classList.add('hidden');
-                }
-            }
-        }
-
-        // --- Chatbot Event Listeners ---
-        chatbotButton.addEventListener('click', () => {
-            chatbotModal.style.display = 'flex';
-            // Initial welcome message when modal is opened for the first time
-            if (chatHistory.length === 0) {
-                 addMessageToChat('model', "Hello! I'm TheUnlockedBot. What can I help you with today?");
-            }
-        });
-
-        closeButton.addEventListener('click', () => {
-            chatbotModal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target == chatbotModal) {
-                chatbotModal.style.display = 'none';
-            }
-        });
-        
-        sendButton.addEventListener('click', handleSendMessage);
-        userInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                handleSendMessage();
-            }
-        });
-    </script>
 </body>
 </html>
