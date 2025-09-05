@@ -1,64 +1,67 @@
 <!DOCTYPE html>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-</script>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About TheUnlockedWeb</title>
+    <style>
+        body {
+            margin: 0px;
+            background-image: url('webpage-backdrop.jpg');
+        }
 
- <html>
-<head>
-<style> body {
-  margin:0px;
-  background-image: url('webpage-backdrop.jpg');
-}
-</style>
-<style>
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: #0000ff;
-}
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0000ff;
+        }
 
-li {
-  float: left;
-}
+        li {
+            float: left;
+        }
 
-li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-}
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            position: relative;
+        }
 
-li a:hover {
-  background-color: #111;
-}
-</style>
-</head>
-<body>
+        li a:hover {
+            background-color: #111;
+        }
 
+        /* NEW indicator styles */
+        .new-indicator {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: #00ff00;
+            color: #000000;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 3px;
+            animation: pulse 1.5s infinite;
+        }
 
-<ul>
-  <li><a class="active" href="index.html">Home</a></li>
-  <li><a href="news.html">News</a></li>
-  <li><a href="subscribe.html">Subscribe</a></li>
-  <li><a href="about.html"style="background-color:gray;"style="color:black;">About</a></li>
-  <li><a href="short.html">Shorts</a></li>
-  <li><a href="videos.html">Video Gallery</a></li>
-  <li><a href="images.html">Image Gallery</a></li>
-  <li><a href="animate.html">LEGO Animations</a></li>
-  <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
-  <li><a href="turtle.html">Others</a></li>
-</ul>
-  <style>
-  /* This gives a bouncy effect on the letters at the top of the page */
-  .bouncy-text {
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* This gives a bouncy effect on the letters at the top of the page */
+        .bouncy-text {
             font-size: 50px !important;
             font-weight: bold;
             text-align: center;
         }
+
         .bouncy-text span {
             animation: bounce 0.5s infinite alternate;
             display: inline-block;
@@ -66,64 +69,134 @@ li a:hover {
             -webkit-background-clip: text;
             color: transparent;
         }
+
         @keyframes bounce {
             0% { transform: translateY(0); }
             100% { transform: translateY(-10px); }
         }
+
         .bouncy-text span:nth-child(1) { animation-delay: 0s; }
         .bouncy-text span:nth-child(2) { animation-delay: 0.05s; }
         .bouncy-text span:nth-child(3) { animation-delay: 0.1s; }
-        .bouncy-text span:nth-child(4) { animation-delay: 0.15s; }
-        .bouncy-text span:nth-child(5) { animation-delay: 0.20s; }
-        .bouncy-text span:nth-child(6) { animation-delay: 0.25s; }
-        .bouncy-text span:nth-child(7) { animation-delay: 0.30s; }
-        .bouncy-text span:nth-child(8) { animation-delay: 0.35s; }
-        .bouncy-text span:nth-child(9) { animation-delay: 0.40s; }
-        .bouncy-text span:nth-child(10) { animation-delay: 0.45s; }
-        .bouncy-text span:nth-child(11) { animation-delay: 0.50s; }
-        .bouncy-text span:nth-child(12) { animation-delay: 0.55s; }
-        .bouncy-text span:nth-child(13) { animation-delay: 0.60s; }
-        .bouncy-text span:nth-child(14) { animation-delay: 0.65s; }
+        .bouncy-text span:nth-child(4) { animation-delay: 0.20s; }
+        .bouncy-text span:nth-child(5) { animation-delay: 0.25s; }
     </style>
-  <div style="width:100%">
-<div class="bouncy-text">
-        <span>A</span><span>b</span><span>o</span><span>u</span><span>t</span>
-    </div>
-  </div>
-
-
 </head>
-<body>
-<title>About TheUnlockedWeb</title>
-<p1 style="color:white;">TheUnlockedWeb was created by EthanUnlocked in 2025. This website tells you all about our channel. It even has features like a button that takes you to our website code, a video and image gallery, and when we have a new #1 popular or least popular video, I will replace the current one with the new one. Enjoy, Subscribe, and START SCROLLING!!</p1>
- <script>
-function goBack() {
-  window.history.back()
-}
-</script>
-<body>
 
-<input type="button" value="Back" onclick="goBack()">
+<body onload="checkNewsUpdate();">
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="news.html" id="news-link" onclick="markNewsAsRead()">News<span id="news-indicator" class="new-indicator" style="display: none;">NEW</span></a></li>
+        <li><a href="subscribe.html">Subscribe</a></li>
+        <li><a class="active" href="about.html" style="background-color:gray; color:black;">About</a></li>
+        <li><a href="short.html">Shorts</a></li>
+        <li><a href="videos.html">Video Gallery</a></li>
+        <li><a href="images.html">Image Gallery</a></li>
+        <li><a href="animate.html">LEGO Animations</a></li>
+        <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
+        <li><a href="turtle.html">Others</a></li>
+    </ul>
 
-</body>
- <script>
-function goForward() {
-  window.history.forward()
-}
-</script>
-<body>
-
-<input type="button" value="Forward" onclick="goForward()">
-
-</body>
-
-</head>
-<body>
+    <div style="width:100%">
+        <div class="bouncy-text">
+            <span>A</span><span>b</span><span>o</span><span>u</span><span>t</span>
+        </div>
     </div>
-  </div>
 
-   <html>
-<body>
+    <p style="color:white; padding: 20px;">
+        TheUnlockedWeb was created by EthanUnlocked in 2025. This website tells you all about our channel. It even has features like a button that takes you to our website code, a video and image gallery, and when we have a new #1 popular or least popular video, I will replace the current one with the new one. Enjoy, Subscribe, and START SCROLLING!!
+    </p>
 
+    <input type="button" value="Back" onclick="goBack()">
+    <input type="button" value="Forward" onclick="goForward()">
+
+    <script>
+        // News update functionality
+        function setNewsUpdate() {
+            // Call this function whenever you update the news page
+            const updateTime = new Date().getTime();
+            const newsData = {
+                hasUpdate: true,
+                updateTime: updateTime
+            };
+            
+            // Store in a variable that persists across sessions
+            const existingData = getNewsData();
+            if (!existingData || updateTime > existingData.updateTime) {
+                storeNewsData(newsData);
+                console.log("News update flagged!");
+            }
+        }
+
+        function checkNewsUpdate() {
+            const newsData = getNewsData();
+            const newsIndicator = document.getElementById('news-indicator');
+            
+            if (newsData && newsData.hasUpdate) {
+                newsIndicator.style.display = 'inline-block';
+            } else {
+                newsIndicator.style.display = 'none';
+            }
+        }
+
+        function markNewsAsRead() {
+            const newsData = getNewsData();
+            if (newsData) {
+                newsData.hasUpdate = false;
+                storeNewsData(newsData);
+            }
+            document.getElementById('news-indicator').style.display = 'none';
+        }
+
+        function getNewsData() {
+            try {
+                const stored = getCookie('newsUpdateData');
+                return stored ? JSON.parse(stored) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function storeNewsData(data) {
+            setCookie('newsUpdateData', JSON.stringify(data), 30); // Store for 30 days
+        }
+
+        // Cookie functions
+        function setCookie(cname, cvalue, exdays) {
+            const d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            let expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+        function getCookie(cname) {
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+
+        // Navigation functions
+        function goBack() {
+            window.history.back()
+        }
+
+        function goForward() {
+            window.history.forward()
+        }
+
+        // Simulate a news update - you would call setNewsUpdate() when you actually update the news
+        // For testing purposes, uncomment the line below:
+        // setNewsUpdate();
+    </script>
 </body>
 </html>
