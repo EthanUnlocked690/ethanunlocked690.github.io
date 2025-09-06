@@ -659,7 +659,7 @@
                     }
                     break; // Break the retry loop on success
                 } catch (error) {
-                    console.error("Error fetching Gemini response:", error);
+                    console.error("Error fetching response:", error);
                     addMessageToChat('model', `An error occurred: ${error.message}`);
                     break; // Exit the loop on other errors
                 } finally {
