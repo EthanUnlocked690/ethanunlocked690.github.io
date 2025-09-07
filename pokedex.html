@@ -1,836 +1,1203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokédex - The Ultimate Version</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        /* General Body Styles */
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background-color: #f0f0f0;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokédex - The Ultimate Version</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* General Body Styles */
+body {
+font-family: 'Roboto Mono', monospace;
+background-color: #f0f0f0;
+color: #333;
+margin: 0;
+padding: 20px;
+text-align: center;
+}
 
-        h1 {
-            color: #e4000f;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+h1 {
+color: #e4000f;
+text-transform: uppercase;
+letter-spacing: 2px;
+}
 
-        #loadingMessage {
-            font-size: 1.2rem;
-            color: #555;
-            display: none; /* Initially hidden */
-        }
-        
-        #loadingMessage.error {
-            color: #e4000f;
-        }
+#loadingMessage {
+font-size: 1.2rem;
+color: #555;
+display: none; /* Initially hidden */
+}
 
-        #retryButton {
-            background-color: #e4000f;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-            display: none;
-        }
+#loadingMessage.error {
+color: #e4000f;
+}
 
-        #retryButton:hover {
-            background-color: #c2000d;
-        }
+#retryButton {
+background-color: #e4000f;
+color: #fff;
+border: none;
+padding: 10px 20px;
+border-radius: 25px;
+font-family: 'Roboto Mono', monospace;
+font-size: 16px;
+cursor: pointer;
+margin-top: 10px;
+display: none;
+}
 
-        /* Navigation Bar */
-        .nav-container {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
+#retryButton:hover {
+background-color: #c2000d;
+}
 
-        .nav-button {
-            background-color: #333;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+/* Navigation Bar */
+.nav-container {
+display: flex;
+justify-content: center;
+flex-wrap: wrap;
+margin-bottom: 20px;
+gap: 10px;
+}
 
-        .nav-button:hover,
-        .nav-button.active {
-            background-color: #e4000f;
-        }
+.nav-button {
+background-color: #333;
+color: #fff;
+border: none;
+padding: 10px 20px;
+border-radius: 25px;
+font-family: 'Roboto Mono', monospace;
+font-size: 16px;
+cursor: pointer;
+transition: background-color 0.3s;
+}
 
-        /* Search Bar */
-        .search-container {
-            margin-bottom: 20px;
-        }
+.nav-button:hover,
+.nav-button.active {
+background-color: #e4000f;
+}
 
-        #searchInput {
-            width: 80%;
-            max-width: 400px;
-            padding: 10px 15px;
-            border: 2px solid #ccc;
-            border-radius: 25px;
-            font-size: 16px;
-            font-family: 'Roboto Mono', monospace;
-            outline: none;
-            transition: border-color 0.3s;
-        }
+/* Search Bar */
+.search-container {
+margin-bottom: 20px;
+}
 
-        #searchInput:focus {
-            border-color: #e4000f;
-        }
+#searchInput {
+width: 80%;
+max-width: 400px;
+padding: 10px 15px;
+border: 2px solid #ccc;
+border-radius: 25px;
+font-size: 16px;
+font-family: 'Roboto Mono', monospace;
+outline: none;
+transition: border-color 0.3s;
+}
 
-        /* Pokédex Container (Grid) */
-        .pokedex-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+#searchInput:focus {
+border-color: #e4000f;
+}
 
-        /* Pokémon Card */
-        .pokemon-card {
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-        }
+/* Pokédex Container (Grid) */
+.pokedex-container {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 20px;
+padding: 20px;
+max-width: 1200px;
+margin: 0 auto;
+}
 
-        .pokemon-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
+/* Pokémon Card */
+.pokemon-card {
+background-color: #fff;
+border-radius: 15px;
+box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+padding: 20px;
+text-align: center;
+transition: transform 0.2s, box-shadow 0.2s;
+cursor: pointer;
+}
 
-        .pokemon-card .pokemon-id {
-            font-size: 14px;
-            color: #888;
-            font-weight: bold;
-        }
+.pokemon-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
 
-        .pokemon-card img {
-            width: 150px;
-            height: 150px;
-            margin: 10px auto;
-            display: block;
-        }
+.pokemon-card .pokemon-id {
+font-size: 14px;
+color: #888;
+font-weight: bold;
+}
 
-        .pokemon-card .pokemon-name {
-            margin: 15px 0 10px;
-            font-size: 22px;
-            font-weight: bold;
-            text-transform: capitalize;
-        }
+.pokemon-card img {
+width: 150px;
+height: 150px;
+margin: 10px auto;
+display: block;
+}
 
-        /* Types Container */
-        .pokemon-types {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
+.pokemon-card .pokemon-name {
+margin: 15px 0 10px;
+font-size: 22px;
+font-weight: bold;
+text-transform: capitalize;
+}
 
-        .type {
-            padding: 5px 15px;
-            border-radius: 15px;
-            color: white;
-            font-size: 14px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
+/* Types Container */
+.pokemon-types {
+display: flex;
+justify-content: center;
+gap: 10px;
+margin-top: 10px;
+}
 
-        /* Pokémon Type Colors */
-        .type.normal { background-color: #A8A77A; }
-        .type.fire { background-color: #EE8130; }
-        .type.water { background-color: #6390F0; }
-        .type.electric { background-color: #F7D02C; }
-        .type.grass { background-color: #7AC74C; }
-        .type.ice { background-color: #96D9D6; }
-        .type.fighting { background-color: #C22E28; }
-        .type.poison { background-color: #A33EA1; }
-        .type.ground { background-color: #E2BF65; }
-        .type.flying { background-color: #A98FF3; }
-        .type.psychic { background-color: #F95587; }
-        .type.bug { background-color: #A6B91A; }
-        .type.rock { background-color: #B6A136; }
-        .type.ghost { background-color: #735797; }
-        .type.dragon { background-color: #6F35FC; }
-        .type.dark { background-color: #705746; }
-        .type.steel { background-color: #B7B7CE; }
-        .type.fairy { background-color: #D685AD; }
+.type {
+padding: 5px 15px;
+border-radius: 15px;
+color: white;
+font-size: 14px;
+text-transform: uppercase;
+font-weight: bold;
+}
 
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-            backdrop-filter: blur(5px);
-        }
+/* Pokémon Type Colors */
+.type.normal { background-color: #A8A77A; }
+.type.fire { background-color: #EE8130; }
+.type.water { background-color: #6390F0; }
+.type.electric { background-color: #F7D02C; }
+.type.grass { background-color: #7AC74C; }
+.type.ice { background-color: #96D9D6; }
+.type.fighting { background-color: #C22E28; }
+.type.poison { background-color: #A33EA1; }
+.type.ground { background-color: #E2BF65; }
+.type.flying { background-color: #A98FF3; }
+.type.psychic { background-color: #F95587; }
+.type.bug { background-color: #A6B91A; }
+.type.rock { background-color: #B6A136; }
+.type.ghost { background-color: #735797; }
+.type.dragon { background-color: #6F35FC; }
+.type.dark { background-color: #705746; }
+.type.steel { background-color: #B7B7CE; }
+.type.fairy { background-color: #D685AD; }
 
-        .modal-content {
-            background-color: #fff;
-            margin: 10% auto;
-            padding: 30px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            position: relative;
-            animation-name: animatetop;
-            animation-duration: 0.4s;
-            text-align: left;
-        }
+/* Modal Styles */
+.modal {
+display: none;
+position: fixed;
+z-index: 1;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgba(0,0,0,0.4);
+backdrop-filter: blur(5px);
+}
 
-        @keyframes animatetop {
-            from {top: -300px; opacity: 0}
-            to {top: 0; opacity: 1}
-        }
+.modal-content {
+background-color: #fff;
+margin: 10% auto;
+padding: 30px;
+border: 1px solid #888;
+width: 80%;
+max-width: 600px;
+border-radius: 20px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+position: relative;
+animation-name: animatetop;
+animation-duration: 0.4s;
+text-align: left;
+}
 
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+@keyframes animatetop {
+from {top: -300px; opacity: 0}
+to {top: 0; opacity: 1}
+}
 
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
-        }
+.close-button {
+color: #aaa;
+float: right;
+font-size: 28px;
+font-weight: bold;
+cursor: pointer;
+}
 
-        .modal-info h2 {
-            text-align: center;
-            text-transform: capitalize;
-            font-size: 2.5rem;
-            margin-top: 0;
-        }
+.close-button:hover,
+.close-button:focus {
+color: black;
+text-decoration: none;
+}
 
-        .modal-info .modal-id {
-            font-size: 1.5rem;
-            color: #888;
-            text-align: center;
-        }
+.modal-info h2 {
+text-align: center;
+text-transform: capitalize;
+font-size: 2.5rem;
+margin-top: 0;
+}
 
-        .modal-info .modal-image {
-            display: block;
-            margin: 0 auto 20px;
-            width: 200px;
-            height: 200px;
-            cursor: pointer;
-        }
+.modal-info .modal-id {
+font-size: 1.5rem;
+color: #888;
+text-align: center;
+}
 
-        /* Attack Animation */
-        .modal-image.attack {
-            animation: attack-pulse 0.5s ease-in-out;
-        }
+.modal-info .modal-image {
+display: block;
+margin: 0 auto 20px;
+width: 200px;
+height: 200px;
+cursor: pointer;
+}
 
-        @keyframes attack-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1) translateX(-5px); }
-            100% { transform: scale(1); }
-        }
+/* Attack Animation */
+.modal-image.attack {
+animation: attack-pulse 0.5s ease-in-out;
+}
 
-        .modal-info .modal-types {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+@keyframes attack-pulse {
+0% { transform: scale(1); }
+50% { transform: scale(1.1) translateX(-5px); }
+100% { transform: scale(1); }
+}
 
-        .modal-info .details p {
-            margin: 5px 0;
-        }
-        
-        .modal-info .description {
-            margin-top: 20px;
-            font-style: italic;
-            text-align: justify;
-        }
+.modal-info .modal-types {
+display: flex;
+justify-content: center;
+gap: 10px;
+margin-bottom: 20px;
+}
 
-        .modal-info .stats-list {
-            list-style-type: none;
-            padding: 0;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
+.modal-info .details p {
+margin: 5px 0;
+}
 
-        .modal-info .stats-list li {
-            background-color: #f5f5f5;
-            padding: 10px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.modal-info .description {
+margin-top: 20px;
+font-style: italic;
+text-align: justify;
+}
 
-        .modal-info .stats-list span:first-child {
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        /* Variety Button Styles */
-        .variety-section {
-            margin-top: 20px;
-        }
-        .variety-section h4 {
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-            color: #555;
-            border-bottom: 2px solid #ddd;
-            padding-bottom: 5px;
-        }
-        .variety-buttons {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .variety-button {
-            background-color: #6390F0;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-        .variety-button.active {
-            background-color: #3f65b8;
-        }
-        .variety-button.shiny-button {
-            background-color: #FFD700; /* A shiny color */
-            color: #000;
-        }
-        .variety-button.shiny-button.active {
-            background-color: #e4c200;
-        }
+.modal-info .stats-list {
+list-style-type: none;
+padding: 0;
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+}
 
-        .tcg-card-section {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .tcg-card-section img {
-            max-width: 100%;
-            height: auto;
-            border: 5px solid #fff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            border-radius: 10px;
-        }
-        .tcg-card-section .card-loading {
-            font-style: italic;
-            color: #888;
-        }
-    </style>
+.modal-info .stats-list li {
+background-color: #f5f5f5;
+padding: 10px;
+border-radius: 10px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.modal-info .stats-list span:first-child {
+font-weight: bold;
+text-transform: uppercase;
+}
+
+/* Variety Button Styles */
+.variety-section {
+margin-top: 20px;
+}
+.variety-section h4 {
+margin-bottom: 10px;
+font-size: 1.2rem;
+color: #555;
+border-bottom: 2px solid #ddd;
+padding-bottom: 5px;
+}
+.variety-buttons {
+display: flex;
+justify-content: center;
+flex-wrap: wrap;
+gap: 10px;
+}
+.variety-button {
+background-color: #6390F0;
+color: white;
+border: none;
+padding: 8px 15px;
+border-radius: 20px;
+cursor: pointer;
+font-family: 'Roboto Mono', monospace;
+font-size: 14px;
+transition: background-color 0.3s;
+}
+.variety-button.active {
+background-color: #3f65b8;
+}
+.variety-button.shiny-button {
+background-color: #FFD700; /* A shiny color */
+color: #000;
+}
+.variety-button.shiny-button.active {
+background-color: #e4c200;
+}
+
+.tcg-card-section {
+margin-top: 20px;
+text-align: center;
+}
+.tcg-card-section img {
+max-width: 100%;
+height: auto;
+border: 5px solid #fff;
+box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+border-radius: 10px;
+}
+.tcg-card-section .card-loading {
+font-style: italic;
+color: #888;
+}
+
+/* Floating Action Button */
+.floating-container {
+position: fixed;
+bottom: 30px;
+right: 30px;
+z-index: 1000;
+}
+
+.fab-button {
+width: 70px;
+height: 70px;
+border-radius: 50%;
+background-color: #e4000f;
+border: none;
+cursor: pointer;
+box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+display: flex;
+align-items: center;
+justify-content: center;
+transition: transform 0.3s;
+}
+
+.fab-button:hover {
+transform: scale(1.1);
+}
+
+.fab-button img {
+width: 40px;
+height: 40px;
+}
+
+.fab-options {
+position: absolute;
+bottom: 80px;
+right: 0;
+display: none;
+flex-direction: column;
+align-items: flex-end;
+gap: 15px;
+}
+
+.fab-option {
+width: 50px;
+height: 50px;
+border-radius: 50%;
+background-color: #333;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+cursor: pointer;
+transition: transform 0.3s;
+}
+
+.fab-option:hover {
+transform: scale(1.1);
+}
+
+.fab-option img {
+width: 25px;
+height: 25px;
+}
+
+.fab-option.help {
+background-color: #3498db;
+}
+
+.fab-option.catch {
+background-color: #2ecc71;
+}
+
+/* Catch Modal */
+.catch-modal {
+display: none;
+position: fixed;
+z-index: 2000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0,0,0,0.8);
+backdrop-filter: blur(5px);
+}
+
+.catch-modal-content {
+background-color: #fff;
+margin: 15% auto;
+padding: 30px;
+border-radius: 20px;
+width: 80%;
+max-width: 500px;
+text-align: center;
+position: relative;
+}
+
+.catch-pokemon-image {
+width: 150px;
+height: 150px;
+margin: 20px auto;
+display: block;
+}
+
+.pokeball-image {
+width: 100px;
+height: 100px;
+margin: 20px auto;
+cursor: pointer;
+transition: transform 0.2s;
+}
+
+.pokeball-image.shake {
+animation: pokeball-shake 1.5s ease-in-out;
+}
+
+@keyframes pokeball-shake {
+0% { transform: translateX(0); }
+10% { transform: translateX(-10px); }
+20% { transform: translateX(10px); }
+30% { transform: translateX(-10px); }
+40% { transform: translateX(10px); }
+50% { transform: translateX(-10px); }
+60% { transform: translateX(10px); }
+70% { transform: translateX(-10px); }
+80% { transform: translateX(10px); }
+90% { transform: translateX(-10px); }
+100% { transform: translateX(0); }
+}
+
+.pokeball-image.catch {
+animation: pokeball-catch 0.5s ease-in-out;
+}
+
+@keyframes pokeball-catch {
+0% { transform: scale(1); }
+50% { transform: scale(1.2); }
+100% { transform: scale(1); }
+}
+
+.catch-result {
+font-size: 24px;
+font-weight: bold;
+margin: 20px 0;
+}
+
+.catch-success {
+color: #2ecc71;
+}
+
+.catch-fail {
+color: #e74c3c;
+}
+
+.catch-limit-modal {
+display: none;
+position: fixed;
+z-index: 2000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0,0,0,0.8);
+backdrop-filter: blur(5px);
+}
+
+.catch-limit-content {
+background-color: #fff;
+margin: 15% auto;
+padding: 30px;
+border-radius: 20px;
+width: 80%;
+max-width: 500px;
+text-align: center;
+}
+
+.upgrade-button {
+background-color: #e4000f;
+color: white;
+border: none;
+padding: 15px 30px;
+border-radius: 25px;
+font-size: 18px;
+cursor: pointer;
+margin-top: 20px;
+font-family: 'Roboto Mono', monospace;
+}
+
+.upgrade-button:hover {
+background-color: #c2000d;
+}
+</style>
 </head>
 <body>
 
-    <h1>Pokédex</h1>
+<h1>Pokédex</h1>
 
-    <div class="nav-container">
-        <button class="nav-button active" data-category="all">All</button>
-        <button class="nav-button" data-category="mega">Mega</button>
-        <button class="nav-button" data-category="regional">Regional</button>
-        <button class="nav-button" data-category="shiny">Shiny</button>
-        <button class="nav-button" data-category="legendary">Legendary</button>
-        <button class="nav-button" data-category="mythical">Mythical</button>
-        <button class="nav-button" data-category="gmax">G-Max</button>
-        <button class="nav-button" data-category="ultra-beast">Ultra Beast</button>
-    </div>
+<div class="nav-container">
+<button class="nav-button active" data-category="all">All</button>
+<button class="nav-button" data-category="mega">Mega</button>
+<button class="nav-button" data-category="regional">Regional</button>
+<button class="nav-button" data-category="shiny">Shiny</button>
+<button class="nav-button" data-category="legendary">Legendary</button>
+<button class="nav-button" data-category="mythical">Mythical</button>
+<button class="nav-button" data-category="gmax">G-Max</button>
+<button class="nav-button" data-category="ultra-beast">Ultra Beast</button>
+</div>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search for a Pokémon...">
-    </div>
+<div class="search-container">
+<input type="text" id="searchInput" placeholder="Search for a Pokémon...">
+</div>
 
-    <p id="loadingMessage">Loading Pokédex...</p>
-    <button id="retryButton">Retry</button>
+<p id="loadingMessage">Loading Pokédex...</p>
+<button id="retryButton">Retry</button>
 
-    <div id="pokedex-container" class="pokedex-container">
-        </div>
+<div id="pokedex-container" class="pokedex-container">
+</div>
 
-    <div id="pokemonModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <div id="modal-body">
-                </div>
-        </div>
-    </div>
+<div id="pokemonModal" class="modal">
+<div class="modal-content">
+<span class="close-button">&times;</span>
+<div id="modal-body">
+</div>
+</div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const pokedexContainer = document.getElementById('pokedex-container');
-            const searchInput = document.getElementById('searchInput');
-            const loadingMessage = document.getElementById('loadingMessage');
-            const retryButton = document.getElementById('retryButton');
-            const pokemonModal = document.getElementById('pokemonModal');
-            const modalBody = document.getElementById('modal-body');
-            const closeModal = document.querySelector('.close-button');
-            const navButtons = document.querySelectorAll('.nav-button');
+<!-- Floating Action Button -->
+<div class="floating-container">
+<button class="fab-button" id="fabButton">
+<img src="https://placehold.co/40x40/ffffff/000000?text=+" alt="Menu">
+</button>
+<div class="fab-options" id="fabOptions">
+<div class="fab-option help" id="helpOption">
+<img src="https://placehold.co/25x25/ffffff/000000?text=?" alt="Help">
+</div>
+<div class="fab-option catch" id="catchOption">
+<img src="https://placehold.co/25x25/ffffff/000000?text=○" alt="Catch">
+</div>
+</div>
+</div>
 
-            let allPokemon = [];
-            const cachedSpeciesData = {};
-            const cachedVarietyData = {};
-            const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
+<!-- Catch Modal -->
+<div class="catch-modal" id="catchModal">
+<div class="catch-modal-content">
+<span class="close-button" id="closeCatchModal">&times;</span>
+<h2>Catch a Pokémon!</h2>
+<div id="catchPokemonDisplay"></div>
+<div class="pokeball-image" id="pokeball">
+<img src="https://placehold.co/100x100/ffffff/000000?text=○" alt="Pokeball">
+</div>
+<div class="catch-result" id="catchResult"></div>
+</div>
+</div>
 
-            const getSpeciesNameFromVarietyName = (name) => {
-                const parts = name.split('-');
-                if (parts.includes('mega') || parts.includes('primal')) {
-                    return parts[0];
-                }
-                if (parts.includes('alola') || parts.includes('galar') || parts.includes('hisui')) {
-                    return parts[0];
-                }
-                return name;
-            };
+<!-- Catch Limit Modal -->
+<div class="catch-limit-modal" id="catchLimitModal">
+<div class="catch-limit-content">
+<h2>Daily Catch Limit Reached</h2>
+<p>You've caught 5 Pokémon today. Upgrade to unlimited catches for $20/week.</p>
+<button class="upgrade-button" id="upgradeButton">Upgrade Now</button>
+<span class="close-button" id="closeLimitModal">&times;</span>
+</div>
+</div>
 
-            const getSpeciesData = async (pokemonIdOrName) => {
-                const speciesName = getSpeciesNameFromVarietyName(pokemonIdOrName);
-                if (cachedSpeciesData[speciesName]) {
-                    return cachedSpeciesData[speciesName];
-                }
-                try {
-                    const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesName}`;
-                    const response = await fetch(url);
-                    const speciesData = await response.json();
-                    cachedSpeciesData[speciesName] = speciesData;
-                    return speciesData;
-                } catch (error) {
-                    console.error(`Failed to fetch species data for ${speciesName}:`, error);
-                    return null;
-                }
-            };
-            
-            const getPokemonData = async (name) => {
-                if (cachedVarietyData[name]) {
-                    return cachedVarietyData[name];
-                }
-                try {
-                    const url = `https://pokeapi.co/api/v2/pokemon/${name}`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    cachedVarietyData[name] = data;
-                    return data;
-                } catch (error) {
-                    console.error(`Failed to fetch variety data for ${name}:`, error);
-                    return null;
-                }
-            };
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+const pokedexContainer = document.getElementById('pokedex-container');
+const searchInput = document.getElementById('searchInput');
+const loadingMessage = document.getElementById('loadingMessage');
+const retryButton = document.getElementById('retryButton');
+const pokemonModal = document.getElementById('pokemonModal');
+const modalBody = document.getElementById('modal-body');
+const closeModal = document.querySelector('.close-button');
+const navButtons = document.querySelectorAll('.nav-button');
 
-            const fetchAllPokemon = async () => {
-                loadingMessage.style.display = 'block';
-                loadingMessage.textContent = 'Loading Pokédex...';
-                loadingMessage.classList.remove('error');
-                retryButton.style.display = 'none';
-                pokedexContainer.innerHTML = '';
+// Floating Action Button Elements
+const fabButton = document.getElementById('fabButton');
+const fabOptions = document.getElementById('fabOptions');
+const helpOption = document.getElementById('helpOption');
+const catchOption = document.getElementById('catchOption');
 
-                try {
-                    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    
-                    const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
-                    allPokemon = await Promise.all(pokemonPromises);
-                    
-                    const speciesPromises = allPokemon.map(p => getSpeciesData(p.name));
-                    await Promise.all(speciesPromises);
-                    
-                    loadingMessage.style.display = 'none';
-                    filterAndDisplayPokemon('all');
-                } catch (error) {
-                    console.error('Failed to fetch Pokémon data:', error);
-                    loadingMessage.textContent = 'Failed to load Pokédex. Please check your connection or try again later.';
-                    loadingMessage.classList.add('error');
-                    retryButton.style.display = 'block';
-                }
-            };
-            
-            const filterAndDisplayPokemon = async (category) => {
-                pokedexContainer.innerHTML = '';
-                loadingMessage.style.display = 'block';
+// Catch Modal Elements
+const catchModal = document.getElementById('catchModal');
+const closeCatchModal = document.getElementById('closeCatchModal');
+const pokeball = document.getElementById('pokeball');
+const catchPokemonDisplay = document.getElementById('catchPokemonDisplay');
+const catchResult = document.getElementById('catchResult');
 
-                let currentPokemonToDisplay;
-                switch (category) {
-                    case 'all':
-                        currentPokemonToDisplay = allPokemon;
-                        break;
-                    case 'mega':
-                        currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
-                        break;
-                    case 'regional':
-                        currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
-                        break;
-                    case 'shiny':
-                        currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
-                        break;
-                    case 'legendary':
-                        currentPokemonToDisplay = allPokemon.filter(p => {
-                            const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-                            return species && species.is_legendary && !species.is_mythical;
-                        });
-                        break;
-                    case 'mythical':
-                        currentPokemonToDisplay = allPokemon.filter(p => {
-                            const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-                            return species && species.is_mythical;
-                        });
-                        break;
-                    case 'gmax':
-                        currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax'));
-                        break;
-                    case 'ultra-beast':
-                         currentPokemonToDisplay = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
-                         break;
-                    default:
-                         currentPokemonToDisplay = allPokemon;
-                        break;
-                }
-                
-                loadingMessage.style.display = 'none';
-                displayPokemon(currentPokemonToDisplay, category);
-            };
-            
-            const getPokemonImageUrl = (pokemon, isShiny = false) => {
-                const name = pokemon.name;
-                const isMegaOrPrimal = name.includes('-mega') || name.includes('-primal');
-                const isRegional = name.includes('-alola') || name.includes('-galar') || name.includes('-hisui');
-                const isGmax = name.includes('-gmax');
+// Catch Limit Modal Elements
+const catchLimitModal = document.getElementById('catchLimitModal');
+const closeLimitModal = document.getElementById('closeLimitModal');
+const upgradeButton = document.getElementById('upgradeButton');
 
-                if (isMegaOrPrimal || isRegional || isGmax) {
-                    // Use official artwork for special forms for stability
-                    return isShiny ? pokemon.sprites.other['official-artwork'].front_shiny : pokemon.sprites.other['official-artwork'].front_default;
-                } else {
-                    // Use animated sprites for base forms if available, otherwise fallback
-                    const animatedSprites = pokemon.sprites.versions['generation-v']['black-white'].animated;
-                    const animatedUrl = isShiny ? animatedSprites.front_shiny : animatedSprites.front_default;
-                    return animatedUrl || pokemon.sprites.front_default;
-                }
-            };
+let allPokemon = [];
+const cachedSpeciesData = {};
+const cachedVarietyData = {};
+const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
+let caughtPokemonCount = 0;
+const dailyCatchLimit = 5;
 
-            const displayPokemon = (pokemonList, category) => {
-                pokedexContainer.innerHTML = '';
-                const displayShiny = category === 'shiny';
-                pokemonList.forEach(pokemon => {
-                    const pokemonCard = document.createElement('div');
-                    pokemonCard.classList.add('pokemon-card');
-                    pokemonCard.setAttribute('data-id', pokemon.id);
+// Toggle FAB options
+fabButton.addEventListener('click', () => {
+if (fabOptions.style.display === 'flex') {
+fabOptions.style.display = 'none';
+} else {
+fabOptions.style.display = 'flex';
+}
+});
 
-                    const name = pokemon.name;
-                    const id = pokemon.id.toString().padStart(3, '0');
-                    const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
+// Help option
+helpOption.addEventListener('click', () => {
+alert('Welcome to the Pokédex! Search for Pokémon, view their details, and catch random Pokémon. Legendary and Mythical Pokémon are rarer and harder to catch!');
+fabOptions.style.display = 'none';
+});
 
-                    let displayName = name;
-                    displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
-                    
-                    pokemonCard.innerHTML = `
-                        <div class="pokemon-id">#${id}</div>
-                        <img src="${imageUrl}" alt="${name}">
-                        <h2 class="pokemon-name">${displayName}</h2>
-                        <div class="pokemon-types">
-                            ${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
-                        </div>
-                    `;
-                    pokedexContainer.appendChild(pokemonCard);
-                });
-            };
+// Catch option
+catchOption.addEventListener('click', () => {
+fabOptions.style.display = 'none';
+if (caughtPokemonCount >= dailyCatchLimit) {
+catchLimitModal.style.display = 'block';
+} else {
+startCatchPokemon();
+}
+});
 
-            const fetchTcgCard = async (pokemonName) => {
-                try {
-                    const searchName = pokemonName.split('-')[0];
-                    const url = `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    
-                    if (data.data.length > 0) {
-                        return data.data[0].images.large;
-                    }
-                } catch (error) {
-                    console.error('Failed to fetch TCG card:', error);
-                }
-                return null;
-            };
+// Close catch modal
+closeCatchModal.addEventListener('click', () => {
+catchModal.style.display = 'none';
+});
 
-            const showPokemonDetails = async (pokemon, isShiny = false) => {
-                const speciesName = getSpeciesNameFromVarietyName(pokemon.name);
-                const speciesData = await getSpeciesData(speciesName);
-                const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-                
-                renderModalContent(pokemon, speciesData, varieties, isShiny);
-                pokemonModal.style.display = 'block';
+// Close limit modal
+closeLimitModal.addEventListener('click', () => {
+catchLimitModal.style.display = 'none';
+});
 
-                const modalImage = document.querySelector('#modal-body .modal-image');
-                const modalAudio = document.querySelector('#pokemon-cry');
-                const cryName = speciesData.name;
-                modalAudio.src = `https://play.pokemonshowdown.com/audio/cries/${cryName}.mp3`;
+// Upgrade button
+upgradeButton.addEventListener('click', () => {
+alert('Redirecting to payment page... (ethan.unlocked@gmail.com)');
+catchLimitModal.style.display = 'none';
+});
 
-                modalImage.addEventListener('click', () => {
-                    modalImage.classList.remove('attack');
-                    void modalImage.offsetWidth; 
-                    modalImage.classList.add('attack');
-                    
-                    modalAudio.currentTime = 0;
-                    modalAudio.play();
-                });
+// Close modals when clicking outside
+window.addEventListener('click', (e) => {
+if (e.target === catchModal) {
+catchModal.style.display = 'none';
+}
+if (e.target === catchLimitModal) {
+catchLimitModal.style.display = 'none';
+}
+if (e.target === pokemonModal) {
+pokemonModal.style.display = 'none';
+}
+});
 
-                const tcgCardSection = document.getElementById('tcg-card-section');
-                tcgCardSection.innerHTML = '<p class="card-loading">Loading TCG card...</p>';
-                const tcgCardUrl = await fetchTcgCard(pokemon.name);
-                if (tcgCardUrl) {
-                    tcgCardSection.innerHTML = `
-                        <h4>Trading Card</h4>
-                        <img src="${tcgCardUrl}" alt="${pokemon.name} TCG Card">
-                    `;
-                } else {
-                    tcgCardSection.innerHTML = `<h4>Trading Card</h4><p class="card-loading">No TCG card found.</p>`;
-                }
-            };
+const getSpeciesNameFromVarietyName = (name) => {
+const parts = name.split('-');
+if (parts.includes('mega') || parts.includes('primal')) {
+return parts[0];
+}
+if (parts.includes('alola') || parts.includes('galar') || parts.includes('hisui')) {
+return parts[0];
+}
+return name;
+};
 
-            const getVarietyButtonName = (varietyName) => {
-                if (varietyName.includes('-mega-x')) return 'Mega X';
-                if (varietyName.includes('-mega-y')) return 'Mega Y';
-                if (varietyName.includes('-mega')) return 'Mega';
-                if (varietyName.includes('-primal')) return 'Primal';
-                if (varietyName.includes('-gmax')) return 'G-Max';
-                if (varietyName.includes('-alola')) return 'Alolan';
-                if (varietyName.includes('-galar')) return 'Galarian';
-                if (varietyName.includes('-hisui')) return 'Hisuian';
-                
-                return 'Normal';
-            };
-            
-            const renderModalContent = (pokemon, speciesData, varieties, isShiny = false) => {
-                const name = pokemon.name;
-                const id = pokemon.id.toString().padStart(3, '0');
-                const types = pokemon.types.map(typeInfo => typeInfo.type.name);
-                const height = (pokemon.height / 10).toFixed(1);
-                const weight = (pokemon.weight / 10).toFixed(1);
-                const abilities = pokemon.abilities.map(abilityInfo => abilityInfo.ability.name).join(', ');
-                const stats = pokemon.stats.map(statInfo => ({
-                    name: statInfo.stat.name.replace('-', ' '),
-                    value: statInfo.base_stat
-                }));
-                
-                const imageUrl = getPokemonImageUrl(pokemon, isShiny);
-               
-                const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
-                const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
-                const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
+const getSpeciesData = async (pokemonIdOrName) => {
+const speciesName = getSpeciesNameFromVarietyName(pokemonIdOrName);
+if (cachedSpeciesData[speciesName]) {
+return cachedSpeciesData[speciesName];
+}
+try {
+const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesName}`;
+const response = await fetch(url);
+const speciesData = await response.json();
+cachedSpeciesData[speciesName] = speciesData;
+return speciesData;
+} catch (error) {
+console.error(`Failed to fetch species data for ${speciesName}:`, error);
+return null;
+}
+};
 
-                const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
-                const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
-                const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
-                const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
+const getPokemonData = async (name) => {
+if (cachedVarietyData[name]) {
+return cachedVarietyData[name];
+}
+try {
+const url = `https://pokeapi.co/api/v2/pokemon/${name}`;
+const response = await fetch(url);
+const data = await response.json();
+cachedVarietyData[name] = data;
+return data;
+} catch (error) {
+console.error(`Failed to fetch variety data for ${name}:`, error);
+return null;
+}
+};
 
-                const renderButtons = (forms, currentName) => {
-                    if (forms.length === 0) return '';
-                    return forms.map(v => {
-                        const buttonName = getVarietyButtonName(v.name);
-                        const isActive = v.name === currentName;
-                        return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
-                    }).join('');
-                };
+const fetchAllPokemon = async () => {
+loadingMessage.style.display = 'block';
+loadingMessage.textContent = 'Loading Pokédex...';
+loadingMessage.classList.remove('error');
+retryButton.style.display = 'none';
+pokedexContainer.innerHTML = '';
 
-                const isCurrentlyShiny = isShiny ? 'active' : '';
+try {
+const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
+if (!response.ok) {
+throw new Error(`HTTP error! status: ${response.status}`);
+}
+const data = await response.json();
 
-                modalBody.innerHTML = `
-                    <div class="modal-info">
-                        <img src="${imageUrl}" alt="${name}" class="modal-image">
-                        <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
-                        <div class="modal-id">#${id}</div>
-                        <div class="modal-types">
-                            ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
-                        </div>
-                        <p class="description">"${description}"</p>
-                        
-                        <div class="variety-section normal-forms">
-                           <h4>Normal Form</h4>
-                           <div class="variety-buttons">
-                               ${normalForm ? `<button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>` : ''}
-                           </div>
-                        </div>
+const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
+allPokemon = await Promise.all(pokemonPromises);
 
-                        ${megaForms.length > 0 ? `
-                        <div class="variety-section mega-forms">
-                           <h4>Mega Forms</h4>
-                           <div class="variety-buttons">
-                               ${renderButtons(megaForms, name)}
-                           </div>
-                        </div>` : ''}
-                        
-                        ${regionalForms.length > 0 ? `
-                        <div class="variety-section regional-forms">
-                           <h4>Regional Forms</h4>
-                           <div class="variety-buttons">
-                               ${renderButtons(regionalForms, name)}
-                           </div>
-                        </div>` : ''}
+const speciesPromises = allPokemon.map(p => getSpeciesData(p.name));
+await Promise.all(speciesPromises);
 
-                        ${gmaxForms.length > 0 ? `
-                        <div class="variety-section gmax-forms">
-                           <h4>G-Max Forms</h4>
-                           <div class="variety-buttons">
-                               ${renderButtons(gmaxForms, name)}
-                           </div>
-                        </div>` : ''}
+loadingMessage.style.display = 'none';
+filterAndDisplayPokemon('all');
+} catch (error) {
+console.error('Failed to fetch Pokémon data:', error);
+loadingMessage.textContent = 'Failed to load Pokédex. Please check your connection or try again later.';
+loadingMessage.classList.add('error');
+retryButton.style.display = 'block';
+}
+};
 
-                        <div class="variety-section shiny-toggle">
-                            <h4>Appearance</h4>
-                            <div class="variety-buttons">
-                                <button class="variety-button shiny-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
-                            </div>
-                        </div>
+const filterAndDisplayPokemon = async (category) => {
+pokedexContainer.innerHTML = '';
+loadingMessage.style.display = 'block';
 
-                        <div class="details">
-                            <p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
-                            <p><strong>Height:</strong> ${height} m</p>
-                            <p><strong>Weight:</strong> ${weight} kg</p>
-                            <p><strong>Abilities:</strong> ${abilities}</p>
-                        </div>
-                        <h3>Base Stats</h3>
-                        <ul class="stats-list">
-                            ${stats.map(stat => `<li><span>${stat.name}</span><span>${stat.value}</span></li>`).join('')}
-                        </ul>
-                        <div id="tcg-card-section" class="tcg-card-section"></div>
-                    </div>
-                    <audio id="pokemon-cry" preload="auto"></audio>
-                `;
-            };
+let currentPokemonToDisplay;
+switch (category) {
+case 'all':
+currentPokemonToDisplay = allPokemon;
+break;
+case 'mega':
+currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
+break;
+case 'regional':
+currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
+break;
+case 'shiny':
+currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
+break;
+case 'legendary':
+currentPokemonToDisplay = allPokemon.filter(p => {
+const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
+return species && species.is_legendary && !species.is_mythical;
+});
+break;
+case 'mythical':
+currentPokemonToDisplay = allPokemon.filter(p => {
+const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
+return species && species.is_mythical;
+});
+break;
+case 'gmax':
+currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax'));
+break;
+case 'ultra-beast':
+currentPokemonToDisplay = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
+break;
+default:
+currentPokemonToDisplay = allPokemon;
+break;
+}
 
-            pokedexContainer.addEventListener('click', (e) => {
-                const card = e.target.closest('.pokemon-card');
-                if (card) {
-                    const pokemonId = card.getAttribute('data-id');
-                    const selectedPokemon = allPokemon.find(p => p.id == pokemonId);
-                    // Check if the current category is shiny to pass the state
-                    const isShiny = document.querySelector('.nav-button.active').dataset.category === 'shiny';
-                    if (selectedPokemon) {
-                        showPokemonDetails(selectedPokemon, isShiny);
-                    }
-                }
-            });
+loadingMessage.style.display = 'none';
+displayPokemon(currentPokemonToDisplay, category);
+};
 
-            modalBody.addEventListener('click', async (e) => {
-                const button = e.target.closest('.variety-button');
-                if (button) {
-                    const varietyName = button.dataset.varietyName;
-                    const isShinyActive = modalBody.querySelector('.shiny-button').classList.contains('active');
-                    
-                    if (varietyName === 'shiny') {
-                        const currentName = document.querySelector('.modal-image').alt;
-                        const currentPokemonData = await getPokemonData(currentName);
-                        const speciesData = await getSpeciesData(currentPokemonData.name);
-                        const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-                        renderModalContent(currentPokemonData, speciesData, varieties, !isShinyActive);
-                    } else {
-                        const pokemonData = await getPokemonData(varietyName);
-                        const speciesData = await getSpeciesData(pokemonData.name);
-                        const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-                        renderModalContent(pokemonData, speciesData, varieties, isShinyActive);
-                    }
-                }
-            });
+const getPokemonImageUrl = (pokemon, isShiny = false) => {
+const name = pokemon.name;
+const isMegaOrPrimal = name.includes('-mega') || name.includes('-primal');
+const isRegional = name.includes('-alola') || name.includes('-galar') || name.includes('-hisui');
+const isGmax = name.includes('-gmax');
 
-            closeModal.addEventListener('click', () => {
-                pokemonModal.style.display = 'none';
-            });
+if (isMegaOrPrimal || isRegional || isGmax) {
+// Use official artwork for special forms for stability
+return isShiny ? pokemon.sprites.other['official-artwork'].front_shiny : pokemon.sprites.other['official-artwork'].front_default;
+} else {
+// Use animated sprites for base forms if available, otherwise fallback
+const animatedSprites = pokemon.sprites.versions['generation-v']['black-white'].animated;
+const animatedUrl = isShiny ? animatedSprites.front_shiny : animatedSprites.front_default;
+return animatedUrl || pokemon.sprites.front_default;
+}
+};
 
-            window.addEventListener('click', (e) => {
-                if (e.target === pokemonModal) {
-                    pokemonModal.style.display = 'none';
-                }
-            });
+const displayPokemon = (pokemonList, category) => {
+pokedexContainer.innerHTML = '';
+const displayShiny = category === 'shiny';
+pokemonList.forEach(pokemon => {
+const pokemonCard = document.createElement('div');
+pokemonCard.classList.add('pokemon-card');
+pokemonCard.setAttribute('data-id', pokemon.id);
 
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const currentCategory = document.querySelector('.nav-button.active').dataset.category;
-                let pokemonToSearch = allPokemon;
-                if (currentCategory !== 'all') {
-                    // Filter the list based on the current category first
-                    switch (currentCategory) {
-                        case 'mega':
-                            pokemonToSearch = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
-                            break;
-                        case 'regional':
-                            pokemonToSearch = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
-                            break;
-                        case 'shiny':
-                            pokemonToSearch = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
-                            break;
-                        case 'legendary':
-                            pokemonToSearch = allPokemon.filter(p => {
-                                const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-                                return species && species.is_legendary && !species.is_mythical;
-                            });
-                            break;
-                        case 'mythical':
-                            pokemonToSearch = allPokemon.filter(p => {
-                                const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-                                return species && species.is_mythical;
-                            });
-                            break;
-                        case 'gmax':
-                            pokemonToSearch = allPokemon.filter(p => p.name.includes('-gmax'));
-                            break;
-                        case 'ultra-beast':
-                             pokemonToSearch = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
-                             break;
-                    }
-                }
-                const filteredPokemon = pokemonToSearch.filter(pokemon => {
-                    const isNameMatch = pokemon.name.toLowerCase().includes(searchTerm);
-                    const isIdMatch = pokemon.id.toString().includes(searchTerm);
-                    return isNameMatch || isIdMatch;
-                });
-                displayPokemon(filteredPokemon, currentCategory);
-            });
+const name = pokemon.name;
+const id = pokemon.id.toString().padStart(3, '0');
+const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
 
-            navButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    navButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    const category = button.getAttribute('data-category');
-                    filterAndDisplayPokemon(category);
-                });
-            });
+let displayName = name;
+displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
 
-            retryButton.addEventListener('click', fetchAllPokemon);
+pokemonCard.innerHTML = `
+<div class="pokemon-id">#${id}</div>
+<img src="${imageUrl}" alt="${name}">
+<h2 class="pokemon-name">${displayName}</h2>
+<div class="pokemon-types">
+${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
+</div>
+`;
+pokedexContainer.appendChild(pokemonCard);
+});
+};
 
-            fetchAllPokemon();
-        });
-    </script>
+const fetchTcgCard = async (pokemonName) => {
+try {
+const searchName = pokemonName.split('-')[0];
+const url = `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`;
+const response = await fetch(url);
+const data = await response.json();
+
+if (data.data.length > 0) {
+return data.data[0].images.large;
+}
+} catch (error) {
+console.error('Failed to fetch TCG card:', error);
+}
+return null;
+};
+
+const showPokemonDetails = async (pokemon, isShiny = false) => {
+const speciesName = getSpeciesNameFromVarietyName(pokemon.name);
+const speciesData = await getSpeciesData(speciesName);
+const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+
+renderModalContent(pokemon, speciesData, varieties, isShiny);
+pokemonModal.style.display = 'block';
+
+const modalImage = document.querySelector('#modal-body .modal-image');
+const modalAudio = document.querySelector('#pokemon-cry');
+const cryName = speciesData.name;
+modalAudio.src = `https://play.pokemonshowdown.com/audio/cries/${cryName}.mp3`;
+
+modalImage.addEventListener('click', () => {
+modalImage.classList.remove('attack');
+void modalImage.offsetWidth;
+modalImage.classList.add('attack');
+
+modalAudio.currentTime = 0;
+modalAudio.play();
+});
+
+const tcgCardSection = document.getElementById('tcg-card-section');
+tcgCardSection.innerHTML = '<p class="card-loading">Loading TCG card...</p>';
+const tcgCardUrl = await fetchTcgCard(pokemon.name);
+if (tcgCardUrl) {
+tcgCardSection.innerHTML = `
+<h4>Trading Card</h4>
+<img src="${tcgCardUrl}" alt="${pokemon.name} TCG Card">
+`;
+} else {
+tcgCardSection.innerHTML = `<h4>Trading Card</h4><p class="card-loading">No TCG card found.</p>`;
+}
+};
+
+const getVarietyButtonName = (varietyName) => {
+if (varietyName.includes('-mega-x')) return 'Mega X';
+if (varietyName.includes('-mega-y')) return 'Mega Y';
+if (varietyName.includes('-mega')) return 'Mega';
+if (varietyName.includes('-primal')) return 'Primal';
+if (varietyName.includes('-gmax')) return 'G-Max';
+if (varietyName.includes('-alola')) return 'Alolan';
+if (varietyName.includes('-galar')) return 'Galarian';
+if (varietyName.includes('-hisui')) return 'Hisuian';
+
+return 'Normal';
+};
+
+const renderModalContent = (pokemon, speciesData, varieties, isShiny = false) => {
+const name = pokemon.name;
+const id = pokemon.id.toString().padStart(3, '0');
+const types = pokemon.types.map(typeInfo => typeInfo.type.name);
+const height = (pokemon.height / 10).toFixed(1);
+const weight = (pokemon.weight / 10).toFixed(1);
+const abilities = pokemon.abilities.map(abilityInfo => abilityInfo.ability.name).join(', ');
+const stats = pokemon.stats.map(statInfo => ({
+name: statInfo.stat.name.replace('-', ' '),
+value: statInfo.base_stat
+}));
+
+const imageUrl = getPokemonImageUrl(pokemon, isShiny);
+
+const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
+const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
+const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
+
+const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
+const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
+const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
+const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
+
+const renderButtons = (forms, currentName) => {
+if (forms.length === 0) return '';
+return forms.map(v => {
+const buttonName = getVarietyButtonName(v.name);
+const isActive = v.name === currentName;
+return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
+}).join('');
+};
+
+const isCurrentlyShiny = isShiny ? 'active' : '';
+
+modalBody.innerHTML = `
+<div class="modal-info">
+<img src="${imageUrl}" alt="${name}" class="modal-image">
+<h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
+<div class="modal-id">#${id}</div>
+<div class="modal-types">
+${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
+</div>
+<p class="description">"${description}"</p>
+
+<div class="variety-section normal-forms">
+<h4>Normal Form</h4>
+<div class="variety-buttons">
+${normalForm ? `<button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>` : ''}
+</div>
+</div>
+
+${megaForms.length > 0 ? `
+<div class="variety-section mega-forms">
+<h4>Mega Forms</h4>
+<div class="variety-buttons">
+${renderButtons(megaForms, name)}
+</div>
+</div>` : ''}
+
+${regionalForms.length > 0 ? `
+<div class="variety-section regional-forms">
+<h4>Regional Forms</h4>
+<div class="variety-buttons">
+${renderButtons(regionalForms, name)}
+</div>
+</div>` : ''}
+
+${gmaxForms.length > 0 ? `
+<div class="variety-section gmax-forms">
+<h4>G-Max Forms</h4>
+<div class="variety-buttons">
+${renderButtons(gmaxForms, name)}
+</div>
+</div>` : ''}
+
+<div class="variety-section shiny-toggle">
+<h4>Appearance</h4>
+<div class="variety-buttons">
+<button class="variety-button shiny-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
+</div>
+</div>
+
+<div class="details">
+<p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
+<p><strong>Height:</strong> ${height} m</p>
+<p><strong>Weight:</strong> ${weight} kg</p>
+<p><strong>Abilities:</strong> ${abilities}</p>
+</div>
+<h3>Base Stats</h3>
+<ul class="stats-list">
+${stats.map(stat => `<li><span>${stat.name}</span><span>${stat.value}</span></li>`).join('')}
+</ul>
+<div id="tcg-card-section" class="tcg-card-section"></div>
+</div>
+<audio id="pokemon-cry" preload="auto"></audio>
+`;
+};
+
+const startCatchPokemon = () => {
+// Get a random Pokémon
+const randomIndex = Math.floor(Math.random() * allPokemon.length);
+const randomPokemon = allPokemon[randomIndex];
+const speciesData = cachedSpeciesData[getSpeciesNameFromVarietyName(randomPokemon.name)];
+const isLegendary = speciesData && speciesData.is_legendary;
+const isMythical = speciesData && speciesData.is_mythical;
+
+// Display the Pokémon
+catchPokemonDisplay.innerHTML = `
+<h3>${randomPokemon.name}</h3>
+<img src="${getPokemonImageUrl(randomPokemon)}" alt="${randomPokemon.name}" class="catch-pokemon-image">
+`;
+
+// Reset UI
+catchResult.textContent = '';
+pokeball.innerHTML = '<img src="https://placehold.co/100x100/ffffff/000000?text=○" alt="Pokeball">';
+
+// Show the modal
+catchModal.style.display = 'block';
+
+// Add click event to pokeball
+pokeball.onclick = () => {
+catchPokemon(randomPokemon, isLegendary, isMythical);
+};
+};
+
+const catchPokemon = (pokemon, isLegendary, isMythical) => {
+// Disable clicking during animation
+pokeball.onclick = null;
+
+// Determine catch difficulty
+let catchChance;
+if (isMythical) {
+catchChance = 0.1; // 10% chance
+} else if (isLegendary) {
+catchChance = 0.3; // 30% chance
+} else {
+catchChance = 0.7; // 70% chance
+}
+
+// Simulate catch attempts (1-3)
+const attempts = Math.floor(Math.random() * 3) + 1;
+let caught = false;
+
+// Add shake animation
+pokeball.classList.add('shake');
+
+// After shake animation, determine result
+setTimeout(() => {
+pokeball.classList.remove('shake');
+	
+if (Math.random() < catchChance) {
+caught = true;
+pokeball.classList.add('catch');
+caughtPokemonCount++;
+catchResult.innerHTML = `<span class="catch-success">Gotcha! ${pokemon.name} was caught!</span>`;
+} else {
+catchResult.innerHTML = `<span class="catch-fail">Oh no! ${pokemon.name} broke free!</span>`;
+}
+
+// Reset after a delay
+setTimeout(() => {
+pokeball.classList.remove('catch');
+if (caught) {
+catchModal.style.display = 'none';
+}
+}, 1000);
+}, 1500);
+};
+
+pokedexContainer.addEventListener('click', (e) => {
+const card = e.target.closest('.pokemon-card');
+if (card) {
+const pokemonId = card.getAttribute('data-id');
+const selectedPokemon = allPokemon.find(p => p.id == pokemonId);
+// Check if the current category is shiny to pass the state
+const isShiny = document.querySelector('.nav-button.active').dataset.category === 'shiny';
+if (selectedPokemon) {
+showPokemonDetails(selectedPokemon, isShiny);
+}
+}
+});
+
+modalBody.addEventListener('click', async (e) => {
+const button = e.target.closest('.variety-button');
+if (button) {
+const varietyName = button.dataset.varietyName;
+const isShinyActive = modalBody.querySelector('.shiny-button').classList.contains('active');
+
+if (varietyName === 'shiny') {
+const currentName = document.querySelector('.modal-image').alt;
+const currentPokemonData = await getPokemonData(currentName);
+const speciesData = await getSpeciesData(currentPokemonData.name);
+const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+renderModalContent(currentPokemonData, speciesData, varieties, !isShinyActive);
+} else {
+const pokemonData = await getPokemonData(varietyName);
+const speciesData = await getSpeciesData(pokemonData.name);
+const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+renderModalContent(pokemonData, speciesData, varieties, isShinyActive);
+}
+}
+});
+
+closeModal.addEventListener('click', () => {
+pokemonModal.style.display = 'none';
+});
+
+searchInput.addEventListener('input', (e) => {
+const searchTerm = e.target.value.toLowerCase();
+const currentCategory = document.querySelector('.nav-button.active').dataset.category;
+let pokemonToSearch = allPokemon;
+if (currentCategory !== 'all') {
+// Filter the list based on the current category first
+switch (currentCategory) {
+case 'mega':
+pokemonToSearch = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
+break;
+case 'regional':
+pokemonToSearch = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
+break;
+case 'shiny':
+pokemonToSearch = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
+break;
+case 'legendary':
+pokemonToSearch = allPokemon.filter(p => {
+const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
+return species && species.is_legendary && !species.is_mythical;
+});
+break;
+case 'mythical':
+pokemonToSearch = allPokemon.filter(p => {
+const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
+return species && species.is_mythical;
+});
+break;
+case 'gmax':
+pokemonToSearch = allPokemon.filter(p => p.name.includes('-gmax'));
+break;
+case 'ultra-beast':
+pokemonToSearch = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
+break;
+}
+}
+const filteredPokemon = pokemonToSearch.filter(pokemon => {
+const isNameMatch = pokemon.name.toLowerCase().includes(searchTerm);
+const isIdMatch = pokemon.id.toString().includes(searchTerm);
+return isNameMatch || isIdMatch;
+});
+displayPokemon(filteredPokemon, currentCategory);
+});
+
+navButtons.forEach(button => {
+button.addEventListener('click', () => {
+navButtons.forEach(btn => btn.classList.remove('active'));
+button.classList.add('active');
+const category = button.getAttribute('data-category');
+filterAndDisplayPokemon(category);
+});
+});
+
+retryButton.addEventListener('click', fetchAllPokemon);
+
+fetchAllPokemon();
+});
+</script>
 </body>
 </html>
