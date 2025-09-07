@@ -18,6 +18,21 @@ padding: 20px;
 text-align: center;
 }
 
+/* Navbar */
+.navbar {
+background-color: #e4000f;
+padding: 15px;
+margin-bottom: 20px;
+}
+
+.navbar a {
+color: white;
+text-decoration: none;
+font-weight: bold;
+font-size: 18px;
+}
+
+/* Header */
 h1 {
 color: #e4000f;
 text-transform: uppercase;
@@ -426,6 +441,10 @@ background-color: #3498db;
 background-color: #2ecc71;
 }
 
+.fab-option.berries {
+background-color: #e74c3c;
+}
+
 /* Catch Modal */
 .catch-modal {
 display: none;
@@ -463,6 +482,26 @@ height: 100px;
 margin: 20px auto;
 cursor: pointer;
 transition: transform 0.2s;
+}
+
+.pokeball-image.spin {
+animation: pokeball-spin 1s linear infinite;
+}
+
+@keyframes pokeball-spin {
+from { transform: rotate(0deg); }
+to { transform: rotate(360deg); }
+}
+
+.pokeball-image.throw {
+animation: pokeball-throw 1s ease-out;
+}
+
+@keyframes pokeball-throw {
+0% { transform: translate(0, 0) rotate(0deg); }
+30% { transform: translate(-50px, -100px) rotate(-180deg); }
+60% { transform: translate(0, -150px) rotate(-360deg); }
+100% { transform: translate(0, 0) rotate(-720deg); }
 }
 
 .pokeball-image.shake {
@@ -544,9 +583,39 @@ font-family: 'Roboto Mono', monospace;
 .upgrade-button:hover {
 background-color: #c2000d;
 }
+
+.berries-section {
+margin: 20px 0;
+}
+
+.berries-count {
+font-size: 18px;
+margin-bottom: 10px;
+}
+
+.use-berries-button {
+background-color: #e74c3c;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 20px;
+cursor: pointer;
+font-family: 'Roboto Mono', monospace;
+margin: 10px;
+}
+
+.use-berries-button:disabled {
+background-color: #95a5a6;
+cursor: not-allowed;
+}
 </style>
 </head>
 <body>
+
+<!-- Navbar -->
+<div class="navbar">
+<a href="turtle.html">Back to others</a>
+</div>
 
 <h1>Pokédex</h1>
 
@@ -591,6 +660,9 @@ background-color: #c2000d;
 <div class="fab-option catch" id="catchOption">
 <img src="https://placehold.co/25x25/ffffff/000000?text=○" alt="Catch">
 </div>
+<div class="fab-option berries" id="berriesOption">
+<img src="https://placehold.co/25x25/ffffff/000000?text=🍒" alt="Berries">
+</div>
 </div>
 </div>
 
@@ -602,6 +674,10 @@ background-color: #c2000d;
 <div id="catchPokemonDisplay"></div>
 <div class="pokeball-image" id="pokeball">
 <img src="https://placehold.co/100x100/ffffff/000000?text=○" alt="Pokeball">
+</div>
+<div class="berries-section">
+<div class="berries-count" id="berriesCount">Berries: 3</div>
+<button class="use-berries-button" id="useBerriesButton">Use Berry (+20% Catch Rate)</button>
 </div>
 <div class="catch-result" id="catchResult"></div>
 </div>
@@ -633,6 +709,7 @@ const fabButton = document.getElementById('fabButton');
 const fabOptions = document.getElementById('fabOptions');
 const helpOption = document.getElementById('helpOption');
 const catchOption = document.getElementById('catchOption');
+const berriesOption = document.getElementById('berriesOption');
 
 // Catch Modal Elements
 const catchModal = document.getElementById('catchModal');
@@ -640,6 +717,8 @@ const closeCatchModal = document.getElementById('closeCatchModal');
 const pokeball = document.getElementById('pokeball');
 const catchPokemonDisplay = document.getElementById('catchPokemonDisplay');
 const catchResult = document.getElementById('catchResult');
+const berriesCount = document.getElementById('berriesCount');
+const useBerriesButton = document.getElementById('useBerriesButton');
 
 // Catch Limit Modal Elements
 const catchLimitModal = document.getElementById('catchLimitModal');
@@ -652,6 +731,8 @@ const cachedVarietyData = {};
 const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
 let caughtPokemonCount = 0;
 const dailyCatchLimit = 5;
+let berries = 3;
+let berryUsed = false;
 
 // Toggle FAB options
 fabButton.addEventListener('click', () => {
@@ -664,7 +745,7 @@ fabOptions.style.display = 'flex';
 
 // Help option
 helpOption.addEventListener('click', () => {
-alert('Welcome to the Pokédex! Search for Pokémon, view their details, and catch random Pokémon. Legendary and Mythical Pokémon are rarer and harder to catch!');
+alert('Welcome to the Pokédex! Search for Pokémon, view their details, and catch random Pokémon. Legendary and Mythical Pokémon are rarer and harder to catch! Use berries to increase your catch rate.');
 fabOptions.style.display = 'none';
 });
 
@@ -676,6 +757,12 @@ catchLimitModal.style.display = 'block';
 } else {
 startCatchPokemon();
 }
+});
+
+// Berries option
+berriesOption.addEventListener('click', () => {
+alert(`You have ${berries} berries. Use them during catching to increase your catch rate by 20%!`);
+fabOptions.style.display = 'none';
 });
 
 // Close catch modal
@@ -692,6 +779,18 @@ catchLimitModal.style.display = 'none';
 upgradeButton.addEventListener('click', () => {
 alert('Redirecting to payment page... (ethan.unlocked@gmail.com)');
 catchLimitModal.style.display = 'none';
+});
+
+// Use berries button
+useBerriesButton.addEventListener('click', () => {
+if (berries > 0 && !berryUsed) {
+berries--;
+berryUsed = true;
+berriesCount.textContent = `Berries: ${berries}`;
+useBerriesButton.disabled = true;
+useBerriesButton.textContent = 'Berry Used!';
+	catchResult.innerHTML = '<span style="color: #e74c3c;">Berry used! Catch rate increased by 20%</span>';
+}
 });
 
 // Close modals when clicking outside
@@ -1033,6 +1132,12 @@ ${stats.map(stat => `<li><span>${stat.name}</span><span>${stat.value}</span></li
 };
 
 const startCatchPokemon = () => {
+// Reset berry usage for new catch
+berryUsed = false;
+useBerriesButton.disabled = false;
+useBerriesButton.textContent = 'Use Berry (+20% Catch Rate)';
+berriesCount.textContent = `Berries: ${berries}`;
+
 // Get a random Pokémon
 const randomIndex = Math.floor(Math.random() * allPokemon.length);
 const randomPokemon = allPokemon[randomIndex];
@@ -1063,17 +1168,38 @@ const catchPokemon = (pokemon, isLegendary, isMythical) => {
 // Disable clicking during animation
 pokeball.onclick = null;
 
-// Determine catch difficulty
-let catchChance;
+// Determine base catch difficulty
+let baseCatchChance;
 if (isMythical) {
-catchChance = 0.1; // 10% chance
+baseCatchChance = 0.1; // 10% chance
 } else if (isLegendary) {
-catchChance = 0.3; // 30% chance
+baseCatchChance = 0.3; // 30% chance
 } else {
-catchChance = 0.7; // 70% chance
+baseCatchChance = 0.7; // 70% chance
 }
 
-// Simulate catch attempts (1-3)
+// Apply berry bonus if used
+let catchChance = baseCatchChance;
+if (berryUsed) {
+catchChance += 0.2; // +20% from berry
+}
+
+// Cap at 90% max catch rate
+catchChance = Math.min(catchChance, 0.9);
+
+// Add spin animation
+pokeball.classList.add('spin');
+
+// After spin, throw the ball
+setTimeout(() => {
+pokeball.classList.remove('spin');
+pokeball.classList.add('throw');
+
+// After throw animation, simulate catch
+setTimeout(() => {
+pokeball.classList.remove('throw');
+
+// Simulate catch attempts (1-3 shakes)
 const attempts = Math.floor(Math.random() * 3) + 1;
 let caught = false;
 
@@ -1101,6 +1227,8 @@ catchModal.style.display = 'none';
 }
 }, 1000);
 }, 1500);
+}, 1000);
+}, 1000);
 };
 
 pokedexContainer.addEventListener('click', (e) => {
@@ -1139,6 +1267,12 @@ renderModalContent(pokemonData, speciesData, varieties, isShinyActive);
 
 closeModal.addEventListener('click', () => {
 pokemonModal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+if (e.target === pokemonModal) {
+pokemonModal.style.display = 'none';
+}
 });
 
 searchInput.addEventListener('input', (e) => {
