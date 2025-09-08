@@ -10,170 +10,172 @@
 <style>
 /* General Body Styles */
 body {
-font-family: 'Roboto Mono', monospace;
-background-color: #f0f0f0;
-color: #333;
-margin: 0;
-padding: 20px;
-text-align: center;
+    font-family: 'Roboto Mono', monospace;
+    background-color: #f0f0f0;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    background-image: url('pokedex-top.png'), url('pokedex-bottom.png');
+    background-position: top center, bottom center;
+    background-repeat: no-repeat;
+    background-size: contain;
 }
 
-/* Navbar */
-.navbar {
-background-color: #e4000f;
-padding: 15px;
-margin-bottom: 20px;
-}
-
-.navbar a {
-color: white;
-text-decoration: none;
-font-weight: bold;
-font-size: 18px;
-}
-
-/* Header */
 h1 {
-color: #e4000f;
-text-transform: uppercase;
-letter-spacing: 2px;
+    color: #e4000f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 #loadingMessage {
-font-size: 1.2rem;
-color: #555;
-display: none; /* Initially hidden */
+    font-size: 1.2rem;
+    color: #555;
+    display: none;
 }
 
 #loadingMessage.error {
-color: #e4000f;
+    color: #e4000f;
 }
 
 #retryButton {
-background-color: #e4000f;
-color: #fff;
-border: none;
-padding: 10px 20px;
-border-radius: 25px;
-font-family: 'Roboto Mono', monospace;
-font-size: 16px;
-cursor: pointer;
-margin-top: 10px;
-display: none;
+    background-color: #e4000f;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    display: none;
 }
 
 #retryButton:hover {
-background-color: #c2000d;
+    background-color: #c2000d;
 }
 
-/* Navigation Bar */
+/* Top Navbar */
+.top-navbar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: left;
+}
+
+.top-navbar a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+}
+
 .nav-container {
-display: flex;
-justify-content: center;
-flex-wrap: wrap;
-margin-bottom: 20px;
-gap: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    gap: 10px;
 }
 
 .nav-button {
-background-color: #333;
-color: #fff;
-border: none;
-padding: 10px 20px;
-border-radius: 25px;
-font-family: 'Roboto Mono', monospace;
-font-size: 16px;
-cursor: pointer;
-transition: background-color 0.3s;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .nav-button:hover,
 .nav-button.active {
-background-color: #e4000f;
+    background-color: #e4000f;
 }
 
 /* Search Bar */
 .search-container {
-margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 #searchInput {
-width: 80%;
-max-width: 400px;
-padding: 10px 15px;
-border: 2px solid #ccc;
-border-radius: 25px;
-font-size: 16px;
-font-family: 'Roboto Mono', monospace;
-outline: none;
-transition: border-color 0.3s;
+    width: 80%;
+    max-width: 400px;
+    padding: 10px 15px;
+    border: 2px solid #ccc;
+    border-radius: 25px;
+    font-size: 16px;
+    font-family: 'Roboto Mono', monospace;
+    outline: none;
+    transition: border-color 0.3s;
 }
 
 #searchInput:focus {
-border-color: #e4000f;
+    border-color: #e4000f;
 }
 
 /* Pokédex Container (Grid) */
 .pokedex-container {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-gap: 20px;
-padding: 20px;
-max-width: 1200px;
-margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* Pokémon Card */
 .pokemon-card {
-background-color: #fff;
-border-radius: 15px;
-box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-padding: 20px;
-text-align: center;
-transition: transform 0.2s, box-shadow 0.2s;
-cursor: pointer;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
 }
 
 .pokemon-card:hover {
-transform: translateY(-5px);
-box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 
 .pokemon-card .pokemon-id {
-font-size: 14px;
-color: #888;
-font-weight: bold;
+    font-size: 14px;
+    color: #888;
+    font-weight: bold;
 }
 
 .pokemon-card img {
-width: 150px;
-height: 150px;
-margin: 10px auto;
-display: block;
+    width: 150px;
+    height: 150px;
+    margin: 10px auto;
+    display: block;
 }
 
 .pokemon-card .pokemon-name {
-margin: 15px 0 10px;
-font-size: 22px;
-font-weight: bold;
-text-transform: capitalize;
+    margin: 15px 0 10px;
+    font-size: 22px;
+    font-weight: bold;
+    text-transform: capitalize;
 }
 
 /* Types Container */
 .pokemon-types {
-display: flex;
-justify-content: center;
-gap: 10px;
-margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .type {
-padding: 5px 15px;
-border-radius: 15px;
-color: white;
-font-size: 14px;
-text-transform: uppercase;
-font-weight: bold;
+    padding: 5px 15px;
+    border-radius: 15px;
+    color: white;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
 }
 
 /* Pokémon Type Colors */
@@ -198,1271 +200,1454 @@ font-weight: bold;
 
 /* Modal Styles */
 .modal {
-display: none;
-position: fixed;
-z-index: 1;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-overflow: auto;
-background-color: rgba(0,0,0,0.4);
-backdrop-filter: blur(5px);
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
-background-color: #fff;
-margin: 10% auto;
-padding: 30px;
-border: 1px solid #888;
-width: 80%;
-max-width: 600px;
-border-radius: 20px;
-box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-position: relative;
-animation-name: animatetop;
-animation-duration: 0.4s;
-text-align: left;
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+    text-align: left;
 }
 
 @keyframes animatetop {
-from {top: -300px; opacity: 0}
-to {top: 0; opacity: 1}
+    from {top: -300px; opacity: 0}
+    to {top: 0; opacity: 1}
 }
 
 .close-button {
-color: #aaa;
-float: right;
-font-size: 28px;
-font-weight: bold;
-cursor: pointer;
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .close-button:hover,
 .close-button:focus {
-color: black;
-text-decoration: none;
+    color: black;
+    text-decoration: none;
 }
 
 .modal-info h2 {
-text-align: center;
-text-transform: capitalize;
-font-size: 2.5rem;
-margin-top: 0;
+    text-align: center;
+    text-transform: capitalize;
+    font-size: 2.5rem;
+    margin-top: 0;
 }
 
 .modal-info .modal-id {
-font-size: 1.5rem;
-color: #888;
-text-align: center;
+    font-size: 1.5rem;
+    color: #888;
+    text-align: center;
 }
 
 .modal-info .modal-image {
-display: block;
-margin: 0 auto 20px;
-width: 200px;
-height: 200px;
-cursor: pointer;
+    display: block;
+    margin: 0 auto 20px;
+    width: 200px;
+    height: 200px;
+    cursor: pointer;
 }
 
 /* Attack Animation */
 .modal-image.attack {
-animation: attack-pulse 0.5s ease-in-out;
+    animation: attack-pulse 0.5s ease-in-out;
 }
 
 @keyframes attack-pulse {
-0% { transform: scale(1); }
-50% { transform: scale(1.1) translateX(-5px); }
-100% { transform: scale(1); }
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1) translateX(-5px); }
+    100% { transform: scale(1); }
 }
 
 .modal-info .modal-types {
-display: flex;
-justify-content: center;
-gap: 10px;
-margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 .modal-info .details p {
-margin: 5px 0;
+    margin: 5px 0;
 }
 
 .modal-info .description {
-margin-top: 20px;
-font-style: italic;
-text-align: justify;
+    margin-top: 20px;
+    font-style: italic;
+    text-align: justify;
 }
 
 .modal-info .stats-list {
-list-style-type: none;
-padding: 0;
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 10px;
+    list-style-type: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 .modal-info .stats-list li {
-background-color: #f5f5f5;
-padding: 10px;
-border-radius: 10px;
-display: flex;
-justify-content: space-between;
-align-items: center;
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .modal-info .stats-list span:first-child {
-font-weight: bold;
-text-transform: uppercase;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 /* Variety Button Styles */
 .variety-section {
-margin-top: 20px;
+    margin-top: 20px;
 }
 .variety-section h4 {
-margin-bottom: 10px;
-font-size: 1.2rem;
-color: #555;
-border-bottom: 2px solid #ddd;
-padding-bottom: 5px;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #555;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
 }
 .variety-buttons {
-display: flex;
-justify-content: center;
-flex-wrap: wrap;
-gap: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 .variety-button {
-background-color: #6390F0;
-color: white;
-border: none;
-padding: 8px 15px;
-border-radius: 20px;
-cursor: pointer;
-font-family: 'Roboto Mono', monospace;
-font-size: 14px;
-transition: background-color 0.3s;
+    background-color: #6390F0;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    transition: background-color 0.3s;
 }
 .variety-button.active {
-background-color: #3f65b8;
+    background-color: #3f65b8;
 }
 .variety-button.shiny-button {
-background-color: #FFD700; /* A shiny color */
-color: #000;
+    background-color: #FFD700;
+    color: #000;
 }
 .variety-button.shiny-button.active {
-background-color: #e4c200;
+    background-color: #e4c200;
 }
 
 .tcg-card-section {
-margin-top: 20px;
-text-align: center;
+    margin-top: 20px;
+    text-align: center;
 }
 .tcg-card-section img {
-max-width: 100%;
-height: auto;
-border: 5px solid #fff;
-box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-border-radius: 10px;
+    max-width: 100%;
+    height: auto;
+    border: 5px solid #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-radius: 10px;
 }
 .tcg-card-section .card-loading {
-font-style: italic;
-color: #888;
+    font-style: italic;
+    color: #888;
 }
 
-/* Evolution Line */
-.evolution-line {
-margin-top: 30px;
-text-align: center;
+/* Evolution Chain */
+.evolution-section {
+    margin-top: 20px;
+}
+.evolution-section h4 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #555;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+}
+.evolution-chain {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+.evolution-item {
+    cursor: pointer;
+}
+.evolution-item.current img {
+    transform: scale(1.2);
+}
+.evolution-item.current .evolution-name {
+    font-weight: bold;
+}
+.evolution-item img {
+    width: 80px;
+    height: 80px;
+}
+.evolution-item .evolution-name {
+    text-transform: capitalize;
 }
 
-.evolution-line h3 {
-margin-bottom: 15px;
-color: #333;
+/* Menu Button */
+#menu-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: url('ball.png') no-repeat center;
+    background-size: contain;
+    width: 60px;
+    height: 60px;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
 }
-
-.evolution-container {
-display: flex;
-justify-content: center;
-align-items: center;
-flex-wrap: wrap;
-gap: 20px;
-margin-top: 15px;
+#menu-button:hover::after {
+    content: 'Menu';
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    background: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
 }
-
-.evolution-pokemon {
-text-align: center;
-transition: transform 0.2s;
+.menu-options {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
 }
-
-.evolution-pokemon.current {
-transform: scale(1.2);
+.menu-option {
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+    cursor: pointer;
+    position: relative;
 }
-
-.evolution-pokemon.current .evolution-name {
-font-weight: bold;
-color: #e4000f;
+.menu-option:hover::after {
+    content: attr(data-text);
+    position: absolute;
+    right: 60px;
+    top: 10px;
+    background: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
 }
+#help-option { background: url('question.png') no-repeat center; }
+#catch-option { background: url('pokeball-outline.png') no-repeat center; }
+#guess-option { background: url('guess.png') no-repeat center; }
+#battle-option { background: url('battle.png') no-repeat center; }
+#edit-option { background: url('edit.png') no-repeat center; opacity: 0.5; }
+#edit-option.available { opacity: 1; }
+#edit-option:hover::after { content: 'Admin Access Only!'; }
+#caught-option { background: url('caught.png') no-repeat center; }
 
-.evolution-pokemon img {
-width: 80px;
-height: 80px;
-margin-bottom: 5px;
+/* Login Modal */
+#login-modal {
+    display: block;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
 }
-
-.evolution-name {
-font-size: 14px;
-text-transform: capitalize;
+#login-content {
+    background: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    border-radius: 10px;
 }
-
-.evolution-arrow {
-font-size: 24px;
-color: #888;
+#login-logo {
+    width: 100px;
+    margin-bottom: 20px;
 }
-
-/* Floating Action Button */
-.floating-container {
-position: fixed;
-bottom: 30px;
-right: 30px;
-z-index: 1000;
+#username, #password, #signup-name, #signup-password, #profile-name {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
-
-.fab-button {
-width: 70px;
-height: 70px;
-border-radius: 50%;
-background-color: #e4000f;
-border: none;
-cursor: pointer;
-box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-display: flex;
-align-items: center;
-justify-content: center;
-transition: transform 0.3s;
+.login-option {
+    padding: 10px 20px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px;
+    width: 100%;
 }
-
-.fab-button:hover {
-transform: scale(1.1);
-}
-
-.fab-button img {
-width: 40px;
-height: 40px;
-}
-
-.fab-options {
-position: absolute;
-bottom: 80px;
-right: 0;
-display: none;
-flex-direction: column;
-align-items: flex-end;
-gap: 15px;
-}
-
-.fab-option {
-width: 50px;
-height: 50px;
-border-radius: 50%;
-background-color: #333;
-display: flex;
-align-items: center;
-justify-content: center;
-box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-cursor: pointer;
-transition: transform 0.3s;
-}
-
-.fab-option:hover {
-transform: scale(1.1);
-}
-
-.fab-option img {
-width: 25px;
-height: 25px;
-}
-
-.fab-option.help {
-background-color: #3498db;
-}
-
-.fab-option.catch {
-background-color: #2ecc71;
-}
-
-.fab-option.berries {
-background-color: #e74c3c;
+#signup-form {
+    display: none;
 }
 
 /* Catch Modal */
-.catch-modal {
-display: none;
-position: fixed;
-z-index: 2000;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-background-color: rgba(0,0,0,0.8);
-backdrop-filter: blur(5px);
+#catch-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#catch-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+    position: relative;
+}
+#pokemon-area {
+    height: 200px;
+    position: relative;
+}
+#berry-button {
+    background: url('berry.png') no-repeat center;
+    background-size: contain;
+    width: 50px;
+    height: 50px;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+#pokeball {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: url('pokeball.png') no-repeat center;
+    background-size: contain;
+    cursor: grab;
+}
+#pokeball.dragging {
+    cursor: grabbing;
+}
+.shake {
+    animation: shake 0.5s;
+    animation-iteration-count: 3;
+}
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+#pay-unlimited {
+    padding: 10px 20px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
 }
 
-.catch-modal-content {
-background-color: #fff;
-margin: 15% auto;
-padding: 30px;
-border-radius: 20px;
-width: 80%;
-max-width: 500px;
-text-align: center;
-position: relative;
+/* Profile Modal */
+#profile-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#profile-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    border-radius: 10px;
+}
+#add-friend-button {
+    background: url('add.png') no-repeat center;
+    background-size: contain;
+    width: 40px;
+    height: 40px;
+    border: none;
+    cursor: pointer;
+}
+#online-status {
+    margin-top: 10px;
+    padding: 5px;
 }
 
-.catch-pokemon-image {
-width: 150px;
-height: 150px;
-margin: 20px auto;
-display: block;
+/* Battle Modal */
+#battle-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#battle-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    border-radius: 10px;
+}
+#team-rocket, #battle-friend {
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    cursor: pointer;
+    margin: 10px auto;
+}
+#team-rocket { background: url('team.png') no-repeat center; }
+#battle-friend { background: url('some.png') no-repeat center; }
+
+/* Caught Pokemon Modal */
+#caught-pokemon-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#caught-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
 }
 
-.pokeball-image {
-width: 100px;
-height: 100px;
-margin: 20px auto;
-cursor: pointer;
-transition: transform 0.2s;
+/* Help Modal */
+#help-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#help-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
 }
 
-.pokeball-image.spin {
-animation: pokeball-spin 1s linear infinite;
+/* Guess Modal */
+#guess-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#guess-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
 }
 
-@keyframes pokeball-spin {
-from { transform: rotate(0deg); }
-to { transform: rotate(360deg); }
+/* Edit Modal */
+#edit-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
 }
-
-.pokeball-image.throw {
-animation: pokeball-throw 1s ease-out;
-}
-
-@keyframes pokeball-throw {
-0% { transform: translate(0, 0) rotate(0deg); }
-30% { transform: translate(-50px, -100px) rotate(-180deg); }
-60% { transform: translate(0, -150px) rotate(-360deg); }
-100% { transform: translate(0, 0) rotate(-720deg); }
-}
-
-.pokeball-image.shake {
-animation: pokeball-shake 1.5s ease-in-out;
-}
-
-@keyframes pokeball-shake {
-0% { transform: translateX(0); }
-10% { transform: translateX(-10px); }
-20% { transform: translateX(10px); }
-30% { transform: translateX(-10px); }
-40% { transform: translateX(10px); }
-50% { transform: translateX(-10px); }
-60% { transform: translateX(10px); }
-70% { transform: translateX(-10px); }
-80% { transform: translateX(10px); }
-90% { transform: translateX(-10px); }
-100% { transform: translateX(0); }
-}
-
-.pokeball-image.catch {
-animation: pokeball-catch 0.5s ease-in-out;
-}
-
-@keyframes pokeball-catch {
-0% { transform: scale(1); }
-50% { transform: scale(1.2); }
-100% { transform: scale(1); }
-}
-
-.catch-result {
-font-size: 24px;
-font-weight: bold;
-margin: 20px 0;
-}
-
-.catch-success {
-color: #2ecc71;
-}
-
-.catch-fail {
-color: #e74c3c;
-}
-
-.catch-limit-modal {
-display: none;
-position: fixed;
-z-index: 2000;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-background-color: rgba(0,0,0,0.8);
-backdrop-filter: blur(5px);
-}
-
-.catch-limit-content {
-background-color: #fff;
-margin: 15% auto;
-padding: 30px;
-border-radius: 20px;
-width: 80%;
-max-width: 500px;
-text-align: center;
-}
-
-.upgrade-button {
-background-color: #e4000f;
-color: white;
-border: none;
-padding: 15px 30px;
-border-radius: 25px;
-font-size: 18px;
-cursor: pointer;
-margin-top: 20px;
-font-family: 'Roboto Mono', monospace;
-}
-
-.upgrade-button:hover {
-background-color: #c2000d;
-}
-
-.berries-section {
-margin: 20px 0;
-}
-
-.berries-count {
-font-size: 18px;
-margin-bottom: 10px;
-}
-
-.use-berries-button {
-background-color: #e74c3c;
-color: white;
-border: none;
-padding: 10px 20px;
-border-radius: 20px;
-cursor: pointer;
-font-family: 'Roboto Mono', monospace;
-margin: 10px;
-}
-
-.use-berries-button:disabled {
-background-color: #95a5a6;
-cursor: not-allowed;
+#edit-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
 }
 </style>
 </head>
 <body>
-
-<!-- Navbar -->
-<div class="navbar">
-<a href="turtle.html">Back to others</a>
+<div id="login-modal">
+    <div id="login-content">
+        <img id="login-logo" src="logo.png" alt="Logo">
+        <button id="login-option" class="login-option">Log In</button>
+        <button id="signup-option" class="login-option">Sign Up</button>
+        <button id="admin-login-option" class="login-option">Admin Log-in</button>
+        <div id="login-form" style="display: none;">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="login-button">Submit</button>
+        </div>
+        <div id="signup-form" style="display: none;">
+            <input type="text" id="signup-name" placeholder="Username">
+            <input type="password" id="signup-password" placeholder="Password">
+            <input type="text" id="profile-name" placeholder="Profile Name">
+            <input type="file" id="profile-pic" accept="image/*">
+            <select id="profile-gallery">
+                <option value="default-profile.png">Default</option>
+                <!-- Add more gallery options -->
+            </select>
+            <button id="submit-signup">Submit</button>
+        </div>
+        <div id="admin-login-form" style="display: none;">
+            <input type="text" id="admin-username" placeholder="Admin Username">
+            <input type="password" id="admin-password" placeholder="Admin Password">
+            <button id="admin-login-button">Submit</button>
+        </div>
+    </div>
 </div>
+
+<div class="top-navbar">
+    <a href="turtle.html">Back to others</a>
+</div>
+
+<div id="profile"></div>
 
 <h1>Pokédex</h1>
 
 <div class="nav-container">
-<button class="nav-button active" data-category="all">All</button>
-<button class="nav-button" data-category="mega">Mega</button>
-<button class="nav-button" data-category="regional">Regional</button>
-<button class="nav-button" data-category="shiny">Shiny</button>
-<button class="nav-button" data-category="legendary">Legendary</button>
-<button class="nav-button" data-category="mythical">Mythical</button>
-<button class="nav-button" data-category="gmax">G-Max</button>
-<button class="nav-button" data-category="ultra-beast">Ultra Beast</button>
+    <button class="nav-button active" data-category="all">All</button>
+    <button class="nav-button" data-category="mega">Mega</button>
+    <button class="nav-button" data-category="regional">Regional</button>
+    <button class="nav-button" data-category="shiny">Shiny</button>
+    <button class="nav-button" data-category="legendary">Legendary</button>
+    <button class="nav-button" data-category="mythical">Mythical</button>
+    <button class="nav-button" data-category="gmax">G-Max</button>
+    <button class="nav-button" data-category="ultra-beast">Ultra Beast</button>
 </div>
 
 <div class="search-container">
-<input type="text" id="searchInput" placeholder="Search for a Pokémon...">
+    <input type="text" id="searchInput" placeholder="Search for a Pokémon...">
 </div>
 
 <p id="loadingMessage">Loading Pokédex...</p>
 <button id="retryButton">Retry</button>
 
-<div id="pokedex-container" class="pokedex-container">
-</div>
+<div id="pokedex-container" class="pokedex-container"></div>
 
 <div id="pokemonModal" class="modal">
-<div class="modal-content">
-<span class="close-button">&times;</span>
-<div id="modal-body">
-</div>
-</div>
-</div>
-
-<!-- Floating Action Button -->
-<div class="floating-container">
-<button class="fab-button" id="fabButton">
-<img src="https://placehold.co/40x40/ffffff/000000?text=+" alt="Menu">
-</button>
-<div class="fab-options" id="fabOptions">
-<div class="fab-option help" id="helpOption">
-<img src="https://placehold.co/25x25/ffffff/000000?text=?" alt="Help">
-</div>
-<div class="fab-option catch" id="catchOption">
-<img src="https://placehold.co/25x25/ffffff/000000?text=○" alt="Catch">
-</div>
-<div class="fab-option berries" id="berriesOption">
-<img src="https://placehold.co/25x25/ffffff/000000?text=🍒" alt="Berries">
-</div>
-</div>
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <div id="modal-body"></div>
+    </div>
 </div>
 
-<!-- Catch Modal -->
-<div class="catch-modal" id="catchModal">
-<div class="catch-modal-content">
-<span class="close-button" id="closeCatchModal">&times;</span>
-<h2>Catch a Pokémon!</h2>
-<div id="catchPokemonDisplay"></div>
-<div class="pokeball-image" id="pokeball">
-<img src="https://placehold.co/100x100/ffffff/000000?text=○" alt="Pokeball">
-</div>
-<div class="berries-section">
-<div class="berries-count" id="berriesCount">Berries: 3</div>
-<button class="use-berries-button" id="useBerriesButton">Use Berry (+20% Catch Rate)</button>
-</div>
-<div class="catch-result" id="catchResult"></div>
-</div>
+<div id="catch-modal">
+    <div id="catch-content">
+        <h2>Catch a Pokémon</h2>
+        <div id="pokemon-area"></div>
+        <button id="berry-button"></button>
+        <div id="pokeball"></div>
+        <p>Daily catches left: <span id="daily-left">5</span></p>
+        <button id="pay-unlimited">Pay $20/week for Unlimited</button>
+    </div>
 </div>
 
-<!-- Catch Limit Modal -->
-<div class="catch-limit-modal" id="catchLimitModal">
-<div class="catch-limit-content">
-<h2>Daily Catch Limit Reached</h2>
-<p>You've caught 5 Pokémon today. Upgrade to unlimited catches for $20/week.</p>
-<button class="upgrade-button" id="upgradeButton">Upgrade Now</button>
-<span class="close-button" id="closeLimitModal">&times;</span>
+<div id="profile-modal">
+    <div id="profile-content">
+        <h2>Profile</h2>
+        <p>Premium: <span id="premium-status">No</span></p>
+        <p>Caught Pokémon: <span id="caught-count">0</span></p>
+        <p>Daily Catches Left: <span id="daily-catches">5</span></p>
+        <button id="add-friend-button"></button>
+        <input type="text" id="friend-search" placeholder="Search for a friend...">
+        <div id="friend-results"></div>
+        <select id="online-status">
+            <option>Online</option>
+            <option>Offline</option>
+        </select>
+    </div>
 </div>
+
+<div id="battle-modal">
+    <div id="battle-content">
+        <h2>Battle</h2>
+        <div id="team-rocket"></div>
+        <div id="battle-friend"></div>
+    </div>
+</div>
+
+<div id="caught-pokemon-modal">
+    <div id="caught-content">
+        <h2>Caught Pokémon</h2>
+        <div id="caught-list"></div>
+    </div>
+</div>
+
+<div id="help-modal">
+    <div id="help-content">
+        <h2>Help</h2>
+        <p>Welcome to the Ultimate Pokédex! Browse Pokémon, catch them in a Pokémon GO-style simulation, battle Team Rocket or friends, and play Guess the Pokémon!</p>
+    </div>
+</div>
+
+<div id="guess-modal">
+    <div id="guess-content">
+        <h2>Guess the Pokémon</h2>
+        <div id="guess-image"></div>
+        <input type="text" id="guess-input" placeholder="Who’s that Pokémon?">
+        <button id="guess-submit">Submit</button>
+    </div>
+</div>
+
+<div id="edit-modal">
+    <div id="edit-content">
+        <h2>Propose Changes</h2>
+        <p>Admin can propose changes here.</p>
+    </div>
+</div>
+
+<button id="menu-button"></button>
+<div class="menu-options">
+    <div id="help-option" class="menu-option" data-text="Help"></div>
+    <div id="catch-option" class="menu-option" data-text="Catch a Pokémon"></div>
+    <div id="guess-option" class="menu-option" data-text="Guess the Pokémon"></div>
+    <div id="battle-option" class="menu-option" data-text="Battle"></div>
+    <div id="edit-option" class="menu-option" data-text="Edit"></div>
+    <div id="caught-option" class="menu-option" data-text="Show Caught Pokémon"></div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-const pokedexContainer = document.getElementById('pokedex-container');
-const searchInput = document.getElementById('searchInput');
-const loadingMessage = document.getElementById('loadingMessage');
-const retryButton = document.getElementById('retryButton');
-const pokemonModal = document.getElementById('pokemonModal');
-const modalBody = document.getElementById('modal-body');
-const closeModal = document.querySelector('.close-button');
-const navButtons = document.querySelectorAll('.nav-button');
-
-// Floating Action Button Elements
-const fabButton = document.getElementById('fabButton');
-const fabOptions = document.getElementById('fabOptions');
-const helpOption = document.getElementById('helpOption');
-const catchOption = document.getElementById('catchOption');
-const berriesOption = document.getElementById('berriesOption');
-
-// Catch Modal Elements
-const catchModal = document.getElementById('catchModal');
-const closeCatchModal = document.getElementById('closeCatchModal');
-const pokeball = document.getElementById('pokeball');
-const catchPokemonDisplay = document.getElementById('catchPokemonDisplay');
-const catchResult = document.getElementById('catchResult');
-const berriesCount = document.getElementById('berriesCount');
-const useBerriesButton = document.getElementById('useBerriesButton');
-
-// Catch Limit Modal Elements
-const catchLimitModal = document.getElementById('catchLimitModal');
-const closeLimitModal = document.getElementById('closeLimitModal');
-const upgradeButton = document.getElementById('upgradeButton');
-
-let allPokemon = [];
-const cachedSpeciesData = {};
-const cachedVarietyData = {};
-const cachedEvolutionData = {};
-const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
-let caughtPokemonCount = 0;
-const dailyCatchLimit = 5;
-let berries = 3;
-let berryUsed = false;
-
-// Toggle FAB options
-fabButton.addEventListener('click', () => {
-if (fabOptions.style.display === 'flex') {
-fabOptions.style.display = 'none';
-} else {
-fabOptions.style.display = 'flex';
-}
-});
-
-// Help option
-helpOption.addEventListener('click', () => {
-alert('Welcome to the Pokédex! Search for Pokémon, view their details, and catch random Pokémon. Legendary and Mythical Pokémon are rarer and harder to catch! Use berries to increase your catch rate.');
-fabOptions.style.display = 'none';
-});
-
-// Catch option
-catchOption.addEventListener('click', () => {
-fabOptions.style.display = 'none';
-if (caughtPokemonCount >= dailyCatchLimit) {
-catchLimitModal.style.display = 'block';
-} else {
-startCatchPokemon();
-}
-});
-
-// Berries option
-berriesOption.addEventListener('click', () => {
-alert(`You have ${berries} berries. Use them during catching to increase your catch rate by 20%!`);
-fabOptions.style.display = 'none';
-});
-
-// Close catch modal
-closeCatchModal.addEventListener('click', () => {
-catchModal.style.display = 'none';
-});
-
-// Close limit modal
-closeLimitModal.addEventListener('click', () => {
-catchLimitModal.style.display = 'none';
-});
-
-// Upgrade button
-upgradeButton.addEventListener('click', () => {
-alert('Redirecting to payment page... (ethan.unlocked@gmail.com)');
-catchLimitModal.style.display = 'none';
-});
-
-// Use berries button
-useBerriesButton.addEventListener('click', () => {
-if (berries > 0 && !berryUsed) {
-berries--;
-berryUsed = true;
-berriesCount.textContent = `Berries: ${berries}`;
-useBerriesButton.disabled = true;
-useBerriesButton.textContent = 'Berry Used!';
-	catchResult.innerHTML = '<span style="color: #e74c3c;">Berry used! Catch rate increased by 20%</span>';
-}
-});
-
-// Close modals when clicking outside
-window.addEventListener('click', (e) => {
-if (e.target === catchModal) {
-catchModal.style.display = 'none';
-}
-if (e.target === catchLimitModal) {
-catchLimitModal.style.display = 'none';
-}
-if (e.target === pokemonModal) {
-pokemonModal.style.display = 'none';
-}
-});
-
-const getSpeciesNameFromVarietyName = (name) => {
-const parts = name.split('-');
-if (parts.includes('mega') || parts.includes('primal')) {
-return parts[0];
-}
-if (parts.includes('alola') || parts.includes('galar') || parts.includes('hisui')) {
-return parts[0];
-}
-return name;
-};
-
-const getSpeciesData = async (pokemonIdOrName) => {
-const speciesName = getSpeciesNameFromVarietyName(pokemonIdOrName);
-if (cachedSpeciesData[speciesName]) {
-return cachedSpeciesData[speciesName];
-}
-try {
-const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesName}`;
-const response = await fetch(url);
-const speciesData = await response.json();
-cachedSpeciesData[speciesName] = speciesData;
-return speciesData;
-} catch (error) {
-console.error(`Failed to fetch species data for ${speciesName}:`, error);
-return null;
-}
-};
-
-const getEvolutionData = async (evolutionChainUrl) => {
-const evolutionChainId = evolutionChainUrl.split('/').filter(Boolean).pop();
-if (cachedEvolutionData[evolutionChainId]) {
-return cachedEvolutionData[evolutionChainId];
-}
-try {
-const response = await fetch(evolutionChainUrl);
-const evolutionData = await response.json();
-cachedEvolutionData[evolutionChainId] = evolutionData;
-return evolutionData;
-} catch (error) {
-console.error(`Failed to fetch evolution data:`, error);
-return null;
-}
-};
-
-const getPokemonData = async (name) => {
-if (cachedVarietyData[name]) {
-return cachedVarietyData[name];
-}
-try {
-const url = `https://pokeapi.co/api/v2/pokemon/${name}`;
-const response = await fetch(url);
-const data = await response.json();
-cachedVarietyData[name] = data;
-return data;
-} catch (error) {
-console.error(`Failed to fetch variety data for ${name}:`, error);
-return null;
-}
-};
-
-const fetchAllPokemon = async () => {
-loadingMessage.style.display = 'block';
-loadingMessage.textContent = 'Loading Pokédex...';
-loadingMessage.classList.remove('error');
-retryButton.style.display = 'none';
-pokedexContainer.innerHTML = '';
-
-try {
-const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
-if (!response.ok) {
-throw new Error(`HTTP error! status: ${response.status}`);
-}
-const data = await response.json();
-
-const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
-allPokemon = await Promise.all(pokemonPromises);
-
-const speciesPromises = allPokemon.map(p => getSpeciesData(p.name));
-await Promise.all(speciesPromises);
-
-loadingMessage.style.display = 'none';
-filterAndDisplayPokemon('all');
-} catch (error) {
-console.error('Failed to fetch Pokémon data:', error);
-loadingMessage.textContent = 'Failed to load Pokédex. Please check your connection or try again later.';
-loadingMessage.classList.add('error');
-retryButton.style.display = 'block';
-}
-};
-
-const filterAndDisplayPokemon = async (category) => {
-pokedexContainer.innerHTML = '';
-loadingMessage.style.display = 'block';
-
-let currentPokemonToDisplay;
-switch (category) {
-case 'all':
-currentPokemonToDisplay = allPokemon;
-break;
-case 'mega':
-currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
-break;
-case 'regional':
-currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
-break;
-case 'shiny':
-currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
-break;
-case 'legendary':
-currentPokemonToDisplay = allPokemon.filter(p => {
-const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-return species && species.is_legendary && !species.is_mythical;
-});
-break;
-case 'mythical':
-currentPokemonToDisplay = allPokemon.filter(p => {
-const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-return species && species.is_mythical;
-});
-break;
-case 'gmax':
-currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax'));
-break;
-case 'ultra-beast':
-currentPokemonToDisplay = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
-break;
-default:
-currentPokemonToDisplay = allPokemon;
-break;
-}
-
-loadingMessage.style.display = 'none';
-displayPokemon(currentPokemonToDisplay, category);
-};
-
-const getPokemonImageUrl = (pokemon, isShiny = false) => {
-const name = pokemon.name;
-const isMegaOrPrimal = name.includes('-mega') || name.includes('-primal');
-const isRegional = name.includes('-alola') || name.includes('-galar') || name.includes('-hisui');
-const isGmax = name.includes('-gmax');
-
-if (isMegaOrPrimal || isRegional || isGmax) {
-// Use official artwork for special forms for stability
-return isShiny ? pokemon.sprites.other['official-artwork'].front_shiny : pokemon.sprites.other['official-artwork'].front_default;
-} else {
-// Use animated sprites for base forms if available, otherwise fallback
-const animatedSprites = pokemon.sprites.versions['generation-v']['black-white'].animated;
-const animatedUrl = isShiny ? animatedSprites.front_shiny : animatedSprites.front_default;
-return animatedUrl || pokemon.sprites.front_default;
-}
-};
-
-const displayPokemon = (pokemonList, category) => {
-pokedexContainer.innerHTML = '';
-const displayShiny = category === 'shiny';
-pokemonList.forEach(pokemon => {
-const pokemonCard = document.createElement('div');
-pokemonCard.classList.add('pokemon-card');
-pokemonCard.setAttribute('data-id', pokemon.id);
-
-const name = pokemon.name;
-const id = pokemon.id.toString().padStart(3, '0');
-const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
-
-let displayName = name;
-displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
-
-pokemonCard.innerHTML = `
-<div class="pokemon-id">#${id}</div>
-<img src="${imageUrl}" alt="${name}">
-<h2 class="pokemon-name">${displayName}</h2>
-<div class="pokemon-types">
-${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
-</div>
-`;
-pokedexContainer.appendChild(pokemonCard);
-});
-};
-
-const fetchTcgCard = async (pokemonName) => {
-try {
-const searchName = pokemonName.split('-')[0];
-const url = `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`;
-const response = await fetch(url);
-const data = await response.json();
-
-if (data.data.length > 0) {
-return data.data[0].images.large;
-}
-} catch (error) {
-console.error('Failed to fetch TCG card:', error);
-}
-return null;
-};
-
-const buildEvolutionLine = async (speciesData, currentPokemonName) => {
-if (!speciesData.evolution_chain) {
-return '';
-}
-
-const evolutionData = await getEvolutionData(speciesData.evolution_chain.url);
-if (!evolutionData || !evolutionData.chain) {
-return '';
-}
-
-const buildEvolutionChain = (chain) => {
-if (!chain.evolves_to || chain.evolves_to.length === 0) {
-return [{
-name: chain.species.name,
-evolution_details: null
-}];
-}
-
-let evolutionLine = [{
-name: chain.species.name,
-evolution_details: null
-}];
-
-chain.evolves_to.forEach(evolution => {
-evolutionLine = evolutionLine.concat(buildEvolutionChain(evolution));
-});
-
-return evolutionLine;
-};
-
-const evolutionLine = buildEvolutionChain(evolutionData.chain);
-if (evolutionLine.length <= 1) {
-return '';
-}
-
-let evolutionHTML = '<div class="evolution-line"><h3>Evolution Line</h3><div class="evolution-container">';
-
-evolutionLine.forEach((pokemon, index) => {
-const isCurrent = pokemon.name === currentPokemonName;
-const pokemonData = allPokemon.find(p => getSpeciesNameFromVarietyName(p.name) === pokemon.name);
-const imageUrl = pokemonData ? getPokemonImageUrl(pokemonData) : 'https://placehold.co/80x80/cccccc/ffffff?text=?';
-
-evolutionHTML += `
-<div class="evolution-pokemon ${isCurrent ? 'current' : ''}">
-<img src="${imageUrl}" alt="${pokemon.name}">
-<div class="evolution-name">${pokemon.name}</div>
-</div>
-`;
-
-if (index < evolutionLine.length - 1) {
-evolutionHTML += '<div class="evolution-arrow">→</div>';
-}
-});
-
-evolutionHTML += '</div></div>';
-return evolutionHTML;
-};
-
-const showPokemonDetails = async (pokemon, isShiny = false) => {
-const speciesName = getSpeciesNameFromVarietyName(pokemon.name);
-const speciesData = await getSpeciesData(speciesName);
-const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-
-renderModalContent(pokemon, speciesData, varieties, isShiny);
-pokemonModal.style.display = 'block';
-
-const modalImage = document.querySelector('#modal-body .modal-image');
-const modalAudio = document.querySelector('#pokemon-cry');
-const cryName = speciesData.name;
-modalAudio.src = `https://play.pokemonshowdown.com/audio/cries/${cryName}.mp3`;
-
-modalImage.addEventListener('click', () => {
-modalImage.classList.remove('attack');
-void modalImage.offsetWidth;
-modalImage.classList.add('attack');
-
-modalAudio.currentTime = 0;
-modalAudio.play();
-});
-
-const tcgCardSection = document.getElementById('tcg-card-section');
-tcgCardSection.innerHTML = '<p class="card-loading">Loading TCG card...</p>';
-const tcgCardUrl = await fetchTcgCard(pokemon.name);
-if (tcgCardUrl) {
-tcgCardSection.innerHTML = `
-<h4>Trading Card</h4>
-<img src="${tcgCardUrl}" alt="${pokemon.name} TCG Card">
-`;
-} else {
-tcgCardSection.innerHTML = `<h4>Trading Card</h4><p class="card-loading">No TCG card found.</p>`;
-}
-
-// Add evolution line
-const evolutionLineHTML = await buildEvolutionLine(speciesData, speciesName);
-const modalInfo = document.querySelector('.modal-info');
-if (evolutionLineHTML) {
-modalInfo.innerHTML += evolutionLineHTML;
-}
-};
-
-const getVarietyButtonName = (varietyName) => {
-if (varietyName.includes('-mega-x')) return 'Mega X';
-if (varietyName.includes('-mega-y')) return 'Mega Y';
-if (varietyName.includes('-mega')) return 'Mega';
-if (varietyName.includes('-primal')) return 'Primal';
-if (varietyName.includes('-gmax')) return 'G-Max';
-if (varietyName.includes('-alola')) return 'Alolan';
-if (varietyName.includes('-galar')) return 'Galarian';
-if (varietyName.includes('-hisui')) return 'Hisuian';
-
-return 'Normal';
-};
-
-const renderModalContent = (pokemon, speciesData, varieties, isShiny = false) => {
-const name = pokemon.name;
-const id = pokemon.id.toString().padStart(3, '0');
-const types = pokemon.types.map(typeInfo => typeInfo.type.name);
-const height = (pokemon.height / 10).toFixed(1);
-const weight = (pokemon.weight / 10).toFixed(1);
-const abilities = pokemon.abilities.map(abilityInfo => abilityInfo.ability.name).join(', ');
-const stats = pokemon.stats.map(statInfo => ({
-name: statInfo.stat.name.replace('-', ' '),
-value: statInfo.base_stat
-}));
-
-const imageUrl = getPokemonImageUrl(pokemon, isShiny);
-
-const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
-const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
-const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
-
-const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
-const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
-const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
-const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
-
-const renderButtons = (forms, currentName) => {
-if (forms.length === 0) return '';
-return forms.map(v => {
-const buttonName = getVarietyButtonName(v.name);
-const isActive = v.name === currentName;
-return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
-}).join('');
-};
-
-const isCurrentlyShiny = isShiny ? 'active' : '';
-
-modalBody.innerHTML = `
-<div class="modal-info">
-<img src="${imageUrl}" alt="${name}" class="modal-image">
-<h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
-<div class="modal-id">#${id}</div>
-<div class="modal-types">
-${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
-</div>
-<p class="description">"${description}"</p>
-
-<div class="variety-section normal-forms">
-<h4>Normal Form</h4>
-<div class="variety-buttons">
-${normalForm ? `<button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>` : ''}
-</div>
-</div>
-
-${megaForms.length > 0 ? `
-<div class="variety-section mega-forms">
-<h4>Mega Forms</h4>
-<div class="variety-buttons">
-${renderButtons(megaForms, name)}
-</div>
-</div>` : ''}
-
-${regionalForms.length > 0 ? `
-<div class="variety-section regional-forms">
-<h4>Regional Forms</h4>
-<div class="variety-buttons">
-${renderButtons(regionalForms, name)}
-</div>
-</div>` : ''}
-
-${gmaxForms.length > 0 ? `
-<div class="variety-section gmax-forms">
-<h4>G-Max Forms</h4>
-<div class="variety-buttons">
-${renderButtons(gmaxForms, name)}
-</div>
-</div>` : ''}
-
-<div class="variety-section shiny-toggle">
-<h4>Appearance</h4>
-<div class="variety-buttons">
-<button class="variety-button shiny-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
-</div>
-</div>
-
-<div class="details">
-<p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
-<p><strong>Height:</strong> ${height} m</p>
-<p><strong>Weight:</strong> ${weight} kg</p>
-<p><strong>Abilities:</strong> ${abilities}</p>
-</div>
-<h3>Base Stats</h3>
-<ul class="stats-list">
-${stats.map(stat => `<li><span>${stat.name}</span><span>${stat.value}</span></li>`).join('')}
-</ul>
-<div id="tcg-card-section" class="tcg-card-section"></div>
-</div>
-<audio id="pokemon-cry" preload="auto"></audio>
-`;
-};
-
-const startCatchPokemon = () => {
-// Reset berry usage for new catch
-berryUsed = false;
-useBerriesButton.disabled = false;
-useBerriesButton.textContent = 'Use Berry (+20% Catch Rate)';
-berriesCount.textContent = `Berries: ${berries}`;
-
-// Get a random Pokémon
-const randomIndex = Math.floor(Math.random() * allPokemon.length);
-const randomPokemon = allPokemon[randomIndex];
-const speciesData = cachedSpeciesData[getSpeciesNameFromVarietyName(randomPokemon.name)];
-const isLegendary = speciesData && speciesData.is_legendary;
-const isMythical = speciesData && speciesData.is_mythical;
-
-// Display the Pokémon
-catchPokemonDisplay.innerHTML = `
-<h3>${randomPokemon.name}</h3>
-<img src="${getPokemonImageUrl(randomPokemon)}" alt="${randomPokemon.name}" class="catch-pokemon-image">
-`;
-
-// Reset UI
-catchResult.textContent = '';
-pokeball.innerHTML = '<img src="https://placehold.co/100x100/ffffff/000000?text=○" alt="Pokeball">';
-
-// Show the modal
-catchModal.style.display = 'block';
-
-// Add click event to pokeball
-pokeball.onclick = () => {
-catchPokemon(randomPokemon, isLegendary, isMythical);
-};
-};
-
-const catchPokemon = (pokemon, isLegendary, isMythical) => {
-// Disable clicking during animation
-pokeball.onclick = null;
-
-// Determine base catch difficulty
-let baseCatchChance;
-if (isMythical) {
-baseCatchChance = 0.1; // 10% chance
-} else if (isLegendary) {
-baseCatchChance = 0.3; // 30% chance
-} else {
-baseCatchChance = 0.7; // 70% chance
-}
-
-// Apply berry bonus if used
-let catchChance = baseCatchChance;
-if (berryUsed) {
-catchChance += 0.2; // +20% from berry
-}
-
-// Cap at 90% max catch rate
-catchChance = Math.min(catchChance, 0.9);
-
-// Add spin animation
-pokeball.classList.add('spin');
-
-// After spin, throw the ball
-setTimeout(() => {
-pokeball.classList.remove('spin');
-pokeball.classList.add('throw');
-
-// After throw animation, simulate catch
-setTimeout(() => {
-pokeball.classList.remove('throw');
-
-// Simulate catch attempts (1-3 shakes)
-const attempts = Math.floor(Math.random() * 3) + 1;
-let caught = false;
-
-// Add shake animation
-pokeball.classList.add('shake');
-
-// After shake animation, determine result
-setTimeout(() => {
-pokeball.classList.remove('shake');
-	
-if (Math.random() < catchChance) {
-caught = true;
-pokeball.classList.add('catch');
-caughtPokemonCount++;
-catchResult.innerHTML = `<span class="catch-success">Gotcha! ${pokemon.name} was caught!</span>`;
-} else {
-catchResult.innerHTML = `<span class="catch-fail">Oh no! ${pokemon.name} broke free!</span>`;
-}
-
-// Reset after a delay
-setTimeout(() => {
-pokeball.classList.remove('catch');
-if (caught) {
-catchModal.style.display = 'none';
-}
-}, 1000);
-}, 1500);
-}, 1000);
-}, 1000);
-};
-
-pokedexContainer.addEventListener('click', (e) => {
-const card = e.target.closest('.pokemon-card');
-if (card) {
-const pokemonId = card.getAttribute('data-id');
-const selectedPokemon = allPokemon.find(p => p.id == pokemonId);
-// Check if the current category is shiny to pass the state
-const isShiny = document.querySelector('.nav-button.active').dataset.category === 'shiny';
-if (selectedPokemon) {
-showPokemonDetails(selectedPokemon, isShiny);
-}
-}
-});
-
-modalBody.addEventListener('click', async (e) => {
-const button = e.target.closest('.variety-button');
-if (button) {
-const varietyName = button.dataset.varietyName;
-const isShinyActive = modalBody.querySelector('.shiny-button').classList.contains('active');
-
-if (varietyName === 'shiny') {
-const currentName = document.querySelector('.modal-image').alt;
-const currentPokemonData = await getPokemonData(currentName);
-const speciesData = await getSpeciesData(currentPokemonData.name);
-const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-renderModalContent(currentPokemonData, speciesData, varieties, !isShinyActive);
-} else {
-const pokemonData = await getPokemonData(varietyName);
-const speciesData = await getSpeciesData(pokemonData.name);
-const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
-renderModalContent(pokemonData, speciesData, varieties, isShinyActive);
-}
-}
-});
-
-closeModal.addEventListener('click', () => {
-pokemonModal.style.display = 'none';
-});
-
-window.addEventListener('click', (e) => {
-if (e.target === pokemonModal) {
-pokemonModal.style.display = 'none';
-}
-});
-
-searchInput.addEventListener('input', (e) => {
-const searchTerm = e.target.value.toLowerCase();
-const currentCategory = document.querySelector('.nav-button.active').dataset.category;
-let pokemonToSearch = allPokemon;
-if (currentCategory !== 'all') {
-// Filter the list based on the current category first
-switch (currentCategory) {
-case 'mega':
-pokemonToSearch = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal'));
-break;
-case 'regional':
-pokemonToSearch = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui'));
-break;
-case 'shiny':
-pokemonToSearch = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny);
-break;
-case 'legendary':
-pokemonToSearch = allPokemon.filter(p => {
-const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-return species && species.is_legendary && !species.is_mythical;
-});
-break;
-case 'mythical':
-pokemonToSearch = allPokemon.filter(p => {
-const species = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
-return species && species.is_mythical;
-});
-break;
-case 'gmax':
-pokemonToSearch = allPokemon.filter(p => p.name.includes('-gmax'));
-break;
-case 'ultra-beast':
-pokemonToSearch = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name));
-break;
-}
-}
-const filteredPokemon = pokemonToSearch.filter(pokemon => {
-const isNameMatch = pokemon.name.toLowerCase().includes(searchTerm);
-const isIdMatch = pokemon.id.toString().includes(searchTerm);
-return isNameMatch || isIdMatch;
-});
-displayPokemon(filteredPokemon, currentCategory);
-});
-
-navButtons.forEach(button => {
-button.addEventListener('click', () => {
-navButtons.forEach(btn => btn.classList.remove('active'));
-button.classList.add('active');
-const category = button.getAttribute('data-category');
-filterAndDisplayPokemon(category);
-});
-});
-
-retryButton.addEventListener('click', fetchAllPokemon);
-
-fetchAllPokemon();
+    const pokedexContainer = document.getElementById('pokedex-container');
+    const searchInput = document.getElementById('searchInput');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const retryButton = document.getElementById('retryButton');
+    const pokemonModal = document.getElementById('pokemonModal');
+    const modalBody = document.getElementById('modal-body');
+    const closeModal = document.querySelector('.close-button');
+    const navButtons = document.querySelectorAll('.nav-button');
+    const menuButton = document.getElementById('menu-button');
+    const menuOptions = document.querySelector('.menu-options');
+    const loginModal = document.getElementById('login-modal');
+    const loginOption = document.getElementById('login-option');
+    const signupOption = document.getElementById('signup-option');
+    const adminLoginOption = document.getElementById('admin-login-option');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const loginButton = document.getElementById('login-button');
+    const submitSignup = document.getElementById('submit-signup');
+    const adminLoginButton = document.getElementById('admin-login-button');
+    const profile = document.getElementById('profile');
+    const profileModal = document.getElementById('profile-modal');
+    const catchModal = document.getElementById('catch-modal');
+    const berryButton = document.getElementById('berry-button');
+    const pokeball = document.getElementById('pokeball');
+    const dailyLeft = document.getElementById('daily-left');
+    const payUnlimited = document.getElementById('pay-unlimited');
+    const battleModal = document.getElementById('battle-modal');
+    const caughtPokemonModal = document.getElementById('caught-pokemon-modal');
+    const helpModal = document.getElementById('help-modal');
+    const guessModal = document.getElementById('guess-modal');
+    const editModal = document.getElementById('edit-modal');
+    const editOption = document.getElementById('edit-option');
+    const addFriendButton = document.getElementById('add-friend-button');
+    const friendSearch = document.getElementById('friend-search');
+
+    let allPokemon = [];
+    const cachedSpeciesData = {};
+    const cachedVarietyData = {};
+    const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
+    let user = null;
+    let caughtPokemon = [];
+    let dailyCatches = 5;
+    let isPremium = false;
+    let loginTimestamp = null;
+
+    // Local storage for users
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+    const adminCredentials = { username: 'EthanUnlocked', password: 'Subscribe123!' };
+
+    const getSpeciesNameFromVarietyName = (name) => {
+        if (name.includes('-')) {
+            return name.split('-')[0];
+        }
+        return name;
+    };
+
+    const getSpeciesData = async (pokemonIdOrName) => {
+        const speciesName = getSpeciesNameFromVarietyName(pokemonIdOrName);
+        if (cachedSpeciesData[speciesName]) return cachedSpeciesData[speciesName];
+        try {
+            const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesName}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch species data for ${speciesName}`);
+            const speciesData = await response.json();
+            cachedSpeciesData[speciesName] = speciesData;
+            return speciesData;
+        } catch (error) {
+            console.error(`Failed to fetch species data for ${speciesName}:`, error);
+            throw error;
+        }
+    };
+
+    const getPokemonData = async (name) => {
+        if (cachedVarietyData[name]) return cachedVarietyData[name];
+        try {
+            const url = `https://pokeapi.co/api/v2/pokemon/${name}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch variety data for ${name}`);
+            const data = await response.json();
+            cachedVarietyData[name] = data;
+            return data;
+        } catch (error) {
+            console.error(`Failed to fetch variety data for ${name}:`, error);
+            throw error;
+        }
+    };
+
+    const getEvolutionChain = async (speciesData) => {
+        try {
+            const response = await fetch(speciesData.evolution_chain.url);
+            const data = await response.json();
+            const chain = [];
+            let current = data.chain;
+            while (current) {
+                const pokemonData = await getPokemonData(current.species.name);
+                chain.push({ name: current.species.name, data: pokemonData });
+                current = current.evolves_to[0];
+            }
+            return chain;
+        } catch (error) {
+            console.error('Failed to fetch evolution chain:', error);
+            return [];
+        }
+    };
+
+    const fetchAllPokemon = async () => {
+        loadingMessage.style.display = 'block';
+        loadingMessage.textContent = 'Loading Pokédex...';
+        loadingMessage.classList.remove('error');
+        retryButton.style.display = 'none';
+        pokedexContainer.innerHTML = '';
+
+        try {
+            const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+
+            const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
+            allPokemon = await Promise.all(pokemonPromises);
+
+            const speciesPromises = allPokemon.map(p => getSpeciesData(p.name));
+            await Promise.all(speciesPromises);
+
+            loadingMessage.style.display = 'none';
+            filterAndDisplayPokemon('all');
+        } catch (error) {
+            console.error('Failed to fetch Pokémon data:', error);
+            loadingMessage.textContent = 'Failed to load Pokédex. Please check your connection or try again later.';
+            loadingMessage.classList.add('error');
+            retryButton.style.display = 'block';
+        }
+    };
+
+    const filterAndDisplayPokemon = async (category) => {
+        pokedexContainer.innerHTML = '';
+        loadingMessage.style.display = 'block';
+
+        let currentPokemonToDisplay;
+        switch (category) {
+            case 'all': currentPokemonToDisplay = allPokemon; break;
+            case 'mega': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal')); break;
+            case 'regional': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui')); break;
+            case 'shiny': currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny); break;
+            case 'legendary': currentPokemonToDisplay = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_legendary && !cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
+            case 'mythical': currentPokemonToDisplay = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
+            case 'gmax': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax')); break;
+            case 'ultra-beast': currentPokemonToDisplay = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name)); break;
+            default: currentPokemonToDisplay = allPokemon;
+        }
+
+        loadingMessage.style.display = 'none';
+        displayPokemon(currentPokemonToDisplay, category);
+    };
+
+    const getPokemonImageUrl = (pokemon, isShiny = false) => {
+        const name = pokemon.name;
+        const isMegaOrPrimal = name.includes('-mega') || name.includes('-primal');
+        const isRegional = name.includes('-alola') || name.includes('-galar') || name.includes('-hisui');
+        const isGmax = name.includes('-gmax');
+
+        if (isMegaOrPrimal || isRegional || isGmax) {
+            return isShiny ? pokemon.sprites.other['official-artwork'].front_shiny : pokemon.sprites.other['official-artwork'].front_default;
+        } else {
+            const animatedSprites = pokemon.sprites.versions['generation-v']['black-white'].animated;
+            const animatedUrl = isShiny ? animatedSprites.front_shiny : animatedSprites.front_default;
+            return animatedUrl || pokemon.sprites.front_default;
+        }
+    };
+
+    const displayPokemon = (pokemonList, category) => {
+        pokedexContainer.innerHTML = '';
+        const displayShiny = category === 'shiny';
+        pokemonList.forEach(pokemon => {
+            const pokemonCard = document.createElement('div');
+            pokemonCard.classList.add('pokemon-card');
+            pokemonCard.setAttribute('data-id', pokemon.id);
+
+            const name = pokemon.name;
+            const id = pokemon.id.toString().padStart(3, '0');
+            const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
+
+            let displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
+
+            pokemonCard.innerHTML = `
+                <div class="pokemon-id">#${id}</div>
+                <img src="${imageUrl}" alt="${name}">
+                <h2 class="pokemon-name">${displayName}</h2>
+                <div class="pokemon-types">
+                    ${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
+                </div>
+            `;
+            pokedexContainer.appendChild(pokemonCard);
+        });
+    };
+
+    const fetchTcgCard = async (pokemonName) => {
+        try {
+            const searchName = pokemonName.split('-')[0];
+            const url = `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.data.length > 0 ? data.data[0].images.large : null;
+        } catch (error) {
+            console.error('Failed to fetch TCG card:', error);
+            return null;
+        }
+    };
+
+    const getAttackSound = async (pokemon) => {
+        try {
+            const move = pokemon.moves[0]?.move.name || 'tackle';
+            return `https://play.pokemonshowdown.com/audio/cries/${move}.mp3`;
+        } catch {
+            return null;
+        }
+    };
+
+    const showPokemonDetails = async (pokemon, isShiny = false) => {
+        try {
+            const speciesName = getSpeciesNameFromVarietyName(pokemon.name);
+            const speciesData = await getSpeciesData(speciesName);
+            if (!speciesData) throw new Error(`No species data for ${speciesName}`);
+            const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+            const evolutionChain = await getEvolutionChain(speciesData);
+            renderModalContent(pokemon, speciesData, varieties, isShiny, evolutionChain);
+            pokemonModal.style.display = 'block';
+
+            const modalImage = document.querySelector('#modal-body .modal-image');
+            const modalAudio = document.querySelector('#pokemon-cry');
+            const attackSound = await getAttackSound(pokemon);
+            modalAudio.src = attackSound || `https://play.pokemonshowdown.com/audio/cries/${speciesName}.mp3`;
+
+            modalImage.addEventListener('click', () => {
+                modalImage.classList.remove('attack');
+                void modalImage.offsetWidth;
+                modalImage.classList.add('attack');
+                modalAudio.currentTime = 0;
+                modalAudio.play();
+            });
+
+            const tcgCardSection = document.getElementById('tcg-card-section');
+            tcgCardSection.innerHTML = '<p class="card-loading">Loading TCG card...</p>';
+            const tcgCardUrl = await fetchTcgCard(pokemon.name);
+            tcgCardSection.innerHTML = tcgCardUrl ? `
+                <h4>Trading Card</h4>
+                <img src="${tcgCardUrl}" alt="${pokemon.name} TCG Card">
+            ` : `<h4>Trading Card</h4><p class="card-loading">No TCG card found.</p>`;
+
+            // Add click listeners to evolution items
+            const evolutionItems = document.querySelectorAll('.evolution-item');
+            evolutionItems.forEach(item => {
+                item.addEventListener('click', async () => {
+                    const evoName = item.getAttribute('data-name');
+                    const evoPokemon = allPokemon.find(p => p.name === evoName);
+                    if (evoPokemon) {
+                        showPokemonDetails(evoPokemon, isShiny);
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('Error in showPokemonDetails:', error);
+            alert('Failed to load Pokémon details. Please try again.');
+        }
+    };
+
+    const getVarietyButtonName = (varietyName) => {
+        if (varietyName.includes('-mega-x')) return 'Mega X';
+        if (varietyName.includes('-mega-y')) return 'Mega Y';
+        if (varietyName.includes('-mega')) return 'Mega';
+        if (varietyName.includes('-primal')) return 'Primal';
+        if (varietyName.includes('-gmax')) return 'G-Max';
+        if (varietyName.includes('-alola')) return 'Alolan';
+        if (varietyName.includes('-galar')) return 'Galarian';
+        if (varietyName.includes('-hisui')) return 'Hisuian';
+        return 'Normal';
+    };
+
+    const renderModalContent = (pokemon, speciesData, varieties, isShiny = false, evolutionChain) => {
+        const name = pokemon.name;
+        const id = pokemon.id.toString().padStart(3, '0');
+        const types = pokemon.types.map(typeInfo => typeInfo.type.name);
+        const height = (pokemon.height / 10).toFixed(1);
+        const weight = (pokemon.weight / 10).toFixed(1);
+        const abilities = pokemon.abilities.map(abilityInfo => abilityInfo.ability.name).join(', ');
+        const stats = pokemon.stats.map(statInfo => ({
+            name: statInfo.stat.name.replace('-', ' '),
+            value: statInfo.base_stat
+        }));
+        const imageUrl = getPokemonImageUrl(pokemon, isShiny);
+        const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
+        const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
+        const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
+
+        const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
+        const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
+        const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
+        const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
+
+        const renderButtons = (forms, currentName) => {
+            if (forms.length === 0) return '';
+            return forms.map(v => {
+                const buttonName = getVarietyButtonName(v.name);
+                const isActive = v.name === currentName;
+                return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
+            }).join('');
+        };
+
+        const renderEvolutionChain = () => {
+            if (!evolutionChain || evolutionChain.length === 0) return '';
+            return `
+                <div class="evolution-section">
+                    <h4>Evolution Chain</h4>
+                    <div class="evolution-chain">
+                        ${evolutionChain.map(evo => `
+                            <div class="evolution-item ${evo.name === pokemon.name ? 'current' : ''}" data-name="${evo.name}">
+                                <img src="${getPokemonImageUrl(evo.data)}" alt="${evo.name}">
+                                <div class="evolution-name">${evo.name}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        const isCurrentlyShiny = isShiny ? 'active' : '';
+
+        modalBody.innerHTML = `
+            <div class="modal-info">
+                <img src="${imageUrl}" alt="${name}" class="modal-image">
+                <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
+                <div class="modal-id">#${id}</div>
+                <div class="modal-types">
+                    ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
+                </div>
+                <p class="description">"${description}"</p>
+                <div class="variety-section normal-forms">
+                    <h4>Normal Form</h4>
+                    <div class="variety-buttons">
+                        ${normalForm ? `<button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>` : ''}
+                    </div>
+                </div>
+                ${megaForms.length > 0 ? `
+                    <div class="variety-section mega-forms">
+                        <h4>Mega Forms</h4>
+                        <div class="variety-buttons">
+                            ${renderButtons(megaForms, name)}
+                        </div>
+                    </div>` : ''}
+                ${regionalForms.length > 0 ? `
+                    <div class="variety-section regional-forms">
+                        <h4>Regional Forms</h4>
+                        <div class="variety-buttons">
+                            ${renderButtons(regionalForms, name)}
+                        </div>
+                    </div>` : ''}
+                ${gmaxForms.length > 0 ? `
+                    <div class="variety-section gmax-forms">
+                        <h4>G-Max Forms</h4>
+                        <div class="variety-buttons">
+                            ${renderButtons(gmaxForms, name)}
+                        </div>
+                    </div>` : ''}
+                <div class="variety-section shiny-toggle">
+                    <h4>Appearance</h4>
+                    <div class="variety-buttons">
+                        <button class="variety-button shiny-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
+                    </div>
+                </div>
+                <div class="details">
+                    <p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
+                    <p><strong>Height:</strong> ${height} m</p>
+                    <p><strong>Weight:</strong> ${weight} kg</p>
+                    <p><strong>Abilities:</strong> ${abilities}</p>
+                </div>
+                <h3>Base Stats</h3>
+                <ul class="stats-list">
+                    ${stats.map(stat => `<li><span>${stat.name}</span><span>${stat.value}</span></li>`).join('')}
+                </ul>
+                <div id="tcg-card-section" class="tcg-card-section"></div>
+                ${renderEvolutionChain()}
+            </div>
+            <audio id="pokemon-cry" preload="auto"></audio>
+        `;
+    };
+
+    const checkLoginTimeout = () => {
+        if (loginTimestamp && (Date.now() - loginTimestamp) > 7 * 24 * 60 * 60 * 1000) {
+            user = null;
+            localStorage.removeItem('currentUser');
+            loginModal.style.display = 'block';
+        }
+    };
+
+    loginOption.addEventListener('click', () => {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        adminLoginForm.style.display = 'none';
+        loginOption.style.background = '#c2000d';
+        signupOption.style.background = '#e4000f';
+        adminLoginOption.style.background = '#e4000f';
+    });
+
+    signupOption.addEventListener('click', () => {
+        signupForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        adminLoginForm.style.display = 'none';
+        signupOption.style.background = '#c2000d';
+        loginOption.style.background = '#e4000f';
+        adminLoginOption.style.background = '#e4000f';
+    });
+
+    adminLoginOption.addEventListener('click', () => {
+        adminLoginForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'none';
+        adminLoginOption.style.background = '#c2000d';
+        loginOption.style.background = '#e4000f';
+        signupOption.style.background = '#e4000f';
+    });
+
+    loginButton.addEventListener('click', () => {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        if (users[username] && users[username].password === password) {
+            user = users[username];
+            user.isAdmin = false;
+            user.caught = user.caught || [];
+            user.friends = user.friends || [];
+            user.onlineStatus = user.onlineStatus || 'Online';
+            editOption.classList.remove('available');
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            loginTimestamp = Date.now();
+            localStorage.setItem('loginTimestamp', loginTimestamp);
+            loginModal.style.display = 'none';
+            profile.style.backgroundImage = `url(${user.profilePic})`;
+            document.getElementById('online-status').value = user.onlineStatus;
+            fetchAllPokemon();
+        } else {
+            alert('Invalid credentials');
+        }
+    });
+
+    adminLoginButton.addEventListener('click', () => {
+        const username = document.getElementById('admin-username').value;
+        const password = document.getElementById('admin-password').value;
+        if (username === adminCredentials.username && password === adminCredentials.password) {
+            user = { username, isAdmin: true, profilePic: 'default-profile.png', profileName: 'Admin', caught: [], friends: [], onlineStatus: 'Online' };
+            editOption.classList.add('available');
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            loginTimestamp = Date.now();
+            localStorage.setItem('loginTimestamp', loginTimestamp);
+            loginModal.style.display = 'none';
+            profile.style.backgroundImage = `url(${user.profilePic})`;
+            document.getElementById('online-status').value = user.onlineStatus;
+            fetchAllPokemon();
+        } else {
+            alert('Invalid admin credentials');
+        }
+    });
+
+    submitSignup.addEventListener('click', () => {
+        const username = document.getElementById('signup-name').value;
+        const password = document.getElementById('signup-password').value;
+        const profileName = document.getElementById('profile-name').value;
+        const profilePic = document.getElementById('profile-pic').files[0];
+        const galleryPic = document.getElementById('profile-gallery').value;
+
+        const inappropriateWords = ['badword1', 'badword2'];
+        if (inappropriateWords.some(word => profileName.toLowerCase().includes(word))) {
+            alert('Inappropriate profile name. Account banned for 3 days.');
+            return;
+        }
+
+        if (users[username]) {
+            alert('Username already exists');
+            return;
+        }
+
+        const profilePicUrl = profilePic ? URL.createObjectURL(profilePic) : galleryPic;
+        users[username] = {
+            username,
+            password,
+            profileName,
+            profilePic: profilePicUrl,
+            caught: [],
+            friends: [],
+            onlineStatus: 'Online'
+        };
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Sign up successful! Please log in.');
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        loginOption.style.background = '#c2000d';
+        signupOption.style.background = '#e4000f';
+        adminLoginOption.style.background = '#e4000f';
+    });
+
+    profile.addEventListener('click', () => {
+        if (!user) return;
+        document.getElementById('premium-status').textContent = isPremium ? 'Yes' : 'No';
+        document.getElementById('caught-count').textContent = caughtPokemon.length;
+        document.getElementById('daily-catches').textContent = dailyCatches;
+        profileModal.style.display = 'block';
+    });
+
+    friendSearch.addEventListener('input', () => {
+        const searchTerm = friendSearch.value.toLowerCase();
+        const results = Object.keys(users).filter(u => u.toLowerCase().includes(searchTerm) && u !== user.username);
+        document.getElementById('friend-results').innerHTML = results.map(u => `<div class="friend-result" data-username="${u}">${u}</div>`).join('');
+    });
+
+    document.getElementById('friend-results').addEventListener('click', (e) => {
+        if (e.target.classList.contains('friend-result')) {
+            const friendUsername = e.target.dataset.username;
+            if (!user.friends.includes(friendUsername)) {
+                user.friends.push(friendUsername);
+                users[user.username].friends = user.friends;
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                alert(`Added ${friendUsername} as a friend!`);
+            }
+        }
+    });
+
+    document.getElementById('online-status').addEventListener('change', (e) => {
+        user.onlineStatus = e.target.value;
+        users[user.username].onlineStatus = user.onlineStatus;
+        localStorage.setItem('users', JSON.stringify(users));
+        localStorage.setItem('currentUser', JSON.stringify(user));
+    });
+
+    const attemptCatch = (pokemon, usedBerry) => {
+        const speciesData = cachedSpeciesData[getSpeciesNameFromVarietyName(pokemon.name)];
+        const isLegendary = speciesData.is_legendary;
+        const isMythical = speciesData.is_mythical;
+        const isUltraBeast = ULTRA_BEASTS.includes(pokemon.name);
+        let catchRate = 0.5;
+        if (isLegendary || isMythical || isUltraBeast) catchRate = 0.1;
+        if (usedBerry) catchRate *= 1.5;
+
+        const shakes = Math.floor(Math.random() * 4);
+        pokeball.classList.add('shake');
+        setTimeout(() => {
+            pokeball.classList.remove('shake');
+            if (shakes === 3) {
+                caughtPokemon.push(pokemon);
+                user.caught = caughtPokemon;
+                users[user.username].caught = caughtPokemon;
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                alert(`${pokemon.name} was caught!`);
+                catchModal.style.display = 'none';
+            } else {
+                alert(`${pokemon.name} broke free! Try again.`);
+            }
+            dailyCatches--;
+            dailyLeft.textContent = dailyCatches;
+            user.dailyCatches = dailyCatches;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }, 2000);
+    };
+
+    let isDragging = false;
+    let currentX, currentY;
+    let initialX, initialY;
+
+    pokeball.addEventListener('mousedown', (e) => {
+        if (dailyCatches <= 0 && !isPremium) {
+            alert('No daily catches left! Purchase unlimited catches.');
+            return;
+        }
+        isDragging = true;
+        pokeball.classList.add('dragging');
+        initialX = e.clientX - currentX;
+        initialY = e.clientY - currentY;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            pokeball.style.left = `${50 + currentX / window.innerWidth * 100}%`;
+            pokeball.style.bottom = `${50 - currentY / window.innerHeight * 100}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+        if (isDragging) {
+            isDragging = false;
+            pokeball.classList.remove('dragging');
+            const pokemonArea = document.getElementById('pokemon-area');
+            const pokemonImg = pokemonArea.querySelector('img');
+            const rect = pokemonImg.getBoundingClientRect();
+            if (e.clientY < rect.bottom && dailyCatches > 0) {
+                attemptCatch(pokemonArea.dataset.pokemon, berryButton.dataset.used === 'true');
+                berryButton.dataset.used = 'false';
+            }
+            pokeball.style.left = '50%';
+            pokeball.style.bottom = '50px';
+        }
+    });
+
+    berryButton.addEventListener('click', () => {
+        berryButton.dataset.used = 'true';
+        alert('Berry used! Catch rate increased.');
+    });
+
+    payUnlimited.addEventListener('click', () => {
+        window.location.href = `mailto:ethan.unlocked@gmail.com?subject=Purchase%20Unlimited%20Catches&body=Please%20process%20my%20$20/week%20payment%20for%20unlimited%20catches.`;
+    });
+
+    menuButton.addEventListener('click', () => {
+        menuOptions.style.display = menuOptions.style.display === 'block' ? 'none' : 'block';
+    });
+
+    document.getElementById('help-option').addEventListener('click', () => {
+        helpModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    document.getElementById('catch-option').addEventListener('click', () => {
+        if (dailyCatches <= 0 && !isPremium) {
+            alert('No daily catches left! Purchase unlimited catches.');
+            return;
+        }
+        const randomPokemon = allPokemon[Math.floor(Math.random() * allPokemon.length)];
+        document.getElementById('pokemon-area').innerHTML = `<img src="${getPokemonImageUrl(randomPokemon)}" alt="${randomPokemon.name}" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%);">`;
+        document.getElementById('pokemon-area').dataset.pokemon = randomPokemon;
+        catchModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    document.getElementById('guess-option').addEventListener('click', () => {
+        const randomPokemon = allPokemon[Math.floor(Math.random() * allPokemon.length)];
+        document.getElementById('guess-image').innerHTML = `<img src="${getPokemonImageUrl(randomPokemon)}" alt="${randomPokemon.name}" style="filter: brightness(0);">`;
+        document.getElementById('guess-submit').onclick = () => {
+            const guess = document.getElementById('guess-input').value.toLowerCase();
+            if (guess === randomPokemon.name.toLowerCase()) {
+                alert('Correct!');
+                document.getElementById('guess-image').querySelector('img').style.filter = 'none';
+            } else {
+                alert('Try again!');
+            }
+        };
+        guessModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    document.getElementById('battle-option').addEventListener('click', () => {
+        battleModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    document.getElementById('edit-option').addEventListener('click', () => {
+        if (user?.isAdmin) {
+            editModal.style.display = 'block';
+            menuOptions.style.display = 'none';
+        } else {
+            alert('Admin access only!');
+        }
+    });
+
+    document.getElementById('caught-option').addEventListener('click', () => {
+        document.getElementById('caught-list').innerHTML = caughtPokemon.map(p => `
+            <div><img src="${getPokemonImageUrl(p)}" alt="${p.name}" style="width: 50px;"> ${p.name}</div>
+        `).join('');
+        caughtPokemonModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    document.getElementById('team-rocket').addEventListener('click', () => {
+        alert('Battling Team Rocket! (Feature not implemented)');
+        battleModal.style.display = 'none';
+    });
+
+    document.getElementById('battle-friend').addEventListener('click', () => {
+        alert('Battling a friend! (Feature not implemented)');
+        battleModal.style.display = 'none';
+    });
+
+    pokedexContainer.addEventListener('click', (e) => {
+        const card = e.target.closest('.pokemon-card');
+        if (card) {
+            const pokemonId = card.getAttribute('data-id');
+            const selectedPokemon = allPokemon.find(p => p.id == pokemonId);
+            const isShiny = document.querySelector('.nav-button.active').dataset.category === 'shiny';
+            if (selectedPokemon) showPokemonDetails(selectedPokemon, isShiny);
+        }
+    });
+
+    modalBody.addEventListener('click', async (e) => {
+        const button = e.target.closest('.variety-button');
+        if (button) {
+            const varietyName = button.dataset.varietyName;
+            const isShinyActive = modalBody.querySelector('.shiny-button').classList.contains('active');
+            if (varietyName === 'shiny') {
+                const currentName = document.querySelector('.modal-image').alt;
+                const currentPokemonData = await getPokemonData(currentName);
+                const speciesData = await getSpeciesData(currentPokemonData.name);
+                const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+                const evolutionChain = await getEvolutionChain(speciesData);
+                renderModalContent(currentPokemonData, speciesData, varieties, !isShinyActive, evolutionChain);
+            } else {
+                const pokemonData = await getPokemonData(varietyName);
+                const speciesData = await getSpeciesData(pokemonData.name);
+                const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+                const evolutionChain = await getEvolutionChain(speciesData);
+                renderModalContent(pokemonData, speciesData, varieties, isShinyActive, evolutionChain);
+            }
+        }
+    });
+
+    closeModal.addEventListener('click', () => {
+        pokemonModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === pokemonModal) pokemonModal.style.display = 'none';
+        if (e.target === catchModal) catchModal.style.display = 'none';
+        if (e.target === profileModal) profileModal.style.display = 'none';
+        if (e.target === battleModal) battleModal.style.display = 'none';
+        if (e.target === caughtPokemonModal) caughtPokemonModal.style.display = 'none';
+        if (e.target === helpModal) helpModal.style.display = 'none';
+        if (e.target === guessModal) guessModal.style.display = 'none';
+        if (e.target === editModal) editModal.style.display = 'none';
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const currentCategory = document.querySelector('.nav-button.active').dataset.category;
+        let pokemonToSearch = allPokemon;
+        if (currentCategory !== 'all') {
+            switch (currentCategory) {
+                case 'mega': pokemonToSearch = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal')); break;
+                case 'regional': pokemonToSearch = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui')); break;
+                case 'shiny': pokemonToSearch = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny); break;
+                case 'legendary': pokemonToSearch = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_legendary && !cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
+                case 'mythical': pokemonToSearch = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
+                case 'gmax': pokemonToSearch = allPokemon.filter(p => p.name.includes('-gmax')); break;
+                case 'ultra-beast': pokemonToSearch = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name)); break;
+            }
+        }
+        const filteredPokemon = pokemonToSearch.filter(pokemon => {
+            const isNameMatch = pokemon.name.toLowerCase().includes(searchTerm);
+            const isIdMatch = pokemon.id.toString().includes(searchTerm);
+            return isNameMatch || isIdMatch;
+        });
+        displayPokemon(filteredPokemon, currentCategory);
+    });
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const category = button.getAttribute('data-category');
+            filterAndDisplayPokemon(category);
+        });
+    });
+
+    retryButton.addEventListener('click', fetchAllPokemon);
+
+    // Load user if exists
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+        user = JSON.parse(storedUser);
+        loginTimestamp = parseInt(localStorage.getItem('loginTimestamp'));
+        caughtPokemon = user.caught || [];
+        dailyCatches = user.dailyCatches || 5;
+        isPremium = user.isPremium || false;
+        profile.style.backgroundImage = `url(${user.profilePic})`;
+        document.getElementById('online-status').value = user.onlineStatus;
+        if (user.isAdmin) editOption.classList.add('available');
+        loginModal.style.display = 'none';
+        fetchAllPokemon();
+    }
+
+    setInterval(checkLoginTimeout, 60 * 60 * 1000);
 });
 </script>
 </body>
