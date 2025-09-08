@@ -440,7 +440,9 @@ h1 {
 .menu-option {
     width: 50px;
     height: 50px;
-    background-size: contain;
+    background-size: 30px 30px; /* Resized smaller */
+    background-repeat: no-repeat;
+    background-position: center;
     cursor: pointer;
     position: relative;
 }
@@ -931,13 +933,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesName}`;
             const response = await fetch(url);
-            if (!response.ok) throw new Error(`Failed to fetch species data for ${speciesName}`);
+            if (!response.ok) {
+                console.warn(`HTTP error fetching species ${speciesName}: ${response.status}`);
+                return null;
+            }
             const speciesData = await response.json();
             cachedSpeciesData[speciesName] = speciesData;
             return speciesData;
         } catch (error) {
             console.error(`Failed to fetch species data for ${speciesName}:`, error);
-            throw error;
+            return null;
         }
     };
 
@@ -957,6 +962,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getEvolutionChain = async (speciesData) => {
+        if (!speciesData) return [];
         try {
             const response = await fetch(speciesData.evolution_chain.url);
             const data = await response.json();
@@ -989,9 +995,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
             allPokemon = await Promise.all(pokemonPromises);
 
-            const speciesPromises = allPokemon.map(p => getSpeciesData(p.name));
-            await Promise.all(speciesPromises);
-
             loadingMessage.style.display = 'none';
             filterAndDisplayPokemon('all');
         } catch (error) {
@@ -1012,8 +1015,24 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'mega': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal')); break;
             case 'regional': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui')); break;
             case 'shiny': currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny); break;
-            case 'legendary': currentPokemonToDisplay = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_legendary && !cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
-            case 'mythical': currentPokemonToDisplay = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
+            case 'legendary': 
+                currentPokemonToDisplay = [];
+                for (const p of allPokemon) {
+                    const speciesData = await getSpeciesData(p.name);
+                    if (speciesData?.is_legendary && !speciesData?.is_mythical) {
+                        currentPokemonToDisplay.push(p);
+                    }
+                }
+                break;
+            case 'mythical': 
+                currentPokemonToDisplay = [];
+                for (const p of allPokemon) {
+                    const speciesData = await getSpeciesData(p.name);
+                    if (speciesData?.is_mythical) {
+                        currentPokemonToDisplay.push(p);
+                    }
+                }
+                break;
             case 'gmax': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax')); break;
             case 'ultra-beast': currentPokemonToDisplay = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name)); break;
             default: currentPokemonToDisplay = allPokemon;
@@ -1402,8 +1421,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const attemptCatch = (pokemon, usedBerry) => {
         const speciesData = cachedSpeciesData[getSpeciesNameFromVarietyName(pokemon.name)];
-        const isLegendary = speciesData.is_legendary;
-        const isMythical = speciesData.is_mythical;
+        const isLegendary = speciesData?.is_legendary;
+        const isMythical = speciesData?.is_mythical;
         const isUltraBeast = ULTRA_BEASTS.includes(pokemon.name);
         let catchRate = 0.5;
         if (isLegendary || isMythical || isUltraBeast) catchRate = 0.1;
@@ -1607,8 +1626,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'mega': pokemonToSearch = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal')); break;
                 case 'regional': pokemonToSearch = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui')); break;
                 case 'shiny': pokemonToSearch = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny); break;
-                case 'legendary': pokemonToSearch = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_legendary && !cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
-                case 'mythical': pokemonToSearch = allPokemon.filter(p => cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)]?.is_mythical); break;
+                case 'legendary': 
+                    pokemonToSearch = allPokemon.filter(p => {
+                        const speciesData = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
+                        return speciesData?.is_legendary && !speciesData?.is_mythical;
+                    }); 
+                    break;
+                case 'mythical': 
+                    pokemonToSearch = allPokemon.filter(p => {
+                        const speciesData = cachedSpeciesData[getSpeciesNameFromVarietyName(p.name)];
+                        return speciesData?.is_mythical;
+                    }); 
+                    break;
                 case 'gmax': pokemonToSearch = allPokemon.filter(p => p.name.includes('-gmax')); break;
                 case 'ultra-beast': pokemonToSearch = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name)); break;
             }
