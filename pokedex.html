@@ -440,7 +440,7 @@ h1 {
 .menu-option {
     width: 50px;
     height: 50px;
-    background-size: 30px 30px; /* Resized smaller */
+    background-size: 24px 24px;
     background-repeat: no-repeat;
     background-position: center;
     cursor: pointer;
@@ -489,7 +489,7 @@ h1 {
     width: 100px;
     margin-bottom: 20px;
 }
-#username, #password, #signup-name, #signup-password, #profile-name {
+#username, #password, #signup-name, #signup-password, #signup-age, #profile-name, #admin-username, #admin-password {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -507,6 +507,9 @@ h1 {
     width: 100%;
 }
 #signup-form {
+    display: none;
+}
+#admin-login-form {
     display: none;
 }
 
@@ -600,7 +603,7 @@ h1 {
     background: #fff;
     margin: 10% auto;
     padding: 20px;
-    width: 300px;
+    width: 400px;
     text-align: center;
     border-radius: 10px;
 }
@@ -615,6 +618,84 @@ h1 {
 #online-status {
     margin-top: 10px;
     padding: 5px;
+}
+#friends-list {
+    margin-top: 20px;
+    text-align: left;
+}
+.friend-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.friend-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.friend-item .friend-name {
+    flex-grow: 1;
+}
+.friend-item .friend-status {
+    font-size: 12px;
+    color: #888;
+}
+.friend-item button {
+    padding: 5px 10px;
+    margin-left: 5px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.friend-item button:hover {
+    background: #c2000d;
+}
+
+/* Message Modal */
+#message-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#message-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
+#message-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+#quick-chat-options {
+    display: none;
+    margin-top: 10px;
+}
+.quick-chat-option {
+    padding: 8px 15px;
+    margin: 5px;
+    background: #6390F0;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.quick-chat-option:hover {
+    background: #3f65b8;
 }
 
 /* Battle Modal */
@@ -743,10 +824,10 @@ h1 {
             <input type="text" id="signup-name" placeholder="Username">
             <input type="password" id="signup-password" placeholder="Password">
             <input type="text" id="profile-name" placeholder="Profile Name">
+            <input type="number" id="signup-age" placeholder="Age">
             <input type="file" id="profile-pic" accept="image/*">
             <select id="profile-gallery">
                 <option value="default-profile.png">Default</option>
-                <!-- Add more gallery options -->
             </select>
             <button id="submit-signup">Submit</button>
         </div>
@@ -762,7 +843,7 @@ h1 {
     <a href="turtle.html">Back to others</a>
 </div>
 
-<div id="profile"></div>
+<div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; position: fixed; top: 10px; right: 10px;"></div>
 
 <h1>Pokédex</h1>
 
@@ -813,10 +894,24 @@ h1 {
         <button id="add-friend-button"></button>
         <input type="text" id="friend-search" placeholder="Search for a friend...">
         <div id="friend-results"></div>
+        <div id="friends-list"></div>
         <select id="online-status">
             <option>Online</option>
             <option>Offline</option>
         </select>
+    </div>
+</div>
+
+<div id="message-modal">
+    <div id="message-content">
+        <h2>Message <span id="message-recipient"></span></h2>
+        <div id="quick-chat-options">
+            <button class="quick-chat-option" data-message="Hey, want to battle?">Hey, want to battle?</button>
+            <button class="quick-chat-option" data-message="Nice Pokémon collection!">Nice Pokémon collection!</button>
+            <button class="quick-chat-option" data-message="Caught anything new?">Caught anything new?</button>
+        </div>
+        <textarea id="message-input" placeholder="Type your message..." rows="4"></textarea>
+        <button id="send-message">Send</button>
     </div>
 </div>
 
@@ -905,6 +1000,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const editOption = document.getElementById('edit-option');
     const addFriendButton = document.getElementById('add-friend-button');
     const friendSearch = document.getElementById('friend-search');
+    const messageModal = document.getElementById('message-modal');
+    const messageRecipient = document.getElementById('message-recipient');
+    const messageInput = document.getElementById('message-input');
+    const quickChatOptions = document.getElementById('quick-chat-options');
+    const sendMessageButton = document.getElementById('send-message');
 
     let allPokemon = [];
     const cachedSpeciesData = {};
@@ -916,7 +1016,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let isPremium = false;
     let loginTimestamp = null;
 
-    // Local storage for users
     const users = JSON.parse(localStorage.getItem('users')) || {};
     const adminCredentials = { username: 'EthanUnlocked', password: 'Subscribe123!' };
 
@@ -1136,7 +1235,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="${tcgCardUrl}" alt="${pokemon.name} TCG Card">
             ` : `<h4>Trading Card</h4><p class="card-loading">No TCG card found.</p>`;
 
-            // Add click listeners to evolution items
             const evolutionItems = document.querySelectorAll('.evolution-item');
             evolutionItems.forEach(item => {
                 item.addEventListener('click', async () => {
@@ -1278,17 +1376,29 @@ document.addEventListener('DOMContentLoaded', () => {
             user = null;
             localStorage.removeItem('currentUser');
             loginModal.style.display = 'block';
+            showLoginForm();
         }
     };
 
-    loginOption.addEventListener('click', () => {
+    const showLoginForm = () => {
         loginForm.style.display = 'block';
         signupForm.style.display = 'none';
         adminLoginForm.style.display = 'none';
         loginOption.style.background = '#c2000d';
         signupOption.style.background = '#e4000f';
         adminLoginOption.style.background = '#e4000f';
-    });
+    };
+
+    const showAdminLoginForm = () => {
+        adminLoginForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'none';
+        adminLoginOption.style.background = '#c2000d';
+        loginOption.style.background = '#e4000f';
+        signupOption.style.background = '#e4000f';
+    };
+
+    loginOption.addEventListener('click', showLoginForm);
 
     signupOption.addEventListener('click', () => {
         signupForm.style.display = 'block';
@@ -1299,14 +1409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         adminLoginOption.style.background = '#e4000f';
     });
 
-    adminLoginOption.addEventListener('click', () => {
-        adminLoginForm.style.display = 'block';
-        loginForm.style.display = 'none';
-        signupForm.style.display = 'none';
-        adminLoginOption.style.background = '#c2000d';
-        loginOption.style.background = '#e4000f';
-        signupOption.style.background = '#e4000f';
-    });
+    adminLoginOption.addEventListener('click', showAdminLoginForm);
 
     loginButton.addEventListener('click', () => {
         const username = document.getElementById('username').value;
@@ -1316,6 +1419,7 @@ document.addEventListener('DOMContentLoaded', () => {
             user.isAdmin = false;
             user.caught = user.caught || [];
             user.friends = user.friends || [];
+            user.messages = user.messages || [];
             user.onlineStatus = user.onlineStatus || 'Online';
             editOption.classList.remove('available');
             localStorage.setItem('currentUser', JSON.stringify(user));
@@ -1324,6 +1428,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginModal.style.display = 'none';
             profile.style.backgroundImage = `url(${user.profilePic})`;
             document.getElementById('online-status').value = user.onlineStatus;
+            updateFriendsList();
             fetchAllPokemon();
         } else {
             alert('Invalid credentials');
@@ -1334,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = document.getElementById('admin-username').value;
         const password = document.getElementById('admin-password').value;
         if (username === adminCredentials.username && password === adminCredentials.password) {
-            user = { username, isAdmin: true, profilePic: 'default-profile.png', profileName: 'Admin', caught: [], friends: [], onlineStatus: 'Online' };
+            user = { username, isAdmin: true, profilePic: 'default-profile.png', profileName: 'Admin', age: 18, caught: [], friends: [], messages: [], onlineStatus: 'Online' };
             editOption.classList.add('available');
             localStorage.setItem('currentUser', JSON.stringify(user));
             loginTimestamp = Date.now();
@@ -1342,6 +1447,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginModal.style.display = 'none';
             profile.style.backgroundImage = `url(${user.profilePic})`;
             document.getElementById('online-status').value = user.onlineStatus;
+            updateFriendsList();
             fetchAllPokemon();
         } else {
             alert('Invalid admin credentials');
@@ -1352,12 +1458,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = document.getElementById('signup-name').value;
         const password = document.getElementById('signup-password').value;
         const profileName = document.getElementById('profile-name').value;
+        const age = parseInt(document.getElementById('signup-age').value);
         const profilePic = document.getElementById('profile-pic').files[0];
         const galleryPic = document.getElementById('profile-gallery').value;
 
         const inappropriateWords = ['badword1', 'badword2'];
         if (inappropriateWords.some(word => profileName.toLowerCase().includes(word))) {
             alert('Inappropriate profile name. Account banned for 3 days.');
+            return;
+        }
+
+        if (isNaN(age) || age < 13) {
+            alert('You must be at least 13 years old to sign up.');
             return;
         }
 
@@ -1371,9 +1483,11 @@ document.addEventListener('DOMContentLoaded', () => {
             username,
             password,
             profileName,
+            age,
             profilePic: profilePicUrl,
             caught: [],
             friends: [],
+            messages: [],
             onlineStatus: 'Online'
         };
         localStorage.setItem('users', JSON.stringify(users));
@@ -1385,11 +1499,36 @@ document.addEventListener('DOMContentLoaded', () => {
         adminLoginOption.style.background = '#e4000f';
     });
 
+    const updateFriendsList = () => {
+        const friendsList = document.getElementById('friends-list');
+        friendsList.innerHTML = '<h3>Friends</h3>';
+        if (user && user.friends.length > 0) {
+            user.friends.forEach(friendUsername => {
+                const friend = users[friendUsername];
+                if (friend) {
+                    const friendItem = document.createElement('div');
+                    friendItem.classList.add('friend-item');
+                    friendItem.innerHTML = `
+                        <img src="${friend.profilePic}" alt="${friend.profileName}">
+                        <span class="friend-name">${friend.profileName}</span>
+                        <span class="friend-status">${friend.onlineStatus}</span>
+                        <button class="message-friend" data-username="${friendUsername}">Message</button>
+                        <button class="battle-friend" data-username="${friendUsername}">Battle</button>
+                    `;
+                    friendsList.appendChild(friendItem);
+                }
+            });
+        } else {
+            friendsList.innerHTML += '<p>No friends added yet.</p>';
+        }
+    };
+
     profile.addEventListener('click', () => {
         if (!user) return;
         document.getElementById('premium-status').textContent = isPremium ? 'Yes' : 'No';
         document.getElementById('caught-count').textContent = caughtPokemon.length;
         document.getElementById('daily-catches').textContent = dailyCatches;
+        updateFriendsList();
         profileModal.style.display = 'block';
     });
 
@@ -1408,15 +1547,84 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('users', JSON.stringify(users));
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 alert(`Added ${friendUsername} as a friend!`);
+                updateFriendsList();
             }
         }
     });
+
+    document.getElementById('friends-list').addEventListener('click', (e) => {
+        if (e.target.classList.contains('message-friend')) {
+            const friendUsername = e.target.dataset.username;
+            messageRecipient.textContent = friendUsername;
+            if (user.age < 18) {
+                messageInput.style.display = 'none';
+                quickChatOptions.style.display = 'block';
+            } else {
+                messageInput.style.display = 'block';
+                quickChatOptions.style.display = 'none';
+            }
+            messageModal.style.display = 'block';
+        } else if (e.target.classList.contains('battle-friend')) {
+            alert('Battling a friend! (Feature not implemented)');
+        }
+    });
+
+    quickChatOptions.addEventListener('click', (e) => {
+        if (e.target.classList.contains('quick-chat-option')) {
+            const message = e.target.dataset.message;
+            const recipient = messageRecipient.textContent;
+            sendMessage(recipient, message);
+            messageModal.style.display = 'none';
+        }
+    });
+
+    sendMessageButton.addEventListener('click', () => {
+        const recipient = messageRecipient.textContent;
+        const message = messageInput.value.trim();
+        if (message && user.age >= 18) {
+            sendMessage(recipient, message);
+            messageInput.value = '';
+            messageModal.style.display = 'none';
+        } else if (user.age < 18) {
+            alert('Please use quick chat options.');
+        } else {
+            alert('Please enter a message.');
+        }
+    });
+
+    const sendMessage = (recipientUsername, message) => {
+        if (users[recipientUsername]) {
+            const messageData = {
+                sender: user.username,
+                message,
+                timestamp: Date.now()
+            };
+            users[recipientUsername].messages = users[recipientUsername].messages || [];
+            users[recipientUsername].messages.push(messageData);
+            localStorage.setItem('users', JSON.stringify(users));
+            if (users[recipientUsername].onlineStatus === 'Online' && recipientUsername !== user.username) {
+                if (Notification.permission === 'granted') {
+                    new Notification(`TheUnlockedWeb Pokedex\n${user.profileName}\n${message}`);
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(`TheUnlockedWeb Pokedex\n${user.profileName}\n${message}`);
+                        }
+                    });
+                }
+            }
+            alert(`Message sent to ${recipientUsername}!`);
+        } else {
+            alert('Recipient not found.');
+        }
+    };
 
     document.getElementById('online-status').addEventListener('change', (e) => {
         user.onlineStatus = e.target.value;
         users[user.username].onlineStatus = user.onlineStatus;
         localStorage.setItem('users', JSON.stringify(users));
         localStorage.setItem('currentUser', JSON.stringify(user));
+        updateFriendsList();
     });
 
     const attemptCatch = (pokemon, usedBerry) => {
@@ -1548,7 +1756,8 @@ document.addEventListener('DOMContentLoaded', () => {
             editModal.style.display = 'block';
             menuOptions.style.display = 'none';
         } else {
-            alert('Admin access only!');
+            loginModal.style.display = 'block';
+            showAdminLoginForm();
         }
     });
 
@@ -1615,6 +1824,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === helpModal) helpModal.style.display = 'none';
         if (e.target === guessModal) guessModal.style.display = 'none';
         if (e.target === editModal) editModal.style.display = 'none';
+        if (e.target === messageModal) messageModal.style.display = 'none';
     });
 
     searchInput.addEventListener('input', (e) => {
@@ -1661,7 +1871,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     retryButton.addEventListener('click', fetchAllPokemon);
 
-    // Load user if exists
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
+
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
         user = JSON.parse(storedUser);
@@ -1671,12 +1884,13 @@ document.addEventListener('DOMContentLoaded', () => {
         isPremium = user.isPremium || false;
         profile.style.backgroundImage = `url(${user.profilePic})`;
         document.getElementById('online-status').value = user.onlineStatus;
-        if (user.isAdmin) editOption.classList.add('available');
+        editOption.classList.toggle('available', user.isAdmin);
         loginModal.style.display = 'none';
+        updateFriendsList();
         fetchAllPokemon();
+    } else {
+        showLoginForm();
     }
-
-    setInterval(checkLoginTimeout, 60 * 60 * 1000);
 });
 </script>
 </body>
