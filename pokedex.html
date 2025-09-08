@@ -2011,9 +2011,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 users[user.username].friends = user.friends;
                 localStorage.setItem('users', JSON.stringify(users));
                 localStorage.setItem('currentUser', JSON.stringify(user));
-                alert(`Added ${friendUsername} as a friend!`);
+                                alert(`Added ${friendUsername} as a friend!`);
                 updateFriendsList();
-                }
+            }
         }
     });
 
@@ -2254,7 +2254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Close modals
     document.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal') || e.target.classList.contains('close-button') || e.target.textContent === '×') {
-            document.querySelectorAll('.modal, #catch-modal, #profile-modal, #message-modal, #battle-modal, #caught-pokemon-modal, #help-modal, #guess-modal, #edit-modal').forEach(modal => {
+            document.querySelectorAll('.modal, #catch-modal, #profile-modal, #message-modal, #battle-modal, #caught-pokemon-modal, #help-modal, #guess-modal, #edit-modal, #payment-modal').forEach(modal => {
                 modal.style.display = 'none';
             });
         }
@@ -2328,12 +2328,15 @@ document.addEventListener('DOMContentLoaded', () => {
             loginModal.style.display = 'none';
             profile.style.backgroundImage = `url(${user.profilePic})`;
             if (user.isAdmin) {
-                editOption.classList.add('available');
+                editOption.classList.add('admin-signed-in');
             }
-            caughtPokemon = user.caught || [];
+            caughtPokemon = user.caught ? user.caught.map(name => allPokemon.find(p => p.name === name)).filter(Boolean) : [];
+            updateFriendsList();
+            fetchAllPokemon();
         }
     } else {
         showLoginForm();
+        fetchAllPokemon();
     }
 
     // Check login timeout periodically
