@@ -8,541 +8,2143 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ... (existing base CSS from your file) ... */
-
-#premium-button {
-    width: 40px;
-    height: 40px;
-    background: url('premium.png') no-repeat center;
+/* General Body Styles */
+body {
+    font-family: 'Roboto Mono', monospace;
+    background-color: #f0f0f0;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    background-image: url('pokedex-top.png'), url('pokedex-bottom.png');
+    background-position: top center, bottom center;
+    background-repeat: no-repeat;
     background-size: contain;
+}
+
+h1 {
+    color: #e4000f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#loadingMessage {
+    font-size: 1.2rem;
+    color: #555;
+    display: none;
+}
+
+#loadingMessage.error {
+    color: #e4000f;
+}
+
+#retryButton {
+    background-color: #e4000f;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    display: none;
+}
+
+#retryButton:hover {
+    background-color: #c2000d;
+}
+
+/* Top Navbar */
+.top-navbar {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: left;
+}
+
+.top-navbar a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.nav-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.nav-button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover,
+.nav-button.active {
+    background-color: #e4000f;
+}
+
+/* Search Bar */
+.search-container {
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    width: 80%;
+    max-width: 400px;
+    padding: 10px 15px;
+    border: 2px solid #ccc;
+    border-radius: 25px;
+    font-size: 16px;
+    font-family: 'Roboto Mono', monospace;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#searchInput:focus {
+    border-color: #e4000f;
+}
+
+/* Pokédex Container (Grid) */
+.pokedex-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Pokémon Card */
+.pokemon-card {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.pokemon-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.pokemon-card .pokemon-id {
+    font-size: 14px;
+    color: #888;
+    font-weight: bold;
+}
+
+.pokemon-card img {
+    width: 150px;
+    height: 150px;
+    margin: 10px auto;
+    display: block;
+}
+
+.pokemon-card .pokemon-name {
+    margin: 15px 0 10px;
+    font-size: 22px;
+    font-weight: bold;
+    text-transform: capitalize;
+}
+
+/* Types Container */
+.pokemon-types {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.type {
+    padding: 5px 15px;
+    border-radius: 15px;
+    color: white;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* Pokémon Type Colors */
+.type.normal { background-color: #A8A77A; }
+.type.fire { background-color: #EE8130; }
+.type.water { background-color: #6390F0; }
+.type.electric { background-color: #F7D02C; }
+.type.grass { background-color: #7AC74C; }
+.type.ice { background-color: #96D9D6; }
+.type.fighting { background-color: #C22E28; }
+.type.poison { background-color: #A33EA1; }
+.type.ground { background-color: #E2BF65; }
+.type.flying { background-color: #A98FF3; }
+.type.psychic { background-color: #F95587; }
+.type.bug { background-color: #A6B91A; }
+.type.rock { background-color: #B6A136; }
+.type.ghost { background-color: #735797; }
+.type.dragon { background-color: #6F35FC; }
+.type.dark { background-color: #705746; }
+.type.steel { background-color: #B7B7CE; }
+.type.fairy { background-color: #D685AD; }
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    animation-name: animatetop;
+    animation-duration: 0.4s;
+    text-align: left;
+}
+
+@keyframes animatetop {
+    from {top: -300px; opacity: 0}
+    to {top: 0; opacity: 1}
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.modal-info h2 {
+    text-align: center;
+    text-transform: capitalize;
+    font-size: 2.5rem;
+    margin-top: 0;
+}
+
+.modal-info .modal-id {
+    font-size: 1.5rem;
+    color: #888;
+    text-align: center;
+}
+
+.modal-info .modal-image {
+    display: block;
+    margin: 0 auto 20px;
+    width: 200px;
+    height: 200px;
+    cursor: pointer;
+}
+
+/* Attack Animation */
+.modal-image.attack {
+    animation: attack-pulse 0.5s ease-in-out;
+}
+
+@keyframes attack-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1) translateX(-5px); }
+    100% { transform: scale(1); }
+}
+
+.modal-info .modal-types {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-info .details p {
+    margin: 5px 0;
+}
+
+.modal-info .description {
+    margin-top: 20px;
+    font-style: italic;
+    text-align: justify;
+}
+
+.modal-info .stats-list {
+    list-style-type: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.modal-info .stats-list li {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-info .stats-list span:first-child {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Variety Button Styles */
+.variety-section {
+    margin-top: 20px;
+}
+.variety-section h4 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #555;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+}
+.variety-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.variety-button {
+    background-color: #6390F0;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+.variety-button.active {
+    background-color: #3f65b8;
+}
+.variety-button.shiny-button {
+    background-color: #FFD700;
+    color: #000;
+}
+.variety-button.shiny-button.active {
+    background-color: #e4c200;
+}
+
+.tcg-card-section {
+    margin-top: 20px;
+    text-align: center;
+}
+.tcg-card-section img {
+    max-width: 100%;
+    height: auto;
+    border: 5px solid #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+.tcg-card-section .card-loading {
+    font-style: italic;
+    color: #888;
+}
+
+/* Evolution Chain */
+.evolution-section {
+    margin-top: 20px;
+}
+.evolution-section h4 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: #555;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+}
+.evolution-chain {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+.evolution-item {
+    cursor: pointer;
+}
+.evolution-item.current img {
+    transform: scale(1.2);
+}
+.evolution-item.current .evolution-name {
+    font-weight: bold;
+}
+.evolution-item img {
+    width: 80px;
+    height: 80px;
+}
+.evolution-item .evolution-name {
+    text-transform: capitalize;
+}
+
+/* Menu Button */
+#menu-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: url('ball.png') no-repeat center;
+    background-size: contain;
+    width: 60px;
+    height: 60px;
     border: none;
     cursor: pointer;
-    position: fixed;
-    top: 10px;
-    right: 60px;
-    display: none;
-    z-index: 1100;
+    z-index: 1000;
 }
-.pink-dot {
+#menu-button:hover::after {
+    content: 'Menu';
     position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 14px;
-    height: 14px;
-    background: #ff69b4;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    z-index: 1200;
+    bottom: 70px;
+    right: 0;
+    background: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
 }
-#premium-modal {
+.menu-options {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+.menu-option {
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    position: relative;
+}
+.menu-option:hover::after {
+    content: attr(data-text);
+    position: absolute;
+    right: 60px;
+    top: 10px;
+    background: #000;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+#help-option { background: url('question.png') no-repeat center; background-size: contain; }
+#catch-option { background: url('pokeball-outline.png') no-repeat center; background-size: contain; }
+#guess-option { background: url('guess.png') no-repeat center; background-size: contain; }
+#battle-option { background: url('battle.png') no-repeat center; background-size: contain; }
+#edit-option { background: url('admin.png') no-repeat center; background-size: contain; }
+#edit-option.admin-signed-in { background: url('edit.png') no-repeat center; background-size: contain; }
+#edit-option:hover::after { content: 'Admin Access Only!'; }
+#edit-option.admin-signed-in:hover::after { content: 'Edit'; }
+#caught-option { background: url('caught.png') no-repeat center; background-size: contain; }
+
+/* Login Modal */
+#login-modal {
+    display: block;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+#login-content {
+    background: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    border-radius: 10px;
+}
+#login-logo {
+    width: 100px;
+    margin-bottom: 20px;
+}
+#username, #password, #signup-name, #signup-password, #signup-age, #profile-name, #admin-username, #admin-password {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+.login-option {
+    padding: 10px 20px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px;
+    width: 100%;
+}
+
+/* Catch Modal */
+#catch-modal {
     display: none;
     position: fixed;
-    z-index: 2100;
+    z-index: 1500;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.5);
 }
-#premium-content {
+#catch-content {
     background: #fff;
     margin: 10% auto;
-    padding: 30px;
-    width: 450px;
-    border-radius: 14px;
+    padding: 20px;
+    width: 400px;
     text-align: center;
-    position: relative;
-}
-.premium-offer {
-    display: flex;
-    align-items: center;
-    margin: 18px 0;
-    padding: 14px;
-    border-radius: 8px;
-    border: 2px solid #ccc;
-    background: #f8f8f8;
-    cursor: pointer;
-    gap: 18px;
-    transition: border 0.2s;
-}
-.premium-offer.selected {
-    border: 2px solid #e4000f;
-    background: #fff8f8;
-}
-.premium-offer img {
-    width: 48px;
-    height: 48px;
-}
-.premium-offer .offer-name {
-    flex: 1;
-    font-weight: bold;
-    font-size: 1.3em;
-}
-.premium-offer .offer-price {
-    font-size: 1.1em;
-}
-.premium-upgrade-btn {
-    background: #e4000f;
-    color: #fff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1.1em;
-    margin-top: 14px;
-    cursor: pointer;
-}
-.premium-upgrade-btn:disabled {
-    opacity: 0.7;
-    background: #bbb;
-    cursor: not-allowed;
-}
-#shop-modal {
-    display: none;
-    position: fixed;
-    z-index: 2100;
-    left: 0; top: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#shop-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 30px;
-    width: 450px;
-    border-radius: 14px;
-    text-align: center;
-    position: relative;
-}
-#raid-modal {
-    display: none;
-    position: fixed;
-    z-index: 2200;
-    left: 0; top: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#raid-content {
-    background: #fff;
-    margin: 5% auto;
-    padding: 30px;
-    width: 480px;
-    border-radius: 16px;
-    text-align: center;
-    position: relative;
-}
-.raid-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin: 18px 0;
-}
-.raid-egg {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    padding: 12px;
     border-radius: 10px;
-    background: #f5f5fa;
-    border: 2px solid #bbb;
-    cursor: pointer;
-    transition: background 0.2s;
     position: relative;
 }
-.raid-egg.easy { border-color: #ffb6e6; }
-.raid-egg.medium { border-color: #ffe35e; }
-.raid-egg.hard { border-color: #a78bfa; }
-.raid-egg.mega { border-color: #ffb89c; }
-.raid-egg .egg-img { width: 40px; height: 40px; }
-.raid-egg .raid-label { font-weight: bold; }
-.raid-egg .cp { color: #888; font-size: 0.95em; margin-left: 12px; }
-.raid-egg .shadow-logo { width: 36px; height: 36px; margin-left: 12px; }
-.raid-timer { position: absolute; right: 14px; font-size: 0.96em; color: #e4000f; font-weight: bold; }
-#raid-select-team {
-    margin: 12px 0;
+#pokemon-area {
+    height: 200px;
+    position: relative;
 }
-#raid-select-team img {
-    margin: 0 2px;
+#berry-button {
+    background: url('berry.png') no-repeat center;
+    background-size: contain;
     width: 50px;
     height: 50px;
+    border: none;
     cursor: pointer;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    transition: border 0.2s;
+    position: absolute;
+    top: 20px;
+    right: 20px;
 }
-#raid-select-team img.selected {
-    border: 2px solid #e4000f;
+#pokeball {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 60px;
+    background: url('pokeball.png') no-repeat center;
+    background-size: contain;
+    cursor: grab;
 }
-#start-raid-btn {
-    margin-top: 12px;
-    padding: 10px 24px;
+#pokeball.dragging {
+    cursor: grabbing;
+}
+.shake {
+    animation: shake 0.5s;
+    animation-iteration-count: 3;
+}
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+#pay-unlimited {
+    padding: 10px 20px;
     background: #e4000f;
     color: #fff;
     border: none;
-    border-radius: 6px;
-    font-size: 1.1em;
+    cursor: pointer;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+/* Payment Modal */
+#payment-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#payment-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
+#payment-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+#confirm-payment {
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 20px 0;
+}
+#confirm-payment:hover {
+    background: #c2000d;
+}
+#claim-trial {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px;
+}
+#claim-trial:hover {
+    background: #45a049;
+}
+#trial-section {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.mobile-payment {
+    font-size: 18px;
+    padding: 20px;
+}
+.mobile-payment button {
+    background: #007AFF;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+}
+.mobile-payment button:hover {
+    background: #005bb5;
+}
+
+/* Profile Modal */
+#profile-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#profile-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+    position: relative;
+}
+#add-friend-button {
+    background: url('add.png') no-repeat center;
+    background-size: contain;
+    width: 40px;
+    height: 40px;
+    border: none;
     cursor: pointer;
 }
-/* ...rest of your CSS unchanged... */
+#online-status {
+    margin-top: 10px;
+    padding: 5px;
+}
+#friends-list {
+    margin-top: 20px;
+    text-align: left;
+}
+.friend-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.friend-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.friend-item .friend-name {
+    flex-grow: 1;
+}
+.friend-item .friend-status {
+    font-size: 12px;
+    color: #888;
+}
+.friend-item button {
+    padding: 5px 10px;
+    margin-left: 5px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.friend-item button:hover {
+    background: #c2000d;
+}
+#cancel-premium {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px;
+}
+#cancel-premium:hover {
+    background: #da190b;
+}
+
+/* Message Modal */
+#message-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#message-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
+#message-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+#quick-chat-options {
+    display: none;
+    margin-top: 10px;
+}
+.quick-chat-option {
+    padding: 8px 15px;
+    margin: 5px;
+    background: #6390F0;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.quick-chat-option:hover {
+    background: #3f65b8;
+}
+
+/* Battle Modal */
+#battle-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#battle-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 300px;
+    text-align: center;
+    border-radius: 10px;
+}
+#team-rocket, #battle-friend {
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    cursor: pointer;
+    margin: 10px auto;
+}
+#team-rocket { background: url('team.png') no-repeat center; }
+#battle-friend { background: url('some.png') no-repeat center; }
+
+/* Caught Pokemon Modal */
+#caught-pokemon-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#caught-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+/* Help Modal */
+#help-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#help-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+/* Guess Modal */
+#guess-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#guess-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+/* Edit Modal */
+#edit-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#edit-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
 </style>
 </head>
 <body>
-<!-- Top right login/signup/profile/premium -->
-<div id="top-auth-bar" style="position: fixed; top: 10px; right: 10px; z-index: 1200;">
-    <button id="top-login-btn" style="display:none; margin-right: 8px;">Log In</button>
-    <button id="top-signup-btn" style="display:none; margin-right: 8px;">Sign Up</button>
-    <div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; display: none; position: relative; display:inline-block;"></div>
-    <button id="premium-button" title="Premium"></button>
-</div>
-<!-- Premium Modal -->
-<div id="premium-modal">
-    <div id="premium-content">
-        <span class="close-button" style="position:absolute;top:10px;right:16px;cursor:pointer;font-size:24px;">&times;</span>
-        <h2>Get Premium</h2>
-        <div id="offers-list">
-            <div class="premium-offer" data-level="bronze">
-                <img src="bronze.png" alt="Bronze">
-                <div class="offer-name">Bronze</div>
-                <div class="offer-price">$0.99/week</div>
-            </div>
-            <div class="premium-offer" data-level="gold">
-                <img src="gold.png" alt="Gold">
-                <div class="offer-name">Gold</div>
-                <div class="offer-price">$5/week</div>
-            </div>
-            <div class="premium-offer" data-level="diamond">
-                <img src="diamond.png" alt="Diamond">
-                <div class="offer-name">Diamond</div>
-                <div class="offer-price">$20/week</div>
-            </div>
+<div id="login-modal">
+    <div id="login-content">
+        <span class="close-button">&times;</span>
+        <img id="login-logo" src="logo.png" alt="Logo">
+        <button id="login-option" class="login-option">Log In</button>
+        <button id="signup-option" class="login-option">Sign Up</button>
+        <button id="admin-login-option" class="login-option">Admin Log-in</button>
+        <div id="login-form" style="display: none;">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="login-button" class="login-option">Submit</button>
         </div>
-        <button class="premium-upgrade-btn" id="upgrade-btn" disabled>Upgrade</button>
-    </div>
-</div>
-<!-- Shop Modal -->
-<div id="shop-modal">
-    <div id="shop-content">
-        <span class="close-button" style="position:absolute;top:10px;right:16px;cursor:pointer;font-size:24px;">&times;</span>
-        <h2>Shop</h2>
-        <p>You have <span id="points-display">0</span> points.</p>
-        <div>
-            <button style="padding:10px 18px; margin:6px; background:#e4000f;color:#fff;border-radius:7px;border:none;cursor:pointer;">Buy Raid Pass (100 pts)</button>
-            <button style="padding:10px 18px; margin:6px; background:#e4000f;color:#fff;border-radius:7px;border:none;cursor:pointer;">Buy Berry (30 pts)</button>
+        <div id="signup-form" style="display: none;">
+            <input type="text" id="signup-name" placeholder="Username">
+            <input type="password" id="signup-password" placeholder="Password">
+            <input type="text" id="profile-name" placeholder="Profile Name">
+            <input type="number" id="signup-age" placeholder="Age">
+            <input type="file" id="profile-pic" accept="image/*">
+            <select id="profile-gallery">
+                <option value="default-profile.png">Default</option>
+            </select>
+            <button id="submit-signup" class="login-option">Submit</button>
+        </div>
+        <div id="admin-login-form" style="display: none;">
+            <input type="text" id="admin-username" placeholder="Admin Username">
+            <input type="password" id="admin-password" placeholder="Admin Password">
+            <button id="admin-login-button" class="login-option">Submit</button>
         </div>
     </div>
 </div>
-<!-- Raid Modal -->
-<div id="raid-modal">
-    <div id="raid-content">
-        <span class="close-button" style="position:absolute;top:10px;right:16px;cursor:pointer;font-size:24px;">&times;</span>
-        <h2>Active Raids</h2>
-        <div class="raid-list" id="raid-list"></div>
-        <div id="raid-select-team" style="display:none;">
-            <p>Select up to 6 Pokémon for this raid:</p>
-            <div id="raid-team-pool"></div>
-            <button id="start-raid-btn" disabled>Start Raid</button>
-        </div>
-        <div id="raid-result"></div>
+
+<div id="profile-modal">
+    <div id="profile-content">
+        <span class="close-button">&times;</span>
+        <h2>Profile</h2>
+        <p>Premium: <span id="premium-status">No</span></p>
+        <p>Caught Pokémon: <span id="caught-count">0</span></p>
+        <p>Daily Catches Left: <span id="daily-catches">5</span></p>
+        <button id="cancel-premium" style="display: none;">Cancel Premium</button>
+        <button id="add-friend-button"></button>
+        <input type="text" id="friend-search" placeholder="Search for a friend...">
+        <div id="friend-results"></div>
+        <select id="online-status">
+            <option>Online</option>
+            <option>Offline</option>
+        </select>
+        <div id="friends-list"></div>
     </div>
 </div>
-<!-- Menu additions -->
+
+<div id="message-modal">
+    <div id="message-content">
+        <span class="close-button">&times;</span>
+        <h2>Message <span id="message-recipient"></span></h2>
+        <div id="quick-chat-options">
+            <button class="quick-chat-option" data-message="Hey, want to battle?">Hey, want to battle?</button>
+            <button class="quick-chat-option" data-message="Nice Pokémon collection!">Nice Pokémon collection!</button>
+            <button class="quick-chat-option" data-message="Caught anything new?">Caught anything new?</button>
+        </div>
+        <textarea id="message-input" placeholder="Type your message..." rows="4"></textarea>
+        <button id="send-message">Send</button>
+    </div>
+</div>
+
+<div id="battle-modal">
+    <div id="battle-content">
+        <span class="close-button">&times;</span>
+        <h2>Battle</h2>
+        <div id="team-rocket"></div>
+        <div id="battle-friend"></div>
+    </div>
+</div>
+
+<div id="caught-pokemon-modal">
+    <div id="caught-content">
+        <span class="close-button">&times;</span>
+        <h2>Caught Pokémon</h2>
+        <div id="caught-list"></div>
+    </div>
+</div>
+
+<div id="help-modal">
+    <div id="help-content">
+        <span class="close-button">&times;</span>
+        <h2>Help</h2>
+        <p>Welcome to the Ultimate Pokédex! Browse Pokémon, catch them in a Pokémon GO-style simulation, battle Team Rocket or friends, and play Guess the Pokémon!</p>
+    </div>
+</div>
+
+<div id="guess-modal">
+    <div id="guess-content">
+        <span class="close-button">&times;</span>
+        <h2>Guess the Pokémon</h2>
+        <div id="guess-image"></div>
+        <input type="text" id="guess-input" placeholder="Who's that Pokémon?">
+        <button id="guess-submit">Submit</button>
+    </div>
+</div>
+
+<div id="edit-modal">
+    <div id="edit-content">
+        <span class="close-button">&times;</span>
+        <h2>Propose Changes</h2>
+        <p>Admin can propose changes here.</p>
+    </div>
+</div>
+
+<div id="catch-modal">
+    <div id="catch-content">
+        <span class="close-button">&times;</span>
+        <h2>Catch a Pokémon</h2>
+        <div id="pokemon-area"></div>
+        <button id="berry-button"></button>
+        <div id="pokeball"></div>
+        <p>Daily catches left: <span id="daily-left">5</span></p>
+        <button id="pay-unlimited">Pay for Unlimited</button>
+    </div>
+</div>
+
+<div id="payment-modal">
+    <div id="payment-content">
+        <span class="close-button">&times;</span>
+        <h2>Premium Subscription</h2>
+        <p>Upgrade to Premium for unlimited catches! Cancel anytime.</p>
+        <p id="weekly-price"><strong>$20/week</strong></p>
+        <div id="trial-section" style="display: none;">
+            <p>If subscribed to <a href="https://www.youtube.com/@ethanandisabella4098" target="_blank">EthanUnlocked's gaming hits</a>, claim 7-day free trial! (One-time only)</p>
+            <button id="claim-trial">Claim Free Trial</button>
+        </div>
+        <div id="payment-form">
+            <input type="text" id="card-name" placeholder="Cardholder Name">
+            <input type="text" id="card-number" placeholder="Card Number">
+            <input type="text" id="card-expiry" placeholder="MM/YY">
+            <input type="text" id="card-cvv" placeholder="CVV">
+            <button id="confirm-payment">Confirm Payment</button>
+        </div>
+        <div id="mobile-payment" class="mobile-payment" style="display: none;">
+            <p>Confirm your purchase with Face ID or Touch ID</p>
+            <button id="mobile-confirm">Confirm with Face ID</button>
+            <button id="touch-confirm" style="display: none;">Confirm with Touch ID</button>
+        </div>
+    </div>
+</div>
+
+<button id="menu-button"></button>
 <div class="menu-options">
     <div id="help-option" class="menu-option" data-text="Help"></div>
     <div id="catch-option" class="menu-option" data-text="Catch a Pokémon"></div>
     <div id="guess-option" class="menu-option" data-text="Guess the Pokémon"></div>
     <div id="battle-option" class="menu-option" data-text="Battle"></div>
     <div id="edit-option" class="menu-option" data-text="Edit"></div>
-    <div id="caught-option" class="menu-option" data-text="Show Caught Pokémon" style="background-image:url('caught.png');background-size:contain;background-repeat:no-repeat;background-position:center"></div>
-    <div id="premium-menu-option" class="menu-option" data-text="Premium" style="background-image:url('premium.png');background-size:contain;background-repeat:no-repeat;background-position:center"></div>
-    <div id="shop-option" class="menu-option" data-text="Shop"></div>
-    <div id="raid-menu-option" class="menu-option" data-text="Raids"></div>
+    <div id="caught-option" class="menu-option" data-text="Show Caught Pokémon"></div>
 </div>
-<!-- ...rest of your HTML: all original modals, pokedex-container, etc... -->
-<!-- Replace pokeball in catch-modal with catch.png -->
-<div id="catch-modal">
-    <div id="catch-content">
-        <span class="close-button" style="position:absolute;top:10px;right:16px;cursor:pointer;font-size:24px;">&times;</span>
-        <h2>Catch a Pokémon</h2>
-        <div id="pokemon-area"></div>
-        <button id="berry-button"></button>
-        <div id="pokeball" style="background-image:url('catch.png');"></div>
-        <p>Daily catches left: <span id="daily-left">5</span></p>
-        <button id="pay-unlimited">Pay for Unlimited</button>
+
+<div class="top-navbar">
+    <a href="turtle.html">Back to others</a>
+</div>
+
+<div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; position: fixed; top: 10px; right: 10px; display: none;"></div>
+
+<h1>Pokédex</h1>
+
+<div class="nav-container">
+    <button class="nav-button active" data-category="all">All</button>
+    <button class="nav-button" data-category="mega">Mega</button>
+    <button class="nav-button" data-category="regional">Regional</button>
+    <button class="nav-button" data-category="shiny">Shiny</button>
+    <button class="nav-button" data-category="legendary">Legendary</button>
+    <button class="nav-button" data-category="mythical">Mythical</button>
+    <button class="nav-button" data-category="gmax">G-Max</button>
+    <button class="nav-button" data-category="ultra-beast">Ultra Beast</button>
+</div>
+
+<div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search for a Pokémon...">
+</div>
+
+<p id="loadingMessage">Loading Pokédex...</p>
+<button id="retryButton">Retry</button>
+
+<div id="pokedex-container" class="pokedex-container"></div>
+
+<div id="pokemonModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <div id="modal-body"></div>
     </div>
 </div>
-<!-- ...rest of your HTML continues... -->
 
 <script>
-// ---- GLOBAL USER STATE ----
-let user = null, isAdmin = false, isPremium = false, premiumLevel = null, points = 0;
-let dailyRaidPassTimestamp = 0;
-let activeRaids = [];
-let caughtPokemon = [];
-let allPokemon = []; // To be filled by your loading logic
-
-// ---- MODAL CLOSE BUTTONS ----
-function setupModalCloseButtons() {
-    document.querySelectorAll('.close-button').forEach(btn => {
-        btn.onclick = function(e) {
-            const modal = e.target.closest('[id$="-modal"]');
-            if (modal) modal.style.display = 'none';
-        };
-    });
-    window.onclick = function(event) {
-        document.querySelectorAll('[id$="-modal"]').forEach(modal => {
-            if (event.target === modal) modal.style.display = 'none';
-        });
-    };
-}
-
-// ---- AUTH BAR ----
-function updateAuthBar() {
+document.addEventListener('DOMContentLoaded', () => {
+    const pokedexContainer = document.getElementById('pokedex-container');
+    const searchInput = document.getElementById('searchInput');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const retryButton = document.getElementById('retryButton');
+    const pokemonModal = document.getElementById('pokemonModal');
+    const modalBody = document.getElementById('modal-body');
+    const navButtons = document.querySelectorAll('.nav-button');
+    const menuButton = document.getElementById('menu-button');
+    const menuOptions = document.querySelector('.menu-options');
+    const loginModal = document.getElementById('login-modal');
+    const loginOption = document.getElementById('login-option');
+    const signupOption = document.getElementById('signup-option');
+    const adminLoginOption = document.getElementById('admin-login-option');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const loginButton = document.getElementById('login-button');
+    const submitSignup = document.getElementById('submit-signup');
+    const adminLoginButton = document.getElementById('admin-login-button');
     const profile = document.getElementById('profile');
-    const premiumBtn = document.getElementById('premium-button');
-    const loginBtn = document.getElementById('top-login-btn');
-    const signupBtn = document.getElementById('top-signup-btn');
-    if (user) {
-        loginBtn.style.display = "none";
-        signupBtn.style.display = "none";
-        profile.style.display = "inline-block";
-        premiumBtn.style.display = "inline-block";
-        profile.style.backgroundImage = `url(${user.profilePic || 'default-profile.png'})`;
-    } else {
-        loginBtn.style.display = "inline-block";
-        signupBtn.style.display = "inline-block";
-        profile.style.display = "none";
-        premiumBtn.style.display = "none";
-    }
-}
+    const profileModal = document.getElementById('profile-modal');
+    const catchModal = document.getElementById('catch-modal');
+    const berryButton = document.getElementById('berry-button');
+    const pokeball = document.getElementById('pokeball');
+    const dailyLeft = document.getElementById('daily-left');
+    const payUnlimited = document.getElementById('pay-unlimited');
+    const paymentModal = document.getElementById('payment-modal');
+    const paymentForm = document.getElementById('payment-form');
+    const mobilePayment = document.getElementById('mobile-payment');
+    const confirmPayment = document.getElementById('confirm-payment');
+    const mobileConfirm = document.getElementById('mobile-confirm');
+    const touchConfirm = document.getElementById('touch-confirm');
+    const battleModal = document.getElementById('battle-modal');
+    const caughtPokemonModal = document.getElementById('caught-pokemon-modal');
+    const helpModal = document.getElementById('help-modal');
+    const guessModal = document.getElementById('guess-modal');
+    const editModal = document.getElementById('edit-modal');
+    const editOption = document.getElementById('edit-option');
+    const addFriendButton = document.getElementById('add-friend-button');
+    const friendSearch = document.getElementById('friend-search');
+    const messageModal = document.getElementById('message-modal');
+    const messageRecipient = document.getElementById('message-recipient');
+    const messageInput = document.getElementById('message-input');
+    const quickChatOptions = document.getElementById('quick-chat-options');
+    const sendMessageButton = document.getElementById('send-message');
+    const claimTrial = document.getElementById('claim-trial');
+    const cancelPremium = document.getElementById('cancel-premium');
+    const trialSection = document.getElementById('trial-section');
 
-// ---- PREMIUM MODAL ----
-let selectedOffer = null;
-function showPremiumModal() {
-    document.getElementById('premium-modal').style.display = 'block';
-    document.querySelectorAll('.premium-offer').forEach(el => el.classList.remove('selected'));
-    selectedOffer = null;
-    document.getElementById('upgrade-btn').disabled = true;
-}
-document.getElementById('premium-button').onclick = showPremiumModal;
-document.getElementById('premium-menu-option').onclick = showPremiumModal;
+    let allPokemon = [];
+    const cachedSpeciesData = {};
+    const cachedVarietyData = {};
+    const ULTRA_BEASTS = ['nihilego', 'buzzwole', 'pheromosa', 'xurkitree', 'celesteela', 'kartana', 'guzzlord', 'poipole', 'naganadel', 'stakataka', 'blacephalon'];
+    let user = null;
+    let caughtPokemon = [];
+    let dailyCatches = 5;
+    let isPremium = false;
+    let loginTimestamp = null;
+    let currentExtendWeeks = 1;
 
-document.querySelectorAll('.premium-offer').forEach(offer => {
-    offer.onclick = function() {
-        document.querySelectorAll('.premium-offer').forEach(o => o.classList.remove('selected'));
-        offer.classList.add('selected');
-        selectedOffer = offer.dataset.level;
-        let levels = {"bronze":0,"gold":1,"diamond":2};
-        document.getElementById('upgrade-btn').disabled = (premiumLevel && levels[selectedOffer] <= levels[premiumLevel||'bronze']);
+    // Device detection for payment system
+    const isMobileDevice = () => {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     };
-});
-document.getElementById('upgrade-btn').onclick = function() {
-    if (!selectedOffer) return;
-    premiumLevel = selectedOffer;
-    isPremium = true;
-    if (user) {
-        user.isPremium = true;
-        user.premiumLevel = premiumLevel;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-    }
-    alert(`You are now ${premiumLevel.toUpperCase()} Premium!`);
-    document.getElementById('premium-modal').style.display = 'none';
-    updateAuthBar();
-};
 
-// ---- SHOP ----
-document.getElementById('shop-option').onclick = function() {
-    document.getElementById('shop-modal').style.display = 'block';
-    document.getElementById('points-display').textContent = points;
-};
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+    const adminCredentials = { username: 'EthanUnlocked', password: 'Subscribe123!' };
 
-// ---- RAID SYSTEM ----
-function eggColorClass(egg) {
-    switch (egg.difficulty) {
-        case 'easy': return 'easy';
-        case 'medium': return 'medium';
-        case 'hard': return 'hard';
-        case 'mega': return 'mega';
-        default: return '';
-    }
-}
-function eggImg(egg) {
-    if (egg.difficulty === "easy") return "r.png";
-    if (egg.difficulty === "medium") return "r.png";
-    if (egg.difficulty === "hard") return "r.png";
-    if (egg.difficulty === "mega") return "mega.png";
-    return "r.png";
-}
-function makeActiveRaids() {
-    let now = Date.now();
-    if (!activeRaids.length || activeRaids.some(r=>r.expiry<now)) {
-        activeRaids = activeRaids.filter(r=>r.expiry>now);
-        while (activeRaids.length < 4) {
-            let diff = ["easy","medium","hard","mega"][activeRaids.length];
-            let color = diff;
-            let raidMon = allPokemon.length ? allPokemon[Math.floor(Math.random()*allPokemon.length)] : {name:"pikachu",id:25,types:[{type:{name:"electric"}}]};
-            let cp = 200+activeRaids.length*500+Math.floor(Math.random()*400);
-            let expiry = now+45*60000;
-            let shadow = Math.random()<0.3;
-            activeRaids.push({id:Math.random().toString(36).slice(2),pokemon:raidMon,cp,health:cp*2,difficulty:diff,expiry,color,shadow});
-        }
-    }
-}
-function formatTimeLeft(ms) {
-    let t = Math.floor(ms/1000), m = Math.floor(t/60), s = t%60;
-    return `${m}m ${s}s`;
-}
-function showRaidModal() {
-    makeActiveRaids();
-    let raidListDiv = document.getElementById('raid-list');
-    raidListDiv.innerHTML = "";
-    let now = Date.now();
-    activeRaids.forEach(egg => {
-        let li = document.createElement("div");
-        li.className = `raid-egg ${eggColorClass(egg)}`;
-        li.dataset.raidId = egg.id;
-        li.innerHTML = `<img class="egg-img" src="${eggImg(egg)}">
-            <div class="raid-label">${egg.pokemon.name} <span class="cp">CP ${egg.cp}</span></div>
-            ${egg.shadow?'<img class="shadow-logo" src="shadow.png" title="Team Rocket">':''}
-            <span class="raid-timer">${formatTimeLeft(egg.expiry-now)}</span>
-        `;
-        raidListDiv.appendChild(li);
-    });
-    document.getElementById('raid-modal').style.display = "block";
-    if (!window._raidTimer) window._raidTimer = setInterval(()=>{
-        let now = Date.now();
-        document.querySelectorAll('.raid-timer').forEach((el,i)=>{
-            let raid=activeRaids[i];
-            if (raid) el.textContent = formatTimeLeft(raid.expiry-now);
-        });
-        if (activeRaids.some(r=>r.expiry<now)) showRaidModal();
-    }, 1000);
-}
-document.getElementById('raid-menu-option').onclick = showRaidModal;
-document.getElementById('raid-list').onclick = function(e) {
-    let eggDiv = e.target.closest('.raid-egg');
-    if (!eggDiv) return;
-    let raid = activeRaids.find(r=>r.id===eggDiv.dataset.raidId);
-    if (!raid) return;
-    let teamDiv = document.getElementById('raid-select-team');
-    let poolDiv = document.getElementById('raid-team-pool');
-    poolDiv.innerHTML = "";
-    let selects = [];
-    let pokemonList = caughtPokemon.slice(0,12);
-    pokemonList.forEach((poke,i)=>{
-        let img=document.createElement("img"); img.src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png`;
-        img.title=poke.name; img.onclick=()=>{ 
-            img.classList.toggle("selected");
-            if(img.classList.contains("selected")) selects.push(poke); else selects = selects.filter(p=>p!==poke);
-            if(selects.length>6) {
-                poolDiv.querySelectorAll("img.selected").forEach((im,idx)=>{if(idx>5)im.classList.remove("selected");});
-                selects=selects.slice(0,6);
-            }
-            document.getElementById('start-raid-btn').disabled = selects.length===0;
+    const getHolidayDiscount = () => {
+        const now = new Date();
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        const holidays = {
+            easter: { m: 4, d: 20, disc: 0.1 }, // Approx Easter 2025
+            halloween: { m: 10, d: 31, disc: 0.3 },
+            christmas: { m: 12, d: 25, disc: 0.5 }
         };
-        poolDiv.appendChild(img);
-    });
-    teamDiv.style.display = "";
-    document.getElementById('start-raid-btn').disabled = true;
-    document.getElementById('start-raid-btn').onclick=function(){
-        let pts = getRarityPoints(raid.pokemon, false) + Math.round(raid.cp/10);
-        addPoints(pts);
-        alert(`Raid complete! You caught ${raid.pokemon.name} and earned ${pts} points!`);
-        activeRaids = activeRaids.filter(r=>r.id!==raid.id);
-        caughtPokemon.push(raid.pokemon);
-        if(user) { user.caught.push(raid.pokemon.name); localStorage.setItem('currentUser', JSON.stringify(user)); }
-        showRaidModal();
-        teamDiv.style.display = "none";
-    };
-};
-
-// ---- DAILY RAID PASS & PINK DOT ----
-function showPinkDotOnRaid() {
-    let dot = document.createElement('div'); dot.className = 'pink-dot';
-    let battleOpt = document.getElementById('battle-option');
-    let menuBtn = document.getElementById('menu-button');
-    let raidOpt = document.getElementById('raid-menu-option');
-    [battleOpt, menuBtn, raidOpt].forEach(el=>{ if(el && !el.querySelector('.pink-dot')) el.appendChild(dot.cloneNode()); });
-}
-function checkDailyRaidPass() {
-    let today = new Date();
-    let midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    if (dailyRaidPassTimestamp < midnight) {
-        dailyRaidPassTimestamp = Date.now();
-        showPinkDotOnRaid();
-    }
-}
-
-// ---- POINTS SYSTEM ----
-function getRarityPoints(pokemon, shiny = false) {
-    let base = 20;
-    if (pokemon.isLegendary) base = 100;
-    if (pokemon.isMythical) base = 150;
-    if (pokemon.isUltraBeast) base = 120;
-    if (shiny) base += 80;
-    return base;
-}
-function addPoints(n) {
-    points += n;
-    if (user) {
-        user.points = points;
-        localStorage.setItem('currentUser', JSON.stringify(user));
-    }
-    let pDisp = document.getElementById('points-display');
-    if (pDisp) pDisp.textContent = points;
-}
-function rewardCatchPoints(pokemon, shiny = false) {
-    let pts = getRarityPoints(pokemon, shiny);
-    addPoints(pts);
-    alert(`You earned ${pts} points for catching ${pokemon.name}${shiny ? " (shiny!)" : ""}!`);
-}
-
-// ---- CATCH LOGIC (HOOKS) ----
-// When you catch a Pokémon, call rewardCatchPoints(pokemon, isShiny), then add to caughtPokemon/user.caught
-
-// ---- ADMIN EDIT LOGIC ----
-document.getElementById('edit-option').onclick = function() {
-    if (user && user.isAdmin) {
-        document.getElementById('edit-modal').style.display = 'block';
-    } else {
-        document.getElementById('login-modal').style.display = 'block';
-        // showAdminLoginForm() if you have it
-        let adminNotice = document.createElement('div');
-        adminNotice.textContent = "Admins only! Please insert admin log-in to propose changes!";
-        adminNotice.style = "color:#e4000f;font-weight:bold;margin-bottom:8px";
-        let loginContent = document.getElementById('login-content');
-        if (!loginContent.querySelector('.admin-notice')) {
-            adminNotice.className = "admin-notice";
-            loginContent.prepend(adminNotice);
+        for (let h in holidays) {
+            let hol = holidays[h];
+            if (month === hol.m && day === hol.d) {
+                return hol.disc;
+            }
         }
-    }
-};
-// Example: Let admin edit main title
-window.addEventListener('DOMContentLoaded', function() {
-    setupModalCloseButtons();
-    updateAuthBar();
-    checkDailyRaidPass();
-    let userData = localStorage.getItem('currentUser');
-    if(userData) {
-        user = JSON.parse(userData);
-        isAdmin = !!user.isAdmin;
-        isPremium = !!user.isPremium;
-        premiumLevel = user.premiumLevel || null;
-        points = user.points || 0;
-        caughtPokemon = (user.caught||[]).map(name=>({id:25,name})); // Simplified for demo
-    }
-    if (true) showPinkDotOnRaid();
-    // Admin in-place editing (title)
-    if (user && user.isAdmin) {
-        let h1 = document.querySelector('h1');
-        h1.contentEditable = true;
-        h1.style.border = "2px dashed #e4000f";
-        h1.title = "Admin: Click to edit";
-        h1.addEventListener('blur', function () {
-            localStorage.setItem('main-title', h1.textContent);
+        if (month === 12 && day === 31) {
+            return { special: true, price: 0.99, weeks: 4 };
+        }
+        return 0;
+    };
+
+    const getSpeciesNameFromVarietyName = (name) => {
+        if (name.includes('-')) {
+            return name.split('-')[0];
+        }
+        return name;
+    };
+
+    const getSpeciesData = async (pokemonIdOrName) => {
+        const speciesName = getSpeciesNameFromVarietyName(pokemonIdOrName);
+        if (cachedSpeciesData[speciesName]) return cachedSpeciesData[speciesName];
+        try {
+            const url = `https://pokeapi.co/api/v2/pokemon-species/${speciesName}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.warn(`HTTP error fetching species ${speciesName}: ${response.status}`);
+                return null;
+            }
+            const speciesData = await response.json();
+            cachedSpeciesData[speciesName] = speciesData;
+            return speciesData;
+        } catch (error) {
+            console.error(`Failed to fetch species data for ${speciesName}:`, error);
+            return null;
+        }
+    };
+
+    const getPokemonData = async (name) => {
+        if (cachedVarietyData[name]) return cachedVarietyData[name];
+        try {
+            const url = `https://pokeapi.co/api/v2/pokemon/${name}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Failed to fetch variety data for ${name}`);
+            const data = await response.json();
+            cachedVarietyData[name] = data;
+            return data;
+        } catch (error) {
+            console.error(`Failed to fetch variety data for ${name}:`, error);
+            throw error;
+        }
+    };
+
+    const getEvolutionChain = async (speciesData) => {
+        if (!speciesData) return [];
+        try {
+            const response = await fetch(speciesData.evolution_chain.url);
+            const data = await response.json();
+            const chain = [];
+            let current = data.chain;
+            while (current) {
+                const pokemonData = await getPokemonData(current.species.name);
+                chain.push({ name: current.species.name, data: pokemonData });
+                current = current.evolves_to[0];
+            }
+            return chain;
+        } catch (error) {
+            console.error('Failed to fetch evolution chain:', error);
+            return [];
+        }
+    };
+
+    const checkPremiumExpiry = () => {
+        if (user && user.isPremium && user.premiumExpiry && Date.now() > user.premiumExpiry) {
+            user.isPremium = false;
+            isPremium = false;
+            dailyCatches = 5;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            users[user.username] = user;
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+    };
+
+    const fetchAllPokemon = async () => {
+        loadingMessage.style.display = 'block';
+        loadingMessage.textContent = 'Loading Pokédex...';
+        loadingMessage.classList.remove('error');
+        retryButton.style.display = 'none';
+        pokedexContainer.innerHTML = '';
+
+        try {
+            const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10000');
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+
+            const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
+            allPokemon = await Promise.all(pokemonPromises);
+
+            loadingMessage.style.display = 'none';
+            filterAndDisplayPokemon('all');
+        } catch (error) {
+            console.error('Failed to fetch Pokémon data:', error);
+            loadingMessage.textContent = 'Failed to load Pokédex. Please check your connection or try again later.';
+            loadingMessage.classList.add('error');
+            retryButton.style.display = 'block';
+        }
+    };
+
+    const filterAndDisplayPokemon = async (category) => {
+        pokedexContainer.innerHTML = '';
+        loadingMessage.style.display = 'block';
+
+        let currentPokemonToDisplay;
+        switch (category) {
+            case 'all': currentPokemonToDisplay = allPokemon; break;
+            case 'mega': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal')); break;
+            case 'regional': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui')); break;
+            case 'shiny': currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny); break;
+            case 'legendary': 
+                currentPokemonToDisplay = [];
+                for (const p of allPokemon) {
+                    const speciesData = await getSpeciesData(p.name);
+                    if (speciesData?.is_legendary && !speciesData?.is_mythical) {
+                        currentPokemonToDisplay.push(p);
+                    }
+                }
+                break;
+            case 'mythical': 
+                currentPokemonToDisplay = [];
+                for (const p of allPokemon) {
+                    const speciesData = await getSpeciesData(p.name);
+                    if (speciesData?.is_mythical) {
+                        currentPokemonToDisplay.push(p);
+                    }
+                }
+                break;
+            case 'gmax': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-gmax')); break;
+            case 'ultra-beast': currentPokemonToDisplay = allPokemon.filter(p => ULTRA_BEASTS.includes(p.name)); break;
+            default: currentPokemonToDisplay = allPokemon;
+        }
+
+        loadingMessage.style.display = 'none';
+        displayPokemon(currentPokemonToDisplay, category);
+    };
+
+    const getPokemonImageUrl = (pokemon, isShiny = false) => {
+        const name = pokemon.name;
+        const isMegaOrPrimal = name.includes('-mega') || name.includes('-primal');
+        const isRegional = name.includes('-alola') || name.includes('-galar') || name.includes('-hisui');
+        const isGmax = name.includes('-gmax');
+
+        if (isMegaOrPrimal || isRegional || isGmax) {
+            return isShiny ? pokemon.sprites.other['official-artwork'].front_shiny : pokemon.sprites.other['official-artwork'].front_default;
+        } else {
+            const animatedSprites = pokemon.sprites.versions['generation-v']['black-white'].animated;
+            const animatedUrl = isShiny ? animatedSprites.front_shiny : animatedSprites.front_default;
+            return animatedUrl || pokemon.sprites.front_default;
+        }
+    };
+
+    const displayPokemon = (pokemonList, category) => {
+        pokedexContainer.innerHTML = '';
+        const displayShiny = category === 'shiny';
+        pokemonList.forEach(pokemon => {
+            const pokemonCard = document.createElement('div');
+            pokemonCard.classList.add('pokemon-card');
+            pokemonCard.setAttribute('data-id', pokemon.id);
+
+            const name = pokemon.name;
+            const id = pokemon.id.toString().padStart(3, '0');
+            const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
+
+            let displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
+
+            pokemonCard.innerHTML = `
+                <div class="pokemon-id">#${id}</div>
+                <img src="${imageUrl}" alt="${name}">
+                <h2 class="pokemon-name">${displayName}</h2>
+                <div class="pokemon-types">
+                    ${pokemon.types.map(typeInfo => `<span class="type ${typeInfo.type.name}">${typeInfo.type.name}</span>`).join('')}
+                </div>
+            `;
+            pokedexContainer.appendChild(pokemonCard);
         });
-        let savedTitle = localStorage.getItem('main-title');
-        if (savedTitle) h1.textContent = savedTitle;
+    };
+
+    const fetchTcgCard = async (pokemonName) => {
+        try {
+            const searchName = pokemonName.split('-')[0];
+            const url = `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.data.length > 0 ? data.data[0].images.large : null;
+        } catch (error) {
+            console.error('Failed to fetch TCG card:', error);
+            return null;
+        }
+    };
+
+    const getAttackSound = async (pokemon) => {
+        try {
+            const move = pokemon.moves[0]?.move.name || 'tackle';
+            return `https://play.pokemonshowdown.com/audio/cries/${move}.mp3`;
+        } catch {
+            return null;
+        }
+    };
+
+    const showPokemonDetails = async (pokemon, isShiny = false) => {
+        try {
+            const speciesName = getSpeciesNameFromVarietyName(pokemon.name);
+            const speciesData = await getSpeciesData(speciesName);
+            if (!speciesData) throw new Error(`No species data for ${speciesName}`);
+            const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+            const evolutionChain = await getEvolutionChain(speciesData);
+            renderModalContent(pokemon, speciesData, varieties, isShiny, evolutionChain);
+            pokemonModal.style.display = 'block';
+
+            const modalImage = document.querySelector('#modal-body .modal-image');
+            const modalAudio = document.querySelector('#pokemon-cry');
+            const attackSound = await getAttackSound(pokemon);
+            modalAudio.src = attackSound || `https://play.pokemonshowdown.com/audio/cries/${speciesName}.mp3`;
+
+            modalImage.addEventListener('click', () => {
+                modalImage.classList.remove('attack');
+                void modalImage.offsetWidth;
+                modalImage.classList.add('attack');
+                modalAudio.currentTime = 0;
+                modalAudio.play();
+            });
+
+            const tcgCardSection = document.getElementById('tcg-card-section');
+            if (tcgCardSection) {
+                tcgCardSection.innerHTML = '<p class="card-loading">Loading TCG card...</p>';
+                const tcgCardUrl = await fetchTcgCard(pokemon.name);
+                tcgCardSection.innerHTML = tcgCardUrl ? `
+                    <h4>Trading Card</h4>
+                    <img src="${tcgCardUrl}" alt="${pokemon.name} TCG Card">
+                ` : `<h4>Trading Card</h4><p class="card-loading">No TCG card found.</p>`;
+            }
+
+            const evolutionItems = document.querySelectorAll('.evolution-item');
+            evolutionItems.forEach(item => {
+                item.addEventListener('click', async () => {
+                    const evoName = item.getAttribute('data-name');
+                    const evoPokemon = allPokemon.find(p => p.name === evoName);
+                    if (evoPokemon) {
+                        showPokemonDetails(evoPokemon, isShiny);
+                    }
+                });
+            });
+        } catch (error) {
+            console.error('Error in showPokemonDetails:', error);
+            alert('Failed to load Pokémon details. Please try again.');
+        }
+    };
+
+    const getVarietyButtonName = (varietyName) => {
+        if (varietyName.includes('-mega-x')) return 'Mega X';
+        if (varietyName.includes('-mega-y')) return 'Mega Y';
+        if (varietyName.includes('-mega')) return 'Mega';
+        if (varietyName.includes('-primal')) return 'Primal';
+        if (varietyName.includes('-gmax')) return 'G-Max';
+        if (varietyName.includes('-alola')) return 'Alolan';
+        if (varietyName.includes('-galar')) return 'Galarian';
+        if (varietyName.includes('-hisui')) return 'Hisuian';
+        return 'Normal';
+    };
+
+    const renderModalContent = (pokemon, speciesData, varieties, isShiny = false, evolutionChain) => {
+        const name = pokemon.name;
+        const id = pokemon.id.toString().padStart(3, '0');
+        const types = pokemon.types.map(typeInfo => typeInfo.type.name);
+        const height = (pokemon.height / 10).toFixed(1);
+        const weight = (pokemon.weight / 10).toFixed(1);
+        const abilities = pokemon.abilities.map(abilityInfo => abilityInfo.ability.name).join(', ');
+        const stats = pokemon.stats.map(statInfo => ({
+            name: statInfo.stat.name.replace('-', ' '),
+            value: statInfo.base_stat
+        }));
+        const imageUrl = getPokemonImageUrl(pokemon, isShiny);
+        const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en' && entry.version.name === 'omega-ruby');
+        const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
+        const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
+
+        const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
+        const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
+        const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
+        const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
+
+        const renderButtons = (forms, currentName) => {
+            if (forms.length === 0) return '';
+            return forms.map(v => {
+                const buttonName = getVarietyButtonName(v.name);
+                const isActive = v.name === currentName;
+                return `<button class="variety-button ${isActive ? 'active' : ''}" data-variety-name="${v.name}">${buttonName}</button>`;
+            }).join('');
+        };
+
+        const renderEvolutionChain = () => {
+            if (!evolutionChain || evolutionChain.length === 0) return '';
+            return `
+                <div class="evolution-section">
+                    <h4>Evolution Chain</h4>
+                    <div class="evolution-chain">
+                        ${evolutionChain.map(evo => `
+                            <div class="evolution-item ${evo.name === pokemon.name ? 'current' : ''}" data-name="${evo.name}">
+                                <img src="${getPokemonImageUrl(evo.data)}" alt="${evo.name}">
+                                <div class="evolution-name">${evo.name}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        const isCurrentlyShiny = isShiny ? 'active' : '';
+
+        modalBody.innerHTML = `
+            <div class="modal-info">
+                <img src="${imageUrl}" alt="${name}" class="modal-image">
+                <h2 class="modal-name">${name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '')}</h2>
+                <div class="modal-id">#${id}</div>
+                <div class="modal-types">
+                    ${types.map(type => `<span class="type ${type}">${type}</span>`).join('')}
+                </div>
+                <p class="description">"${description}"</p>
+                <div class="variety-section normal-forms">
+                    <h4>Normal Form</h4>
+                    <div class="variety-buttons">
+                        ${normalForm ? `<button class="variety-button ${!name.includes('-') ? 'active' : ''}" data-variety-name="${normalForm.name}">Normal</button>` : ''}
+                    </div>
+                </div>
+                ${megaForms.length > 0 ? `
+                    <div class="variety-section mega-forms">
+                        <h4>Mega Forms</h4>
+                        <div class="variety-buttons">
+                            ${renderButtons(megaForms, name)}
+                        </div>
+                    </div>` : ''}
+                ${regionalForms.length > 0 ? `
+                    <div class="variety-section regional-forms">
+                        <h4>Regional Forms</h4>
+                        <div class="variety-buttons">
+                            ${renderButtons(regionalForms, name)}
+                        </div>
+                    </div>` : ''}
+                ${gmaxForms.length > 0 ? `
+                    <div class="variety-section gmax-forms">
+                        <h4>G-Max Forms</h4>
+                        <div class="variety-buttons">
+                            ${renderButtons(gmaxForms, name)}
+                        </div>
+                    </div>` : ''}
+                <div class="variety-section shiny-toggle">
+                    <h4>Appearance</h4>
+                    <div class="variety-buttons">
+                        <button class="variety-button shiny-button ${isCurrentlyShiny}" data-variety-name="shiny">Shiny</button>
+                    </div>
+                </div>
+                <div class="details">
+                    <p><strong>Origin:</strong> ${origin.toUpperCase()}</p>
+                    <p><strong>Height:</strong> ${height} m</p>
+                    <p><strong>Weight:</strong> ${weight} kg</p>
+                    <p><strong>Abilities:</strong> ${abilities}</p>
+                </div>
+                <h3>Base Stats</h3>
+                <ul class="stats-list">
+                    ${stats.map(stat => `<li><span>${stat.name}</span><span>${stat.value}</span></li>`).join('')}
+                </ul>
+                <div id="tcg-card-section" class="tcg-card-section"></div>
+                ${renderEvolutionChain()}
+            </div>
+            <audio id="pokemon-cry" preload="auto"></audio>
+        `;
+    };
+
+    const checkLoginTimeout = () => {
+        if (loginTimestamp && (Date.now() - loginTimestamp) > 7 * 24 * 60 * 60 * 1000) {
+            user = null;
+            localStorage.removeItem('currentUser');
+            loginModal.style.display = 'block';
+            profile.style.display = 'none';
+            showLoginForm();
+        }
+    };
+
+    const showLoginForm = () => {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        adminLoginForm.style.display = 'none';
+        loginOption.style.background = '#c2000d';
+        signupOption.style.background = '#e4000f';
+        adminLoginOption.style.background = '#e4000f';
+    };
+
+    const showAdminLoginForm = () => {
+        adminLoginForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'none';
+        adminLoginOption.style.background = '#c2000d';
+        loginOption.style.background = '#e4000f';
+        signupOption.style.background = '#e4000f';
+    };
+
+    const updateFriendsList = () => {
+        const friendsList = document.getElementById('friends-list');
+        if (!friendsList) return;
+        
+        friendsList.innerHTML = '<h3>Friends</h3>';
+        if (user && user.friends && user.friends.length > 0) {
+            user.friends.forEach(friendUsername => {
+                const friend = users[friendUsername];
+                if (friend) {
+                    const friendItem = document.createElement('div');
+                    friendItem.classList.add('friend-item');
+                    friendItem.innerHTML = `
+                        <img src="${friend.profilePic}" alt="${friend.profileName}">
+                        <span class="friend-name">${friend.profileName}</span>
+                        <span class="friend-status">${friend.onlineStatus}</span>
+                        <button class="message-friend" data-username="${friendUsername}">Message</button>
+                        <button class="battle-friend" data-username="${friendUsername}">Battle</button>
+                    `;
+                    friendsList.appendChild(friendItem);
+                }
+            });
+        } else {
+            friendsList.innerHTML += '<p>No friends added yet.</p>';
+        }
+    };
+
+    // Login functionality
+    loginOption.addEventListener('click', showLoginForm);
+
+    signupOption.addEventListener('click', () => {
+        signupForm.style.display = 'block';
+        loginForm.style.display = 'none';
+        adminLoginForm.style.display = 'none';
+        signupOption.style.background = '#c2000d';
+        loginOption.style.background = '#e4000f';
+        adminLoginOption.style.background = '#e4000f';
+    });
+
+    adminLoginOption.addEventListener('click', showAdminLoginForm);
+
+    loginButton.addEventListener('click', () => {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        if (users[username] && users[username].password === password) {
+            user = users[username];
+            user.isAdmin = false;
+            user.caught = user.caught || [];
+            user.friends = user.friends || [];
+            user.messages = user.messages || [];
+            user.onlineStatus = user.onlineStatus || 'Online';
+            user.trialUsed = user.trialUsed || false;
+            user.isPremium = user.isPremium || false;
+            user.premiumExpiry = user.premiumExpiry || null;
+            editOption.classList.remove('admin-signed-in');
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            loginTimestamp = Date.now();
+            localStorage.setItem('loginTimestamp', loginTimestamp);
+            loginModal.style.display = 'none';
+            profile.style.backgroundImage = `url(${user.profilePic})`;
+            profile.style.display = 'block';
+            document.getElementById('online-status').value = user.onlineStatus;
+            isPremium = user.isPremium;
+            if (isPremium) dailyCatches = Infinity;
+            checkPremiumExpiry();
+            updateFriendsList();
+            caughtPokemon = user.caught.map(name => allPokemon.find(p => p.name === name)).filter(Boolean);
+            fetchAllPokemon();
+        } else {
+            alert('Invalid credentials');
+        }
+    });
+
+    adminLoginButton.addEventListener('click', () => {
+        const username = document.getElementById('admin-username').value;
+        const password = document.getElementById('admin-password').value;
+        if (username === adminCredentials.username && password === adminCredentials.password) {
+            user = { username, isAdmin: true, profilePic: 'default-profile.png', profileName: 'Admin', age: 18, caught: [], friends: [], messages: [], onlineStatus: 'Online', trialUsed: false, isPremium: false, premiumExpiry: null };
+            editOption.classList.add('admin-signed-in');
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            loginTimestamp = Date.now();
+            localStorage.setItem('loginTimestamp', loginTimestamp);
+            loginModal.style.display = 'none';
+            profile.style.backgroundImage = `url(${user.profilePic})`;
+            profile.style.display = 'block';
+            document.getElementById('online-status').value = user.onlineStatus;
+            updateFriendsList();
+            checkPremiumExpiry();
+            fetchAllPokemon();
+        } else {
+            alert('Invalid admin credentials');
+        }
+    });
+
+    submitSignup.addEventListener('click', () => {
+        const username = document.getElementById('signup-name').value;
+        const password = document.getElementById('signup-password').value;
+        const profileName = document.getElementById('profile-name').value;
+        const age = parseInt(document.getElementById('signup-age').value);
+        const profilePic = document.getElementById('profile-pic').files[0];
+        const galleryPic = document.getElementById('profile-gallery').value;
+
+        const inappropriateWords = ['badword1', 'badword2'];
+        if (inappropriateWords.some(word => profileName.toLowerCase().includes(word))) {
+            alert('Inappropriate profile name. Account banned for 3 days.');
+            return;
+        }
+
+        if (isNaN(age) || age < 13) {
+            alert('You must be at least 13 years old to sign up.');
+            return;
+        }
+
+        if (users[username]) {
+            alert('Username already exists');
+            return;
+        }
+
+        const profilePicUrl = profilePic ? URL.createObjectURL(profilePic) : galleryPic;
+        users[username] = {
+            username,
+            password,
+            profileName,
+            age,
+            profilePic: profilePicUrl,
+            caught: [],
+            friends: [],
+            messages: [],
+            onlineStatus: 'Online',
+            trialUsed: false,
+            isPremium: false,
+            premiumExpiry: null
+        };
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Sign up successful! Please log in.');
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        loginOption.style.background = '#c2000d';
+        signupOption.style.background = '#e4000f';
+        adminLoginOption.style.background = '#e4000f';
+    });
+
+    // Profile functionality
+    profile.addEventListener('click', () => {
+        if (!user) {
+            alert('Please log in first!');
+            return;
+        }
+        document.getElementById('premium-status').textContent = isPremium ? 'Yes' : 'No';
+        document.getElementById('caught-count').textContent = user.caught ? user.caught.length : 0;
+        document.getElementById('daily-catches').textContent = isPremium ? '∞' : dailyCatches;
+        if (isPremium) {
+            cancelPremium.style.display = 'block';
+        } else {
+            cancelPremium.style.display = 'none';
+        }
+        updateFriendsList();
+        profileModal.style.display = 'block';
+    });
+
+    cancelPremium.addEventListener('click', () => {
+        if (confirm('Are you sure you want to cancel your premium subscription? You can resubscribe anytime.')) {
+            user.isPremium = false;
+            user.premiumExpiry = null;
+            isPremium = false;
+            dailyCatches = 5;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            users[user.username] = user;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Premium subscription cancelled.');
+            document.getElementById('premium-status').textContent = 'No';
+            document.getElementById('daily-catches').textContent = '5';
+            cancelPremium.style.display = 'none';
+        }
+    });
+
+    friendSearch.addEventListener('input', () => {
+        const searchTerm = friendSearch.value.toLowerCase().trim();
+        const friendResults = document.getElementById('friend-results');
+        
+        if (searchTerm.length === 0) {
+            friendResults.innerHTML = '';
+            return;
+        }
+        
+        const results = Object.keys(users).filter(u => 
+            u.toLowerCase().includes(searchTerm) && 
+            u !== user.username &&
+            !user.friends.includes(u)
+        );
+        
+        friendResults.innerHTML = results.map(u => {
+            const userData = users[u];
+            return `<div class="friend-result" data-username="${u}" style="padding: 10px; border: 1px solid #ccc; margin: 5px 0; cursor: pointer; border-radius: 5px;">
+                        <img src="${userData.profilePic}" alt="${userData.profileName}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-right: 10px;">
+                        ${userData.profileName} (@${u})
+                    </div>`;
+        }).join('');
+        
+        if (results.length === 0) {
+            friendResults.innerHTML = '<p style="color: #888; font-style: italic;">No users found</p>';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.friend-result')) {
+            const friendResult = e.target.closest('.friend-result');
+            const friendUsername = friendResult.dataset.username;
+            if (user && !user.friends.includes(friendUsername)) {
+                user.friends.push(friendUsername);
+                users[user.username].friends = user.friends;
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                alert(`Added ${users[friendUsername].profileName} as a friend!`);
+                updateFriendsList();
+                friendSearch.value = '';
+                document.getElementById('friend-results').innerHTML = '';
+            }
+        }
+    });
+
+    document.getElementById('friends-list').addEventListener('click', (e) => {
+        if (e.target.classList.contains('message-friend')) {
+            const friendUsername = e.target.dataset.username;
+            messageRecipient.textContent = friendUsername;
+            messageModal.style.display = 'block';
+            quickChatOptions.style.display = 'block';
+        }
+        if (e.target.classList.contains('battle-friend')) {
+            const friendUsername = e.target.dataset.username;
+            alert(`Starting battle with ${friendUsername}...`);
+        }
+    });
+
+    document.getElementById('online-status').addEventListener('change', (e) => {
+        if (user) {
+            user.onlineStatus = e.target.value;
+            users[user.username].onlineStatus = user.onlineStatus;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+    });
+
+    sendMessageButton.addEventListener('click', () => {
+        const message = messageInput.value.trim();
+        if (message) {
+            alert(`Message sent to ${messageRecipient.textContent}: ${message}`);
+            messageInput.value = '';
+            messageModal.style.display = 'none';
+        }
+    });
+
+    document.getElementById('quick-chat-options').addEventListener('click', (e) => {
+        if (e.target.classList.contains('quick-chat-option')) {
+            const message = e.target.dataset.message;
+            alert(`Message sent to ${messageRecipient.textContent}: ${message}`);
+            messageModal.style.display = 'none';
+        }
+    });
+
+    // Menu functionality
+    menuButton.addEventListener('click', () => {
+        menuOptions.style.display = menuOptions.style.display === 'flex' ? 'none' : 'flex';
+    });
+
+    document.getElementById('help-option').addEventListener('click', () => {
+        helpModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    document.getElementById('catch-option').addEventListener('click', () => {
+        catchModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+        dailyLeft.textContent = isPremium ? '∞' : dailyCatches;
+        spawnRandomPokemon();
+    });
+
+    document.getElementById('guess-option').addEventListener('click', () => {
+        guessModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+        startGuessGame();
+    });
+
+    document.getElementById('battle-option').addEventListener('click', () => {
+        battleModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    editOption.addEventListener('click', () => {
+        if (user && user.isAdmin) {
+            editModal.style.display = 'block';
+            menuOptions.style.display = 'none';
+        } else {
+            alert('Admin access required!');
+        }
+    });
+
+    document.getElementById('caught-option').addEventListener('click', () => {
+        displayCaughtPokemon();
+        caughtPokemonModal.style.display = 'block';
+        menuOptions.style.display = 'none';
+    });
+
+    // Catch Pokemon functionality
+    const spawnRandomPokemon = () => {
+        const randomPokemon = allPokemon[Math.floor(Math.random() * allPokemon.length)];
+        const pokemonArea = document.getElementById('pokemon-area');
+        pokemonArea.innerHTML = `
+            <img src="${getPokemonImageUrl(randomPokemon)}" 
+                 alt="${randomPokemon.name}" 
+                 style="width: 100px; height: 100px; position: absolute; top: 20px; left: 50%; transform: translateX(-50%);"
+                 data-pokemon-id="${randomPokemon.id}">
+        `;
+    };
+
+    let isDragging = false;
+
+    pokeball.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        pokeball.classList.add('dragging');
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            const rect = document.getElementById('catch-content').getBoundingClientRect();
+            const x = e.clientX - rect.left - 30;
+            const y = e.clientY - rect.top - 30;
+            pokeball.style.left = `${x}px`;
+            pokeball.style.top = `${y}px`;
+            pokeball.style.transform = 'none';
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            pokeball.classList.remove('dragging');
+            
+            const pokemonImg = document.querySelector('#pokemon-area img');
+            if (pokemonImg) {
+                const pokemonRect = pokemonImg.getBoundingClientRect();
+                const ballRect = pokeball.getBoundingClientRect();
+                
+                const distance = Math.sqrt(
+                    Math.pow(pokemonRect.left - ballRect.left, 2) + 
+                    Math.pow(pokemonRect.top - ballRect.top, 2)
+                );
+                
+                if (distance < 100) {
+                    attemptCatch(pokemonImg);
+                } else {
+                    resetPokeball();
+                }
+            }
+        }
+    });
+
+    const attemptCatch = (pokemonImg) => {
+        pokeball.classList.add('shake');
+        setTimeout(() => {
+            pokeball.classList.remove('shake');
+            const catchSuccess = Math.random() > 0.5;
+            
+            if ((isPremium || dailyCatches > 0) && catchSuccess) {
+                const pokemonId = pokemonImg.dataset.pokemonId;
+                const pokemon = allPokemon.find(p => p.id == pokemonId);
+                caughtPokemon.push(pokemon);
+                if (!isPremium && dailyCatches !== Infinity) {
+                    dailyCatches--;
+                    dailyLeft.textContent = dailyCatches;
+                }
+                alert(`Congratulations! You caught ${pokemon.name}!`);
+                pokemonImg.style.display = 'none';
+                
+                if (user) {
+                    user.caught = user.caught || [];
+                    user.caught.push(pokemon.name);
+                    users[user.username].caught = user.caught;
+                    localStorage.setItem('users', JSON.stringify(users));
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                }
+            } else if (!isPremium && dailyCatches <= 0) {
+                alert('No daily catches left! Consider upgrading to premium.');
+            } else {
+                alert('Oh no! The Pokémon escaped! Try again!');
+            }
+            resetPokeball();
+        }, 1000);
+    };
+
+    const resetPokeball = () => {
+        pokeball.style.left = '50%';
+        pokeball.style.top = '';
+        pokeball.style.transform = 'translateX(-50%)';
+    };
+
+    berryButton.addEventListener('click', () => {
+        alert('You used a berry! The Pokémon is easier to catch now.');
+        // Optionally, you can increase the catch success rate here.
+    });
+
+    payUnlimited.addEventListener('click', () => {
+        paymentModal.style.display = 'block';
+        let discount = getHolidayDiscount();
+        let price = 20;
+        if (typeof discount === 'object' && discount.special) {
+            price = discount.price;
+            document.getElementById('weekly-price').innerHTML = `<strong>$${price}/4 weeks (New Year Special!)</strong>`;
+        } else if (discount > 0) {
+            price = price - price * discount;
+            document.getElementById('weekly-price').innerHTML = `<strong>$${price.toFixed(2)}/week (Holiday Discount!)</strong>`;
+        } else {
+            document.getElementById('weekly-price').innerHTML = `<strong>$20/week</strong>`;
+        }
+        // Show trial if not used
+        if (user && !user.trialUsed) {
+            trialSection.style.display = 'block';
+        } else {
+            trialSection.style.display = 'none';
+        }
+    });
+
+    claimTrial.addEventListener('click', () => {
+        if (user && !user.trialUsed) {
+            user.isPremium = true;
+            user.trialUsed = true;
+            user.premiumExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+            isPremium = true;
+            dailyCatches = Infinity;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            users[user.username] = user;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Free trial activated! Enjoy 7 days of premium.');
+            paymentModal.style.display = 'none';
+        }
+    });
+
+    confirmPayment.addEventListener('click', () => {
+        // Payment validation logic would go here (omitted for demo)
+        if (user) {
+            user.isPremium = true;
+            user.premiumExpiry = Date.now() + 7 * 24 * 60 * 60 * 1000 * currentExtendWeeks;
+            isPremium = true;
+            dailyCatches = Infinity;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            users[user.username] = user;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Thank you for subscribing to premium!');
+            paymentModal.style.display = 'none';
+        }
+    });
+
+    mobileConfirm.addEventListener('click', () => {
+        confirmPayment.click();
+    });
+
+    // Modal close handlers
+    document.querySelectorAll('.close-button').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.target.closest('.modal, #login-modal').style.display = 'none';
+            if (e.target.closest('#login-modal')) {
+                // Optionally reset to login option
+                showLoginForm();
+            }
+        });
+    });
+
+    // Modal click outside to close
+    window.onclick = function(event) {
+        document.querySelectorAll('.modal, #login-modal').forEach(modal => {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        });
+    };
+
+    // Search functionality
+    searchInput.addEventListener('input', () => {
+        const search = searchInput.value.toLowerCase().trim();
+        const filtered = allPokemon.filter(p => p.name.includes(search));
+        displayPokemon(filtered, 'all');
+    });
+
+    // Navigation category buttons
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            navButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            await filterAndDisplayPokemon(this.dataset.category);
+        });
+    });
+
+    // Pokémon card click for modal
+    pokedexContainer.addEventListener('click', async (e) => {
+        const card = e.target.closest('.pokemon-card');
+        if (card) {
+            const id = card.dataset.id;
+            const pokemon = allPokemon.find(p => p.id == id);
+            if (pokemon) showPokemonDetails(pokemon);
+        }
+    });
+
+    // Variety and shiny buttons in modal
+    modalBody.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('variety-button')) {
+            const varietyName = e.target.dataset.varietyName;
+            const isShiny = e.target.classList.contains('shiny-button');
+            let pokemonToShow;
+            if (isShiny) {
+                const name = document.querySelector('.modal-info .modal-name').textContent.toLowerCase().replace(/ /g, '-');
+                pokemonToShow = allPokemon.find(p => p.name === name) || allPokemon.find(p => p.name === varietyName) || allPokemon[0];
+                showPokemonDetails(pokemonToShow, true);
+            } else {
+                pokemonToShow = allPokemon.find(p => p.name === varietyName);
+                showPokemonDetails(pokemonToShow, false);
+            }
+        }
+    });
+
+    // Guess the Pokémon game logic
+    function startGuessGame() {
+        const guessImage = document.getElementById('guess-image');
+        const guessInput = document.getElementById('guess-input');
+        const guessSubmit = document.getElementById('guess-submit');
+
+        const pokemon = allPokemon[Math.floor(Math.random() * allPokemon.length)];
+        guessImage.innerHTML = `<img src="${getPokemonImageUrl(pokemon)}" alt="Guess" style="filter: brightness(0) saturate(100%); width:150px; height:150px;">`;
+
+        guessSubmit.onclick = () => {
+            if (guessInput.value.trim().toLowerCase() === pokemon.name) {
+                guessImage.innerHTML = `<img src="${getPokemonImageUrl(pokemon)}" alt="${pokemon.name}" style="width:150px; height:150px;">`;
+                alert(`Correct! It's ${pokemon.name}!`);
+            } else {
+                alert('Try again!');
+            }
+        };
     }
+
+    // Display caught Pokémon
+    function displayCaughtPokemon() {
+        const caughtList = document.getElementById('caught-list');
+        if (!user || !user.caught || user.caught.length === 0) {
+            caughtList.innerHTML = '<p>You have not caught any Pokémon yet!</p>';
+            return;
+        }
+        caughtList.innerHTML = user.caught.map(name => {
+            const poke = allPokemon.find(p => p.name === name);
+            if (!poke) return '';
+            return `
+                <div style="display: inline-block; margin: 10px; text-align: center;">
+                    <img src="${getPokemonImageUrl(poke)}" style="width: 60px; height: 60px;">
+                    <div>${poke.name}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // On load: restore user session if any and load pokedex
+    function init() {
+        // Try to restore session
+        const loggedInUser = localStorage.getItem('currentUser');
+        if (loggedInUser) {
+            user = JSON.parse(loggedInUser);
+            isPremium = user.isPremium;
+            profile.style.backgroundImage = `url(${user.profilePic})`;
+            profile.style.display = 'block';
+            loginTimestamp = parseInt(localStorage.getItem('loginTimestamp'), 10) || Date.now();
+            checkPremiumExpiry();
+        } else {
+            loginModal.style.display = 'block';
+        }
+        fetchAllPokemon();
+    }
+
+    init();
 });
-// ...You must keep your existing main Pokédex app logic, modals, and all other JavaScript...
 </script>
-<!-- ...rest of your HTML and <script> as in original file, including all other modals, pokedex-container, etc... -->
 </body>
 </html>
