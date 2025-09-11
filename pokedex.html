@@ -8,7 +8,473 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ... (existing base CSS from your file) ... */
+body {
+    font-family: 'Roboto Mono', monospace;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.pokedex-container {
+    width: 800px;
+    height: 600px;
+    background-color: #e4000f;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 20px;
+}
+
+.pokedex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.pokedex-screen {
+    background-color: #98cb98;
+    border: 10px solid #555;
+    border-radius: 10px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    overflow: auto;
+}
+
+.pokemon-info {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.pokemon-image {
+    width: 120px;
+    height: 120px;
+    background-color: #fff;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.pokemon-details {
+    flex: 1;
+}
+
+.pokemon-name {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.pokemon-type {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-right: 5px;
+    font-size: 12px;
+    color: #fff;
+    background-color: #555;
+}
+
+.pokemon-stats {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.pokedex-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.control-pad {
+    width: 120px;
+    height: 120px;
+    position: relative;
+}
+
+.pad-button {
+    width: 40px;
+    height: 40px;
+    background-color: #333;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.pad-up {
+    top: 0;
+    left: 40px;
+    border-radius: 5px 5px 0 0;
+}
+
+.pad-right {
+    top: 40px;
+    left: 80px;
+    border-radius: 0 5px 5px 0;
+}
+
+.pad-down {
+    top: 80px;
+    left: 40px;
+    border-radius: 0 0 5px 5px;
+}
+
+.pad-left {
+    top: 40px;
+    left: 0;
+    border-radius: 5px 0 0 5px;
+}
+
+.pad-center {
+    top: 40px;
+    left: 40px;
+    background-color: #555;
+}
+
+.action-buttons {
+    display: flex;
+}
+
+.action-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 10px;
+    background-color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.search-bar {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 2px solid #333;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.menu-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: #333;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+}
+
+.menu-options {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    display: none;
+    z-index: 1000;
+}
+
+.menu-option {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+}
+
+.menu-option:last-child {
+    border-bottom: none;
+}
+
+.menu-option:hover {
+    background-color: #f0f0f0;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 60%;
+    max-width: 500px;
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+#help-modal .modal-content {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+#catch-modal .modal-content {
+    text-align: center;
+}
+
+#pokemon-area {
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#pokeball {
+    width: 80px;
+    height: 80px;
+    background-image: url('catch.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#pokeball:hover {
+    transform: scale(1.1);
+}
+
+#berry-button {
+    width: 40px;
+    height: 40px;
+    background-image: url('berry.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    margin-bottom: 10px;
+    border: none;
+    background-color: transparent;
+}
+
+#guess-modal .modal-content {
+    text-align: center;
+}
+
+#silhouette {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 20px;
+    filter: brightness(0);
+}
+
+#guess-input {
+    width: 80%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 2px solid #333;
+    font-family: 'Roboto Mono', monospace;
+}
+
+#guess-button {
+    padding: 10px 20px;
+    background-color: #e4000f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+}
+
+#battle-modal .modal-content {
+    width: 80%;
+    max-width: 700px;
+}
+
+.battle-area {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.battle-pokemon {
+    width: 45%;
+    text-align: center;
+}
+
+.battle-image {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.battle-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.battle-move {
+    padding: 10px;
+    margin: 5px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#edit-modal .modal-content {
+    width: 80%;
+    max-width: 700px;
+}
+
+.edit-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.form-buttons button {
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.save-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+#login-modal .modal-content, #signup-modal .modal-content {
+    width: 80%;
+    max-width: 400px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-form input {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.auth-form button {
+    padding: 10px;
+    background-color: #e4000f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+}
+
+#caught-modal .modal-content {
+    width: 80%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.caught-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.caught-item {
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.caught-image {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+}
+
+.caught-name {
+    font-size: 12px;
+    margin-top: 5px;
+}
 
 #premium-button {
     width: 40px;
@@ -180,14 +646,118 @@
     font-size: 1.1em;
     cursor: pointer;
 }
-/* ...rest of your CSS unchanged... */
+#battle-select-team {
+    margin: 12px 0;
+    display: none;
+}
+#battle-select-team img {
+    margin: 0 2px;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    transition: border 0.2s;
+}
+#battle-select-team img.selected {
+    border: 2px solid #e4000f;
+}
+#start-battle-btn {
+    margin-top: 12px;
+    padding: 10px 24px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+#profile-modal {
+    display: none;
+    position: fixed;
+    z-index: 2100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#profile-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    width: 450px;
+    border-radius: 14px;
+    text-align: center;
+    position: relative;
+}
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+    background-size: cover;
+    background-position: center;
+}
+.profile-info {
+    text-align: left;
+}
+.profile-name {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.profile-stats {
+    margin-top: 20px;
+    text-align: left;
+}
+.profile-stat {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+.profile-actions {
+    margin-top: 20px;
+}
+.profile-action-btn {
+    padding: 10px 20px;
+    margin: 0 5px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+}
+.logout-btn {
+    background-color: #f44336;
+    color: white;
+}
+.edit-profile-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+#pay-unlimited {
+    padding: 8px 16px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-family: 'Roboto Mono', monospace;
+}
 </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 <body>
 <!-- Top right login/signup/profile/premium -->
 <div id="top-auth-bar" style="position: fixed; top: 10px; right: 10px; z-index: 1200;">
-    <button id="top-login-btn" style="display:none; margin-right: 8px;">Log In</button>
-    <button id="top-signup-btn" style="display:none; margin-right: 8px;">Sign Up</button>
+    <button id="top-login-btn" style="margin-right: 8px;">Log In</button>
+    <button id="top-signup-btn" style="margin-right: 8px;">Sign Up</button>
     <div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; display: none; position: relative; display:inline-block;"></div>
     <button id="premium-button" title="Premium"></button>
 </div>
@@ -223,8 +793,8 @@
         <h2>Shop</h2>
         <p>You have <span id="points-display">0</span> points.</p>
         <div>
-            <button style="padding:10px 18px; margin:6px; background:#e4000f;color:#fff;border-radius:7px;border:none;cursor:pointer;">Buy Raid Pass (100 pts)</button>
-            <button style="padding:10px 18px; margin:6px; background:#e4000f;color:#fff;border-radius:7px;border:none;cursor:pointer;">Buy Berry (30 pts)</button>
+            <button id="buy-raid-pass" style="padding:10px 18px; margin:6px; background:#e4000f;color:#fff;border-radius:7px;border:none;cursor:pointer;">Buy Raid Pass (100 pts)</button>
+            <button id="buy-berry" style="padding:10px 18px; margin:6px; background:#e4000f;color:#fff;border-radius:7px;border:none;cursor:pointer;">Buy Berry (30 pts)</button>
         </div>
     </div>
 </div>
@@ -242,7 +812,67 @@
         <div id="raid-result"></div>
     </div>
 </div>
-<!-- Menu additions -->
+<!-- Profile Modal -->
+<div id="profile-modal">
+    <div id="profile-content">
+        <span class="close-button" style="position:absolute;top:10px;right:16px;cursor:pointer;font-size:24px;">&times;</span>
+        <h2>Your Profile</h2>
+        <div class="profile-header">
+            <div class="profile-pic" id="profile-pic"></div>
+            <div class="profile-info">
+                <div class="profile-name" id="profile-name">Username</div>
+                <div id="profile-premium-status">Free Account</div>
+            </div>
+        </div>
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <span>Pokémon Caught:</span>
+                <span id="profile-caught-count">0</span>
+            </div>
+            <div class="profile-stat">
+                <span>Points:</span>
+                <span id="profile-points">0</span>
+            </div>
+            <div class="profile-stat">
+                <span>Raid Passes:</span>
+                <span id="profile-raid-passes">0</span>
+            </div>
+            <div class="profile-stat">
+                <span>Berries:</span>
+                <span id="profile-berries">0</span>
+            </div>
+        </div>
+        <div class="profile-actions">
+            <button class="profile-action-btn edit-profile-btn">Edit Profile</button>
+            <button class="profile-action-btn logout-btn">Log Out</button>
+        </div>
+    </div>
+</div>
+
+<div class="pokedex-container">
+    <div class="pokedex-header">
+        <h1>Pokédex</h1>
+        <div class="menu-button" id="menu-button">≡</div>
+    </div>
+    <input type="text" class="search-bar" id="search-bar" placeholder="Search Pokémon...">
+    <div class="pokedex-screen" id="pokedex-screen">
+        <!-- Pokémon info will be displayed here -->
+    </div>
+    <div class="pokedex-controls">
+        <div class="control-pad">
+            <div class="pad-button pad-up" id="prev-pokemon">▲</div>
+            <div class="pad-button pad-right" id="next-type">▶</div>
+            <div class="pad-button pad-down" id="next-pokemon">▼</div>
+            <div class="pad-button pad-left" id="prev-type">◀</div>
+            <div class="pad-button pad-center" id="select-pokemon">OK</div>
+        </div>
+        <div class="action-buttons">
+            <div class="action-button" id="info-button">i</div>
+            <div class="action-button" id="favorite-button">★</div>
+        </div>
+    </div>
+</div>
+
 <div class="menu-options">
     <div id="help-option" class="menu-option" data-text="Help"></div>
     <div id="catch-option" class="menu-option" data-text="Catch a Pokémon"></div>
@@ -254,11 +884,41 @@
     <div id="shop-option" class="menu-option" data-text="Shop"></div>
     <div id="raid-menu-option" class="menu-option" data-text="Raids"></div>
 </div>
-<!-- ...rest of your HTML: all original modals, pokedex-container, etc... -->
-<!-- Replace pokeball in catch-modal with catch.png -->
-<div id="catch-modal">
-    <div id="catch-content">
-        <span class="close-button" style="position:absolute;top:10px;right:16px;cursor:pointer;font-size:24px;">&times;</span>
+
+<div id="help-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Pokédex Help</h2>
+        <h3>Navigation</h3>
+        <p>Use the D-pad to navigate through the Pokédex:</p>
+        <ul>
+            <li>Up/Down: Previous/Next Pokémon</li>
+            <li>Left/Right: Previous/Next Type filter</li>
+            <li>Center: Select current Pokémon</li>
+        </ul>
+        <h3>Action Buttons</h3>
+        <ul>
+            <li>i: Show detailed information</li>
+            <li>★: Add to favorites</li>
+        </ul>
+        <h3>Menu Options</h3>
+        <ul>
+            <li>Help: Show this help screen</li>
+            <li>Catch a Pokémon: Try to catch a random Pokémon</li>
+            <li>Guess the Pokémon: Test your knowledge</li>
+            <li>Battle: Battle with your caught Pokémon</li>
+            <li>Edit: Add or edit Pokémon (Admin only)</li>
+            <li>Show Caught Pokémon: View your collection</li>
+            <li>Premium: Access premium features</li>
+            <li>Shop: Spend your points on items</li>
+            <li>Raids: Join raid battles</li>
+        </ul>
+    </div>
+</div>
+
+<div id="catch-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
         <h2>Catch a Pokémon</h2>
         <div id="pokemon-area"></div>
         <button id="berry-button"></button>
@@ -267,7 +927,180 @@
         <button id="pay-unlimited">Pay for Unlimited</button>
     </div>
 </div>
-<!-- ...rest of your HTML continues... -->
+
+<div id="guess-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Guess the Pokémon</h2>
+        <img id="silhouette" src="" alt="Pokémon silhouette">
+        <input type="text" id="guess-input" placeholder="Enter Pokémon name...">
+        <button id="guess-button">Guess</button>
+        <p id="guess-result"></p>
+    </div>
+</div>
+
+<div id="battle-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Battle</h2>
+        <div id="battle-select-team">
+            <p>Select up to 3 Pokémon for battle:</p>
+            <div id="battle-team-pool"></div>
+            <button id="start-battle-btn" disabled>Start Battle</button>
+        </div>
+        <div class="battle-area" id="battle-area" style="display:none;">
+            <div class="battle-pokemon" id="your-pokemon">
+                <h3>Your Pokémon</h3>
+                <img class="battle-image" id="your-pokemon-image" src="" alt="Your Pokémon">
+                <div id="your-pokemon-name"></div>
+                <div id="your-pokemon-hp"></div>
+            </div>
+            <div class="battle-pokemon" id="opponent-pokemon">
+                <h3>Opponent</h3>
+                <img class="battle-image" id="opponent-pokemon-image" src="" alt="Opponent Pokémon">
+                <div id="opponent-pokemon-name"></div>
+                <div id="opponent-pokemon-hp"></div>
+            </div>
+        </div>
+        <div class="battle-controls" id="battle-controls" style="display:none;">
+            <div class="battle-move" data-power="20">Quick Attack</div>
+            <div class="battle-move" data-power="40">Tackle</div>
+            <div class="battle-move" data-power="60">Special Move</div>
+            <div class="battle-move" data-power="100">Ultimate Attack</div>
+        </div>
+        <div id="battle-log"></div>
+    </div>
+</div>
+
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Edit Pokémon</h2>
+        <div class="edit-form">
+            <div class="form-group">
+                <label for="edit-id">ID:</label>
+                <input type="number" id="edit-id" min="1">
+            </div>
+            <div class="form-group">
+                <label for="edit-name">Name:</label>
+                <input type="text" id="edit-name">
+            </div>
+            <div class="form-group">
+                <label for="edit-type1">Type 1:</label>
+                <select id="edit-type1">
+                    <option value="normal">Normal</option>
+                    <option value="fire">Fire</option>
+                    <option value="water">Water</option>
+                    <option value="electric">Electric</option>
+                    <option value="grass">Grass</option>
+                    <option value="ice">Ice</option>
+                    <option value="fighting">Fighting</option>
+                    <option value="poison">Poison</option>
+                    <option value="ground">Ground</option>
+                    <option value="flying">Flying</option>
+                    <option value="psychic">Psychic</option>
+                    <option value="bug">Bug</option>
+                    <option value="rock">Rock</option>
+                    <option value="ghost">Ghost</option>
+                    <option value="dragon">Dragon</option>
+                    <option value="dark">Dark</option>
+                    <option value="steel">Steel</option>
+                    <option value="fairy">Fairy</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edit-type2">Type 2 (optional):</label>
+                <select id="edit-type2">
+                    <option value="">None</option>
+                    <option value="normal">Normal</option>
+                    <option value="fire">Fire</option>
+                    <option value="water">Water</option>
+                    <option value="electric">Electric</option>
+                    <option value="grass">Grass</option>
+                    <option value="ice">Ice</option>
+                    <option value="fighting">Fighting</option>
+                    <option value="poison">Poison</option>
+                    <option value="ground">Ground</option>
+                    <option value="flying">Flying</option>
+                    <option value="psychic">Psychic</option>
+                    <option value="bug">Bug</option>
+                    <option value="rock">Rock</option>
+                    <option value="ghost">Ghost</option>
+                    <option value="dragon">Dragon</option>
+                    <option value="dark">Dark</option>
+                    <option value="steel">Steel</option>
+                    <option value="fairy">Fairy</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edit-height">Height (m):</label>
+                <input type="number" id="edit-height" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="edit-weight">Weight (kg):</label>
+                <input type="number" id="edit-weight" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="edit-description">Description:</label>
+                <textarea id="edit-description"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Is Legendary:</label>
+                <input type="checkbox" id="edit-legendary">
+            </div>
+            <div class="form-group">
+                <label>Is Mythical:</label>
+                <input type="checkbox" id="edit-mythical">
+            </div>
+            <div class="form-group">
+                <label>Is Ultra Beast:</label>
+                <input type="checkbox" id="edit-ultrabeast">
+            </div>
+            <div class="form-buttons">
+                <button class="save-button" id="save-pokemon">Save</button>
+                <button class="cancel-button" id="cancel-edit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="login-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Log In</h2>
+        <div class="auth-form">
+            <input type="text" id="login-username" placeholder="Username">
+            <input type="password" id="login-password" placeholder="Password">
+            <button id="login-button">Log In</button>
+            <p>Don't have an account? <a href="#" id="switch-to-signup">Sign Up</a></p>
+        </div>
+    </div>
+</div>
+
+<div id="signup-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Sign Up</h2>
+        <div class="auth-form">
+            <input type="text" id="signup-username" placeholder="Username">
+            <input type="email" id="signup-email" placeholder="Email">
+            <input type="password" id="signup-password" placeholder="Password">
+            <input type="password" id="signup-confirm-password" placeholder="Confirm Password">
+            <button id="signup-button">Sign Up</button>
+            <p>Already have an account? <a href="#" id="switch-to-login">Log In</a></p>
+        </div>
+    </div>
+</div>
+
+<div id="caught-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Your Caught Pokémon</h2>
+        <div class="caught-grid" id="caught-grid">
+            <!-- Caught Pokémon will be displayed here -->
+        </div>
+    </div>
+</div>
 
 <script>
 // ---- GLOBAL USER STATE ----
@@ -276,6 +1109,8 @@ let dailyRaidPassTimestamp = 0;
 let activeRaids = [];
 let caughtPokemon = [];
 let allPokemon = []; // To be filled by your loading logic
+let berryCount = 0;
+let raidPassCount = 0;
 
 // ---- MODAL CLOSE BUTTONS ----
 function setupModalCloseButtons() {
@@ -303,7 +1138,7 @@ function updateAuthBar() {
         signupBtn.style.display = "none";
         profile.style.display = "inline-block";
         premiumBtn.style.display = "inline-block";
-        profile.style.backgroundImage = `url(${user.profilePic || 'default-profile.png'})`;
+        profile.style.backgroundImage = `url(${user.profilePic || 'admin.png'})`;
     } else {
         loginBtn.style.display = "inline-block";
         signupBtn.style.display = "inline-block";
@@ -352,6 +1187,38 @@ document.getElementById('shop-option').onclick = function() {
     document.getElementById('points-display').textContent = points;
 };
 
+document.getElementById('buy-raid-pass').onclick = function() {
+    if (points >= 100) {
+        points -= 100;
+        raidPassCount++;
+        if (user) {
+            user.points = points;
+            user.raidPasses = (user.raidPasses || 0) + 1;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+        document.getElementById('points-display').textContent = points;
+        alert('You bought a Raid Pass!');
+    } else {
+        alert('Not enough points!');
+    }
+};
+
+document.getElementById('buy-berry').onclick = function() {
+    if (points >= 30) {
+        points -= 30;
+        berryCount++;
+        if (user) {
+            user.points = points;
+            user.berries = (user.berries || 0) + 1;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+        document.getElementById('points-display').textContent = points;
+        alert('You bought a Berry!');
+    } else {
+        alert('Not enough points!');
+    }
+};
+
 // ---- RAID SYSTEM ----
 function eggColorClass(egg) {
     switch (egg.difficulty) {
@@ -389,6 +1256,12 @@ function formatTimeLeft(ms) {
     return `${m}m ${s}s`;
 }
 function showRaidModal() {
+    if (raidPassCount === 0 && !checkDailyRaidPass()) {
+        alert('You need a Raid Pass to participate in raids! You can get one daily or buy one from the shop.');
+        document.getElementById('shop-modal').style.display = 'block';
+        return;
+    }
+    
     makeActiveRaids();
     let raidListDiv = document.getElementById('raid-list');
     raidListDiv.innerHTML = "";
@@ -420,6 +1293,20 @@ document.getElementById('raid-list').onclick = function(e) {
     if (!eggDiv) return;
     let raid = activeRaids.find(r=>r.id===eggDiv.dataset.raidId);
     if (!raid) return;
+    
+    // Check if user has a raid pass
+    if (raidPassCount === 0 && !checkDailyRaidPass()) {
+        alert('You need a Raid Pass to participate in this raid!');
+        return;
+    }
+    
+    // Use a raid pass
+    if (user) {
+        user.raidPasses = Math.max(0, (user.raidPasses || 0) - 1);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+    raidPassCount = Math.max(0, raidPassCount - 1);
+    
     let teamDiv = document.getElementById('raid-select-team');
     let poolDiv = document.getElementById('raid-team-pool');
     poolDiv.innerHTML = "";
@@ -446,7 +1333,11 @@ document.getElementById('raid-list').onclick = function(e) {
         alert(`Raid complete! You caught ${raid.pokemon.name} and earned ${pts} points!`);
         activeRaids = activeRaids.filter(r=>r.id!==raid.id);
         caughtPokemon.push(raid.pokemon);
-        if(user) { user.caught.push(raid.pokemon.name); localStorage.setItem('currentUser', JSON.stringify(user)); }
+        if(user) { 
+            user.caught = user.caught || [];
+            user.caught.push(raid.pokemon.name); 
+            localStorage.setItem('currentUser', JSON.stringify(user)); 
+        }
         showRaidModal();
         teamDiv.style.display = "none";
     };
@@ -458,15 +1349,29 @@ function showPinkDotOnRaid() {
     let battleOpt = document.getElementById('battle-option');
     let menuBtn = document.getElementById('menu-button');
     let raidOpt = document.getElementById('raid-menu-option');
-    [battleOpt, menuBtn, raidOpt].forEach(el=>{ if(el && !el.querySelector('.pink-dot')) el.appendChild(dot.cloneNode()); });
+    [battleOpt, menuBtn, raidOpt].forEach(el=>{ 
+        if(el && !el.querySelector('.pink-dot')) {
+            let newDot = dot.cloneNode();
+            el.appendChild(newDot);
+        }
+    });
 }
+
 function checkDailyRaidPass() {
     let today = new Date();
     let midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
     if (dailyRaidPassTimestamp < midnight) {
         dailyRaidPassTimestamp = Date.now();
+        raidPassCount++;
+        if (user) {
+            user.raidPasses = (user.raidPasses || 0) + 1;
+            user.dailyRaidPassTimestamp = dailyRaidPassTimestamp;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
         showPinkDotOnRaid();
+        return true;
     }
+    return false;
 }
 
 // ---- POINTS SYSTEM ----
@@ -478,6 +1383,7 @@ function getRarityPoints(pokemon, shiny = false) {
     if (shiny) base += 80;
     return base;
 }
+
 function addPoints(n) {
     points += n;
     if (user) {
@@ -487,14 +1393,310 @@ function addPoints(n) {
     let pDisp = document.getElementById('points-display');
     if (pDisp) pDisp.textContent = points;
 }
+
 function rewardCatchPoints(pokemon, shiny = false) {
     let pts = getRarityPoints(pokemon, shiny);
     addPoints(pts);
     alert(`You earned ${pts} points for catching ${pokemon.name}${shiny ? " (shiny!)" : ""}!`);
 }
 
-// ---- CATCH LOGIC (HOOKS) ----
-// When you catch a Pokémon, call rewardCatchPoints(pokemon, isShiny), then add to caughtPokemon/user.caught
+// ---- CATCH LOGIC ----
+document.getElementById('catch-option').onclick = function() {
+    document.getElementById('catch-modal').style.display = 'block';
+    
+    // Generate a random Pokémon
+    let randomPokemon = allPokemon.length ? 
+        allPokemon[Math.floor(Math.random() * allPokemon.length)] : 
+        {name: "pikachu", id: 25, types: [{type: {name: "electric"}}]};
+    
+    let pokemonArea = document.getElementById('pokemon-area');
+    pokemonArea.innerHTML = '';
+    
+    let img = document.createElement('img');
+    img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${randomPokemon.id}.png`;
+    img.style.width = '150px';
+    img.style.height = '150px';
+    pokemonArea.appendChild(img);
+    
+    // Store the current Pokémon for catching
+    pokemonArea.dataset.currentPokemon = JSON.stringify(randomPokemon);
+    
+    // Reset berry effect
+    document.getElementById('berry-button').dataset.used = 'false';
+    
+    // Update daily catches left
+    let dailyLeft = user && user.isPremium ? "Unlimited" : (user ? (user.dailyCatches || 5) : 5);
+    document.getElementById('daily-left').textContent = dailyLeft;
+};
+
+document.getElementById('pokeball').onclick = function() {
+    let pokemonArea = document.getElementById('pokemon-area');
+    let currentPokemon = JSON.parse(pokemonArea.dataset.currentPokemon || '{}');
+    
+    if (!currentPokemon.name) return;
+    
+    // Check if user has daily catches left
+    let dailyLeft = user && user.isPremium ? 999 : (user ? (user.dailyCatches || 5) : 5);
+    
+    if (dailyLeft <= 0) {
+        alert('You have no daily catches left! Get Premium for unlimited catches.');
+        return;
+    }
+    
+    // Calculate catch probability (higher with berry)
+    let berryUsed = document.getElementById('berry-button').dataset.used === 'true';
+    let catchProbability = berryUsed ? 0.8 : 0.5;
+    
+    // Determine if catch is successful
+    let isShiny = Math.random() < 0.05; // 5% chance of shiny
+    let isCaught = Math.random() < catchProbability;
+    
+    if (isCaught) {
+        // Add to caught Pokémon
+        caughtPokemon.push(currentPokemon);
+        
+        // Update user data
+        if (user) {
+            user.caught = user.caught || [];
+            user.caught.push(currentPokemon.name);
+            user.dailyCatches = user.isPremium ? 999 : Math.max(0, (user.dailyCatches || 5) - 1);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+        
+        // Award points
+        rewardCatchPoints(currentPokemon, isShiny);
+        
+        // Update display
+        document.getElementById('daily-left').textContent = user && user.isPremium ? "Unlimited" : (user ? user.dailyCatches : 4);
+        
+        // Close modal and show success message
+        document.getElementById('catch-modal').style.display = 'none';
+        alert(`You caught ${isShiny ? "a shiny " : ""}${currentPokemon.name}!`);
+    } else {
+        alert(`${currentPokemon.name} escaped! Try again.`);
+    }
+};
+
+document.getElementById('berry-button').onclick = function() {
+    if (berryCount <= 0) {
+        alert('You have no berries! Buy some from the shop.');
+        return;
+    }
+    
+    berryCount--;
+    if (user) {
+        user.berries = Math.max(0, (user.berries || 0) - 1);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+    }
+    
+    this.dataset.used = 'true';
+    alert('Berry used! Catch rate increased.');
+};
+
+document.getElementById('pay-unlimited').onclick = function() {
+    showPremiumModal();
+};
+
+// ---- GUESS LOGIC ----
+document.getElementById('guess-option').onclick = function() {
+    document.getElementById('guess-modal').style.display = 'block';
+    
+    // Select a random Pokémon
+    let randomPokemon = allPokemon.length ? 
+        allPokemon[Math.floor(Math.random() * allPokemon.length)] : 
+        {name: "pikachu", id: 25};
+    
+    // Set the silhouette image
+    document.getElementById('silhouette').src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${randomPokemon.id}.png`;
+    
+    // Store the correct answer
+    document.getElementById('guess-input').dataset.answer = randomPokemon.name;
+    
+    // Reset previous results
+    document.getElementById('guess-result').textContent = '';
+    document.getElementById('guess-input').value = '';
+};
+
+document.getElementById('guess-button').onclick = function() {
+    let input = document.getElementById('guess-input');
+    let guess = input.value.trim().toLowerCase();
+    let answer = input.dataset.answer.toLowerCase();
+    let resultElement = document.getElementById('guess-result');
+    
+    if (guess === answer) {
+        resultElement.textContent = 'Correct! You got it right!';
+        resultElement.style.color = 'green';
+        
+        // Award points for correct guess
+        addPoints(10);
+        
+        setTimeout(() => {
+            document.getElementById('guess-modal').style.display = 'none';
+        }, 1500);
+    } else {
+        resultElement.textContent = `Wrong! Try again or click X to give up.`;
+        resultElement.style.color = 'red';
+    }
+};
+
+// ---- BATTLE LOGIC ----
+document.getElementById('battle-option').onclick = function() {
+    document.getElementById('battle-modal').style.display = 'block';
+    
+    // Reset battle area and show team selection
+    document.getElementById('battle-area').style.display = 'none';
+    document.getElementById('battle-controls').style.display = 'none';
+    document.getElementById('battle-log').innerHTML = '';
+    
+    let teamDiv = document.getElementById('battle-select-team');
+    let poolDiv = document.getElementById('battle-team-pool');
+    poolDiv.innerHTML = "";
+    teamDiv.style.display = "";
+    
+    let selects = [];
+    let pokemonList = caughtPokemon.slice(0,12);
+    
+    pokemonList.forEach((poke,i)=>{
+        let img = document.createElement("img");
+        img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${poke.id}.png`;
+        img.title = poke.name;
+        img.onclick = () => { 
+            img.classList.toggle("selected");
+            if(img.classList.contains("selected")) {
+                selects.push(poke);
+            } else {
+                selects = selects.filter(p => p !== poke);
+            }
+            if(selects.length > 3) {
+                poolDiv.querySelectorAll("img.selected").forEach((im,idx) => {
+                    if(idx > 2) im.classList.remove("selected");
+                });
+                selects = selects.slice(0,3);
+            }
+            document.getElementById('start-battle-btn').disabled = selects.length === 0;
+        };
+        poolDiv.appendChild(img);
+    });
+    
+    document.getElementById('start-battle-btn').disabled = true;
+    document.getElementById('start-battle-btn').onclick = function() {
+        // Start battle with selected Pokémon
+        startBattle(selects);
+    };
+};
+
+function startBattle(selectedPokemon) {
+    // Hide team selection and show battle area
+    document.getElementById('battle-select-team').style.display = 'none';
+    document.getElementById('battle-area').style.display = 'flex';
+    document.getElementById('battle-controls').style.display = 'flex';
+    
+    // Get opponent Pokémon (random from all Pokémon)
+    let opponent = allPokemon.length ? 
+        allPokemon[Math.floor(Math.random() * allPokemon.length)] : 
+        {name: "pikachu", id: 25};
+    
+    // Set up battle state
+    let battleState = {
+        yourPokemon: selectedPokemon[0],
+        yourTeam: selectedPokemon,
+        yourCurrentIndex: 0,
+        yourHP: 100,
+        opponent: opponent,
+        opponentHP: 100,
+        log: []
+    };
+    
+    // Update display
+    updateBattleDisplay(battleState);
+    
+    // Set up move handlers
+    document.querySelectorAll('.battle-move').forEach(moveBtn => {
+        moveBtn.onclick = function() {
+            executeBattleMove(battleState, parseInt(this.dataset.power));
+        };
+    });
+}
+
+function updateBattleDisplay(state) {
+    // Update your Pokémon
+    document.getElementById('your-pokemon-image').src = 
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${state.yourPokemon.id}.png`;
+    document.getElementById('your-pokemon-name').textContent = state.yourPokemon.name;
+    document.getElementById('your-pokemon-hp').textContent = `HP: ${state.yourHP}/100`;
+    
+    // Update opponent Pokémon
+    document.getElementById('opponent-pokemon-image').src = 
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${state.opponent.id}.png`;
+    document.getElementById('opponent-pokemon-name').textContent = state.opponent.name;
+    document.getElementById('opponent-pokemon-hp').textContent = `HP: ${state.opponentHP}/100`;
+    
+    // Update battle log
+    let logElement = document.getElementById('battle-log');
+    logElement.innerHTML = '';
+    state.log.forEach(entry => {
+        let p = document.createElement('p');
+        p.textContent = entry;
+        logElement.appendChild(p);
+    });
+    
+    // Scroll log to bottom
+    logElement.scrollTop = logElement.scrollHeight;
+}
+
+function executeBattleMove(state, power) {
+    // Your attack
+    let yourDamage = Math.floor(power * (0.8 + Math.random() * 0.4));
+    state.opponentHP = Math.max(0, state.opponentHP - yourDamage);
+    state.log.push(`${state.yourPokemon.name} deals ${yourDamage} damage to ${state.opponent.name}!`);
+    
+    // Check if opponent is defeated
+    if (state.opponentHP <= 0) {
+        state.log.push(`${state.opponent.name} fainted! You win!`);
+        updateBattleDisplay(state);
+        
+        // Award points for victory
+        let pts = 15 + Math.floor(Math.random() * 10);
+        addPoints(pts);
+        
+        setTimeout(() => {
+            alert(`You won the battle and earned ${pts} points!`);
+            document.getElementById('battle-modal').style.display = 'none';
+        }, 1000);
+        return;
+    }
+    
+    // Opponent's attack
+    let opponentPower = 20 + Math.floor(Math.random() * 60);
+    let opponentDamage = Math.floor(opponentPower * (0.8 + Math.random() * 0.4));
+    state.yourHP = Math.max(0, state.yourHP - opponentDamage);
+    state.log.push(`${state.opponent.name} deals ${opponentDamage} damage to ${state.yourPokemon.name}!`);
+    
+    // Check if your Pokémon is defeated
+    if (state.yourHP <= 0) {
+        state.yourCurrentIndex++;
+        
+        if (state.yourCurrentIndex < state.yourTeam.length) {
+            // Switch to next Pokémon
+            state.yourPokemon = state.yourTeam[state.yourCurrentIndex];
+            state.yourHP = 100;
+            state.log.push(`${state.yourPokemon.name} enters the battle!`);
+        } else {
+            // All your Pokémon fainted
+            state.log.push(`All your Pokémon fainted! You lose!`);
+            updateBattleDisplay(state);
+            
+            setTimeout(() => {
+                alert('You lost the battle!');
+                document.getElementById('battle-modal').style.display = 'none';
+            }, 1000);
+            return;
+        }
+    }
+    
+    // Update display
+    updateBattleDisplay(state);
+}
 
 // ---- ADMIN EDIT LOGIC ----
 document.getElementById('edit-option').onclick = function() {
@@ -502,7 +1704,7 @@ document.getElementById('edit-option').onclick = function() {
         document.getElementById('edit-modal').style.display = 'block';
     } else {
         document.getElementById('login-modal').style.display = 'block';
-        // showAdminLoginForm() if you have it
+        // Show admin login notice
         let adminNotice = document.createElement('div');
         adminNotice.textContent = "Admins only! Please insert admin log-in to propose changes!";
         adminNotice.style = "color:#e4000f;font-weight:bold;margin-bottom:8px";
@@ -513,11 +1715,523 @@ document.getElementById('edit-option').onclick = function() {
         }
     }
 };
-// Example: Let admin edit main title
+
+document.getElementById('save-pokemon').onclick = function() {
+    if (!user || !user.isAdmin) {
+        alert('Only admins can edit Pokémon data!');
+        return;
+    }
+    
+    // Get form values
+    let id = document.getElementById('edit-id').value;
+    let name = document.getElementById('edit-name').value;
+    let type1 = document.getElementById('edit-type1').value;
+    let type2 = document.getElementById('edit-type2').value;
+    let height = document.getElementById('edit-height').value;
+    let weight = document.getElementById('edit-weight').value;
+    let description = document.getElementById('edit-description').value;
+    let isLegendary = document.getElementById('edit-legendary').checked;
+    let isMythical = document.getElementById('edit-mythical').checked;
+    let isUltraBeast = document.getElementById('edit-ultrabeast').checked;
+    
+    if (!id || !name || !type1) {
+        alert('ID, Name, and Type 1 are required!');
+        return;
+    }
+    
+    // Create or update Pokémon
+    let pokemon = {
+        id: parseInt(id),
+        name: name,
+        types: [
+            { type: { name: type1 } }
+        ],
+        height: parseFloat(height),
+        weight: parseFloat(weight),
+        description: description,
+        isLegendary: isLegendary,
+        isMythical: isMythical,
+        isUltraBeast: isUltraBeast
+    };
+    
+    if (type2) {
+        pokemon.types.push({ type: { name: type2 } });
+    }
+    
+    // Find if Pokémon already exists
+    let existingIndex = allPokemon.findIndex(p => p.id === pokemon.id);
+    if (existingIndex >= 0) {
+        allPokemon[existingIndex] = pokemon;
+    } else {
+        allPokemon.push(pokemon);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('customPokemon', JSON.stringify(allPokemon));
+    
+    alert(`Pokémon ${name} has been saved!`);
+    document.getElementById('edit-modal').style.display = 'none';
+    
+    // Refresh the Pokédex display
+    displayPokemon(currentPokemonIndex);
+};
+
+document.getElementById('cancel-edit').onclick = function() {
+    document.getElementById('edit-modal').style.display = 'none';
+};
+
+// ---- CAUGHT POKEMON DISPLAY ----
+document.getElementById('caught-option').onclick = function() {
+    document.getElementById('caught-modal').style.display = 'block';
+    
+    let caughtGrid = document.getElementById('caught-grid');
+    caughtGrid.innerHTML = '';
+    
+    if (caughtPokemon.length === 0) {
+        let message = document.createElement('p');
+        message.textContent = 'You haven\'t caught any Pokémon yet!';
+        caughtGrid.appendChild(message);
+        return;
+    }
+    
+    caughtPokemon.forEach(pokemon => {
+        let item = document.createElement('div');
+        item.className = 'caught-item';
+        
+        let img = document.createElement('img');
+        img.className = 'caught-image';
+        img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
+        
+        let name = document.createElement('div');
+        name.className = 'caught-name';
+        name.textContent = pokemon.name;
+        
+        item.appendChild(img);
+        item.appendChild(name);
+        caughtGrid.appendChild(item);
+    });
+};
+
+// ---- AUTH SYSTEM ----
+document.getElementById('top-login-btn').onclick = function() {
+    document.getElementById('login-modal').style.display = 'block';
+};
+
+document.getElementById('top-signup-btn').onclick = function() {
+    document.getElementById('signup-modal').style.display = 'block';
+};
+
+document.getElementById('switch-to-signup').onclick = function(e) {
+    e.preventDefault();
+    document.getElementById('login-modal').style.display = 'none';
+    document.getElementById('signup-modal').style.display = 'block';
+};
+
+document.getElementById('switch-to-login').onclick = function(e) {
+    e.preventDefault();
+    document.getElementById('signup-modal').style.display = 'none';
+    document.getElementById('login-modal').style.display = 'block';
+};
+
+document.getElementById('login-button').onclick = function() {
+    let username = document.getElementById('login-username').value;
+    let password = document.getElementById('login-password').value;
+    
+    if (!username || !password) {
+        alert('Please enter both username and password!');
+        return;
+    }
+    
+    // Check if it's an admin login
+    if (username === 'admin' && password === 'admin123') {
+        user = {
+            username: 'admin',
+            email: 'admin@pokedex.com',
+            isAdmin: true,
+            isPremium: true,
+            premiumLevel: 'diamond',
+            caught: [],
+            points: 1000,
+            berries: 10,
+            raidPasses: 5,
+            profilePic: 'admin.png'
+        };
+        isAdmin = true;
+        isPremium = true;
+        premiumLevel = 'diamond';
+        points = 1000;
+        berryCount = 10;
+        raidPassCount = 5;
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        updateAuthBar();
+        document.getElementById('login-modal').style.display = 'none';
+        alert('Welcome, Admin!');
+        return;
+    }
+    
+    // Check regular user login
+    let users = JSON.parse(localStorage.getItem('users') || '[]');
+    let foundUser = users.find(u => u.username === username && u.password === password);
+    
+    if (foundUser) {
+        user = foundUser;
+        isAdmin = !!user.isAdmin;
+        isPremium = !!user.isPremium;
+        premiumLevel = user.premiumLevel || null;
+        points = user.points || 0;
+        berryCount = user.berries || 0;
+        raidPassCount = user.raidPasses || 0;
+        dailyRaidPassTimestamp = user.dailyRaidPassTimestamp || 0;
+        
+        // Load caught Pokémon
+        caughtPokemon = [];
+        if (user.caught && user.caught.length) {
+            user.caught.forEach(name => {
+                // Find Pokémon by name or create a simple object
+                let pokemon = allPokemon.find(p => p.name === name) || {
+                    name: name,
+                    id: Math.floor(Math.random() * 151) + 1, // Random ID between 1-151
+                    types: [{type: {name: 'normal'}}]
+                };
+                caughtPokemon.push(pokemon);
+            });
+        }
+        
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        updateAuthBar();
+        document.getElementById('login-modal').style.display = 'none';
+        alert(`Welcome back, ${username}!`);
+        checkDailyRaidPass();
+    } else {
+        alert('Invalid username or password!');
+    }
+};
+
+document.getElementById('signup-button').onclick = function() {
+    let username = document.getElementById('signup-username').value;
+    let email = document.getElementById('signup-email').value;
+    let password = document.getElementById('signup-password').value;
+    let confirmPassword = document.getElementById('signup-confirm-password').value;
+    
+    if (!username || !email || !password || !confirmPassword) {
+        alert('Please fill in all fields!');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+    
+    // Check if username already exists
+    let users = JSON.parse(localStorage.getItem('users') || '[]');
+    if (users.some(u => u.username === username)) {
+        alert('Username already exists!');
+        return;
+    }
+    
+    // Create new user
+    let newUser = {
+        username: username,
+        email: email,
+        password: password,
+        isAdmin: false,
+        isPremium: false,
+        caught: [],
+        points: 0,
+        berries: 0,
+        raidPasses: 1,
+        dailyCatches: 5,
+        profilePic: 'admin.png' // Default profile pic
+    };
+    
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    // Log in the new user
+    user = newUser;
+    isAdmin = false;
+    isPremium = false;
+    premiumLevel = null;
+    points = 0;
+    berryCount = 0;
+    raidPassCount = 1;
+    caughtPokemon = [];
+    
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    updateAuthBar();
+    document.getElementById('signup-modal').style.display = 'none';
+    alert(`Welcome, ${username}! Your account has been created.`);
+};
+
+// ---- PROFILE SYSTEM ----
+document.getElementById('profile').onclick = function() {
+    if (!user) return;
+    
+    document.getElementById('profile-modal').style.display = 'block';
+    
+    // Update profile information
+    document.getElementById('profile-pic').style.backgroundImage = `url(${user.profilePic || 'admin.png'})`;
+    document.getElementById('profile-name').textContent = user.username;
+    document.getElementById('profile-premium-status').textContent = user.isPremium ? 
+        `Premium (${user.premiumLevel.toUpperCase()})` : 'Free Account';
+    document.getElementById('profile-caught-count').textContent = user.caught ? user.caught.length : 0;
+    document.getElementById('profile-points').textContent = user.points || 0;
+    document.getElementById('profile-raid-passes').textContent = user.raidPasses || 0;
+    document.getElementById('profile-berries').textContent = user.berries || 0;
+};
+
+document.querySelector('.logout-btn').onclick = function() {
+    user = null;
+    isAdmin = false;
+    isPremium = false;
+    premiumLevel = null;
+    points = 0;
+    berryCount = 0;
+    raidPassCount = 0;
+    caughtPokemon = [];
+    
+    localStorage.removeItem('currentUser');
+    updateAuthBar();
+    document.getElementById('profile-modal').style.display = 'none';
+    alert('You have been logged out.');
+};
+
+// ---- MENU BUTTON ----
+document.getElementById('menu-button').onclick = function() {
+    let menuOptions = document.querySelector('.menu-options');
+    menuOptions.style.display = menuOptions.style.display === 'block' ? 'none' : 'block';
+};
+
+// ---- HELP MODAL ----
+document.getElementById('help-option').onclick = function() {
+    document.getElementById('help-modal').style.display = 'block';
+};
+
+// ---- POKEDEX FUNCTIONALITY ----
+let currentPokemonIndex = 0;
+let currentTypeFilter = '';
+
+// Function to display a Pokémon
+function displayPokemon(index) {
+    if (!allPokemon.length) {
+        document.getElementById('pokedex-screen').innerHTML = '<p>Loading Pokémon data...</p>';
+        return;
+    }
+    
+    // Filter by type if needed
+    let filteredPokemon = currentTypeFilter ? 
+        allPokemon.filter(p => p.types.some(t => t.type.name === currentTypeFilter)) : 
+        allPokemon;
+    
+    if (!filteredPokemon.length) {
+        document.getElementById('pokedex-screen').innerHTML = '<p>No Pokémon found with this type.</p>';
+        return;
+    }
+    
+    // Ensure index is within bounds
+    currentPokemonIndex = (index + filteredPokemon.length) % filteredPokemon.length;
+    
+    let pokemon = filteredPokemon[currentPokemonIndex];
+    
+    let screen = document.getElementById('pokedex-screen');
+    screen.innerHTML = '';
+    
+    let pokemonInfo = document.createElement('div');
+    pokemonInfo.className = 'pokemon-info';
+    
+    let pokemonImage = document.createElement('div');
+    pokemonImage.className = 'pokemon-image';
+    let img = document.createElement('img');
+    img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
+    pokemonImage.appendChild(img);
+    
+    let pokemonDetails = document.createElement('div');
+    pokemonDetails.className = 'pokemon-details';
+    
+    let pokemonName = document.createElement('div');
+    pokemonName.className = 'pokemon-name';
+    pokemonName.textContent = `#${pokemon.id} ${pokemon.name}`;
+    
+    let pokemonTypes = document.createElement('div');
+    pokemon.types.forEach(typeInfo => {
+        let type = document.createElement('span');
+        type.className = 'pokemon-type';
+        type.textContent = typeInfo.type.name;
+        type.style.backgroundColor = getTypeColor(typeInfo.type.name);
+        pokemonTypes.appendChild(type);
+    });
+    
+    let pokemonStats = document.createElement('div');
+    pokemonStats.className = 'pokemon-stats';
+    
+    if (pokemon.height) {
+        let height = document.createElement('p');
+        height.textContent = `Height: ${pokemon.height / 10}m`;
+        pokemonStats.appendChild(height);
+    }
+    
+    if (pokemon.weight) {
+        let weight = document.createElement('p');
+        weight.textContent = `Weight: ${pokemon.weight / 10}kg`;
+        pokemonStats.appendChild(weight);
+    }
+    
+    if (pokemon.description) {
+        let description = document.createElement('p');
+        description.textContent = pokemon.description;
+        pokemonStats.appendChild(description);
+    }
+    
+    // Special tags
+    if (pokemon.isLegendary || pokemon.isMythical || pokemon.isUltraBeast) {
+        let special = document.createElement('p');
+        special.style.color = '#e4000f';
+        special.style.fontWeight = 'bold';
+        
+        if (pokemon.isLegendary) special.textContent = 'Legendary Pokémon';
+        else if (pokemon.isMythical) special.textContent = 'Mythical Pokémon';
+        else if (pokemon.isUltraBeast) special.textContent = 'Ultra Beast';
+        
+        pokemonStats.appendChild(special);
+    }
+    
+    pokemonDetails.appendChild(pokemonName);
+    pokemonDetails.appendChild(pokemonTypes);
+    pokemonDetails.appendChild(pokemonStats);
+    
+    pokemonInfo.appendChild(pokemonImage);
+    pokemonInfo.appendChild(pokemonDetails);
+    
+    screen.appendChild(pokemonInfo);
+}
+
+// Function to get color for Pokémon type
+function getTypeColor(type) {
+    const typeColors = {
+        normal: '#A8A878',
+        fire: '#F08030',
+        water: '#6890F0',
+        electric: '#F8D030',
+        grass: '#78C850',
+        ice: '#98D8D8',
+        fighting: '#C03028',
+        poison: '#A040A0',
+        ground: '#E0C068',
+        flying: '#A890F0',
+        psychic: '#F85888',
+        bug: '#A8B820',
+        rock: '#B8A038',
+        ghost: '#705898',
+        dragon: '#7038F8',
+        dark: '#705848',
+        steel: '#B8B8D0',
+        fairy: '#EE99AC'
+    };
+    
+    return typeColors[type] || '#777';
+}
+
+// Navigation buttons
+document.getElementById('prev-pokemon').onclick = function() {
+    displayPokemon(currentPokemonIndex - 1);
+};
+
+document.getElementById('next-pokemon').onclick = function() {
+    displayPokemon(currentPokemonIndex + 1);
+};
+
+document.getElementById('prev-type').onclick = function() {
+    const types = ['', 'normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
+    let currentIndex = types.indexOf(currentTypeFilter);
+    currentIndex = (currentIndex - 1 + types.length) % types.length;
+    currentTypeFilter = types[currentIndex];
+    displayPokemon(0);
+};
+
+document.getElementById('next-type').onclick = function() {
+    const types = ['', 'normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'];
+    let currentIndex = types.indexOf(currentTypeFilter);
+    currentIndex = (currentIndex + 1) % types.length;
+    currentTypeFilter = types[currentIndex];
+    displayPokemon(0);
+};
+
+document.getElementById('select-pokemon').onclick = function() {
+    if (!allPokemon.length) return;
+    
+    let filteredPokemon = currentTypeFilter ? 
+        allPokemon.filter(p => p.types.some(t => t.type.name === currentTypeFilter)) : 
+        allPokemon;
+    
+    if (!filteredPokemon.length) return;
+    
+    let selectedPokemon = filteredPokemon[currentPokemonIndex];
+    alert(`You selected ${selectedPokemon.name}!`);
+};
+
+document.getElementById('info-button').onclick = function() {
+    if (!allPokemon.length) return;
+    
+    let filteredPokemon = currentTypeFilter ? 
+        allPokemon.filter(p => p.types.some(t => t.type.name === currentTypeFilter)) : 
+        allPokemon;
+    
+    if (!filteredPokemon.length) return;
+    
+    let selectedPokemon = filteredPokemon[currentPokemonIndex];
+    alert(`Pokémon Info: ${selectedPokemon.name}\nID: ${selectedPokemon.id}\nTypes: ${selectedPokemon.types.map(t => t.type.name).join(', ')}`);
+};
+
+document.getElementById('favorite-button').onclick = function() {
+    if (!allPokemon.length) return;
+    
+    let filteredPokemon = currentTypeFilter ? 
+        allPokemon.filter(p => p.types.some(t => t.type.name === currentTypeFilter)) : 
+        allPokemon;
+    
+    if (!filteredPokemon.length) return;
+    
+    let selectedPokemon = filteredPokemon[currentPokemonIndex];
+    
+    // Add to favorites
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    
+    if (favorites.some(f => f.id === selectedPokemon.id)) {
+        alert(`${selectedPokemon.name} is already in your favorites!`);
+    } else {
+        favorites.push(selectedPokemon);
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+        alert(`${selectedPokemon.name} added to favorites!`);
+    }
+};
+
+// Search functionality
+document.getElementById('search-bar').addEventListener('input', function() {
+    let searchTerm = this.value.toLowerCase();
+    
+    if (!searchTerm) {
+        currentTypeFilter = '';
+        displayPokemon(0);
+        return;
+    }
+    
+    // Filter Pokémon by name
+    let searchResults = allPokemon.filter(p => p.name.toLowerCase().includes(searchTerm));
+    
+    if (searchResults.length) {
+        // Display the first result
+        let resultIndex = allPokemon.findIndex(p => p.id === searchResults[0].id);
+        currentTypeFilter = '';
+        displayPokemon(resultIndex);
+    }
+});
+
+// ---- INITIALIZATION ----
 window.addEventListener('DOMContentLoaded', function() {
     setupModalCloseButtons();
-    updateAuthBar();
-    checkDailyRaidPass();
+    
+    // Load user data
     let userData = localStorage.getItem('currentUser');
     if(userData) {
         user = JSON.parse(userData);
@@ -525,9 +2239,84 @@ window.addEventListener('DOMContentLoaded', function() {
         isPremium = !!user.isPremium;
         premiumLevel = user.premiumLevel || null;
         points = user.points || 0;
-        caughtPokemon = (user.caught||[]).map(name=>({id:25,name})); // Simplified for demo
+        berryCount = user.berries || 0;
+        raidPassCount = user.raidPasses || 0;
+        dailyRaidPassTimestamp = user.dailyRaidPassTimestamp || 0;
+        
+        // Load caught Pokémon
+        caughtPokemon = [];
+        if (user.caught && user.caught.length) {
+            user.caught.forEach(name => {
+                // Simple placeholder for now
+                caughtPokemon.push({
+                    name: name,
+                    id: Math.floor(Math.random() * 151) + 1,
+                    types: [{type: {name: 'normal'}}]
+                });
+            });
+        }
     }
-    if (true) showPinkDotOnRaid();
+    
+    updateAuthBar();
+    checkDailyRaidPass();
+    
+    // Load custom Pokémon data
+    let customPokemon = localStorage.getItem('customPokemon');
+    if (customPokemon) {
+        allPokemon = JSON.parse(customPokemon);
+    }
+    
+    // If no custom Pokémon, load from API
+    if (!allPokemon.length) {
+        // For demo, create some sample Pokémon
+        allPokemon = [
+            {
+                id: 1,
+                name: "bulbasaur",
+                types: [
+                    { type: { name: "grass" } },
+                    { type: { name: "poison" } }
+                ],
+                height: 7,
+                weight: 69,
+                description: "A strange seed was planted on its back at birth. The plant sprouts and grows with this Pokémon."
+            },
+            {
+                id: 4,
+                name: "charmander",
+                types: [
+                    { type: { name: "fire" } }
+                ],
+                height: 6,
+                weight: 85,
+                description: "From the time it is born, a flame burns at the tip of its tail. Its life would end if the flame were to go out."
+            },
+            {
+                id: 7,
+                name: "squirtle",
+                types: [
+                    { type: { name: "water" } }
+                ],
+                height: 5,
+                weight: 90,
+                description: "When it retracts its long neck into its shell, it squirts out water with vigorous force."
+            },
+            {
+                id: 25,
+                name: "pikachu",
+                types: [
+                    { type: { name: "electric" } }
+                ],
+                height: 4,
+                weight: 60,
+                description: "When it is angered, it immediately discharges the energy stored in the pouches in its cheeks."
+            }
+        ];
+    }
+    
+    // Display first Pokémon
+    displayPokemon(0);
+    
     // Admin in-place editing (title)
     if (user && user.isAdmin) {
         let h1 = document.querySelector('h1');
@@ -541,8 +2330,6 @@ window.addEventListener('DOMContentLoaded', function() {
         if (savedTitle) h1.textContent = savedTitle;
     }
 });
-// ...You must keep your existing main Pokédex app logic, modals, and all other JavaScript...
 </script>
-<!-- ...rest of your HTML and <script> as in original file, including all other modals, pokedex-container, etc... -->
 </body>
 </html>
