@@ -115,6 +115,8 @@
   <h1>Brawldle</h1>
   <div id="root"></div>
   <script>
+    console.log("Script is running!");
+
     const BRAWLERS = [
       { name: 'Shelly', rarity: 'Starting Brawler', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Shelly.png', pin: 'https://cdn.brawlify.com/pins/Shelly/Pin.png' },
       { name: 'Nita', rarity: 'Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Nita.png', pin: 'https://cdn.brawlify.com/pins/Nita/Pin.png' },
@@ -267,6 +269,18 @@
         return 'incorrect';
       };
 
+      const StatItem = ({ label, value, hint }) => {
+        const hintClass = hint ? (hint === 'correct' ? 'correct' : 'incorrect') : (value === answer[label] ? 'correct' : 'incorrect');
+        const hintSymbol = hint ? (hint === 'more' ? '↑' : hint === 'less' ? '↓' : '') : '';
+        
+        return (
+          <div className={`stat-item ${hintClass}`}>
+            <span>{label}:</span>
+            <span>{value} {hintSymbol}</span>
+          </div>
+        );
+      };
+      
       return (
         <>
           <div className="controls">
@@ -298,22 +312,10 @@
                   <h3>{g.name}</h3>
                 </div>
                 <div className="guess-stats">
-                  <div className={`stat-item ${g.rarity === answer.rarity ? 'correct' : getRarityClass(g.rarity, answer.rarity)}`}>
-                    <span>Rarity:</span>
-                    <span>{g.rarity}</span>
-                  </div>
-                  <div className={`stat-item ${g.class === answer.class ? 'correct' : 'incorrect'}`}>
-                    <span>Class:</span>
-                    <span>{g.class}</span>
-                  </div>
-                  <div className={`stat-item ${g.speed === answer.speed ? 'correct' : 'incorrect'}`}>
-                    <span>Speed:</span>
-                    <span>{g.speed} {getSpeedHint(g.speed, answer.speed) === 'less' ? '↓' : getSpeedHint(g.speed, answer.speed) === 'more' ? '↑' : ''}</span>
-                  </div>
-                  <div className={`stat-item ${g.releaseDate === answer.releaseDate ? 'correct' : 'incorrect'}`}>
-                    <span>Release:</span>
-                    <span>{g.releaseDate} {getYearHint(g.releaseDate, answer.releaseDate) === 'less' ? '↑' : getYearHint(g.releaseDate, answer.releaseDate) === 'more' ? '↓' : ''}</span>
-                  </div>
+                  <StatItem label="Rarity" value={g.rarity} hint={getRarityClass(g.rarity, answer.rarity)} />
+                  <StatItem label="Class" value={g.class} hint={g.class === answer.class ? 'correct' : 'incorrect'} />
+                  <StatItem label="Speed" value={g.speed} hint={getSpeedHint(g.speed, answer.speed)} />
+                  <StatItem label="Release" value={g.releaseDate} hint={getYearHint(g.releaseDate, answer.releaseDate)} />
                 </div>
               </div>
             ))}
