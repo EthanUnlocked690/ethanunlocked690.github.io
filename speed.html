@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic Speedometer</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #2c3e50; /* Dark background for a 'dash' feel */
+            font-family: 'Segment7', monospace; /* Faking a digital display font */
+            flex-direction: column;
+            color: #ecf0f1;
+        }
+
+        .speedometer-container {
+            width: 300px;
+            height: 150px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 150px 150px 0 0;
+            background-color: #34495e;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .gauge {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 20px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 20px solid transparent;
+            border-right: 20px solid transparent;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(135deg);
+            box-sizing: border-box;
+        }
+
+        .speed-arc {
+            /* This is a visual element for the active speed zone, not used for needle movement */
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            border: 20px solid transparent;
+            border-top: 20px solid #27ae60; /* Green/Safety */
+            border-left: 20px solid #27ae60;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(135deg);
+            box-sizing: border-box;
+        }
+
+        .needle-pivot {
+            width: 16px;
+            height: 16px;
+            background-color: #e74c3c; /* Red center */
+            border: 3px solid #f9f9f9;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -8px; /* Adjusted for better centering */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .needle {
+            width: 3px;
+            height: 140px;
+            background-color: #e74c3c;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform-origin: bottom center;
+            transform: translateX(-50%) rotate(135deg);
+            transition: transform 0.1s linear; /* Faster, linear transition for realism */
+            z-index: 9;
+        }
+
+        .speed-display {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #f1c40f; /* Amber color for digital look */
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+        
+        .unit {
+            font-size: 0.3em;
+            font-weight: normal;
+            display: block;
+            color: #bdc3c7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #accelerate {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        #accelerate:hover {
+            background-color: #27ae60;
+        }
+
+        #brake {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        #brake:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="speedometer-container">
+        <div class="gauge"></div>
+        <div class="speed-arc"></div>
+        <div class="needle"></div>
+        <div class="needle-pivot"></div>
+        <div id="speedDisplay" class="speed-display">0<span class="unit">KM/H</span></div>
+    </div>
+
+    <div class="controls">
+        <button id="accelerate">Accelerate</button>
+        <button id="brake">Brake</button>
+    </div>
+
+    <script>
+        // --- Configuration ---
+        const needle = document.querySelector('.needle');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const accelerateBtn = document.getElementById('accelerate');
+        const brakeBtn = document.getElementById('brake');
+
+        const MIN_SPEED = 0;
+        const MAX_SPEED = 240;
+        const MIN_DEGREE = 135;
+        const MAX_DEGREE = 405; 
+
+        // Physics Constants (adjust these for different feel)
+        const ACCELERATION_RATE = 0.5; // KM/H per update step
+        const BRAKE_RATE = 1.0;       // KM/H per update step
+        const DRAG_RATE = 0.05;       // Natural deceleration (friction)
+        const UPDATE_INTERVAL = 50;   // Milliseconds (20 FPS for smoother updates)
+
+        // State Variables
+        let currentSpeed = 0; // Current speed in KM/H
+        let accelerating = false;
+        let braking = false;
+
+        // --- Helper Function ---
+        function mapValue(value, min1, max1, min2, max2) {
+            return min2 + (max2 - min2) * ((value - min1) / (max1 - min1));
+        }
+
+        // --- Core Update Logic ---
+
+        function updateSpeedometer() {
+            let speedChange = 0;
+
+            // 1. Apply acceleration/braking
+            if (accelerating) {
+                speedChange += ACCELERATION_RATE;
+            } else if (braking) {
+                speedChange -= BRAKE_RATE;
+            }
+
+            // 2. Apply natural deceleration (drag/friction) only if not accelerating
+            if (!accelerating) {
+                if (currentSpeed > 0) {
+                    speedChange -= DRAG_RATE;
+                }
+            }
+
+            // 3. Update the speed
+            currentSpeed += speedChange;
+
+            // 4. Clamp the speed to min/max
+            currentSpeed = Math.max(MIN_SPEED, Math.min(MAX_SPEED, currentSpeed));
+
+            // 5. Update the Needle
+            const degree = mapValue(currentSpeed, MIN_SPEED, MAX_SPEED, MIN_DEGREE, MAX_DEGREE);
+            needle.style.transform = `translateX(-50%) rotate(${degree}deg)`;
+
+            // 6. Update the Digital Display (rounded)
+            const displaySpeed = Math.round(currentSpeed);
+            speedDisplay.innerHTML = `${displaySpeed}<span class="unit">KM/H</span>`;
+        }
+
+        // --- Event Listeners for Controls ---
+
+        // Accelerate: Press and Hold
+        accelerateBtn.addEventListener('mousedown', () => { accelerating = true; braking = false; });
+        accelerateBtn.addEventListener('mouseup', () => { accelerating = false; });
+        accelerateBtn.addEventListener('mouseleave', () => { accelerating = false; });
+        // Handle touch events for mobile
+        accelerateBtn.addEventListener('touchstart', (e) => { e.preventDefault(); accelerating = true; braking = false; });
+        accelerateBtn.addEventListener('touchend', (e) => { e.preventDefault(); accelerating = false; });
+
+        // Brake: Press and Hold
+        brakeBtn.addEventListener('mousedown', () => { braking = true; accelerating = false; });
+        brakeBtn.addEventListener('mouseup', () => { braking = false; });
+        brakeBtn.addEventListener('mouseleave', () => { braking = false; });
+        // Handle touch events for mobile
+        brakeBtn.addEventListener('touchstart', (e) => { e.preventDefault(); braking = true; accelerating = false; });
+        brakeBtn.addEventListener('touchend', (e) => { e.preventDefault(); braking = false; });
+
+
+        // --- Main Simulation Loop ---
+        setInterval(updateSpeedometer, UPDATE_INTERVAL);
+        
+        // Initial call
+        updateSpeedometer();
+    </script>
+</body>
+</html>
