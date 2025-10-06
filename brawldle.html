@@ -1,343 +1,493 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brawldle</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 1rem;
-    }
-    h1 {
-      margin-bottom: 1rem;
-      font-size: 2rem;
-      text-align: center;
-    }
-    .board {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      width: 100%;
-      max-width: 500px;
-    }
-    .guess {
-      display: flex;
-      flex-direction: column;
-      background: #222;
-      padding: 0.5rem;
-      border-radius: 8px;
-    }
-    .guess-header {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-    }
-    .guess img {
-      height: 50px;
-      width: 50px;
-      object-fit: contain;
-    }
-    .guess-stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-    }
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.25rem;
-      border-radius: 4px;
-    }
-    .correct {
-      background: #4caf50;
-    }
-    .close {
-      background: #ffc107;
-    }
-    .incorrect {
-      background: #f44336;
-    }
-    .controls {
-      margin-top: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      width: 100%;
-      max-width: 500px;
-    }
-    input, button, select {
-      padding: 0.5rem;
-      border-radius: 6px;
-      border: none;
-      font-size: 1rem;
-    }
-    button {
-      background: #f04e4e;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #c33;
-    }
-    .result-card {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #222;
-      border-radius: 10px;
-      text-align: center;
-    }
-    .result-card img {
-      display: block;
-      margin: 0.5rem auto;
-      max-height: 100px;
-    }
-    .guess-counter {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars-dle</title>
+    <style>
+        /* --- CSS --- */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a2e; /* Dark theme */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #ffc107;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+            margin-bottom: 20px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 800px; /* Wider container to fit all columns */
+            background-color: #2c2c54;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255, 193, 7, 0.3);
+        }
+
+        /* --- Input and Header --- */
+        #input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #guess-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 3px solid #ffc107;
+            border-radius: 8px;
+            font-size: 1.1em;
+            background-color: #3f3f6e;
+            color: #fff;
+            text-transform: capitalize;
+            outline: none;
+        }
+
+        #guess-button {
+            padding: 12px 25px;
+            background-color: #ffc107;
+            color: #1a1a2e;
+            font-weight: 900;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #guess-button:hover {
+            background-color: #ff9800;
+        }
+        #guess-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* --- Guess Grid --- */
+        .grid-header, .guess-row {
+            display: grid;
+            /* Name/Image | Rarity | Class | Speed | Release Date */
+            grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1.2fr; 
+            gap: 5px;
+            text-align: center;
+        }
+
+        .grid-header {
+            font-weight: 700;
+            padding: 10px 0;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #5a5a8a;
+        }
+
+        #guesses-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .guess-row {
+            padding: 10px 0;
+            border-radius: 8px;
+            background-color: #3f3f6e;
+            transition: transform 0.2s;
+        }
+        .guess-row:hover {
+            transform: scale(1.01);
+        }
+
+        .guess-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: 700;
+        }
+        
+        .name-cell {
+            justify-content: flex-start;
+            padding-left: 10px;
+            font-size: 1.1em;
+            gap: 10px;
+        }
+
+        .pin-image {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #fff; /* Pin background */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- Cell Colors (Feedback) --- */
+
+        /* Correct (Green) */
+        .correct { background-color: #4CAF50; }
+        
+        /* Incorrect (Red) */
+        .incorrect { background-color: #F44336; }
+
+        /* Clue (Yellow/Blue for Higher/Lower) */
+        .clue-higher {
+            background-color: #2196F3; /* Blue: Answer is HIGHER/LATER/FASTER */
+            position: relative;
+        }
+        .clue-higher::after { content: '▲'; margin-left: 5px; }
+        
+        .clue-lower {
+            background-color: #FFEB3B; /* Yellow: Answer is LOWER/EARLIER/SLOWER */
+            color: #000;
+            position: relative;
+        }
+        .clue-lower::after { content: '▼'; margin-left: 5px; color: #000; }
+
+        /* --- Game Over Modal --- */
+        #modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modal-content {
+            background-color: #2c2c54;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 50px #ffc107;
+            max-width: 90%;
+            border: 5px solid #ffc107;
+        }
+
+        #modal-content button {
+            margin-top: 20px;
+            padding: 10px 25px;
+            background-color: #2196F3;
+            color: white;
+            font-weight: 700;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h1>Brawldle</h1>
-  <div id="root"></div>
-  <script>
-    console.log("Script is running!");
 
-    const BRAWLERS = [
-      { name: 'Shelly', rarity: 'Starting Brawler', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Shelly.png', pin: 'https://cdn.brawlify.com/pins/Shelly/Pin.png' },
-      { name: 'Nita', rarity: 'Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Nita.png', pin: 'https://cdn.brawlify.com/pins/Nita/Pin.png' },
-      { name: 'Colt', rarity: 'Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Colt.png', pin: 'https://cdn.brawlify.com/pins/Colt/Pin.png' },
-      { name: 'Bull', rarity: 'Rare', class: 'Tank', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Bull.png', pin: 'https://cdn.brawlify.com/pins/Bull/Pin.png' },
-      { name: 'Brock', rarity: 'Rare', class: 'Marksman', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Brock.png', pin: 'https://cdn.brawlify.com/pins/Brock/Pin.png' },
-      { name: 'El Primo', rarity: 'Rare', class: 'Tank', speed: 770, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/El-Primo.png', pin: 'https://cdn.brawlify.com/pins/El-Primo/Pin.png' },
-      { name: 'Barley', rarity: 'Rare', class: 'Artillery', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Barley.png', pin: 'https://cdn.brawlify.com/pins/Barley/Pin.png' },
-      { name: 'Poco', rarity: 'Rare', class: 'Support', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Poco.png', pin: 'https://cdn.brawlify.com/pins/Poco/Pin.png' },
-      { name: 'Rosa', rarity: 'Rare', class: 'Tank', speed: 720, releaseDate: 'Apr 2019', image: 'https://cdn.brawlify.com/brawler/Rosa.png', pin: 'https://cdn.brawlify.com/pins/Rosa/Pin.png' },
-      { name: 'Jessie', rarity: 'Super Rare', class: 'Controller', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Jessie.png', pin: 'https://cdn.brawlify.com/pins/Jessie/Pin.png' },
-      { name: 'Dynamike', rarity: 'Super Rare', class: 'Artillery', speed: 770, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Dynamike.png', pin: 'https://cdn.brawlify.com/pins/Dynamike/Pin.png' },
-      { name: 'Tick', rarity: 'Super Rare', class: 'Artillery', speed: 770, releaseDate: 'Jun 2019', image: 'https://cdn.brawlify.com/brawler/Tick.png', pin: 'https://cdn.brawlify.com/pins/Tick/Pin.png' },
-      { name: '8-Bit', rarity: 'Super Rare', class: 'Damage Dealer', speed: 580, releaseDate: 'Aug 2019', image: 'https://cdn.brawlify.com/brawler/8-Bit.png', pin: 'https://cdn.brawlify.com/pins/8-Bit/Pin.png' },
-      { name: 'Rico', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Rico.png', pin: 'https://cdn.brawlify.com/pins/Rico/Pin.png' },
-      { name: 'Darryl', rarity: 'Super Rare', class: 'Tank', speed: 770, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Darryl.png', pin: 'https://cdn.brawlify.com/pins/Darryl/Pin.png' },
-      { name: 'Penny', rarity: 'Super Rare', class: 'Controller', speed: 720, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Penny.png', pin: 'https://cdn.brawlify.com/pins/Penny/Pin.png' },
-      { name: 'Carl', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Carl.png', pin: 'https://cdn.brawlify.com/pins/Carl/Pin.png' },
-      { name: 'Jacky', rarity: 'Super Rare', class: 'Tank', speed: 770, releaseDate: 'Mar 2020', image: 'https://cdn.brawlify.com/brawler/Jacky.png', pin: 'https://cdn.brawlify.com/pins/Jacky/Pin.png' },
-      { name: 'Gus', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2022', image: 'https://cdn.brawlify.com/brawler/Gus.png', pin: 'https://cdn.brawlify.com/pins/Gus/Pin.png' },
-      { name: 'Gale', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'May 2020', image: 'https://cdn.brawlify.com/brawler/Gale.png', pin: 'https://cdn.brawlify.com/pins/Gale/Pin.png' },
-      { name: 'Bo', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Bo.png', pin: 'https://cdn.brawlify.com/pins/Bo/Pin.png' },
-      { name: 'Emz', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'Oct 2019', image: 'https://cdn.brawlify.com/brawler/Emz.png', pin: 'https://cdn.brawlify.com/pins/Emz/Pin.png' },
-      { name: 'Piper', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Piper.png', pin: 'https://cdn.brawlify.com/pins/Piper/Pin.png' },
-      { name: 'Pam', rarity: 'Epic', class: 'Support', speed: 720, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Pam.png', pin: 'https://cdn.brawlify.com/pins/Pam/Pin.png' },
-      { name: 'Frank', rarity: 'Epic', class: 'Tank', speed: 770, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Frank.png', pin: 'https://cdn.brawlify.com/pins/Frank/Pin.png' },
-      { name: 'Bibi', rarity: 'Epic', class: 'Tank', speed: 820, releaseDate: 'May 2019', image: 'https://cdn.brawlify.com/brawler/Bibi.png', pin: 'https://cdn.brawlify.com/pins/Bibi/Pin.png' },
-      { name: 'Bea', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Nov 2019', image: 'https://cdn.brawlify.com/brawler/Bea.png', pin: 'https://cdn.brawlify.com/pins/Bea/Pin.png' },
-      { name: 'Nani', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Jun 2020', image: 'https://cdn.brawlify.com/brawler/Nani.png', pin: 'https://cdn.brawlify.com/pins/Nani/Pin.png' },
-      { name: 'Griff', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'Jul 2021', image: 'https://cdn.brawlify.com/brawler/Griff.png', pin: 'https://cdn.brawlify.com/pins/Griff/Pin.png' },
-      { name: 'Edgar', rarity: 'Epic', class: 'Assassin', speed: 820, releaseDate: 'Dec 2020', image: 'https://cdn.brawlify.com/brawler/Edgar.png', pin: 'https://cdn.brawlify.com/pins/Edgar/Pin.png' },
-      { name: 'Grom', rarity: 'Epic', class: 'Artillery', speed: 720, releaseDate: 'Dec 2021', image: 'https://cdn.brawlify.com/brawler/Grom.png', pin: 'https://cdn.brawlify.com/pins/Grom/Pin.png' },
-      { name: 'Bonnie', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'May 2022', image: 'https://cdn.brawlify.com/brawler/Bonnie.png', pin: 'https://cdn.brawlify.com/pins/Bonnie/Pin.png' },
-      { name: 'Stu', rarity: 'Epic', class: 'Assassin', speed: 820, releaseDate: 'Mar 2021', image: 'https://cdn.brawlify.com/brawler/Stu.png', pin: 'https://cdn.brawlify.com/pins/Stu/Pin.png' },
-      { name: 'Colette', rarity: 'Epic', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2020', image: 'https://cdn.brawlify.com/brawler/Colette.png', pin: 'https://cdn.brawlify.com/pins/Colette/Pin.png' },
-      { name: 'Belle', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Apr 2021', image: 'https://cdn.brawlify.com/brawler/Belle.png', pin: 'https://cdn.brawlify.com/pins/Belle/Pin.png' },
-      { name: 'Ash', rarity: 'Epic', class: 'Tank', speed: 720, releaseDate: 'Aug 2021', image: 'https://cdn.brawlify.com/brawler/Ash.png', pin: 'https://cdn.brawlify.com/pins/Ash/Pin.png' },
-      { name: 'Lola', rarity: 'Epic', class: 'Damage Dealer', speed: 720, releaseDate: 'Nov 2021', image: 'https://cdn.brawlify.com/brawler/Lola.png', pin: 'https://cdn.brawlify.com/pins/Lola/Pin.png' },
-      { name: 'Sam', rarity: 'Epic', class: 'Controller', speed: 770, releaseDate: 'Sep 2022', image: 'https://cdn.brawlify.com/brawler/Sam.png', pin: 'https://cdn.brawlify.com/pins/Sam/Pin.png' },
-      { name: 'Mandy', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Dec 2022', image: 'https://cdn.brawlify.com/brawler/Mandy.png', pin: 'https://cdn.brawlify.com/pins/Mandy/Pin.png' },
-      { name: 'Hank', rarity: 'Epic', class: 'Tank', speed: 720, releaseDate: 'Jun 2023', image: 'https://cdn.brawlify.com/brawler/Hank.png', pin: 'https://cdn.brawlify.com/pins/Hank/Pin.png' },
-      { name: 'Pearl', rarity: 'Epic', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2023', image: 'https://cdn.brawlify.com/brawler/Pearl.png', pin: 'https://cdn.brawlify.com/pins/Pearl/Pin.png' },
-      { name: 'Maisie', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Apr 2023', image: 'https://cdn.brawlify.com/brawler/Maisie.png', pin: 'https://cdn.brawlify.com/pins/Maisie/Pin.png' },
-      { name: 'Angelo', rarity: 'Epic', class: 'Marksman', speed: 820, releaseDate: 'Mar 2024', image: 'https://cdn.brawlify.com/brawler/Angelo.png', pin: 'https://cdn.brawlify.com/pins/Angelo/Pin.png' },
-      { name: 'Janet', rarity: 'Mythic', class: 'Marksman', speed: 720, releaseDate: 'May 2022', image: 'https://cdn.brawlify.com/brawler/Janet.png', pin: 'https://cdn.brawlify.com/pins/Janet/Pin.png' },
-      { name: 'Melodie', rarity: 'Mythic', class: 'Assassin', speed: 770, releaseDate: 'Mar 2024', image: 'https://cdn.brawlify.com/brawler/Melodie.png', pin: 'https://cdn.brawlify.com/pins/Melodie/Pin.png' },
-      { name: 'Chuck', rarity: 'Mythic', class: 'Controller', speed: 770, releaseDate: 'Oct 2023', image: 'https://cdn.brawlify.com/brawler/Chuck.png', pin: 'https://cdn.brawlify.com/pins/Chuck/Pin.png' },
-      { name: 'Mortis', rarity: 'Mythic', class: 'Assassin', speed: 820, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Mortis.png', pin: 'https://cdn.brawlify.com/pins/Mortis/Pin.png' },
-      { name: 'Tara', rarity: 'Mythic', class: 'Damage Dealer', speed: 770, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Tara.png', pin: 'https://cdn.brawlify.com/pins/Tara/Pin.png' },
-      { name: 'Gene', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Feb 2019', image: 'https://cdn.brawlify.com/brawler/Gene.png', pin: 'https://cdn.brawlify.com/pins/Gene/Pin.png' },
-      { name: 'Max', rarity: 'Mythic', class: 'Support', speed: 820, releaseDate: 'Dec 2019', image: 'https://cdn.brawlify.com/brawler/Max.png', pin: 'https://cdn.brawlify.com/pins/Max/Pin.png' },
-      { name: 'Mr. P', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Jan 2020', image: 'https://cdn.brawlify.com/brawler/Mr.-P.png', pin: 'https://cdn.brawlify.com/pins/Mr.-P/Pin.png' },
-      { name: 'Sprout', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, releaseDate: 'May 2020', image: 'https://cdn.brawlify.com/brawler/Sprout.png', pin: 'https://cdn.brawlify.com/pins/Sprout/Pin.png' },
-      { name: 'Byron', rarity: 'Mythic', class: 'Support', speed: 720, releaseDate: 'Dec 2020', image: 'https://cdn.brawlify.com/brawler/Byron.png', pin: 'https://cdn.brawlify.com/pins/Byron/Pin.png' },
-      { name: 'Squeak', rarity: 'Mythic', class: 'Controller', speed: 770, releaseDate: 'May 2021', image: 'https://cdn.brawlify.com/brawler/Squeak.png', pin: 'https://cdn.brawlify.com/pins/Squeak/Pin.png' },
-      { name: 'Gray', rarity: 'Mythic', class: 'Support', speed: 720, releaseDate: 'Dec 2022', image: 'https://cdn.brawlify.com/brawler/Gray.png', pin: 'https://cdn.brawlify.com/pins/Gray/Pin.png' },
-      { name: 'Willow', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Apr 2023', image: 'https://cdn.brawlify.com/brawler/Willow.png', pin: 'https://cdn.brawlify.com/pins/Willow/Pin.png' },
-      { name: 'Doug', rarity: 'Mythic', class: 'Support', speed: 770, releaseDate: 'Aug 2023', image: 'https://cdn.brawlify.com/brawler/Doug.png', pin: 'https://cdn.brawlify.com/pins/Doug/Pin.png' },
-      { name: 'Mico', rarity: 'Mythic', class: 'Assassin', speed: 820, releaseDate: 'Dec 2023', image: 'https://cdn.brawlify.com/brawler/Mico.png', pin: 'https://cdn.brawlify.com/pins/Mico/Pin.png' },
-      { name: 'Ruffs', rarity: 'Mythic', class: 'Support', speed: 720, releaseDate: 'Feb 2021', image: 'https://cdn.brawlify.com/brawler/Colonel-Ruffs.png', pin: 'https://cdn.brawlify.com/pins/Colonel-Ruffs/Pin.png' },
-      { name: 'Buzz', rarity: 'Mythic', class: 'Assassin', speed: 770, releaseDate: 'Jul 2021', image: 'https://cdn.brawlify.com/brawler/Buzz.png', pin: 'https://cdn.brawlify.com/pins/Buzz/Pin.png' },
-      { name: 'Fang', rarity: 'Mythic', class: 'Assassin', speed: 770, releaseDate: 'Jan 2022', image: 'https://cdn.brawlify.com/brawler/Fang.png', pin: 'https://cdn.brawlify.com/pins/Fang/Pin.png' },
-      { name: 'Buster', rarity: 'Mythic', class: 'Tank', speed: 770, releaseDate: 'Nov 2022', image: 'https://cdn.brawlify.com/brawler/Buster.png', pin: 'https://cdn.brawlify.com/pins/Buster/Pin.png' },
-      { name: 'Eve', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, releaseDate: 'Mar 2022', image: 'https://cdn.brawlify.com/brawler/Eve.png', pin: 'https://cdn.brawlify.com/pins/Eve/Pin.png' },
-      { name: 'Lou', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Nov 2020', image: 'https://cdn.brawlify.com/brawler/Lou.png', pin: 'https://cdn.brawlify.com/pins/Lou/Pin.png' },
-      { name: 'Otis', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Jul 2022', image: 'https://cdn.brawlify.com/brawler/Otis.png', pin: 'https://cdn.brawlify.com/pins/Otis/Pin.png' },
-      { name: 'Juju', rarity: 'Mythic', class: 'Artillery', speed: 720, releaseDate: 'Nov 2024', image: 'https://cdn.brawlify.com/brawler/Juju.png', pin: 'https://cdn.brawlify.com/pins/Juju/Pin.png' },
-      { name: 'Ziggy', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Sep 2025', image: 'https://cdn.brawlify.com/brawler/Ziggy.png', pin: 'https://cdn.brawlify.com/pins/Ziggy/Pin.png' },
-      { name: 'Mina', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2025', image: 'https://cdn.brawlify.com/brawler/Mina.png', pin: 'https://cdn.brawlify.com/pins/Mina/Pin.png' },
-      { name: 'Spike', rarity: 'Legendary', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Spike.png', pin: 'https://cdn.brawlify.com/pins/Spike/Pin.png' },
-      { name: 'Crow', rarity: 'Legendary', class: 'Assassin', speed: 820, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Crow.png', pin: 'https://cdn.brawlify.com/pins/Crow/Pin.png' },
-      { name: 'Leon', rarity: 'Legendary', class: 'Assassin', speed: 820, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Leon.png', pin: 'https://cdn.brawlify.com/pins/Leon/Pin.png' },
-      { name: 'Sandy', rarity: 'Legendary', class: 'Controller', speed: 720, releaseDate: 'Sep 2019', image: 'https://cdn.brawlify.com/brawler/Sandy.png', pin: 'https://cdn.brawlify.com/pins/Sandy/Pin.png' },
-      { name: 'Amber', rarity: 'Legendary', class: 'Controller', speed: 720, releaseDate: 'Oct 2020', image: 'https://cdn.brawlify.com/brawler/Amber.png', pin: 'https://cdn.brawlify.com/pins/Amber/Pin.png' },
-      { name: 'Meg', rarity: 'Legendary', class: 'Tank', speed: 720, releaseDate: 'Sep 2021', image: 'https://cdn.brawlify.com/brawler/Meg.png', pin: 'https://cdn.brawlify.com/pins/Meg/Pin.png' },
-      { name: 'Chester', rarity: 'Legendary', class: 'Damage Dealer', speed: 770, releaseDate: 'Dec 2022', image: 'https://cdn.brawlify.com/brawler/Chester.png', pin: 'https://cdn.brawlify.com/pins/Chester/Pin.png' },
-      { name: 'Cordelius', rarity: 'Legendary', class: 'Assassin', speed: 820, releaseDate: 'Jul 2023', image: 'https://cdn.brawlify.com/brawler/Cordelius.png', pin: 'https://cdn.brawlify.com/pins/Cordelius/Pin.png' },
-      { name: 'Draco', rarity: 'Legendary', class: 'Tank', speed: 720, releaseDate: 'May 2024', image: 'https://cdn.brawlify.com/brawler/Draco.png', pin: 'https://cdn.brawlify.com/pins/Draco/Pin.png' },
-      { name: 'Kit', rarity: 'Legendary', class: 'Support', speed: 720, releaseDate: 'Jan 2024', image: 'https://cdn.brawlify.com/brawler/Kit.png', pin: 'https://cdn.brawlify.com/pins/Kit/Pin.png' },
-      { name: 'Surge', rarity: 'Legendary', class: 'Damage Dealer', speed: 770, releaseDate: 'Jul 2020', image: 'https://cdn.brawlify.com/brawler/Surge.png', pin: 'https://cdn.brawlify.com/pins/Surge/Pin.png' },
-      { name: 'Kaze', rarity: 'Ultra Legendary', class: 'Assassin', speed: 820, releaseDate: 'Mar 2025', image: 'https://cdn.brawlify.com/brawler/Kaze.png', pin: 'https://cdn.brawlify.com/pins/Kaze/Pin.png' },
-    ];
-    
-    function getDailyAnswer() {
-      const today = new Date().toISOString().split('T')[0];
-      const seed = today.split('-').join('');
-      const idx = parseInt(seed, 10) % BRAWLERS.length;
-      return BRAWLERS[idx];
-    }
+    <div id="game-container">
+        <h1>BRAWL STARS-DLE</h1>
 
-    function App() {
-      const [mode, setMode] = React.useState('daily');
-      const [answer, setAnswer] = React.useState(getDailyAnswer());
-      const [guesses, setGuesses] = React.useState([]);
-      const [win, setWin] = React.useState(false);
-      const [lose, setLose] = React.useState(false);
-      const guessLimit = 6;
+        <div id="input-area">
+            <input type="text" id="guess-input" placeholder="Enter Brawler Name (e.g., Shelly)">
+            <button id="guess-button">Guess</button>
+        </div>
+        
+        <div class="grid-header">
+            <div class="header-name">BRAWLER</div>
+            <div class="header-rarity">RARITY</div>
+            <div class="header-class">CLASS</div>
+            <div class="header-speed">SPEED</div>
+            <div class="header-date">RELEASE DATE</div>
+        </div>
 
-      const handleGuess = () => {
-        if (win || lose) return;
+        <div id="guesses-list">
+            </div>
+    </div>
 
+    <div id="modal">
+        <div id="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <p>The Brawler was: <span id="final-answer" style="color: #ffc107; font-weight: 700;"></span></p>
+            <button onclick="window.location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT: BRAWLER DATA ---
+
+        const BRAWLERS_RAW = [
+            { name: 'Shelly', rarity: 'Starting Brawler', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Shelly.png', pin: 'https://cdn.brawlify.com/pins/Shelly/Pin.png' },
+            { name: 'Nita', rarity: 'Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Nita.png', pin: 'https://cdn.brawlify.com/pins/Nita/Pin.png' },
+            { name: 'Colt', rarity: 'Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Colt.png', pin: 'https://cdn.brawlify.com/pins/Colt/Pin.png' },
+            { name: 'Bull', rarity: 'Rare', class: 'Tank', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Bull.png', pin: 'https://cdn.brawlify.com/pins/Bull/Pin.png' },
+            { name: 'Brock', rarity: 'Rare', class: 'Marksman', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Brock.png', pin: 'https://cdn.brawlify.com/pins/Brock/Pin.png' },
+            { name: 'El Primo', rarity: 'Rare', class: 'Tank', speed: 770, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/El-Primo.png', pin: 'https://cdn.brawlify.com/pins/El-Primo/Pin.png' },
+            { name: 'Barley', rarity: 'Rare', class: 'Artillery', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Barley.png', pin: 'https://cdn.brawlify.com/pins/Barley/Pin.png' },
+            { name: 'Poco', rarity: 'Rare', class: 'Support', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Poco.png', pin: 'https://cdn.brawlify.com/pins/Poco/Pin.png' },
+            { name: 'Rosa', rarity: 'Rare', class: 'Tank', speed: 720, releaseDate: 'Apr 2019', image: 'https://cdn.brawlify.com/brawler/Rosa.png', pin: 'https://cdn.brawlify.com/pins/Rosa/Pin.png' },
+            { name: 'Jessie', rarity: 'Super Rare', class: 'Controller', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Jessie.png', pin: 'https://cdn.brawlify.com/pins/Jessie/Pin.png' },
+            { name: 'Dynamike', rarity: 'Super Rare', class: 'Artillery', speed: 770, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Dynamike.png', pin: 'https://cdn.brawlify.com/pins/Dynamike/Pin.png' },
+            { name: 'Tick', rarity: 'Super Rare', class: 'Artillery', speed: 770, releaseDate: 'Jun 2019', image: 'https://cdn.brawlify.com/brawler/Tick.png', pin: 'https://cdn.brawlify.com/pins/Tick/Pin.png' },
+            { name: '8-Bit', rarity: 'Super Rare', class: 'Damage Dealer', speed: 580, releaseDate: 'Aug 2019', image: 'https://cdn.brawlify.com/brawler/8-Bit.png', pin: 'https://cdn.brawlify.com/pins/8-Bit/Pin.png' },
+            { name: 'Rico', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Rico.png', pin: 'https://cdn.brawlify.com/pins/Rico/Pin.png' },
+            { name: 'Darryl', rarity: 'Super Rare', class: 'Tank', speed: 770, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Darryl.png', pin: 'https://cdn.brawlify.com/pins/Darryl/Pin.png' },
+            { name: 'Penny', rarity: 'Super Rare', class: 'Controller', speed: 720, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Penny.png', pin: 'https://cdn.brawlify.com/pins/Penny/Pin.png' },
+            { name: 'Carl', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Carl.png', pin: 'https://cdn.brawlify.com/pins/Carl/Pin.png' },
+            { name: 'Jacky', rarity: 'Super Rare', class: 'Tank', speed: 770, releaseDate: 'Mar 2020', image: 'https://cdn.brawlify.com/brawler/Jacky.png', pin: 'https://cdn.brawlify.com/pins/Jacky/Pin.png' },
+            { name: 'Gus', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2022', image: 'https://cdn.brawlify.com/brawler/Gus.png', pin: 'https://cdn.brawlify.com/pins/Gus/Pin.png' },
+            { name: 'Gale', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'May 2020', image: 'https://cdn.brawlify.com/brawler/Gale.png', pin: 'https://cdn.brawlify.com/pins/Gale/Pin.png' },
+            { name: 'Bo', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Bo.png', pin: 'https://cdn.brawlify.com/pins/Bo/Pin.png' },
+            { name: 'Emz', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'Oct 2019', image: 'https://cdn.brawlify.com/brawler/Emz.png', pin: 'https://cdn.brawlify.com/pins/Emz/Pin.png' },
+            { name: 'Piper', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Piper.png', pin: 'https://cdn.brawlify.com/pins/Piper/Pin.png' },
+            { name: 'Pam', rarity: 'Epic', class: 'Support', speed: 720, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Pam.png', pin: 'https://cdn.brawlify.com/pins/Pam/Pin.png' },
+            { name: 'Frank', rarity: 'Epic', class: 'Tank', speed: 770, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Frank.png', pin: 'https://cdn.brawlify.com/pins/Frank/Pin.png' },
+            { name: 'Bibi', rarity: 'Epic', class: 'Tank', speed: 820, releaseDate: 'May 2019', image: 'https://cdn.brawlify.com/brawler/Bibi.png', pin: 'https://cdn.brawlify.com/pins/Bibi/Pin.png' },
+            { name: 'Bea', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Nov 2019', image: 'https://cdn.brawlify.com/brawler/Bea.png', pin: 'https://cdn.brawlify.com/pins/Bea/Pin.png' },
+            { name: 'Nani', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Jun 2020', image: 'https://cdn.brawlify.com/brawler/Nani.png', pin: 'https://cdn.brawlify.com/pins/Nani/Pin.png' },
+            { name: 'Griff', rarity: 'Epic', class: 'Controller', speed: 720, releaseDate: 'Jul 2021', image: 'https://cdn.brawlify.com/brawler/Griff.png', pin: 'https://cdn.brawlify.com/pins/Griff/Pin.png' },
+            { name: 'Edgar', rarity: 'Epic', class: 'Assassin', speed: 820, releaseDate: 'Dec 2020', image: 'https://cdn.brawlify.com/brawler/Edgar.png', pin: 'https://cdn.brawlify.com/pins/Edgar/Pin.png' },
+            { name: 'Grom', rarity: 'Epic', class: 'Artillery', speed: 720, releaseDate: 'Dec 2021', image: 'https://cdn.brawlify.com/brawler/Grom.png', pin: 'https://cdn.brawlify.com/pins/Grom/Pin.png' },
+            { name: 'Bonnie', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'May 2022', image: 'https://cdn.brawlify.com/brawler/Bonnie.png', pin: 'https://cdn.brawlify.com/pins/Bonnie/Pin.png' },
+            { name: 'Stu', rarity: 'Epic', class: 'Assassin', speed: 820, releaseDate: 'Mar 2021', image: 'https://cdn.brawlify.com/brawler/Stu.png', pin: 'https://cdn.brawlify.com/pins/Stu/Pin.png' },
+            { name: 'Colette', rarity: 'Epic', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2020', image: 'https://cdn.brawlify.com/brawler/Colette.png', pin: 'https://cdn.brawlify.com/pins/Colette/Pin.png' },
+            { name: 'Belle', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Apr 2021', image: 'https://cdn.brawlify.com/brawler/Belle.png', pin: 'https://cdn.brawlify.com/pins/Belle/Pin.png' },
+            { name: 'Ash', rarity: 'Epic', class: 'Tank', speed: 720, releaseDate: 'Aug 2021', image: 'https://cdn.brawlify.com/brawler/Ash.png', pin: 'https://cdn.brawlify.com/pins/Ash/Pin.png' },
+            { name: 'Lola', rarity: 'Epic', class: 'Damage Dealer', speed: 720, releaseDate: 'Nov 2021', image: 'https://cdn.brawlify.com/brawler/Lola.png', pin: 'https://cdn.brawlify.com/pins/Lola/Pin.png' },
+            { name: 'Sam', rarity: 'Epic', class: 'Controller', speed: 770, releaseDate: 'Sep 2022', image: 'https://cdn.brawlify.com/brawler/Sam.png', pin: 'https://cdn.brawlify.com/pins/Sam/Pin.png' },
+            { name: 'Mandy', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Dec 2022', image: 'https://cdn.brawlify.com/brawler/Mandy.png', pin: 'https://cdn.brawlify.com/pins/Mandy/Pin.png' },
+            { name: 'Hank', rarity: 'Epic', class: 'Tank', speed: 720, releaseDate: 'Jun 2023', image: 'https://cdn.brawlify.com/brawler/Hank.png', pin: 'https://cdn.brawlify.com/pins/Hank/Pin.png' },
+            { name: 'Pearl', rarity: 'Epic', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2023', image: 'https://cdn.brawlify.com/brawler/Pearl.png', pin: 'https://cdn.brawlify.com/pins/Pearl/Pin.png' },
+            { name: 'Maisie', rarity: 'Epic', class: 'Marksman', speed: 720, releaseDate: 'Apr 2023', image: 'https://cdn.brawlify.com/brawler/Maisie.png', pin: 'https://cdn.brawlify.com/pins/Maisie/Pin.png' },
+            { name: 'Angelo', rarity: 'Epic', class: 'Marksman', speed: 820, releaseDate: 'Mar 2024', image: 'https://cdn.brawlify.com/brawler/Angelo.png', pin: 'https://cdn.brawlify.com/pins/Angelo/Pin.png' },
+            { name: 'Janet', rarity: 'Mythic', class: 'Marksman', speed: 720, releaseDate: 'May 2022', image: 'https://cdn.brawlify.com/brawler/Janet.png', pin: 'https://cdn.brawlify.com/pins/Janet/Pin.png' },
+            { name: 'Melodie', rarity: 'Mythic', class: 'Assassin', speed: 770, releaseDate: 'Mar 2024', image: 'https://cdn.brawlify.com/brawler/Melodie.png', pin: 'https://cdn.brawlify.com/pins/Melodie/Pin.png' },
+            { name: 'Chuck', rarity: 'Mythic', class: 'Controller', speed: 770, releaseDate: 'Oct 2023', image: 'https://cdn.brawlify.com/brawler/Chuck.png', pin: 'https://cdn.brawlify.com/pins/Chuck/Pin.png' },
+            { name: 'Mortis', rarity: 'Mythic', class: 'Assassin', speed: 820, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Mortis.png', pin: 'https://cdn.brawlify.com/pins/Mortis/Pin.png' },
+            { name: 'Tara', rarity: 'Mythic', class: 'Damage Dealer', speed: 770, releaseDate: 'Jan 2019', image: 'https://cdn.brawlify.com/brawler/Tara.png', pin: 'https://cdn.brawlify.com/pins/Tara/Pin.png' },
+            { name: 'Gene', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Feb 2019', image: 'https://cdn.brawlify.com/brawler/Gene.png', pin: 'https://cdn.brawlify.com/pins/Gene/Pin.png' },
+            { name: 'Max', rarity: 'Mythic', class: 'Support', speed: 820, releaseDate: 'Dec 2019', image: 'https://cdn.brawlify.com/brawler/Max.png', pin: 'https://cdn.brawlify.com/pins/Max/Pin.png' },
+            { name: 'Mr. P', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Jan 2020', image: 'https://cdn.brawlify.com/brawler/Mr.-P.png', pin: 'https://cdn.brawlify.com/pins/Mr.-P/Pin.png' },
+            { name: 'Sprout', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, releaseDate: 'May 2020', image: 'https://cdn.brawlify.com/brawler/Sprout.png', pin: 'https://cdn.brawlify.com/pins/Sprout/Pin.png' },
+            { name: 'Byron', rarity: 'Mythic', class: 'Support', speed: 720, releaseDate: 'Dec 2020', image: 'https://cdn.brawlify.com/brawler/Byron.png', pin: 'https://cdn.brawlify.com/pins/Byron/Pin.png' },
+            { name: 'Squeak', rarity: 'Mythic', class: 'Controller', speed: 770, releaseDate: 'May 2021', image: 'https://cdn.brawlify.com/brawler/Squeak.png', pin: 'https://cdn.brawlify.com/pins/Squeak/Pin.png' },
+            { name: 'Gray', rarity: 'Mythic', class: 'Support', speed: 720, releaseDate: 'Dec 2022', image: 'https://cdn.brawlify.com/brawler/Gray.png', pin: 'https://cdn.brawlify.com/pins/Gray/Pin.png' },
+            { name: 'Willow', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Apr 2023', image: 'https://cdn.brawlify.com/brawler/Willow.png', pin: 'https://cdn.brawlify.com/pins/Willow/Pin.png' },
+            { name: 'Doug', rarity: 'Mythic', class: 'Support', speed: 770, releaseDate: 'Aug 2023', image: 'https://cdn.brawlify.com/brawler/Doug.png', pin: 'https://cdn.brawlify.com/pins/Doug/Pin.png' },
+            { name: 'Mico', rarity: 'Mythic', class: 'Assassin', speed: 820, releaseDate: 'Dec 2023', image: 'https://cdn.brawlify.com/brawler/Mico.png', pin: 'https://cdn.brawlify.com/pins/Mico/Pin.png' },
+            { name: 'Ruffs', rarity: 'Mythic', class: 'Support', speed: 720, releaseDate: 'Feb 2021', image: 'https://cdn.brawlify.com/brawler/Colonel-Ruffs.png', pin: 'https://cdn.brawlify.com/pins/Colonel-Ruffs/Pin.png' },
+            { name: 'Buzz', rarity: 'Mythic', class: 'Assassin', speed: 770, releaseDate: 'Jul 2021', image: 'https://cdn.brawlify.com/brawler/Buzz.png', pin: 'https://cdn.brawlify.com/pins/Buzz/Pin.png' },
+            { name: 'Fang', rarity: 'Mythic', class: 'Assassin', speed: 770, releaseDate: 'Jan 2022', image: 'https://cdn.brawlify.com/brawler/Fang.png', pin: 'https://cdn.brawlify.com/pins/Fang/Pin.png' },
+            { name: 'Buster', rarity: 'Mythic', class: 'Tank', speed: 770, releaseDate: 'Nov 2022', image: 'https://cdn.brawlify.com/brawler/Buster.png', pin: 'https://cdn.brawlify.com/pins/Buster/Pin.png' },
+            { name: 'Eve', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, releaseDate: 'Mar 2022', image: 'https://cdn.brawlify.com/brawler/Eve.png', pin: 'https://cdn.brawlify.com/pins/Eve/Pin.png' },
+            { name: 'Lou', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Nov 2020', image: 'https://cdn.brawlify.com/brawler/Lou.png', pin: 'https://cdn.brawlify.com/pins/Lou/Pin.png' },
+            { name: 'Otis', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Jul 2022', image: 'https://cdn.brawlify.com/brawler/Otis.png', pin: 'https://cdn.brawlify.com/pins/Otis/Pin.png' },
+            { name: 'Juju', rarity: 'Mythic', class: 'Artillery', speed: 720, releaseDate: 'Nov 2024', image: 'https://cdn.brawlify.com/brawler/Juju.png', pin: 'https://cdn.brawlify.com/pins/Juju/Pin.png' },
+            { name: 'Ziggy', rarity: 'Mythic', class: 'Controller', speed: 720, releaseDate: 'Sep 2025', image: 'https://cdn.brawlify.com/brawler/Ziggy.png', pin: 'https://cdn.brawlify.com/pins/Ziggy/Pin.png' },
+            { name: 'Mina', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, releaseDate: 'Sep 2025', image: 'https://cdn.brawlify.com/brawler/Mina.png', pin: 'https://cdn.brawlify.com/pins/Mina/Pin.png' },
+            { name: 'Spike', rarity: 'Legendary', class: 'Damage Dealer', speed: 720, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Spike.png', pin: 'https://cdn.brawlify.com/pins/Spike/Pin.png' },
+            { name: 'Crow', rarity: 'Legendary', class: 'Assassin', speed: 820, releaseDate: 'Dec 2018', image: 'https://cdn.brawlify.com/brawler/Crow.png', pin: 'https://cdn.brawlify.com/pins/Crow/Pin.png' },
+            { name: 'Leon', rarity: 'Legendary', class: 'Assassin', speed: 820, releaseDate: 'Mar 2019', image: 'https://cdn.brawlify.com/brawler/Leon.png', pin: 'https://cdn.brawlify.com/pins/Leon/Pin.png' },
+            { name: 'Sandy', rarity: 'Legendary', class: 'Controller', speed: 720, releaseDate: 'Sep 2019', image: 'https://cdn.brawlify.com/brawler/Sandy.png', pin: 'https://cdn.brawlify.com/pins/Sandy/Pin.png' },
+            { name: 'Amber', rarity: 'Legendary', class: 'Controller', speed: 720, releaseDate: 'Oct 2020', image: 'https://cdn.brawlify.com/brawler/Amber.png', pin: 'https://cdn.brawlify.com/pins/Amber/Pin.png' },
+            { name: 'Meg', rarity: 'Legendary', class: 'Tank', speed: 720, releaseDate: 'Sep 2021', image: 'https://cdn.brawlify.com/brawler/Meg.png', pin: 'https://cdn.brawlify.com/pins/Meg/Pin.png' },
+            { name: 'Chester', rarity: 'Legendary', class: 'Damage Dealer', speed: 770, releaseDate: 'Dec 2022', image: 'https://cdn.brawlify.com/brawler/Chester.png', pin: 'https://cdn.brawlify.com/pins/Chester/Pin.png' },
+            { name: 'Cordelius', rarity: 'Legendary', class: 'Assassin', speed: 820, releaseDate: 'Jul 2023', image: 'https://cdn.brawlify.com/brawler/Cordelius.png', pin: 'https://cdn.brawlify.com/pins/Cordelius/Pin.png' },
+            { name: 'Draco', rarity: 'Legendary', class: 'Tank', speed: 720, releaseDate: 'May 2024', image: 'https://cdn.brawlify.com/brawler/Draco.png', pin: 'https://cdn.brawlify.com/pins/Draco/Pin.png' },
+            { name: 'Kit', rarity: 'Legendary', class: 'Support', speed: 720, releaseDate: 'Jan 2024', image: 'https://cdn.brawlify.com/brawler/Kit.png', pin: 'https://cdn.brawlify.com/pins/Kit/Pin.png' },
+            { name: 'Surge', rarity: 'Legendary', class: 'Damage Dealer', speed: 770, releaseDate: 'Jul 2020', image: 'https://cdn.brawlify.com/brawler/Surge.png', pin: 'https://cdn.brawlify.com/pins/Surge/Pin.png' },
+            { name: 'Kaze', rarity: 'Ultra Legendary', class: 'Assassin', speed: 820, releaseDate: 'Mar 2025', image: 'https://cdn.brawlify.com/brawler/Kaze.png', pin: 'https://cdn.brawlify.com/pins/Kaze/Pin.png' },
+        ];
+        
+        // Rarity Order Mapping (Higher index means higher/rarer)
+        const RARITY_ORDER = {
+            'Starting Brawler': 0,
+            'Rare': 1,
+            'Super Rare': 2,
+            'Epic': 3,
+            'Mythic': 4,
+            'Legendary': 5,
+            'Ultra Legendary': 6 // Used for comparison
+        };
+
+        // --- Game State ---
+        const BRAWLERS = BRAWLERS_RAW.map(b => ({ ...b, name: b.name.toLowerCase() }));
+        let targetBrawler = null;
+        let guessesMade = 0;
+        const MAX_GUESSES = 8; // A little more generous than standard Wordle
+
+        // --- DOM Elements ---
         const input = document.getElementById('guess-input');
-        const val = input.value.trim().toLowerCase();
-        
-        const found = BRAWLERS.find(b => b.name.toLowerCase() === val);
-        
-        if (!found) return alert('Not a valid brawler!');
-        if (guesses.find(g => g.name === found.name)) return alert('You already guessed that brawler!');
+        const button = document.getElementById('guess-button');
+        const guessesList = document.getElementById('guesses-list');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const finalAnswer = document.getElementById('final-answer');
 
-        const newGuesses = [...guesses, found];
-        setGuesses(newGuesses);
-        input.value = '';
-
-        if (found.name.toLowerCase() === answer.name.toLowerCase()) {
-          setWin(true);
-        } else if (newGuesses.length >= guessLimit) {
-            setLose(true);
+        // --- Helper Functions ---
+        
+        // Converts "Month YYYY" string to a comparable date object
+        function parseReleaseDate(dateString) {
+            const [month, year] = dateString.split(' ');
+            return new Date(`${month} 1, ${year}`);
         }
-      };
 
-      const resetUnlimited = () => {
-        setAnswer(BRAWLERS[Math.floor(Math.random() * BRAWLERS.length)]);
-        setGuesses([]);
-        setWin(false);
-        setLose(false);
-      };
+        // --- Initialization ---
 
-      const getSpeedHint = (guessedSpeed, answerSpeed) => {
-        if (guessedSpeed === answerSpeed) return 'correct';
-        if (guessedSpeed > answerSpeed) return 'less';
-        return 'more';
-      };
+        function setupGame() {
+            const randomIndex = Math.floor(Math.random() * BRAWLERS.length);
+            targetBrawler = BRAWLERS[randomIndex];
+            console.log("Target Brawler (Dev Cheat):", targetBrawler.name.toUpperCase());
+            
+            button.addEventListener('click', processGuess);
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    processGuess();
+                }
+            });
+        }
 
-      const getYearHint = (guessedDate, answerDate) => {
-        const guessedYear = parseInt(guessedDate.split(' ')[1]);
-        const answerYear = parseInt(answerDate.split(' ')[1]);
-        if (guessedYear === answerYear) return 'correct';
-        if (guessedYear > answerYear) return 'less';
-        return 'more';
-      };
-      
-      const getRarityClass = (guessedRarity, answerRarity) => {
-        if (guessedRarity === answerRarity) return 'correct';
-        
-        const rarityOrder = ['Starting Brawler', 'Rare', 'Super Rare', 'Epic', 'Mythic', 'Legendary', 'Ultra Legendary'];
-        const guessedIndex = rarityOrder.indexOf(guessedRarity);
-        const answerIndex = rarityOrder.indexOf(answerRarity);
-        
-        if (Math.abs(guessedIndex - answerIndex) <= 1) return 'close';
-        return 'incorrect';
-      };
+        // --- Main Game Logic ---
 
-      const StatItem = ({ label, value, hint }) => {
-        const hintClass = hint ? (hint === 'correct' ? 'correct' : 'incorrect') : (value === answer[label] ? 'correct' : 'incorrect');
-        const hintSymbol = hint ? (hint === 'more' ? '↑' : hint === 'less' ? '↓' : '') : '';
-        
-        return (
-          <div className={`stat-item ${hintClass}`}>
-            <span>{label}:</span>
-            <span>{value} {hintSymbol}</span>
-          </div>
-        );
-      };
-      
-      return (
-        <>
-          <div className="controls">
-            <select value={mode} onChange={(e) => {
-              setMode(e.target.value);
-              setGuesses([]);
-              setWin(false);
-              setLose(false);
-              setAnswer(e.target.value === 'daily' ? getDailyAnswer() : BRAWLERS[Math.floor(Math.random() * BRAWLERS.length)]);
-            }}>
-              <option value="daily">Daily</option>
-              <option value="unlimited">Unlimited</option>
-            </select>
-            <input list="brawlers" id="guess-input" placeholder="Guess a brawler..." onKeyDown={(e) => e.key === 'Enter' && handleGuess()} disabled={win || lose} />
-            <datalist id="brawlers">
-              {BRAWLERS.map(brawler => <option key={brawler.name} value={brawler.name} />)}
-            </datalist>
-            <button onClick={handleGuess} disabled={win || lose}>Guess</button>
-            {mode === 'unlimited' && <button onClick={resetUnlimited}>New Game</button>}
-          </div>
+        function processGuess() {
+            const rawGuess = input.value.trim();
+            const lowerGuess = rawGuess.toLowerCase();
+            input.value = '';
 
-          {!win && !lose && <div className="guess-counter">Guesses: {guesses.length}/{guessLimit}</div>}
+            if (!lowerGuess) return;
 
-          <div className="board">
-            {guesses.map((g, i) => (
-              <div key={i} className="guess">
-                <div className="guess-header">
-                  <img src={g.image} alt={g.name} />
-                  <h3>{g.name}</h3>
-                </div>
-                <div className="guess-stats">
-                  <StatItem label="Rarity" value={g.rarity} hint={getRarityClass(g.rarity, answer.rarity)} />
-                  <StatItem label="Class" value={g.class} hint={g.class === answer.class ? 'correct' : 'incorrect'} />
-                  <StatItem label="Speed" value={g.speed} hint={getSpeedHint(g.speed, answer.speed)} />
-                  <StatItem label="Release" value={g.releaseDate} hint={getYearHint(g.releaseDate, answer.releaseDate)} />
-                </div>
-              </div>
-            ))}
-          </div>
-          {win && (
-            <div className="result-card">
-              <h2>You won! The brawler was {answer.name}!</h2>
-              <img src={answer.pin} alt={answer.name} />
-            </div>
-          )}
-          {lose && (
-            <div className="result-card">
-              <h2>You Lost! The correct brawler was {answer.name}!</h2>
-              <img src={answer.pin} alt={answer.name} />
-            </div>
-          )}
-        </>
-      );
-    }
+            const guessedBrawler = BRAWLERS.find(b => b.name === lowerGuess);
 
-    const rootElement = ReactDOM.createRoot(document.getElementById('root'));
-    rootElement.render(<App />);
-  </script>
+            if (!guessedBrawler) {
+                alert("Brawler name not found. Check spelling or ensure it's in the list.");
+                return;
+            }
+
+            guessesMade++;
+            
+            // 1. Check for Win
+            if (lowerGuess === targetBrawler.name) {
+                displayGuess(guessedBrawler, {
+                    name: 'correct', rarity: 'correct', class: 'correct', speed: 'correct', date: 'correct'
+                });
+                endGame(true);
+                return;
+            }
+
+            // 2. Generate and Display feedback
+            const feedback = generateFeedback(guessedBrawler, targetBrawler);
+            displayGuess(guessedBrawler, feedback);
+
+            // 3. Check for Game Over
+            if (guessesMade >= MAX_GUESSES) {
+                endGame(false);
+            }
+        }
+
+        function generateFeedback(guess, target) {
+            const feedback = {};
+
+            // --- Rarity Feedback (Higher/Lower/Correct) ---
+            const guessRarityIndex = RARITY_ORDER[guess.rarity];
+            const targetRarityIndex = RARITY_ORDER[target.rarity];
+
+            if (guessRarityIndex === targetRarityIndex) {
+                feedback.rarity = 'correct';
+            } else if (guessRarityIndex < targetRarityIndex) {
+                feedback.rarity = 'clue-higher'; // Target is a HIGHER rarity
+            } else {
+                feedback.rarity = 'clue-lower'; // Target is a LOWER rarity
+            }
+
+            // --- Class Feedback (Correct/Incorrect) ---
+            feedback.class = (guess.class === target.class) ? 'correct' : 'incorrect';
+
+            // --- Speed Feedback (Faster/Slower/Correct) ---
+            if (guess.speed === target.speed) {
+                feedback.speed = 'correct';
+            } else if (guess.speed < target.speed) {
+                feedback.speed = 'clue-higher'; // Target is FASTER/HIGHER speed
+            } else {
+                feedback.speed = 'clue-lower'; // Target is SLOWER/LOWER speed
+            }
+
+            // --- Release Date Feedback (Later/Earlier/Correct) ---
+            const guessDate = parseReleaseDate(guess.releaseDate);
+            const targetDate = parseReleaseDate(target.releaseDate);
+
+            if (guessDate.getTime() === targetDate.getTime()) {
+                feedback.date = 'correct';
+            } else if (guessDate.getTime() < targetDate.getTime()) {
+                feedback.date = 'clue-higher'; // Target was released LATER
+            } else {
+                feedback.date = 'clue-lower'; // Target was released EARLIER
+            }
+
+            return feedback;
+        }
+
+        // --- Display Functions ---
+
+        function displayGuess(brawler, feedback) {
+            const row = document.createElement('div');
+            row.className = 'guess-row';
+
+            // Helper to create and append a cell
+            const createCell = (content, className) => {
+                const cell = document.createElement('div');
+                cell.className = `guess-cell ${className}`;
+                cell.textContent = content;
+                return cell;
+            };
+
+            // Cell 1: Name and Pin
+            const nameCell = document.createElement('div');
+            nameCell.className = 'guess-cell name-cell';
+            const pinImg = document.createElement('img');
+            pinImg.src = brawler.pin;
+            pinImg.alt = brawler.name;
+            pinImg.className = 'pin-image';
+            nameCell.appendChild(pinImg);
+            nameCell.append(brawler.name.toUpperCase());
+            row.appendChild(nameCell);
+
+            // Cell 2: Rarity
+            row.appendChild(createCell(brawler.rarity, feedback.rarity));
+
+            // Cell 3: Class
+            row.appendChild(createCell(brawler.class, feedback.class));
+
+            // Cell 4: Speed
+            row.appendChild(createCell(brawler.speed, feedback.speed));
+
+            // Cell 5: Release Date
+            row.appendChild(createCell(brawler.releaseDate, feedback.date));
+
+            guessesList.prepend(row);
+        }
+
+        // --- Game Over ---
+
+        function endGame(won) {
+            button.disabled = true;
+            input.disabled = true;
+            
+            modalTitle.textContent = won ? "YOU GUESSED IT! 🏆" : "OUT OF GUESSES! 😭";
+            modalMessage.textContent = won ? 
+                `You found the Brawler in ${guessesMade} try${guessesMade > 1 ? 's' : ''}! Well played!` : 
+                `The correct Brawler was revealed. You'll get it next time!`;
+            
+            finalAnswer.textContent = targetBrawler.name.toUpperCase();
+            modal.style.display = 'flex';
+        }
+
+        // START THE GAME
+        setupGame();
+    </script>
 </body>
 </html>
