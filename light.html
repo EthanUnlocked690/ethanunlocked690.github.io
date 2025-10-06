@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambient Light Meter</title>
+    <style>
+        body {
+            display: flex;
+            justify-content-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            text-align: center;
+            background-color: #111; /* Default dark background */
+            color: #fff;
+            transition: background-color 1s ease-in-out; /* Smooth transition */
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        .meter-container {
+            padding: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #lux-value {
+            font-size: 6em;
+            font-weight: bold;
+            color: #00ff00; /* Neon green default */
+            transition: color 1s;
+        }
+
+        #unit-label {
+            font-size: 2em;
+            color: #ccc;
+        }
+
+        #status-message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #ffcc00;
+        }
+
+        /* Classes to visually indicate brightness range */
+        .dark-mode {
+            color: #fff;
+        }
+        .bright-mode {
+            color: #000;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <div class="meter-container">
+        <div id="status-message">Initializing light sensor...</div>
+        <h1 id="lux-value">--</h1>
+        <p id="unit-label">Lux</p>
+    </div>
+
+    <script>
+        // --- Configuration & Elements ---
+        const body = document.body;
+        const luxValueElement = document.getElementById('lux-value');
+        const statusMessageElement = document.getElementById('status-message');
+
+        // --- Core Logic ---
+
+        function handleLight(event) {
+            const lux = event.reading.illuminance;
+            luxValueElement.textContent = Math.round(lux);
+
+            // --- Visual Feedback Logic ---
+
+            // The 'lux' value controls the background and text color
+            if (lux < 5) {
+                // Very dark (e.g., night)
+                body.style.backgroundColor = 'hsl(240, 50%, 5%)';
+                luxValueElement.style.color = '#fff';
+                body.classList.replace('bright-mode', 'dark-mode');
+            } else if (lux < 100) {
+                // Dim room light
+                const hue = 220;
+                // Map lux (0-100) to lightness (10-40) to make it slightly brighter
+                const lightness = 10 + (lux / 100) * 30; 
+                body.style.backgroundColor = `hsl(${hue}, 50%, ${lightness}%)`;
+                luxValueElement.style.color = '#fff';
+                body.classList.replace('bright-mode', 'dark-mode');
+            } else if (lux < 1000) {
+                // Well-lit room / Cloudy outdoor
+                const lightness = 40 + (lux / 1000) * 30; // Map to 40-70% lightness
+                body.style.backgroundColor = `hsl(60, 50%, ${lightness}%)`; // Yellowish tint
+                luxValueElement.style.color = '#333';
+                body.classList.replace('dark-mode', 'bright-mode');
+            } else {
+                // Bright outdoor / Direct sunlight
+                body.style.backgroundColor = 'white';
+                luxValueElement.style.color = '#e74c3c'; // Red for max brightness
+                body.classList.replace('dark-mode', 'bright-mode');
+            }
+            
+            statusMessageElement.textContent = "Sensor Active";
+        }
+
+        function handleError(event) {
+            if (event.error.name === 'NotReadableError') {
+                statusMessageElement.textContent = "Error: Device sensor is not readable or unavailable.";
+            } else if (event.error.name === 'SecurityError') {
+                statusMessageElement.textContent = "Error: Access denied. Please ensure the page is served over HTTPS.";
+            } else {
+                statusMessageElement.textContent = `Error: ${event.error.name}`;
+            }
+            console.error(event.error);
+        }
+
+        // --- Initialization ---
+
+        if ('AmbientLightSensor' in window) {
+            try {
+                // Create a new sensor object
+                const sensor = new AmbientLightSensor({ frequency: 1 }); // Read 1 time per second
+                
+                sensor.onreading = handleLight;
+                sensor.onerror = handleError;
+                
+                // Start monitoring the sensor
+                sensor.start();
+                statusMessageElement.textContent = "Sensor started. Reading light...";
+
+            } catch (error) {
+                statusMessageElement.textContent = `Initialization failed: ${error.name}`;
+                console.error(error);
+            }
+        } else {
+            statusMessageElement.textContent = "Ambient Light Sensor API is not supported by this browser/device.";
+            body.style.backgroundColor = '#cc3333';
+        }
+
+    </script>
+</body>
+</html>
