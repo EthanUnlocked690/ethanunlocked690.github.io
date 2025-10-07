@@ -93,14 +93,34 @@
 
 <script>
     // =========================================================================
-    // SECURITY CHECK: Ensure user is authenticated from login.html
+    // SECURITY CHECK: 2-DAY AUTO-LOGIN & REDIRECT
     // =========================================================================
-    if (localStorage.getItem('terminal_authenticated') !== 'true') {
+    const authFlag = localStorage.getItem('terminal_authenticated');
+    const authTime = localStorage.getItem('terminal_auth_timestamp');
+    const twoDaysInMs = 48 * 60 * 60 * 1000;
+    const currentTime = Date.now();
+    let proceedToTerminal = false;
+
+    if (authFlag === 'true') {
+        // Successful login, clear flag and proceed (if coming from login.html)
+        localStorage.removeItem('terminal_authenticated');
+        proceedToTerminal = true;
+    } else if (authTime && (currentTime - parseInt(authTime, 10) < twoDaysInMs)) {
+        // Auto-login due to recent timestamp (within 2 days)
+        console.log("Auto-login successful. Timestamp is less than 48 hours old.");
+        proceedToTerminal = true;
+    } else {
+        // Security failure: not authenticated and timestamp is old or missing
+        console.log("Authentication failed. Redirecting to login.");
         window.location.href = 'login.html';
     }
-    // Clear the flag to force re-login on new session (session-like security)
-    localStorage.removeItem('terminal_authenticated'); 
+    
+    // STOP EXECUTION if not proceeding (redundant but safe)
+    if (!proceedToTerminal) {
+        throw new Error("Redirecting to login.html");
+    }
     // =========================================================================
+
 
     const queryInput = document.getElementById('atlas-query');
     const outputDiv = document.getElementById('terminal-output');
@@ -254,7 +274,8 @@
 
         if (fileSystem[newDirKey]) {
             currentDir = newDirKey;
-            promptSpan.textContent = `ATLAS@TheUnlockedWeb:${currentDir.slice(1, -1)}# `;
+            // Display path without the leading dot and trailing slash for cleaner prompt
+            promptSpan.textContent = `ATLAS@TheUnlockedWeb:${currentDir.slice(1, -1)}# `; 
         } else {
             printError(`Error: No such directory: ${targetDir}`);
         }
