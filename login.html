@@ -3,99 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS Security Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>ATLAS Terminal - Login</title>
+    <link rel="stylesheet" href="style.css">
     <style>
+        /* =====================================================
+        GENERAL LOGIN PAGE STYLES (Required for this layout)
+        =====================================================
+        */
         body {
-            background-color: #050e18;
-            font-family: sans-serif;
+            background-color: #0d0d0d;
+            color: #00ff00;
+            font-family: 'Consolas', 'Monaco', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            overflow: hidden; /* Hide scrollbar when interference is off */
         }
-        .login-box {
-            background-color: #0c1a2c;
-            border: 2px solid #00ffff;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+
+        .login-container {
+            border: 1px solid #00ff00;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            width: 300px;
+            text-align: center;
         }
-        .neon-cyan-text {
-            color: #00ffff;
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+
+        .atlas-header {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 5px #00ff00;
         }
-        .btn-primary {
-            background-color: #00ffff;
-            color: #050e18;
-            transition: background-color 0.2s, box-shadow 0.2s;
+
+        .login-form input[type="text"],
+        .login-form input[type="password"] {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: 16px;
+            box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.5);
         }
-        .btn-primary:hover {
-            background-color: #ffffff;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+
+        .login-form button {
+            background-color: #00ff00;
+            color: #0d0d0d;
+            border: 2px solid #00ff00;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        .login-form button:hover {
+            background-color: #0d0d0d;
+            color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        }
+
+        .system-message {
+            margin-top: 20px;
+            color: #ffff00;
+            font-size: 14px;
+        }
+
+        /* =====================================================
+        TERMINAL INTERFERENCE ELEMENT STYLES (REQUIRED FOR HACK)
+        =====================================================
+        */
+        #terminal-interference {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            /* This is the key: it must be display: none; initially */
+            display: none; 
+            z-index: 1000;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #00ff00;
+            font-family: 'Consolas', 'Monaco', monospace;
+            overflow: auto;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .close-btn {
+            background: none;
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .interference-text {
+            white-space: pre-wrap;
+            /* Make the text content look like a terminal */
+            line-height: 1.2;
+            animation: flicker 0.01s infinite alternate;
+        }
+        
+        /* Optional: Add a subtle flicker effect to the text */
+        @keyframes flicker {
+            0% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+
     </style>
 </head>
 <body>
 
-<div class="login-box p-8 rounded-lg w-96 text-white">
-    <h2 class="text-3xl font-bold text-center mb-6 neon-cyan-text">ATLAS ACCESS PORTAL</h2>
-    <p id="error-message" class="text-red-500 text-center mb-4 hidden">Invalid credentials. Access denied.</p>
-
-    <div class="mb-4">
-        <label for="username" class="block text-sm font-medium neon-cyan-text mb-2">USERNAME:</label>
-        <input type="text" id="username" class="w-full p-3 rounded bg-[#1e293b] border border-[#00ffff] focus:ring-1 focus:ring-[#00ffff] focus:border-transparent text-white" required>
+    <div class="login-container">
+        <div class="atlas-header">ATLAS TERMINAL ACCESS</div>
+        <form class="login-form" id="loginForm">
+            <input type="text" id="username" placeholder="USERNAME" required>
+            <input type="password" id="password" placeholder="PASSWORD" required>
+            <button type="submit">LOG IN (SECURE SHELL)</button>
+        </form>
+        <div class="system-message" id="message">Awaiting Credentials...</div>
     </div>
 
-    <div class="mb-6">
-        <label for="password" class="block text-sm font-medium neon-cyan-text mb-2">PASSWORD:</label>
-        <input type="password" id="password" class="w-full p-3 rounded bg-[#1e293b] border border-[#00ffff] focus:ring-1 focus:ring-[#00ffff] focus:border-transparent text-white" required>
-    </div>
-
-    <button id="login-button" class="w-full p-3 rounded font-bold uppercase btn-primary" onclick="handleLogin()">
-        ACCESS TERMINAL
-    </button>
-    
-    <div class="text-center mt-4">
-        <a href="reset.html" class="text-xs text-gray-400 hover:text-[#00ffff] transition-colors">Forgot Password?</a>
+    <div id="terminal-interference">
+        <div class="terminal-header">
+            <button class="close-btn" onclick="hideInterference();">CLOSE [X]</button>
         </div>
-</div>
+        <pre id="interference-text" class="interference-text"></pre>
+    </div>
 
-<script>
-    // Correct credentials (The password can be updated via the reset flow in LocalStorage)
-    const CORRECT_USERNAME = "EthanUnlocked";
-    
-    // Retrieve password from LocalStorage if set (via password reset), otherwise use the default.
-    function getCorrectPassword() {
-        return localStorage.getItem('loginPassword') || "t3chno123!";
-    }
+    <script>
+        // =====================================================
+        // JAVASCRIPT FUNCTIONS (REQUIRED)
+        // =====================================================
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const passwordInput = document.getElementById('password');
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleLogin();
+        // A function to hide the interference screen
+        function hideInterference() {
+            document.getElementById('terminal-interference').style.display = 'none';
+        }
+
+        // A function to display the interference screen and start the text animation
+        function showInterference() {
+            const interferenceScreen = document.getElementById('terminal-interference');
+            const interferenceText = document.getElementById('interference-text');
+            interferenceScreen.style.display = 'flex';
+            
+            // The text content to display on the interference screen
+            const textContent = `
+            [SYSTEM WARNING]
+            
+            UNAUTHORIZED ACCESS ATTEMPT DETECTED.
+            
+            INITIATING BLACK ICE PROTOCOL...
+            
+            ACCESS ATTEMPT ORIGIN: ${window.location.hostname}
+            USER AGENT: ${navigator.userAgent}
+            
+            [STATUS: BREACH IN PROGRESS]
+            
+            [00:00:00] -- TERMINAL INTERFERENCE PROTOCOL ACTIVATED.
+            [00:00:01] -- INITIATING ROOT-LEVEL ACCESS LOCKDOWN...
+            [00:00:02] -- CORE FUNCTIONALITY BLOCKED.
+            [00:00:03] -- AUTHENTICATION FAILED - ERROR CODE 403: SYSTEM INTEGRITY COMPROMISED
+            
+            > TRACE ATTEMPT: FAILED
+            > DISCONNECTING SESSION: PENDING
+            > AWAITING MANUAL OVERRIDE...
+            
+            *** DANGER *** DANGER *** DANGER ***
+            
+            ${'█'.repeat(Math.floor(Math.random() * 80))}
+            ${'█'.repeat(Math.floor(Math.random() * 80))}
+            ${'█'.repeat(Math.floor(Math.random() * 80))}
+            
+            // SYSTEM SHUTDOWN PENDING IN 10 SECONDS...
+            `;
+            
+            // Clear existing text and start the typing simulation
+            let i = 0;
+            interferenceText.textContent = '';
+            const speed = 15; // Typing speed in milliseconds
+
+            function typeWriter() {
+                if (i < textContent.length) {
+                    // Append the next character
+                    interferenceText.textContent += textContent.charAt(i);
+                    i++;
+                    // Introduce a random delay for a more chaotic look
+                    setTimeout(typeWriter, speed + (Math.random() * 20));
+                }
+            }
+
+            typeWriter();
+        }
+
+        // =====================================================
+        // LOGIN FORM LOGIC (PLACEHOLDER)
+        // =====================================================
+        
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Stop the form from submitting normally
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageElement = document.getElementById('message');
+
+            messageElement.textContent = 'Verifying credentials...';
+            
+            // Simulate a network delay
+            setTimeout(() => {
+                // --- YOUR HACK/TRIGGER CONDITION GOES HERE ---
+                if (username === 'HACKER_CODE' && password === 'HACKER_PASSWORD') {
+                    // ** HACKER SUCCESS - Redirect to a secret page or execute code **
+                    messageElement.textContent = 'ACCESS GRANTED. Redirecting to Terminal...';
+                    window.location.href = 'terminal.html'; // Or whatever your target page is
+                } else if (username === 'SECRET_FAIL' || password === 'SECRET_FAIL') {
+                    // ** TRIGGER THE INTERFERENCE SCREEN ON A FAILED LOGIN **
+                    messageElement.textContent = 'CRITICAL FAILURE. System Lockdown.';
+                    showInterference();
+                } else {
+                    // ** NORMAL FAIL **
+                    messageElement.textContent = 'ACCESS DENIED. Invalid credentials. Please try again.';
+                }
+            }, 1000); // 1 second delay
+        });
+        
+        // --- OPTIONAL: Add a secret right-click trigger anywhere on the page ---
+        document.addEventListener('contextmenu', function(e) {
+            // Check for a specific key press with the right click, for example, 'Shift'
+            if (e.shiftKey) { 
+                e.preventDefault(); // Prevent the default context menu
+                showInterference();
             }
         });
-        // Prefill username for convenience
-        document.getElementById('username').value = CORRECT_USERNAME;
-    });
 
-    function handleLogin() {
-        const usernameInput = document.getElementById('username').value.trim();
-        const passwordInput = document.getElementById('password').value.trim();
-        const errorMessage = document.getElementById('error-message');
-        const currentCorrectPassword = getCorrectPassword();
-
-        if (usernameInput === CORRECT_USERNAME && passwordInput === currentCorrectPassword) {
-            // Success: Set an authentication flag and redirect
-            localStorage.setItem('terminal_authenticated', 'true');
-            window.location.href = 'terminal.html';
-        } else {
-            // Failure: Show error message
-            errorMessage.textContent = 'Invalid credentials. Access denied.';
-            errorMessage.classList.remove('hidden');
-        }
-    }
-</script>
-
+    </script>
 </body>
 </html>
