@@ -3,408 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROJECT ATLAS: GLOBAL INTELLIGENCE INTERFACE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>ATLAS Terminal Interface</title>
     <style>
-        /* Custom styles for the ATLAS aesthetic */
         body {
-            background-color: #050e18; /* Deep dark background */
-            font-family: 'Space Mono', monospace;
-            overflow: hidden; 
-            color: #d1d5db; /* Light gray text */
+            background-color: #000000;
+            color: #00ff00; /* Neon Green */
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            margin: 0;
+            padding: 20px;
+            overflow-y: scroll;
         }
-        
-        /* Neon Cyan for key elements */
-        .neon-cyan-text {
-            color: #00ffff; 
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
         }
-
-        .neon-box-shadow {
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        .prompt {
+            color: #00ffff; /* Cyan for prompt */
+            display: inline;
         }
-        
-        /* Neon Green for live map feed */
-        .neon-green-shadow {
-             box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); 
+        .input-line {
+            display: flex;
+            align-items: center;
         }
-
-        /* Styling for the simulated map */
-        #map-display {
-            background: #0c1a2c;
-            border: 1px solid #00ffff;
-            background-image: radial-gradient(#1e3a8a 1px, transparent 1px),
-                              radial-gradient(#1e3a8a 1px, transparent 1px);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
-            transition: all 0.5s; 
-            cursor: pointer; /* Suggests interactivity */
-            position: relative;
+        #terminal-output {
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+            min-height: calc(100vh - 80px); /* Ensure terminal fills viewport */
         }
-        
-        /* Active map with pointer simulation (Wireframe Look) */
-        #map-display.map-active {
-            background-color: #002200; /* Darker green map base */
-            border-color: #00FF00;
-            /* Simulated Grid Lines */
-            background-image: 
-                linear-gradient(0deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%), 
-                linear-gradient(90deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%),
-                radial-gradient(rgba(0, 255, 0, 0.2) 1px, transparent 1px);
-            background-size: 50px 50px, 50px 50px, 10px 10px; 
+        #atlas-query {
+            background: none;
+            border: none;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: inherit;
+            flex-grow: 1;
+            padding: 0;
+            caret-color: #00ff00;
+            outline: none;
         }
-
-        .red-pointer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 15px;
-            height: 15px;
-            background-color: #FF0000;
-            border: 2px solid #FFFFFF;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: pulse-pointer 1s infinite alternate;
-            z-index: 10;
+        .response-success {
+            color: #00ff00;
         }
-
-        @keyframes pulse-pointer {
-            from { transform: translate(-50%, -50%) scale(1.0); box-shadow: 0 0 5px #FF0000; }
-            to { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 15px #FF0000; }
+        .response-info {
+            color: #ffff00; /* Yellow */
         }
-
-        /* Ping Button Styling */
-        #ping-button {
-            transition: all 0.2s;
+        .response-error {
+            color: #ff0000;
         }
-        #ping-button:hover {
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
-            background-color: #008888;
+        .system-message {
+            color: #ffaa00; /* Orange */
         }
-
-        /* Pulsing status indicator */
-        @keyframes pulse-status {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .directory-item {
+            color: #00ffff; /* Cyan for directories */
+            padding-right: 15px;
+            display: inline-block;
         }
-        .status-pulse {
-            animation: pulse-status 1s infinite;
+        .file-item {
+            color: #00ff00; /* Green for files */
+            padding-right: 15px;
+            display: inline-block;
+        }
+        /* Custom scrollbar style for terminal feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #004400;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #008800;
         }
     </style>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'neon-cyan': '#00ffff',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
-<body class="flex flex-col justify-between items-center h-screen">
+<body>
 
-    <header class="w-full text-center pt-6 pb-4 bg-[#050e18]">
-        <h1 class="text-3xl font-extrabold neon-cyan-text tracking-wider">
-            PROJECT ATLAS // CLASSIFIED ACCESS
-        </h1>
-        <p class="text-sm text-gray-500 mt-1">QUERY STANDALONE DATABASE. HIGH LATENCY WARNING.</p>
-    </header>
+<div class="container">
+    <div id="terminal-output"></div>
+    <div class="input-line">
+        <span id="terminal-prompt" class="prompt">ATLAS@TheUnlockedWeb:~# </span>
+        <input type="text" id="atlas-query" autofocus>
+    </div>
+</div>
 
-    <main class="w-full max-w-7xl flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden">
+<script>
+    // =========================================================================
+    // SECURITY CHECK: Ensure user is authenticated from login.html
+    // =========================================================================
+    if (localStorage.getItem('terminal_authenticated') !== 'true') {
+        window.location.href = 'login.html';
+    }
+    // Clear the flag to force re-login on new session (session-like security)
+    localStorage.removeItem('terminal_authenticated'); 
+    // =========================================================================
+
+    const queryInput = document.getElementById('atlas-query');
+    const outputDiv = document.getElementById('terminal-output');
+    const promptSpan = document.getElementById('terminal-prompt');
+    const CORRECT_USERNAME = "EthanUnlocked";
+    
+    // Command History
+    let history = [];
+    let historyIndex = -1;
+
+    // File System Simulation (for 'ls' command)
+    const fileSystem = {
+        './': [
+            { name: 'config/', type: 'dir' },
+            { name: 'log/', type: 'dir' },
+            { name: 'README.txt', type: 'file' },
+            { name: 'terminal.js', type: 'file' }
+        ],
+        './config/': [
+            { name: 'user_profiles.dat', type: 'file' },
+            { name: 'network_settings.conf', type: 'file' }
+        ],
+        './log/': [
+            { name: '2025_access.log', type: 'file' }
+        ]
+    };
+
+    // Current working directory state
+    let currentDir = './';
+
+    // Helper to get the current password, updated from the reset flow
+    function getCurrentPassword() {
+        return localStorage.getItem('loginPassword') || "t3chno123!";
+    }
+
+    // --- Core Functions ---
+
+    function welcomeMessage() {
+        outputDiv.innerHTML += `<div class="system-message">ATLAS Terminal v3.1 Boot Sequence Initiated...</div>`;
+        outputDiv.innerHTML += `<div class="system-message">Access granted for user: ${CORRECT_USERNAME}</div>`;
+        outputDiv.innerHTML += `<div class="response-info">Type 'help' for a list of commands.</div>`;
+        outputDiv.innerHTML += `<br>`;
+    }
+
+    function executeCommand(command) {
+        // Add command to history
+        if (command && history[0] !== command) {
+            history.unshift(command);
+        }
+        historyIndex = -1; // Reset history index
+
+        const parts = command.trim().split(/\s+/);
+        const cmd = parts[0].toLowerCase();
+        const args = parts.slice(1);
+
+        switch (cmd) {
+            case 'help':
+                printHelp();
+                break;
+            case 'clear':
+                outputDiv.innerHTML = '';
+                welcomeMessage(); // Re-display welcome message after clear
+                break;
+            case 'whoami':
+                printOutput(`Current user: <span class="response-info">${CORRECT_USERNAME}</span>`);
+                break;
+            case 'status':
+                printOutput(`ATLAS system status: <span class="response-success">Operational</span>`);
+                printOutput(`Uptime: 0 days, 0 hours, ${Math.floor(Math.random() * 59) + 1} minutes`);
+                break;
+            case 'ls':
+                listDirectory();
+                break;
+            case 'cd':
+                changeDirectory(args[0]);
+                break;
+            case 'passwd':
+                changeTerminalPassword(args);
+                break;
+            case 'ping':
+                pingWebsite(args[0]);
+                break;
+            case '':
+                break; // Do nothing on empty command
+            default:
+                printError(`Error: Command not found: ${cmd}. Type 'help' for assistance.`);
+        }
         
-        <div class="lg:col-span-1 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow h-full">
-            <h2 class="text-xl font-bold neon-cyan-text">ATLAS COMMAND LINE</h2>
-            
-            <input type="text" id="atlas-query" placeholder="Enter query (e.g., 'Eiffel Tower' or 'Ethan Angel Ioannou')" 
-                   class="p-3 rounded bg-[#1e293b] text-white border border-neon-cyan/50 focus:outline-none focus:ring-2 focus:ring-neon-cyan/80">
-            
-            <button id="ping-button" onclick="handleSearch()" 
-                    class="p-3 rounded font-bold bg-neon-cyan text-[#050e18] uppercase tracking-wider hover:bg-white disabled:opacity-50"
-                    disabled>
-                PING NETWORK
-            </button>
-            
-            <div id="status-panel" class="p-3 bg-[#1e293b] rounded text-sm min-h-[4rem]">
-                <p id="status-message" class="text-gray-400">STATUS: OFFLINE. Initializing...</p>
-            </div>
+        // Scroll to bottom after execution
+        window.scrollTo(0, document.body.scrollHeight);
+    }
 
-            <div id="map-display" onclick="handleMapClick()" class="flex-grow rounded-lg mt-4 flex items-center justify-center neon-box-shadow">
-                <p class="text-neon-cyan opacity-80 text-center text-sm p-4">
-                    MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
-                </p>
-            </div>
-            <div id="map-instructions" class="text-xs text-gray-500 text-center"></div>
-        </div>
+    function printOutput(text) {
+        outputDiv.innerHTML += `<div class="response-success">${text}</div>`;
+    }
 
-        <div class="lg:col-span-2 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow overflow-y-auto">
-            <h2 class="text-xl font-bold neon-cyan-text">QUERY OUTPUT</h2>
-            
-            <div id="results-output" class="p-4 bg-[#1e293b] rounded-lg border border-gray-700 space-y-4 text-sm text-gray-300 flex-grow">
-                <p>Welcome, Operator. Enter a query in the left panel to begin a search. Atlas uses local classified resources for data retrieval.</p>
-            </div>
+    function printError(text) {
+        outputDiv.innerHTML += `<div class="response-error">${text}</div>`;
+    }
 
-            <div id="sources-output" class="p-3 bg-[#1e293b] rounded-lg text-xs border border-gray-700">
-                <p class="font-bold text-neon-cyan mb-1">DATA SOURCES:</p>
-                <ul id="source-list" class="text-gray-500 space-y-1">
-                    <li>No sources yet.</li>
-                </ul>
-            </div>
-        </div>
-    </main>
+    function printHelp() {
+        printOutput(`Available Commands:`);
+        printOutput(`  <span class="response-info">help</span>     - Display this command list.`);
+        printOutput(`  <span class="response-info">clear</span>    - Clear the terminal screen.`);
+        printOutput(`  <span class="response-info">whoami</span>   - Display the current logged-in user.`);
+        printOutput(`  <span class="response-info">status</span>   - Check the ATLAS system status.`);
+        printOutput(`  <span class="response-info">ls</span>       - List files and directories in the current location.`);
+        printOutput(`  <span class="response-info">cd &lt;dir&gt;</span> - Change the current directory.`);
+        printOutput(`  <span class="response-info">passwd</span>   - Change the terminal login password.`);
+        printOutput(`  <span class="response-info">ping &lt;host&gt;</span>- Simulate pinging a network address (e.g., youtube.com).`);
+    }
 
-    <footer class="w-full py-2 flex justify-between px-6 text-xs bg-[#0c1a2c] border-t border-neon-cyan/30">
-        <div class="text-gray-600">
-            ATLAS CORE V3.1 // LOCAL DATABASE FUSION INITIATED
-        </div>
-        <button onclick="window.location.href='index.html';" class="text-gray-500 hover:text-white transition duration-200">
-            [TERMINATE SESSION]
-        </button>
-    </footer>
+    // --- Command Implementations ---
 
-    <script>
-        const queryInput = document.getElementById('atlas-query');
-        const pingButton = document.getElementById('ping-button');
-        const statusMessage = document.getElementById('status-message');
-        const resultsOutput = document.getElementById('results-output');
-        const sourceList = document.getElementById('source-list');
-        const mapDisplay = document.getElementById('map-display');
-        const mapInstructions = document.getElementById('map-instructions');
-
-        let lastLocationQuery = null; // Store the last successful location query data
-
-        /**
-         * Generates the HTML for a simulated image tile with a custom color/text.
-         * This uses colored divs for 100% local stability.
-         */
-        function createImageTileHTML(title, colorClass) {
-             return `
-                <div class="p-2 bg-[#050e18] border border-green-500/50 rounded-lg">
-                    <p class="text-xs text-green-500 mb-1">${title}</p>
-                    <div class="w-full h-32 ${colorClass} flex items-center justify-center rounded-md">
-                        <span class="text-sm font-bold text-white/80 text-center">${title.replace(/[^a-zA-Z\s]/g, '').toUpperCase()}</span>
-                    </div>
-                </div>
-            `;
+    function listDirectory() {
+        const files = fileSystem[currentDir];
+        if (!files) {
+            printError(`Error: Cannot access directory: ${currentDir}`);
+            return;
         }
 
-
-        // --- Simulated Data Storage ---
-        // Define the core location template once to avoid repetition
-        const locationTemplate = {
-            text: (query) => `GEO-LOCATION TARGET ACQUIRED: ${query.toUpperCase()}.\n\nSTRUCTURE STATUS: Stable. VISUAL FEED: Live satellite feed initiated. Location successfully plotted on virtual map. Click the Map Core panel to view image gallery.`,
-            sources: [
-                { title: "Google Maps/Earth Link (Simulated)", uri: "#" },
-                { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
-            ],
-            status: "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.",
-            isLocation: true,
-            simulatedImages: [
-                { title: "ATLAS SAT FEED 1: VIEW 1", color: "bg-purple-900" },
-                { title: "GOOGLE MAPS 3D VIEW", color: "bg-green-700" },
-                { title: "INFRARED HEATMAP SCAN", color: "bg-blue-900" },
-                { title: "GOOGLE STREET VIEW", color: "bg-red-800" } 
-            ]
-        };
-
-        const simulatedResponses = {
-            // SPECIAL CASE 1: Your Secret Profile
-            "ethan angel ioannou": {
-                text: "SUBJECT: ETHAN ANGEL IOANNOU\n\nPROFILE: PRIMARY ASSET. KEY ARCHITECT. ATLAS ACCESS LEVEL: DELTA. \n\nPERSONAL DATA SUMMARY:\n- Date of Birth: Jan 25, 2013\n- Primary Communications ID (Voice): +61 490 892 714 (AU)\n- Public-Facing Channel: 'EthanUnlocked's gaming hits'\n\nSTATUS: ACTIVE. HIGH-PRIORITY MONITORING IN EFFECT. ALL FUTURE QUERIES FLAGGED.",
-                sources: [
-                    { title: "Internal Log: Operator E.I.", uri: "#" },
-                    { title: "Asset Report: C4 Channel Link", uri: "#" }
-                ],
-                status: "SUBJECT PROFILE ACQUIRED. ACCESS LEVEL: DELTA. STATUS: ACTIVE."
-            },
-            
-            // Specific Location Overrides (for testing)
-            "eiffel tower": { ...locationTemplate, text: locationTemplate.text("EIFFEL TOWER") },
-            "paris": { ...locationTemplate, text: locationTemplate.text("PARIS, FRANCE") },
-
-            // Default response for anything else
-            "default": {
-                text: "QUERY AMBIGUOUS. LOCAL DATABASE SEARCH RESULTS:\n\nData not found for the specified query. ATLAS protocols require precise, actionable keywords for retrieval from classified reserves. Suggest re-querying with a specific target name or classified project title.",
-                sources: [
-                    { title: "Protocol Document: Atlas Search V3", uri: "#" }
-                ],
-                status: "QUERY FAILED. Precision Required."
-            }
-        };
-
-        // --- Initialization ---
-        window.onload = function() {
-            // Enable button after a short delay to simulate initialization
-            setTimeout(() => {
-                pingButton.disabled = false;
-                statusMessage.textContent = "STATUS: ONLINE. Awaiting command.";
-                statusMessage.classList.add('neon-cyan-text', 'status-pulse');
-            }, 1000);
-        };
-
-        // --- Map & Gallery Handlers ---
-
-        /**
-         * Simulates enabling a live map feed visualization.
-         */
-        function updateMapDisplay(responseData) {
-            
-            // 1. Reset Map Display
-            mapDisplay.classList.remove('map-active', 'neon-green-shadow');
-            mapDisplay.classList.add('bg-[#0c1a2c]', 'border-neon-cyan/80', 'neon-box-shadow');
-            mapDisplay.innerHTML = `<p class="text-neon-cyan opacity-80 text-center text-sm p-4">
-                MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
-            </p>`;
-            mapInstructions.textContent = '';
-            lastLocationQuery = null;
-
-            if (responseData && responseData.isLocation) {
-                // Engage Map Core (Green Live Feed with Pointer)
-                lastLocationQuery = responseData;
-                mapDisplay.classList.add('map-active', 'neon-green-shadow');
-                mapDisplay.classList.remove('neon-box-shadow');
-                
-                // Clear the default text and insert the pointer
-                mapDisplay.innerHTML = `
-                    <p class="text-green-300 opacity-90 text-center text-sm p-4">
-                        LIVE SATELLITE FEED ACTIVE. LOCATION ACQUIRED.
-                    </p>
-                    <div class="red-pointer"></div>
-                `;
-                mapInstructions.textContent = '>> CLICK MAP FOR IMAGE GALLERY/FEED <<';
-            }
-        }
-
-        /**
-         * Simulates opening the image gallery when the active map is clicked.
-         */
-        function handleMapClick() {
-            if (!lastLocationQuery || !lastLocationQuery.isLocation) {
-                statusMessage.textContent = "ALERT: Map core requires location query to engage. Try 'Eiffel Tower'.";
-                return;
-            }
-
-            const images = lastLocationQuery.simulatedImages;
-            const queryName = queryInput.value.toUpperCase();
-
-            let galleryHTML = `<h3 class="text-lg font-bold text-green-300 mb-4">GEO-IMAGERY GALLERY // TARGET: ${queryName}</h3>`;
-            galleryHTML += `<div class="grid grid-cols-2 gap-4">`;
-
-            images.forEach((img) => {
-                galleryHTML += createImageTileHTML(img.title, img.color);
-            });
-
-            galleryHTML += `</div>`;
-            resultsOutput.innerHTML = galleryHTML;
-            statusMessage.textContent = `STATUS: GALLERY VIEW ACTIVE. Displaying 4 high-res feeds for ${queryName}.`;
-            sourceList.innerHTML = `<li>Geo-Imagery Feed Links Engaged.</li>`;
-        }
-
-
-        /**
-         * Checks if the query looks like a full name (First Last or First Middle Last)
-         */
-        function isHumanNameQuery(query) {
-            const parts = query.trim().split(/\s+/).filter(p => p.length > 0);
-            return (parts.length >= 2 && parts.length <= 3 && parts.every(part => /^[a-zA-Z]{2,}$/.test(part)));
-        }
-
-        /**
-         * Checks if the query looks like a generic location.
-         */
-        function isGenericLocationQuery(query) {
-            // Updated list of common location keywords
-            const keywords = ['tower', 'bridge', 'city', 'street', 'london', 'tokyo', 'paris', 'australia', 'china', 'building', 'river', 'park', 'square', 'mountain', 'terminal', 'airport', 'statue', 'palace'];
-            return keywords.some(keyword => query.includes(keyword));
-        }
-
-
-        // --- Simulated Search Function ---
-        async function performAtlasSearch(query) {
-            const normalizedQuery = query.toLowerCase().trim();
-            
-            // 1. Initial UI setup & Map Reset
-            updateMapDisplay(null); // Reset map to offline
-            resultsOutput.innerHTML = `<p class="text-neon-cyan">// PING INITIATED: ${query}</p>`;
-            sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">ACCESSING CLASSIFIED DATABASE...</li>`;
-            pingButton.disabled = true;
-            statusMessage.textContent = "STATUS: INITIATING DATA RETRIEVAL SEQUENCE...";
-            statusMessage.classList.add('neon-cyan-text', 'status-pulse');
-
-            // 2. Determine which simulated response to use
-            let responseData = simulatedResponses.default;
-            
-            // Check for explicit, pre-programmed queries
-            if (simulatedResponses[normalizedQuery]) {
-                 responseData = simulatedResponses[normalizedQuery];
-            } 
-            // Check for generic location query (uses the template)
-            else if (isGenericLocationQuery(normalizedQuery)) {
-                const locationName = query.toUpperCase();
-                
-                // Clone the location template and fill in the details
-                responseData = JSON.parse(JSON.stringify(locationTemplate));
-                responseData.text = responseData.text(locationName);
-                responseData.sources = [
-                    { title: `Google Maps/Earth Link (Simulated for ${locationName})`, uri: "#" },
-                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
-                ];
-                responseData.status = "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.";
-                responseData.isLocation = true;
-            }
-            // Check for generic human name pattern
-            else if (isHumanNameQuery(query)) {
-                // Generic failure response for unknown names
-                responseData = JSON.parse(JSON.stringify(simulatedResponses.default));
-                responseData.text = `SUBJECT PROFILE: ${query.toUpperCase()}\n\nSTATUS: **PROFILE NOT FOUND IN PUBLIC RECORDS.**\n\nAnalysis suggests subject name is either a common alias or a low-level target with no major public digital footprint. Recommend re-query with secondary identifiers (DOB, Location, ID Code).`;
-                responseData.sources = [{ title: "Warning: High Commonality Index (CCI)", uri: "#" }];
-                responseData.status = `SUBJECT TRACE FAILURE. No profile found for ${query}.`;
-                responseData.isHuman = true;
-            } 
-            
-            // 3. Simulate Network Latency (The Cool Delay)
-            const delay = Math.random() * 1500 + 1500; 
-            await new Promise(resolve => setTimeout(resolve, delay));
-            
-            // 4. Update UI with Simulated Results
-            
-            // Display main text
-            resultsOutput.innerHTML = `<p class="text-white whitespace-pre-wrap">${responseData.text}</p>`;
-
-            // Display sources
-            sourceList.innerHTML = responseData.sources.map((s, index) => 
-                `<li>[SOURCE ${index + 1}]: <a href="${s.uri}" target="_blank" class="text-blue-400 hover:text-neon-cyan underline">${s.title}</a></li>`
-            ).join('');
-
-            // Update status
-            statusMessage.textContent = `STATUS: ${responseData.status}`;
-            statusMessage.classList.remove('status-pulse');
-            
-            // Update map if it was a location query
-            updateMapDisplay(responseData);
-
-
-            // 5. Cleanup
-            pingButton.disabled = false;
-        }
-
-        function handleSearch() {
-            const query = queryInput.value.trim();
-            if (query) {
-                performAtlasSearch(query);
+        let output = '';
+        files.forEach(item => {
+            if (item.type === 'dir') {
+                output += `<span class="directory-item">${item.name}</span>`;
             } else {
-                statusMessage.textContent = "ALERT: Query field cannot be empty.";
-            }
-        }
-        
-        // Allow pressing Enter to search
-        queryInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !pingButton.disabled) {
-                handleSearch();
+                output += `<span class="file-item">${item.name}</span>`;
             }
         });
-    </script>
+        outputDiv.innerHTML += `<div>${output}</div>`;
+    }
+
+    function changeDirectory(targetDir) {
+        if (!targetDir || targetDir === '.') {
+            // cd or cd .
+            return;
+        }
+
+        if (targetDir === '..') {
+            if (currentDir === './') {
+                printOutput(`Already at the root directory.`);
+                return;
+            }
+            // Move up one level
+            currentDir = './';
+            promptSpan.textContent = `ATLAS@TheUnlockedWeb:~# `;
+            return;
+        }
+
+        const newDirKey = currentDir + targetDir + '/';
+
+        if (fileSystem[newDirKey]) {
+            currentDir = newDirKey;
+            promptSpan.textContent = `ATLAS@TheUnlockedWeb:${currentDir.slice(1, -1)}# `;
+        } else {
+            printError(`Error: No such directory: ${targetDir}`);
+        }
+    }
+
+    function changeTerminalPassword(args) {
+        if (args.length !== 1) {
+            printError(`Usage: passwd <new_password>`);
+            return;
+        }
+        const newPassword = args[0];
+        
+        // Update the password in LocalStorage for the login page
+        localStorage.setItem('loginPassword', newPassword);
+        printOutput(`<span class="response-info">Password for user ${CORRECT_USERNAME} successfully updated.</span>`);
+        printOutput(`Remember to use this password next time you log in.`);
+    }
+
+    function pingWebsite(host) {
+        if (!host) {
+            printError('Usage: ping <hostname>');
+            return;
+        }
+        
+        printOutput(`Pinging ${host}...`);
+        
+        // Simulate network latency
+        const latency = Math.floor(Math.random() * 100) + 10;
+        
+        for (let i = 1; i <= 4; i++) {
+            const time = latency + Math.floor(Math.random() * 20);
+            printOutput(`Reply from ${host} (${Math.random().toFixed(2)}.${Math.floor(Math.random() * 255) + 1}): time=${time}ms TTL=64`);
+        }
+        printOutput(`\nPing statistics for ${host}:`);
+        printOutput(`    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)`);
+    }
+
+    // --- Event Listeners and Initialization ---
+
+    queryInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const command = queryInput.value.trim();
+            outputDiv.innerHTML += `<div class="input-line"><span class="prompt">${promptSpan.textContent}</span>${command}</div>`;
+            queryInput.value = '';
+            executeCommand(command);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                queryInput.value = history[historyIndex];
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (historyIndex > 0) {
+                historyIndex--;
+                queryInput.value = history[historyIndex];
+            } else if (historyIndex === 0) {
+                historyIndex--;
+                queryInput.value = '';
+            }
+        }
+    });
+
+    // Set initial focus
+    queryInput.focus();
+    
+    // Display welcome message on load
+    welcomeMessage();
+
+    // Re-focus the input box if the user clicks anywhere else
+    document.addEventListener('click', () => {
+        queryInput.focus();
+    });
+
+</script>
 </body>
 </html>
