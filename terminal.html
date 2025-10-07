@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT ATLAS: GLOBAL INTELLIGENCE INTERFACE</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles for the ATLAS aesthetic */
+        body {
+            background-color: #050e18; /* Deep dark background */
+            font-family: 'Space Mono', monospace;
+            overflow: hidden; 
+            color: #d1d5db; /* Light gray text */
+        }
+        
+        /* Neon Cyan for key elements */
+        .neon-cyan-text {
+            color: #00ffff; 
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+        }
+
+        .neon-box-shadow {
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        /* Styling for the simulated map */
+        #map-display {
+            background: #0c1a2c;
+            border: 1px solid #00ffff;
+            background-image: radial-gradient(#1e3a8a 1px, transparent 1px),
+                              radial-gradient(#1e3a8a 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* Ping Button Styling */
+        #ping-button {
+            transition: all 0.2s;
+        }
+        #ping-button:hover {
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+            background-color: #008888;
+        }
+
+        /* Pulsing status indicator */
+        @keyframes pulse-status {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .status-pulse {
+            animation: pulse-status 1s infinite;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'neon-cyan': '#00ffff',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="flex flex-col justify-between items-center h-screen">
+
+    <!-- Header -->
+    <header class="w-full text-center pt-6 pb-4 bg-[#050e18]">
+        <h1 class="text-3xl font-extrabold neon-cyan-text tracking-wider">
+            PROJECT ATLAS // CLASSIFIED ACCESS
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">QUERY EXTERNAL DATABASES VIA GEMINI NETWORK. HIGH LATENCY WARNING.</p>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="w-full max-w-7xl flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden">
+        
+        <!-- Left Panel: Search & Controls -->
+        <div class="lg:col-span-1 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow h-full">
+            <h2 class="text-xl font-bold neon-cyan-text">ATLAS COMMAND LINE</h2>
+            
+            <input type="text" id="atlas-query" placeholder="Enter query (e.g., 'latest Mars rover findings')" 
+                   class="p-3 rounded bg-[#1e293b] text-white border border-neon-cyan/50 focus:outline-none focus:ring-2 focus:ring-neon-cyan/80">
+            
+            <button id="ping-button" onclick="handleSearch()" 
+                    class="p-3 rounded font-bold bg-neon-cyan text-[#050e18] uppercase tracking-wider hover:bg-white disabled:opacity-50"
+                    disabled>
+                PING NETWORK
+            </button>
+            
+            <div id="status-panel" class="p-3 bg-[#1e293b] rounded text-sm min-h-[4rem]">
+                <p id="status-message" class="text-gray-400">STATUS: OFFLINE. Initializing...</p>
+            </div>
+
+            <!-- Map Placeholder -->
+            <div id="map-display" class="flex-grow rounded-lg mt-4 flex items-center justify-center">
+                <p class="text-neon-cyan opacity-80 text-center text-sm p-4">
+                    MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
+                </p>
+            </div>
+        </div>
+
+        <!-- Right Panel: Output & Results -->
+        <div class="lg:col-span-2 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow overflow-y-auto">
+            <h2 class="text-xl font-bold neon-cyan-text">QUERY OUTPUT</h2>
+            
+            <div id="results-output" class="p-4 bg-[#1e293b] rounded-lg border border-gray-700 space-y-4 text-sm text-gray-300 flex-grow">
+                <p>Welcome, Operator. Enter a query in the left panel to begin a search. Atlas uses global resources for real-time grounded data.</p>
+            </div>
+
+            <div id="sources-output" class="p-3 bg-[#1e293b] rounded-lg text-xs border border-gray-700">
+                <p class="font-bold text-neon-cyan mb-1">DATA SOURCES:</p>
+                <ul id="source-list" class="text-gray-500 space-y-1">
+                    <li>No sources yet.</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-2 flex justify-between px-6 text-xs bg-[#0c1a2c] border-t border-neon-cyan/30">
+        <div class="text-gray-600">
+            ATLAS CORE V3.1 // GEMINI FUSION INITIATED
+        </div>
+        <button onclick="window.location.href='index.html';" class="text-gray-500 hover:text-white transition duration-200">
+            [TERMINATE SESSION]
+        </button>
+    </footer>
+
+    <script>
+        const queryInput = document.getElementById('atlas-query');
+        const pingButton = document.getElementById('ping-button');
+        const statusMessage = document.getElementById('status-message');
+        const resultsOutput = document.getElementById('results-output');
+        const sourceList = document.getElementById('source-list');
+
+        const systemPrompt = "You are PROJECT ATLAS, a high-level intelligence interface providing concise, neutral, and factual summaries based on real-time data. Respond directly to the user's query with a brief, helpful summary.";
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        // --- Initialization ---
+        window.onload = function() {
+            // Enable button after a short delay to simulate initialization
+            setTimeout(() => {
+                pingButton.disabled = false;
+                statusMessage.textContent = "STATUS: ONLINE. Awaiting command.";
+                statusMessage.classList.add('neon-cyan-text', 'status-pulse');
+            }, 1000);
+        };
+
+        // --- Exponential Backoff Retry Logic ---
+
+        async function fetchWithRetry(url, payload, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.status === 429) {
+                        // Too many requests - calculate delay and retry
+                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                        statusMessage.textContent = `WARNING: Network throttling detected. Retrying in ${Math.round(delay/1000)}s...`;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        throw new Error(`ATLAS FAILED after ${maxRetries} retries: ${error.message}`);
+                    }
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    statusMessage.textContent = `ERROR: Connection instability. Retrying in ${Math.round(delay/1000)}s...`;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        // --- Search Function ---
+        async function performAtlasSearch(query) {
+            resultsOutput.innerHTML = `<p class="text-neon-cyan">// PING INITIATED: ${query}</p>`;
+            sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">ACCESSING GEMINI NETWORK...</li>`;
+            pingButton.disabled = true;
+            statusMessage.textContent = "STATUS: PINGING EXTERNAL DATABASES...";
+
+            const payload = {
+                contents: [{ parts: [{ text: query }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            try {
+                const result = await fetchWithRetry(apiUrl, payload);
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    let sources = [];
+                    
+                    // Extract grounding sources
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+
+                    // Display results
+                    resultsOutput.innerHTML = `<p class="text-white whitespace-pre-wrap">${text}</p>`;
+
+                    if (sources.length > 0) {
+                        sourceList.innerHTML = sources.map((s, index) => 
+                            `<li>[SOURCE ${index + 1}]: <a href="${s.uri}" target="_blank" class="text-blue-400 hover:text-neon-cyan underline">${s.title}</a></li>`
+                        ).join('');
+                    } else {
+                        sourceList.innerHTML = `<li>No external sources cited for this query.</li>`;
+                    }
+                    
+                    statusMessage.textContent = "STATUS: PING SUCCESSFUL. Data acquired.";
+
+                } else {
+                    resultsOutput.innerHTML = `<p class="text-red-500">ERROR: Network response contained no usable data.</p>`;
+                    sourceList.innerHTML = `<li>Data integrity failure.</li>`;
+                    statusMessage.textContent = "STATUS: ERROR. Critical failure.";
+                }
+
+            } catch (error) {
+                console.error("ATLAS Search Error:", error);
+                resultsOutput.innerHTML = `<p class="text-red-500">CRITICAL ERROR: Failed to establish secure connection. Check logs.</p>`;
+                sourceList.innerHTML = `<li>Network trace failure.</li>`;
+                statusMessage.textContent = "STATUS: OFFLINE. Connection terminated.";
+
+            } finally {
+                pingButton.disabled = false;
+            }
+        }
+
+        function handleSearch() {
+            const query = queryInput.value.trim();
+            if (query) {
+                performAtlasSearch(query);
+            } else {
+                statusMessage.textContent = "ALERT: Query field cannot be empty.";
+            }
+        }
+        
+        // Allow pressing Enter to search
+        queryInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !pingButton.disabled) {
+                handleSearch();
+            }
+        });
+    </script>
+</body>
+</html>
