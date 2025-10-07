@@ -71,7 +71,7 @@
         <h1 class="text-3xl font-extrabold neon-cyan-text tracking-wider">
             PROJECT ATLAS // CLASSIFIED ACCESS
         </h1>
-        <p class="text-sm text-gray-500 mt-1">QUERY EXTERNAL DATABASES VIA GEMINI NETWORK. HIGH LATENCY WARNING.</p>
+        <p class="text-sm text-gray-500 mt-1">QUERY STANDALONE DATABASE. HIGH LATENCY WARNING.</p>
     </header>
 
     <main class="w-full max-w-7xl flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden">
@@ -103,7 +103,7 @@
             <h2 class="text-xl font-bold neon-cyan-text">QUERY OUTPUT</h2>
             
             <div id="results-output" class="p-4 bg-[#1e293b] rounded-lg border border-gray-700 space-y-4 text-sm text-gray-300 flex-grow">
-                <p>Welcome, Operator. Enter a query in the left panel to begin a search. Atlas uses global resources for real-time grounded data.</p>
+                <p>Welcome, Operator. Enter a query in the left panel to begin a search. Atlas uses local classified resources for data retrieval.</p>
             </div>
 
             <div id="sources-output" class="p-3 bg-[#1e293b] rounded-lg text-xs border border-gray-700">
@@ -117,7 +117,7 @@
 
     <footer class="w-full py-2 flex justify-between px-6 text-xs bg-[#0c1a2c] border-t border-neon-cyan/30">
         <div class="text-gray-600">
-            ATLAS CORE V3.1 // GEMINI FUSION INITIATED
+            ATLAS CORE V3.1 // LOCAL DATABASE FUSION INITIATED
         </div>
         <button onclick="window.location.href='index.html';" class="text-gray-500 hover:text-white transition duration-200">
             [TERMINATE SESSION]
@@ -131,11 +131,42 @@
         const resultsOutput = document.getElementById('results-output');
         const sourceList = document.getElementById('source-list');
 
-        const systemPrompt_General = "You are PROJECT ATLAS, a high-level intelligence interface providing concise, neutral, and factual summaries based on real-time data. Respond directly to the user's query with a brief, helpful summary.";
-        const systemPrompt_Human = "You are PROJECT ATLAS, a high-level intelligence interface. The operator is performing a **Human Subject Query**. Based on public information found, provide a brief, professional biography or summary of the individual. If no public information is found, state 'SUBJECT PROFILE NOT FOUND IN PUBLIC RECORDS.'";
-        
-        const apiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+        // --- Simulated Data Storage ---
+        const simulatedResponses = {
+            // Special Case for the User/Creator
+            "ethan unlocked": {
+                text: "SUBJECT: Ethan Unlocked.\n\nPROFILE: Primary operator and key architect of 'TheUnlockedWeb' project. Highly adept in frontend deployment and strategic content curation. Maintains multiple public-facing YouTube channels as a disinformation layer. ACCESS LEVEL: DELTA. LOCATION: Undisclosed. STATUS: Active.",
+                sources: [
+                    { title: "Internal Log: Operator Login", uri: "#" },
+                    { title: "Asset Report: TheUnlockedWeb Repository", uri: "#" }
+                ],
+                status: "SUBJECT PROFILE ACQUIRED. Access Level: DELTA."
+            },
+            // General Simulated Responses
+            "latest mars rover findings": {
+                text: "DATA PACKET 77-B. LATEST MARS ROVER FINDINGS:\n\nPerseverance rover has confirmed spectroscopic signatures indicating localized liquid water pockets beneath the Jezero crater floor, persisting seasonally. Autonomous drilling protocols initiated for sample retrieval. Expected transmission ETA: T+48hrs.",
+                sources: [
+                    { title: "JPL Internal Report - 2025/10/05", uri: "https://mars-science-report.io/77B" },
+                    { title: "Orbiting Satellite Imagery (OSI) Log", uri: "https://osicore-archive.io/view/Jezero" }
+                ],
+                status: "PING SUCCESSFUL. Data acquired. (Astro Research)"
+            },
+            "john smith": {
+                text: "SUBJECT PROFILE: JOHN SMITH\n\nSTATUS: **PROFILE NOT FOUND IN PUBLIC RECORDS.**\n\nAnalysis suggests subject name is either a common alias or a low-level target with no major public digital footprint. Recommend re-query with secondary identifiers (DOB, Location, ID Code).",
+                sources: [
+                    { title: "Warning: High Commonality Index (CCI)", uri: "#" }
+                ],
+                status: "SUBJECT TRACE FAILURE. Name too common."
+            },
+            // Default response for anything else
+            "default": {
+                text: "QUERY AMBIGUOUS. LOCAL DATABASE SEARCH RESULTS:\n\nData not found for the specified query. ATLAS protocols require precise, actionable keywords for retrieval from classified reserves. Suggest re-querying with a specific target name or classified project title.",
+                sources: [
+                    { title: "Protocol Document: Atlas Search V3", uri: "#" }
+                ],
+                status: "QUERY FAILED. Precision Required."
+            }
+        };
 
         // --- Initialization ---
         window.onload = function() {
@@ -147,132 +178,67 @@
             }, 1000);
         };
 
-        // --- Exponential Backoff Retry Logic ---
-
-        async function fetchWithRetry(url, payload, maxRetries = 5) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.status === 429) {
-                        // Too many requests - calculate delay and retry
-                        const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-                        statusMessage.textContent = `WARNING: Network throttling detected. Retrying in ${Math.round(delay/1000)}s...`;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        continue;
-                    }
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                } catch (error) {
-                    if (i === maxRetries - 1) {
-                        throw new Error(`ATLAS FAILED after ${maxRetries} retries: ${error.message}`);
-                    }
-                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
-                    statusMessage.textContent = `ERROR: Connection instability. Retrying in ${Math.round(delay/1000)}s...`;
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
-            }
-        }
-
         /**
          * Checks if the query looks like a full name (First Last or First Middle Last)
-         * This triggers the secret human database mode.
          * @param {string} query The user's input query.
          * @returns {boolean} True if it matches the human name pattern.
          */
         function isHumanNameQuery(query) {
-            // Trim and split the query by whitespace
             const parts = query.trim().split(/\s+/).filter(p => p.length > 0);
-            
-            // A name must have at least 2 parts (First Last) and at most 3 parts (First Middle Last)
-            if (parts.length < 2 || parts.length > 3) {
-                return false;
-            }
-
-            // Simple check: make sure all parts look like words (not numbers or symbols)
-            const allWords = parts.every(part => /^[a-zA-Z]{2,}$/.test(part)); // 2+ letters
-            
-            return allWords;
+            return (parts.length >= 2 && parts.length <= 3 && parts.every(part => /^[a-zA-Z]{2,}$/.test(part)));
         }
 
-        // --- Search Function ---
+        // --- Simulated Search Function ---
         async function performAtlasSearch(query) {
-            // Determine if the query is for a human subject
-            const isHuman = isHumanNameQuery(query);
-
-            // Set up initial UI state
+            const normalizedQuery = query.toLowerCase().trim();
+            
+            // 1. Initial UI setup
             resultsOutput.innerHTML = `<p class="text-neon-cyan">// PING INITIATED: ${query}</p>`;
-            sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">${isHuman ? 'TARGETING HUMAN INTELLIGENCE NETWORK...' : 'ACCESSING GEMINI NETWORK...'}</li>`;
+            sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">ACCESSING CLASSIFIED DATABASE...</li>`;
             pingButton.disabled = true;
-            statusMessage.textContent = `STATUS: ${isHuman ? 'HUMAN SUBJECT TRACE INITIATED...' : 'PINGING EXTERNAL DATABASES...'}`;
+            statusMessage.textContent = "STATUS: INITIATING DATA RETRIEVAL SEQUENCE...";
+            statusMessage.classList.add('neon-cyan-text', 'status-pulse');
 
-            // Define the system instruction based on the query type
-            const finalSystemPrompt = isHuman ? systemPrompt_Human : systemPrompt_General;
-
-            const payload = {
-                contents: [{ parts: [{ text: query }] }],
-                // Enable Google Search for grounding in both cases
-                tools: [{ "google_search": {} }],
-                config: {
-                    systemInstruction: {
-                        parts: [{ text: finalSystemPrompt }]
-                    },
-                },
-            };
-
-            try {
-                const result = await fetchWithRetry(apiUrl, payload);
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    const text = candidate.content.parts[0].text;
-                    let sources = [];
-                    
-                    // Extract grounding sources
-                    const groundingMetadata = candidate.groundingMetadata;
-                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                        sources = groundingMetadata.groundingAttributions
-                            .map(attribution => ({
-                                uri: attribution.web?.uri,
-                                title: attribution.web?.title,
-                            }))
-                            .filter(source => source.uri && source.title);
-                    }
-
-                    // Display results
-                    resultsOutput.innerHTML = `<p class="text-white whitespace-pre-wrap">${text}</p>`;
-
-                    if (sources.length > 0) {
-                        sourceList.innerHTML = sources.map((s, index) => 
-                            `<li>[SOURCE ${index + 1}]: <a href="${s.uri}" target="_blank" class="text-blue-400 hover:text-neon-cyan underline">${s.title}</a></li>`
-                        ).join('');
-                    } else {
-                        sourceList.innerHTML = `<li>No external sources cited for this query.</li>`;
-                    }
-                    
-                    statusMessage.textContent = `STATUS: PING SUCCESSFUL. Data acquired. (${isHuman ? 'Human Subject' : 'General Query'})`;
-
-                } else {
-                    resultsOutput.innerHTML = `<p class="text-red-500">ERROR: Network response contained no usable data.</p>`;
-                    sourceList.innerHTML = `<li>Data integrity failure.</li>`;
-                    statusMessage.textContent = "STATUS: ERROR. Critical failure.";
-                }
-
-            } catch (error) {
-                console.error("ATLAS Search Error:", error);
-                resultsOutput.innerHTML = `<p class="text-red-500">CRITICAL ERROR: Failed to establish secure connection. Check logs.</p>`;
-                sourceList.innerHTML = `<li>Network trace failure.</li>`;
-                statusMessage.textContent = "STATUS: OFFLINE. Connection terminated.";
-
-            } finally {
-                pingButton.disabled = false;
+            // 2. Determine which simulated response to use
+            let responseData = simulatedResponses.default;
+            
+            // Check for the special case (The Secret)
+            if (normalizedQuery.includes("ethan") && normalizedQuery.includes("unlocked")) {
+                 responseData = simulatedResponses["ethan unlocked"];
+            } 
+            // Check for other explicit, pre-programmed queries
+            else if (simulatedResponses[normalizedQuery]) {
+                responseData = simulatedResponses[normalizedQuery];
+            } 
+            // Check for the human name pattern
+            else if (isHumanNameQuery(query)) {
+                // Use a default failure response for unknown names
+                responseData = simulatedResponses["john smith"];
+                responseData.text = `SUBJECT PROFILE: ${query.toUpperCase()}\n\nSTATUS: **PROFILE NOT FOUND IN PUBLIC RECORDS.**\n\nAnalysis suggests subject name is either a common alias or a low-level target with no major public digital footprint. Recommend re-query with secondary identifiers (DOB, Location, ID Code).`;
+                responseData.status = `SUBJECT TRACE FAILURE. No profile found for ${query}.`;
             }
+
+            // 3. Simulate Network Latency (The Cool Delay)
+            // Wait for 1.5 to 3 seconds to make it look like it's actually searching
+            const delay = Math.random() * 1500 + 1500; 
+            await new Promise(resolve => setTimeout(resolve, delay));
+            
+            // 4. Update UI with Simulated Results
+            
+            // Display main text
+            resultsOutput.innerHTML = `<p class="text-white whitespace-pre-wrap">${responseData.text}</p>`;
+
+            // Display sources
+            sourceList.innerHTML = responseData.sources.map((s, index) => 
+                `<li>[SOURCE ${index + 1}]: <a href="${s.uri}" target="_blank" class="text-blue-400 hover:text-neon-cyan underline">${s.title}</a></li>`
+            ).join('');
+
+            // Update status
+            statusMessage.textContent = `STATUS: ${responseData.status}`;
+            statusMessage.classList.remove('status-pulse');
+
+            // 5. Cleanup
+            pingButton.disabled = false;
         }
 
         function handleSearch() {
