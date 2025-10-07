@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars-dle: Daily & Unlimited</title>
+    <title>Brawl Stars-dle: Daily &amp; Unlimited</title>
     <style>
         /* --- General CSS & Overrides --- */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
@@ -34,1435 +33,692 @@
             background-color: #2c2c54;
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 0 30px rgba(255, 193, 7, 0.3);
-            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+            display: none; /* Initially hidden until a mode is selected */
         }
 
-        /* --- Mode Selection (Initial Screen) --- */
+        /* --- Mode Selection --- */
         #mode-select {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            padding: 50px;
-        }
-
-        .mode-button {
-            padding: 15px 40px;
-            font-size: 1.5em;
-            font-weight: 900;
-            border: none;
+            text-align: center;
+            padding: 40px;
+            border: 2px solid #ffc107;
             border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            max-width: 300px;
-            transition: transform 0.2s;
-        }
-        .mode-button:hover { transform: translateY(-3px); }
-        #daily-button { background-color: #e74c3c; color: white; }
-        #unlimited-button { background-color: #3498db; color: white; }
-
-        /* --- Auth/Login Styles --- */
-        #auth-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 50px;
-            background-color: #2c2c54;
-            border-radius: 15px;
+            background-color: #3b3b64;
             margin-top: 50px;
         }
 
-        #auth-screen input {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ffc107;
-            width: 100%;
-            box-sizing: border-box;
-            background-color: #3f3f6e;
+        #mode-select h2 {
+            margin-bottom: 20px;
             color: #fff;
         }
 
-        #auth-screen button {
-            padding: 10px 20px;
-            margin-top: 10px;
-            background-color: #e74c3c;
-            color: white;
+        .mode-button {
+            padding: 15px 30px;
+            margin: 10px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 700;
-        }
-        #auth-screen button:hover { background-color: #c0392b; }
-        .toggle-auth {
-            margin-top: 15px;
-            color: #ffc107;
-            cursor: pointer;
-            font-size: 0.9em;
+            transition: background-color 0.2s, transform 0.2s;
         }
 
-        /* --- User Header Bar --- */
-        #user-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 2px solid #5a5a8a;
+        #daily-mode-btn {
+            background-color: #28a745;
+            color: white;
         }
 
-        #user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        #unlimited-mode-btn {
+            background-color: #007bff;
+            color: white;
         }
 
-        #user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #ffc107;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5em;
-            font-weight: 900;
+        .mode-button:hover {
+            transform: scale(1.05);
         }
 
-        #action-buttons {
+        /* --- Input & Button --- */
+        #input-container {
             display: flex;
             gap: 10px;
+            margin-bottom: 20px;
         }
-        
-        .action-btn {
-            background-color: #3498db;
+
+        #guess-input {
+            padding: 10px;
+            flex-grow: 1;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            background-color: #1a1a2e;
             color: white;
+            font-size: 16px;
+        }
+
+        #guess-button {
+            padding: 10px 20px;
+            background-color: #ffc107;
+            color: #1a1a2e;
             border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 700;
             transition: background-color 0.2s;
         }
-        .action-btn:hover { background-color: #2980b9; }
 
-        /* --- Input Area with Hints/Revives --- */
-        #input-area {
-            position: relative;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-        #guess-input {
-            flex-grow: 1;
-            padding: 12px;
-            border: 3px solid #ffc107;
-            border-radius: 8px;
-            font-size: 1.1em;
-            background-color: #3f3f6e;
-            color: #fff;
-            text-transform: capitalize;
-            outline: none;
+        #guess-button:hover {
+            background-color: #e0a800;
         }
 
-        #guesses-left-display {
-            font-size: 1.1em;
-            font-weight: 700;
-            color: #ffc107;
-            padding: 5px 10px;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            white-space: nowrap;
-        }
-        
-        #suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0; 
-            background-color: #444;
-            border: 1px solid #ffc107;
-            border-top: none;
-            max-height: 150px;
-            overflow-y: auto;
-            z-index: 50;
-        }
-        .suggestion-item {
-            padding: 10px;
-            cursor: pointer;
-            text-align: left;
-            text-transform: capitalize;
-        }
-        .suggestion-item:hover {
+        #guess-button:disabled {
             background-color: #555;
+            cursor: not-allowed;
         }
 
-        /* Style for Hint/Revive buttons */
-        #hint-btn, #revive-btn {
-            background-color: #e67e22; /* Orange for hints */
+        /* --- Guesses Table --- */
+        #guesses-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #guesses-table th, #guesses-table td {
+            padding: 12px 8px;
+            border: 1px solid #444;
+        }
+
+        #guesses-table th {
+            background-color: #4a4a7a;
+            color: #ffc107;
+            font-weight: 700;
+        }
+
+        #guesses-table tbody tr:nth-child(even) {
+            background-color: #3b3b64;
+        }
+
+        #guesses-table tbody tr:nth-child(odd) {
+            background-color: #2c2c54;
+        }
+
+        /* --- Clue Colors --- */
+        .clue-green {
+            background-color: #4CAF50 !important; /* Green */
             color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            white-space: nowrap;
-            display: none; /* Hidden by default, shown based on premium status */
-        }
-        #revive-btn {
-            background-color: #2ecc71; /* Green for revives */
         }
 
-        /* --- Guess Grid --- */
-        .grid-header, .guess-row {
-            display: grid;
-            /* Name/Pin | Rarity | Class | Speed | Hypercharge | Release Date */
-            grid-template-columns: 1.5fr 1fr 1fr 0.8fr 0.8fr 1.2fr;
-            gap: 5px;
-            text-align: center;
+        .clue-yellow {
+            background-color: #FFC107 !important; /* Yellow */
+            color: #1a1a2e;
         }
 
-        .grid-header {
-            font-weight: 700;
-            padding: 10px 0;
-            margin-bottom: 5px;
-            border-bottom: 2px solid #5a5a8a;
+        .clue-red {
+            background-color: #F44336 !important; /* Red */
+            color: white;
         }
 
-        #guesses-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .clue-gray {
+            background-color: #888 !important; /* Gray (for release date/chromatic) */
+            color: white;
         }
 
-        .guess-row {
-            padding: 0;
-            border-radius: 8px;
-            background-color: transparent;
+        .clue-light-blue {
+            background-color: #00BCD4 !important; /* Light Blue (for class) */
+            color: white;
         }
 
-        /* --- 3D Flip Card Structure --- */
-        .guess-cell-container { perspective: 1000px; height: 100%; padding: 0; }
-        .flipper {
-            position: relative;
-            width: 100%; height: 100%;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-            transform: rotateX(0deg);
-        }
-        .flipper.active-flip { transform: rotateX(180deg); }
-        .front, .back {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            backface-visibility: hidden;
-            border-radius: 8px;
-            background-color: #3f3f6e;
-            display: flex; align-items: center; justify-content: center;
-            padding: 10px 5px; box-sizing: border-box;
-            font-size: 0.9em; font-weight: 700;
-        }
-        .front { z-index: 2; transform: rotateX(0deg); }
-        .name-cell { justify-content: flex-start; padding-left: 10px; font-size: 1.1em; gap: 10px; }
-        .back { transform: rotateX(180deg); }
-        .pin-image { width: 30px; height: 30px; border-radius: 50%; object-fit: contain; }
-
-        /* --- Color Feedback (Applied to .back) --- */
-        .back.correct { background-color: #4CAF50; }
-        .back.incorrect { background-color: #F44336; }
-        .back.clue-higher { background-color: #2196F3; position: relative; }
-        .back.clue-higher::after { content: '▲'; margin-left: 5px; } 
-        .back.clue-lower { background-color: #FFEB3B; color: #000; position: relative; }
-        .back.clue-lower::after { content: '▼'; margin-left: 5px; color: #000; } 
-
-        /* --- Info Panel --- */
-        #info-panel {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #3f3f6e;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 250px;
-            text-align: center;
-        }
-        .streak-display {
-            display: flex;
-            align-items: center;
+        /* --- Modal --- */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.8); 
             justify-content: center;
-            font-size: 1.5em;
-            font-weight: 900;
-            color: #ffc107;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
-        .flame-icon {
-            width: 30px; 
-            height: 30px;
-            line-height: 1;
-            font-size: 1.2em;
-        }
-
-        /* --- Yesterday's Brawler Info --- */
-        #yesterday-brawler-info {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #3f3f6e;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 900px;
-            text-align: center;
-            font-size: 1.1em;
-            border: 2px solid #5a5a8a;
-        }
-        #yesterday-brawler-content {
-            display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: 700;
-            color: #ffc107;
-            margin-top: 5px;
-        }
-        #yesterday-brawler-content img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: contain;
-            border: 2px solid #ffc107;
         }
 
-        /* --- Modal Styles (reused for Premium/Friends) --- */
-        #modal, #premium-modal, #friends-modal {
-            display: none;
-            position: fixed; z-index: 1000; left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            justify-content: center; align-items: center;
-        }
-        .modal-content-base {
-            background-color: #2c2c54; padding: 40px; border-radius: 20px;
-            text-align: center; box-shadow: 0 0 50px #ffc107;
-            max-width: 90%; min-width: 350px;
+        .modal-content {
+            background-color: #2c2c54;
+            margin: 15% auto; 
+            padding: 30px;
             border: 5px solid #ffc107;
-            position: relative;
-        }
-        .modal-close {
-            position: absolute; top: 10px; right: 20px;
-            font-size: 30px; color: #fff; cursor: pointer;
+            border-radius: 15px;
+            width: 80%; 
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5);
+            animation: fadeIn 0.5s;
         }
 
-        /* --- Premium Modal Specifics --- */
-        .premium-tier {
-            border: 2px solid #5a5a8a;
-            padding: 15px; margin: 15px 0;
-            border-radius: 10px;
-            text-align: left;
+        .modal-content h2 {
+            color: #ffc107;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
-        .premium-tier h3 { margin-top: 0; color: #ffc107; }
-        .premium-tier ul { list-style: none; padding: 0; margin: 5px 0; }
-        .premium-tier li { margin: 5px 0; }
-        .premium-tier button {
-            width: 100%;
-            background-color: #3498db;
-            padding: 10px;
-            border-radius: 5px;
-            border: none;
+
+        .modal-content p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        #final-answer {
+            color: #4CAF50;
+            font-weight: 900;
+            font-size: 24px;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .close-button {
+            background-color: #F44336;
             color: white;
-            font-weight: 700;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.2s;
         }
-        .premium-tier.current { border-color: #4CAF50; background-color: #3f3f6e; }
 
-        /* --- Friends Modal Specifics --- */
-        #friends-list { text-align: left; margin-top: 20px; }
-        .friend-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #5a5a8a;
+        .close-button:hover {
+            background-color: #d32f2f;
         }
-        .friend-status { font-size: 0.8em; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- Other Sections --- */
+        #yesterday-answer {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #aaa;
+            text-align: center;
+        }
+
+        #stats-container {
+            margin-top: 20px;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #3b3b64;
+        }
+
+        #stats-container h3 {
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            display: inline-block;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            display: block;
+            font-size: 20px;
+            color: #4CAF50;
+        }
+
+        /* --- Revive Button --- */
+        #revive-btn {
+            background-color: #FF9800; /* Orange for revive */
+            color: #1a1a2e;
+            font-weight: bold;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            display: none; /* Hidden by default */
+            transition: background-color 0.2s;
+        }
+
+        #revive-btn:hover {
+            background-color: #e68900;
+        }
     </style>
 </head>
 <body>
-
     <div id="app-root">
-        <h1>BRAWL STARS-DLE</h1>
+        <h1>Brawl Stars-dle</h1>
 
-        <div id="auth-screen">
-            <h2>Log In to Play</h2>
-            <form id="login-form">
-                <input type="text" id="login-username" placeholder="Username" required="">
-                <input type="password" id="login-password" placeholder="Password" required="">
-                <button type="submit">Log In</button>
-            </form>
-            <form id="signup-form" style="display: none;">
-                <input type="text" id="signup-username" placeholder="Username" required="">
-                <input type="email" id="signup-email" placeholder="Email (for password recovery)" required="">
-                <input type="password" id="signup-password" placeholder="Password" required="">
-                <button type="submit">Sign Up</button>
-            </form>
-            <form id="forgot-password-form" style="display: none;">
-                <input type="email" id="forgot-email" placeholder="Enter your Email" required="">
-                <button type="button" onclick="handleForgotPassword()">Send Recovery Code (Simulated)</button>
-            </form>
-
-            <p class="toggle-auth" onclick="toggleAuth('signup')">Don't have an account? Sign Up</p>
-            <p class="toggle-auth" onclick="toggleAuth('login')" style="display: none;">Already have an account? Log In</p>
-            <p class="toggle-auth" onclick="toggleAuth('forgot')">Forgot Password?</p>
+        <div id="mode-select">
+            <h2>Select Game Mode</h2>
+            <p>Welcome to Brawl Stars-dle! Choose your challenge:</p>
+            <button id="daily-mode-btn" class="mode-button">Daily Challenge</button>
+            <button id="unlimited-mode-btn" class="mode-button">Unlimited</button>
+            <div id="yesterday-answer"></div>
         </div>
         
-        <div id="game-screen" style="display: none;">
-
-            <div id="user-header">
-                <div id="user-info">
-                    <div id="user-avatar">👤</div>
-                    <span id="display-username"></span>
-                </div>
-                <div id="action-buttons">
-                    <button id="premium-btn" class="action-btn" onclick="showPremiumModal()">Premium</button>
-                    <button id="friends-btn" class="action-btn" onclick="showFriendsModal()">Friends</button>
-                    <button class="action-btn" onclick="handleLogout()">Log Out</button>
-                </div>
+        <div id="game-container">
+            <div id="stats-container">
+                <h3>Statistics</h3>
+                <div class="stat-item">Wins: <span id="stat-wins" class="stat-value">0</span></div>
+                <div class="stat-item">Streak: <span id="stat-streak" class="stat-value">0</span></div>
+                <div class="stat-item">Max Streak: <span id="stat-max-streak" class="stat-value">0</span></div>
             </div>
 
-            <div id="game-container">
-                <div id="mode-select">
-                    <button id="daily-button" class="mode-button">Daily Challenge</button>
-                    <button id="unlimited-button" class="mode-button">Unlimited Play</button>
-                </div>
-
-                <div id="game-board" style="display: none;">
-                    <div id="input-area">
-                        <input type="text" id="guess-input" placeholder="Start typing Brawler name..." autocomplete="off">
-                        <button id="guess-button">Guess</button>
-                        <div id="suggestions"></div>
-                        <button id="hint-btn" onclick="handleHint()">Hint (3/3)</button>
-                        <button id="revive-btn" onclick="handleRevive()">Revive (2/2)</button>
-                        <div id="guesses-left-display">3 Guesses Left</div>
-                    </div>
-
-                    <div class="grid-header">
-                        <div class="header-name">BRAWLER</div>
-                        <div class="header-rarity">RARITY</div>
-                        <div class="header-class">CLASS</div>
-                        <div class="header-speed">SPEED</div>
-                        <div class="header-hc">HC</div>
-                        <div class="header-date">RELEASE DATE</div>
-                    </div>
-
-                    <div id="guesses-list"></div>
-                </div>
+            <div id="input-container" style="margin-top: 20px;">
+                <input type="text" id="guess-input" placeholder="Enter Brawler Name">
+                <button id="guess-button">Guess</button>
             </div>
-
-            <div id="info-panel" style="display: none;">
-                <p id="mode-label" style="font-size: 1.1em; margin-bottom: 5px;"></p>
-                <div class="streak-display">
-                    <span class="flame-icon">🔥</span>
-                    <span id="current-streak">0</span>
-                </div>
-                <p style="font-size: 0.8em; color: #aaa;">Highest Streak: <span id="highest-streak">0</span></p>
-            </div>
-
-            <div id="yesterday-brawler-info">
-                <p id="yesterday-brawler-text">No brawler available yesterday.</p>
-                <div id="yesterday-brawler-content" style="display: none;"></div>
-            </div>
+            
+            <table id="guesses-table">
+                <thead>
+                    <tr>
+                        <th>Brawler</th>
+                        <th>Rarity</th>
+                        <th>Class</th>
+                        <th>Speed</th>
+                        <th>Hypercharge</th>
+                        <th>Release Date</th>
+                    </tr>
+                </thead>
+                <tbody id="guesses-body">
+                    </tbody>
+            </table>
         </div>
     </div>
 
-    <div id="modal">
-        <div id="modal-content" class="modal-content-base">
+    <div id="game-modal" class="modal">
+        <div class="modal-content">
             <h2 id="modal-title"></h2>
             <p id="modal-message"></p>
-            <p style="margin-top: 15px;">The Brawler was: <span id="final-answer" style="color: #ffc107; font-weight: 700;"></span></p>
             <div id="correct-pin-display"></div>
-            <button onclick="window.location.reload()">New Game</button>
-        </div>
-    </div>
-
-    <div id="premium-modal">
-        <div class="modal-content-base">
-            <span class="modal-close" onclick="closePremiumModal()">×</span>
-            <h2>Upgrade to Premium</h2>
-            <p>Your current plan: <strong id="current-premium-tier">Free</strong></p>
-            <p style="font-size: 0.9em; color: #aaa;">Current holiday discount: <strong id="holiday-discount-display">30%</strong> (Diamond users get 40%)</p>
-            <p style="font-size: 0.9em; color: #4CAF50;">YouTube Subscriber Discount: 5% off (simulated)</p>
+            <span id="final-answer"></span>
             
-            <div id="premium-options">
-                </div>
-            <p style="font-size: 0.8em; margin-top: 20px;">You can cancel your subscription at any time.</p>
+            <button id="revive-btn" style="display: none;">Use Premium Revive (X Remaining)</button>
+            <button class="close-button" id="close-modal-btn">Continue</button>
         </div>
     </div>
-
-    <div id="friends-modal">
-        <div class="modal-content-base">
-            <span class="modal-close" onclick="closeFriendsModal()">×</span>
-            <h2>My Friends</h2>
-            <div id="friends-list">
-                </div>
-            <div style="margin-top: 20px;">
-                <input type="text" id="friend-message-input" placeholder="Type a message to all friends..." style="width: 80%; padding: 8px;">
-                <button onclick="sendMessage()" class="action-btn" style="padding: 8px 10px;">Send</button>
-                <p id="last-message-sent" style="font-size: 0.9em; color: #ffeb3b; margin-top: 10px;"></p>
-            </div>
-        </div>
-    </div>
-
 
     <script>
-        // --- JAVASCRIPT: BRAWLER DATA ---
-
+        // Data containing all Brawlers and their properties (simplified)
+        // NOTE: This list needs to be comprehensive and up-to-date for a real game.
+        // For the purpose of this demonstration, we use a small, slightly outdated set from the user's file.
         const BRAWLERS_RAW = [
-            { name: 'Shelly', rarity: 'Starting Brawler', class: 'Damage Dealer', speed: 720, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Shelly/Pin.png' },
-            { name: 'Nita', rarity: 'Rare', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Nita/Pin.png' },
-            { name: 'Colt', rarity: 'Rare', class: 'Damage Dealer', speed: 720, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Colt/Pin.png' },
-            { name: 'Bull', rarity: 'Rare', class: 'Tank', speed: 720, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Bull/Pin.png' },
-            { name: 'Brock', rarity: 'Rare', class: 'Marksman', speed: 720, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Brock/Pin.png' },
-            { name: 'El Primo', rarity: 'Rare', class: 'Tank', speed: 770, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/El-Primo/Pin.png' },
-            { name: 'Barley', rarity: 'Rare', class: 'Artillery', speed: 720, hypercharge: false, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Barley/Pin.png' },
-            { name: 'Poco', rarity: 'Rare', class: 'Support', speed: 720, hypercharge: false, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Poco/Pin.png' },
-            { name: 'Rosa', rarity: 'Rare', class: 'Tank', speed: 720, hypercharge: true, releaseDate: 'Apr 2019', pin: 'https://cdn.brawlify.com/pins/Rosa/Pin.png' },
-            { name: 'Jessie', rarity: 'Super Rare', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Jessie/Pin.png' },
-            { name: 'Dynamike', rarity: 'Super Rare', class: 'Artillery', speed: 770, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Dynamike/Pin.png' },
-            { name: 'Tick', rarity: 'Super Rare', class: 'Artillery', speed: 770, hypercharge: false, releaseDate: 'Jun 2019', pin: 'https://cdn.brawlify.com/pins/Tick/Pin.png' },
-            { name: '8-Bit', rarity: 'Super Rare', class: 'Damage Dealer', speed: 580, hypercharge: false, releaseDate: 'Aug 2019', pin: 'https://cdn.brawlify.com/pins/8-Bit/Pin.png' },
-            { name: 'Rico', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Rico/Pin.png' },
-            { name: 'Darryl', rarity: 'Super Rare', class: 'Tank', speed: 770, hypercharge: true, releaseDate: 'Mar 2019', pin: 'https://cdn.brawlify.com/pins/Darryl/Pin.png' },
-            { name: 'Penny', rarity: 'Super Rare', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Jan 2019', pin: 'https://cdn.brawlify.com/pins/Penny/Pin.png' },
-            { name: 'Carl', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Mar 2019', pin: 'https://cdn.brawlify.com/pins/Carl/Pin.png' },
-            { name: 'Jacky', rarity: 'Super Rare', class: 'Tank', speed: 770, hypercharge: false, releaseDate: 'Mar 2020', pin: 'https://cdn.brawlify.com/pins/Jacky/Pin.png' },
-            { name: 'Gus', rarity: 'Super Rare', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Sep 2022', pin: 'https://cdn.brawlify.com/pins/Gus/Pin.png' },
-            { name: 'Gale', rarity: 'Epic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'May 2020', pin: 'https://cdn.brawlify.com/pins/Gale/Pin.png' },
-            { name: 'Bo', rarity: 'Epic', class: 'Controller', speed: 720, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Bo/Pin.png' },
-            { name: 'Emz', rarity: 'Epic', class: 'Controller', speed: 720, hypercharge: true, releaseDate: 'Oct 2019', pin: 'https://cdn.brawlify.com/pins/Emz/Pin.png' },
-            { name: 'Piper', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: true, releaseDate: 'Mar 2019', pin: 'https://cdn.brawlify.com/pins/Piper/Pin.png' },
-            { name: 'Pam', rarity: 'Epic', class: 'Support', speed: 720, hypercharge: false, releaseDate: 'Jan 2019', pin: 'https://cdn.brawlify.com/pins/Pam/Pin.png' },
-            { name: 'Frank', rarity: 'Epic', class: 'Tank', speed: 770, hypercharge: true, releaseDate: 'Jan 2019', pin: 'https://cdn.brawlify.com/pins/Frank/Pin.png' },
-            { name: 'Bibi', rarity: 'Epic', class: 'Tank', speed: 820, hypercharge: true, releaseDate: 'May 2019', pin: 'https://cdn.brawlify.com/pins/Bibi/Pin.png' },
-            { name: 'Bea', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'Nov 2019', pin: 'https://cdn.brawlify.com/pins/Bea/Pin.png' },
-            { name: 'Nani', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'Jun 2020', pin: 'https://cdn.brawlify.com/pins/Nani/Pin.png' },
-            { name: 'Griff', rarity: 'Epic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Jul 2021', pin: 'https://cdn.brawlify.com/pins/Griff/Pin.png' },
-            { name: 'Edgar', rarity: 'Epic', class: 'Assassin', speed: 820, hypercharge: true, releaseDate: 'Dec 2020', pin: 'https://cdn.brawlify.com/pins/Edgar/Pin.png' },
-            { name: 'Grom', rarity: 'Epic', class: 'Artillery', speed: 720, hypercharge: false, releaseDate: 'Dec 2021', pin: 'https://cdn.brawlify.com/pins/Grom/Pin.png' },
-            { name: 'Bonnie', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'May 2022', pin: 'https://cdn.brawlify.com/pins/Bonnie/Pin.png' },
-            { name: 'Stu', rarity: 'Epic', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Mar 2021', pin: 'https://cdn.brawlify.com/pins/Stu/Pin.png' },
-            { name: 'Colette', rarity: 'Epic', class: 'Damage Dealer', speed: 720, hypercharge: true, releaseDate: 'Sep 2020', pin: 'https://cdn.brawlify.com/pins/Colette/Pin.png' },
-            { name: 'Belle', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'Apr 2021', pin: 'https://cdn.brawlify.com/pins/Belle/Pin.png' },
-            { name: 'Ash', rarity: 'Epic', class: 'Tank', speed: 720, hypercharge: false, releaseDate: 'Aug 2021', pin: 'https://cdn.brawlify.com/pins/Ash/Pin.png' },
-            { name: 'Lola', rarity: 'Epic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Nov 2021', pin: 'https://cdn.brawlify.com/pins/Lola/Pin.png' },
-            { name: 'Sam', rarity: 'Epic', class: 'Controller', speed: 770, hypercharge: false, releaseDate: 'Sep 2022', pin: 'https://cdn.brawlify.com/pins/Sam/Pin.png' },
-            { name: 'Mandy', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'Dec 2022', pin: 'https://cdn.brawlify.com/pins/Mandy/Pin.png' },
-            { name: 'Larry and Lawrie', rarity: 'Epic', class: 'Artillery', speed: 770, hypercharge: false, releaseDate: 'Dec 2022', pin: 'https://cdn.brawlify.com/pins/Mandy/Pin.png' },
-            { name: 'Hank', rarity: 'Epic', class: 'Tank', speed: 720, hypercharge: false, releaseDate: 'Jun 2023', pin: 'https://cdn.brawlify.com/pins/Hank/Pin.png' },
-            { name: 'Pearl', rarity: 'Epic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Sep 2023', pin: 'https://cdn.brawlify.com/pins/Pearl/Pin.png' },
-            { name: 'Maisie', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: true, releaseDate: 'Apr 2023', pin: 'https://cdn.brawlify.com/pins/Maisie/Pin.png' },
-            { name: 'Angelo', rarity: 'Epic', class: 'Marksman', speed: 820, hypercharge: false, releaseDate: 'Mar 2024', pin: 'https://cdn.brawlify.com/pins/Angelo/Pin.png' },
-            { name: 'Janet', rarity: 'Mythic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'May 2022', pin: 'https://cdn.brawlify.com/pins/Janet/Pin.png' },
-            { name: 'Melodie', rarity: 'Mythic', class: 'Assassin', speed: 770, hypercharge: false, releaseDate: 'Mar 2024', pin: 'https://cdn.brawlify.com/pins/Melodie/Pin.png' },
-            { name: 'Chuck', rarity: 'Mythic', class: 'Controller', speed: 770, hypercharge: false, releaseDate: 'Oct 2023', pin: 'https://cdn.brawlify.com/pins/Chuck/Pin.png' },
-            { name: 'Jae-Yong', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Apr 2024', pin: 'https://cdn.brawlify.com/pins/Jae-Yong/Pin.png' },
-            { name: 'Mortis', rarity: 'Mythic', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Mortis/Pin.png' },
-            { name: 'Tara', rarity: 'Mythic', class: 'Damage Dealer', speed: 770, hypercharge: true, releaseDate: 'Jan 2019', pin: 'https://cdn.brawlify.com/pins/Tara/Pin.png' },
-            { name: 'Gene', rarity: 'Mythic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Feb 2019', pin: 'https://cdn.brawlify.com/pins/Gene/Pin.png' },
-            { name: 'Max', rarity: 'Mythic', class: 'Support', speed: 820, hypercharge: true, releaseDate: 'Dec 2019', pin: 'https://cdn.brawlify.com/pins/Max/Pin.png' },
-            { name: 'Mr. P', rarity: 'Mythic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Jan 2020', pin: 'https://cdn.brawlify.com/pins/Mr.-P.png' },
-            { name: 'Sprout', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'May 2020', pin: 'https://cdn.brawlify.com/pins/Sprout/Pin.png' },
-            { name: 'Byron', rarity: 'Mythic', class: 'Support', speed: 720, hypercharge: false, releaseDate: 'Dec 2020', pin: 'https://cdn.brawlify.com/pins/Byron/Pin.png' },
-            { name: 'Squeak', rarity: 'Mythic', class: 'Controller', speed: 770, hypercharge: false, releaseDate: 'May 2021', pin: 'https://cdn.brawlify.com/pins/Squeak/Pin.png' },
-            { name: 'Gray', rarity: 'Mythic', class: 'Support', speed: 720, hypercharge: false, releaseDate: 'Dec 2022', pin: 'https://cdn.brawlify.com/pins/Gray/Pin.png' },
-            { name: 'Willow', rarity: 'Mythic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Apr 2023', pin: 'https://cdn.brawlify.com/pins/Willow/Pin.png' },
-            { name: 'Doug', rarity: 'Mythic', class: 'Support', speed: 770, hypercharge: false, releaseDate: 'Aug 2023', pin: 'https://cdn.brawlify.com/pins/Doug/Pin.png' },
-            { name: 'Mico', rarity: 'Mythic', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Dec 2023', pin: 'https://cdn.brawlify.com/pins/Mico/Pin.png' },
-            { name: 'Ruffs', rarity: 'Mythic', class: 'Support', speed: 720, hypercharge: false, releaseDate: 'Feb 2021', pin: 'https://cdn.brawlify.com/pins/Colonel-Ruffs/Pin.png' },
-            { name: 'Buzz', rarity: 'Mythic', class: 'Assassin', speed: 770, hypercharge: true, releaseDate: 'Jul 2021', pin: 'https://cdn.brawlify.com/pins/Buzz/Pin.png' },
-            { name: 'Fang', rarity: 'Mythic', class: 'Assassin', speed: 770, hypercharge: true, releaseDate: 'Jan 2022', pin: 'https://cdn.brawlify.com/pins/Fang/Pin.png' },
-            { name: 'Buster', rarity: 'Mythic', class: 'Tank', speed: 770, hypercharge: true, releaseDate: 'Nov 2022', pin: 'https://cdn.brawlify.com/pins/Buster/Pin.png' },
-            { name: 'Eve', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Mar 2022', pin: 'https://cdn.brawlify.com/pins/Eve/Pin.png' },
-            { name: 'Lou', rarity: 'Mythic', class: 'Controller', speed: 720, hypercharge: true, releaseDate: 'Nov 2020', pin: 'https://cdn.brawlify.com/pins/Lou/Pin.png' },
-            { name: 'Otis', rarity: 'Mythic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Jul 2022', pin: 'https://cdn.brawlify.com/pins/Otis/Pin.png' },
-            { name: 'Juju', rarity: 'Mythic', class: 'Artillery', speed: 720, hypercharge: false, releaseDate: 'Nov 2024', pin: 'https://cdn.brawlify.com/pins/Juju/Pin.png' },
-            { name: 'Ziggy', rarity: 'Mythic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Sep 2025', pin: 'https://cdn.brawlify.com/pins/Ziggy/Pin.png' },
-            { name: 'Mina', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Sep 2025', pin: 'https://cdn.brawlify.com/pins/Mina/Pin.png' },
-            { name: 'Spike', rarity: 'Legendary', class: 'Damage Dealer', speed: 720, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Spike/Pin.png' },
-            { name: 'Crow', rarity: 'Legendary', class: 'Assassin', speed: 820, hypercharge: true, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Crow/Pin.png' },
-            { name: 'Leon', rarity: 'Legendary', class: 'Assassin', speed: 820, hypercharge: true, releaseDate: 'Mar 2019', pin: 'https://cdn.brawlify.com/pins/Leon/Pin.png' },
-            { name: 'Sandy', rarity: 'Legendary', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Sep 2019', pin: 'https://cdn.brawlify.com/pins/Sandy/Pin.png' },
-            { name: 'Amber', rarity: 'Legendary', class: 'Controller', speed: 720, hypercharge: true, releaseDate: 'Oct 2020', pin: 'https://cdn.brawlify.com/pins/Amber/Pin.png' },
-            { name: 'Meg', rarity: 'Legendary', class: 'Tank', speed: 720, hypercharge: false, releaseDate: 'Sep 2021', pin: 'https://cdn.brawlify.com/pins/Meg/Pin.png' },
-            { name: 'Chester', rarity: 'Legendary', class: 'Damage Dealer', speed: 770, hypercharge: false, releaseDate: 'Dec 2022', pin: 'https://cdn.brawlify.com/pins/Chester/Pin.png' },
-            { name: 'Cordelius', rarity: 'Legendary', class: 'Assassin', speed: 820, hypercharge: true, releaseDate: 'Jul 2023', pin: 'https://cdn.brawlify.com/pins/Cordelius/Pin.png' },
-            { name: 'Draco', rarity: 'Legendary', class: 'Tank', speed: 720, hypercharge: false, releaseDate: 'May 2024', pin: 'https://cdn.brawlify.com/pins/Draco/Pin.png' },
-            { name: 'Kit', rarity: 'Legendary', class: 'Support', speed: 720, hypercharge: false, releaseDate: 'Jan 2024', pin: 'https://cdn.brawlify.com/pins/Kit/Pin.png' },
-            { name: 'Surge', rarity: 'Legendary', class: 'Damage Dealer', speed: 770, hypercharge: false, releaseDate: 'Jul 2020', pin: 'https://cdn.brawlify.com/pins/Surge/Pin.png' },
-            { name: 'Kaze', rarity: 'Ultra Legendary', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Mar 2025', pin: 'https://cdn.brawlify.com/pins/Kaze/Pin.png' },
+            { name: "Shelly", rarity: "Starting", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Shelly/Pin.png" },
+            { name: "Nita", rarity: "Trophy Road", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Nita/Pin.png" },
+            { name: "Colt", rarity: "Trophy Road", class: "Damage", speed: 770, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Colt/Pin.png" },
+            { name: "Bull", rarity: "Trophy Road", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Bull/Pin.png" },
+            { name: "Jessie", rarity: "Trophy Road", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Jessie/Pin.png" },
+            { name: "Brock", rarity: "Trophy Road", class: "Artillery", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Brock/Pin.png" },
+            { name: "Dynamike", rarity: "Super Rare", class: "Artillery", speed: 770, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Dynamike/Pin.png" },
+            { name: "Bo", rarity: "Trophy Road", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Bo/Pin.png" },
+            { name: "Tick", rarity: "Super Rare", class: "Artillery", speed: 720, hypercharge: true, releaseDate: "Jun 2019", pin: "https://cdn.brawlify.com/pins/Tick/Pin.png" },
+            { name: "8-Bit", rarity: "Trophy Road", class: "Damage", speed: 620, hypercharge: true, releaseDate: "Aug 2019", pin: "https://cdn.brawlify.com/pins/8-Bit/Pin.png" },
+            { name: "Emz", rarity: "Trophy Road", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Oct 2019", pin: "https://cdn.brawlify.com/pins/Emz/Pin.png" },
+            { name: "El Primo", rarity: "Rare", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/El-Primo/Pin.png" },
+            { name: "Barley", rarity: "Rare", class: "Artillery", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Barley/Pin.png" },
+            { name: "Poco", rarity: "Rare", class: "Support", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Poco/Pin.png" },
+            { name: "Rosa", rarity: "Rare", class: "Tank", speed: 720, hypercharge: true, releaseDate: "Apr 2019", pin: "https://cdn.brawlify.com/pins/Rosa/Pin.png" },
+            { name: "Rico", rarity: "Super Rare", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Rico/Pin.png" },
+            { name: "Darryl", rarity: "Super Rare", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Dec 2017", pin: "https://cdn.brawlify.com/pins/Darryl/Pin.png" },
+            { name: "Penny", rarity: "Super Rare", class: "Damage", speed: 720, hypercharge: true, releaseDate: "May 2018", pin: "https://cdn.brawlify.com/pins/Penny/Pin.png" },
+            { name: "Carl", rarity: "Super Rare", class: "Damage", speed: 770, hypercharge: true, releaseDate: "Mar 2019", pin: "https://cdn.brawlify.com/pins/Carl/Pin.png" },
+            { name: "Jacky", rarity: "Super Rare", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Mar 2020", pin: "https://cdn.brawlify.com/pins/Jacky/Pin.png" },
+            { name: "Gus", rarity: "Super Rare", class: "Support", speed: 720, hypercharge: false, releaseDate: "Sep 2022", pin: "https://cdn.brawlify.com/pins/Gus/Pin.png" },
+            { name: "Piper", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Mar 2017", pin: "https://cdn.brawlify.com/pins/Piper/Pin.png" },
+            { name: "Pam", rarity: "Epic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Apr 2017", pin: "https://cdn.brawlify.com/pins/Pam/Pin.png" },
+            { name: "Frank", rarity: "Epic", class: "Tank", speed: 720, hypercharge: true, releaseDate: "Mar 2018", pin: "https://cdn.brawlify.com/pins/Frank/Pin.png" },
+            { name: "Bibi", rarity: "Epic", class: "Tank", speed: 820, hypercharge: true, releaseDate: "May 2019", pin: "https://cdn.brawlify.com/pins/Bibi/Pin.png" },
+            { name: "Bea", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2019", pin: "https://cdn.brawlify.com/pins/Bea/Pin.png" },
+            { name: "Nani", rarity: "Epic", class: "Artillery", speed: 720, hypercharge: true, releaseDate: "Jun 2020", pin: "https://cdn.brawlify.com/pins/Nani/Pin.png" },
+            { name: "Edgar", rarity: "Epic", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2020", pin: "https://cdn.brawlify.com/pins/Edgar/Pin.png" },
+            { name: "Grom", rarity: "Epic", class: "Artillery", speed: 720, hypercharge: false, releaseDate: "Dec 2021", pin: "https://cdn.brawlify.com/pins/Grom/Pin.png" },
+            { name: "Griff", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Jul 2021", pin: "https://cdn.brawlify.com/pins/Griff/Pin.png" },
+            { name: "Bonnie", rarity: "Epic", class: "Damage", speed: 770, hypercharge: true, releaseDate: "May 2022", pin: "https://cdn.brawlify.com/pins/Bonnie/Pin.png" },
+            { name: "Mandy", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Jan 2023", pin: "https://cdn.brawlify.com/pins/Mandy/Pin.png" },
+            { name: "Hank", rarity: "Epic", class: "Tank", speed: 620, hypercharge: false, releaseDate: "Jun 2023", pin: "https://cdn.brawlify.com/pins/Hank/Pin.png" },
+            { name: "Willow", rarity: "Epic", class: "Support", speed: 720, hypercharge: true, releaseDate: "Apr 2023", pin: "https://cdn.brawlify.com/pins/Willow/Pin.png" },
+            { name: "Meeple", rarity: "Epic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Mar 2024", pin: "https://cdn.brawlify.com/pins/Meeple/Pin.png" }, // Added as an Epic exception per user rule
+            { name: "Mortis", rarity: "Mythic", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2016", pin: "https://cdn.brawlify.com/pins/Mortis/Pin.png" },
+            { name: "Tara", rarity: "Mythic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2017", pin: "https://cdn.brawlify.com/pins/Tara/Pin.png" },
+            { name: "Gene", rarity: "Mythic", class: "Support", speed: 720, hypercharge: true, releaseDate: "Feb 2019", pin: "https://cdn.brawlify.com/pins/Gene/Pin.png" },
+            { name: "Max", rarity: "Mythic", class: "Support", speed: 820, hypercharge: true, releaseDate: "Dec 2019", pin: "https://cdn.brawlify.com/pins/Max/Pin.png" },
+            { name: "Mr. P", rarity: "Mythic", class: "Artillery", speed: 720, hypercharge: true, releaseDate: "Jan 2020", pin: "https://cdn.brawlify.com/pins/Mr.-P/Pin.png" },
+            { name: "Sprout", rarity: "Mythic", class: "Artillery", speed: 720, hypercharge: true, releaseDate: "Apr 2020", pin: "https://cdn.brawlify.com/pins/Sprout/Pin.png" },
+            { name: "Byron", rarity: "Mythic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Dec 2020", pin: "https://cdn.brawlify.com/pins/Byron/Pin.png" },
+            { name: "Squeak", rarity: "Mythic", class: "Artillery", speed: 770, hypercharge: true, releaseDate: "May 2021", pin: "https://cdn.brawlify.com/pins/Squeak/Pin.png" },
+            { name: "Lou", rarity: "Mythic", class: "Control", speed: 720, hypercharge: true, releaseDate: "Oct 2020", pin: "https://cdn.brawlify.com/pins/Lou/Pin.png" },
+            { name: "Ruffs", rarity: "Mythic", class: "Support", speed: 720, hypercharge: true, releaseDate: "Feb 2021", pin: "https://cdn.brawlify.com/pins/Ruffs/Pin.png" },
+            { name: "Buzz", rarity: "Mythic", class: "Assassin", speed: 770, hypercharge: true, releaseDate: "Jul 2021", pin: "https://cdn.brawlify.com/pins/Buzz/Pin.png" },
+            { name: "Fang", rarity: "Mythic", class: "Assassin", speed: 770, hypercharge: true, releaseDate: "Dec 2021", pin: "https://cdn.brawlify.com/pins/Fang/Pin.png" },
+            { name: "Eve", rarity: "Mythic", class: "Artillery", speed: 720, hypercharge: true, releaseDate: "Mar 2022", pin: "https://cdn.brawlify.com/pins/Eve/Pin.png" },
+            { name: "Janet", rarity: "Mythic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "May 2022", pin: "https://cdn.brawlify.com/pins/Janet/Pin.png" },
+            { name: "Otis", rarity: "Mythic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Jul 2022", pin: "https://cdn.brawlify.com/pins/Otis/Pin.png" },
+            { name: "Sam", rarity: "Mythic", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Sep 2022", pin: "https://cdn.brawlify.com/pins/Sam/Pin.png" },
+            { name: "Chester", rarity: "Legendary", class: "Damage", speed: 770, hypercharge: true, releaseDate: "Dec 2022", pin: "https://cdn.brawlify.com/pins/Chester/Pin.png" },
+            { name: "Mico", rarity: "Mythic", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2023", pin: "https://cdn.brawlify.com/pins/Mico/Pin.png" },
+            { name: "Juju", rarity: "Mythic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Apr 2024", pin: "https://cdn.brawlify.com/pins/Juju/Pin.png" }, // Added as a Mythic exception per user rule
+            { name: "Jae-Yong", rarity: "Mythic", class: "Damage", speed: 720, hypercharge: false, releaseDate: "May 2024", pin: "https://cdn.brawlify.com/pins/Jae-Yong/Pin.png" }, // Added as a Mythic exception per user rule
+            { name: "Spike", rarity: "Legendary", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2016", pin: "https://cdn.brawlify.com/pins/Spike/Pin.png" },
+            { name: "Crow", rarity: "Legendary", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2016", pin: "https://cdn.brawlify.com/pins/Crow/Pin.png" },
+            { name: "Leon", rarity: "Legendary", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Leon/Pin.png" },
+            { name: "Sandy", rarity: "Legendary", class: "Support", speed: 720, hypercharge: true, releaseDate: "Sep 2019", pin: "https://cdn.brawlify.com/pins/Sandy/Pin.png" },
+            { name: "Amber", rarity: "Legendary", class: "Damage", speed: 770, hypercharge: true, releaseDate: "Oct 2020", pin: "https://cdn.brawlify.com/pins/Amber/Pin.png" },
+            { name: "Meg", rarity: "Legendary", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Sep 2021", pin: "https://cdn.brawlify.com/pins/Meg/Pin.png" },
+            { name: "Surge", rarity: "Legendary", class: "Damage", speed: 770, hypercharge: true, releaseDate: "Jul 2020", pin: "https://cdn.brawlify.com/pins/Surge/Pin.png" },
+            { name: "Colette", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Sep 2020", pin: "https://cdn.brawlify.com/pins/Colette/Pin.png" },
+            { name: "Ash", rarity: "Epic", class: "Tank", speed: 720, hypercharge: true, releaseDate: "Sep 2021", pin: "https://cdn.brawlify.com/pins/Ash/Pin.png" },
+            { name: "Lola", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Nov 2021", pin: "https://cdn.brawlify.com/pins/Lola/Pin.png" },
+            { name: "Gale", rarity: "Epic", class: "Support", speed: 720, hypercharge: true, releaseDate: "May 2020", pin: "https://cdn.brawlify.com/pins/Gale/Pin.png" },
+            { name: "Belle", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Apr 2021", pin: "https://cdn.brawlify.com/pins/Belle/Pin.png" },
+            { name: "Byron", rarity: "Mythic", class: "Support", speed: 720, hypercharge: true, releaseDate: "Dec 2020", pin: "https://cdn.brawlify.com/pins/Byron/Pin.png" },
+            { name: "R-T", rarity: "Legendary", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Mar 2023", pin: "https://cdn.brawlify.com/pins/R-T/Pin.png" },
+            { name: "Cordelius", rarity: "Legendary", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Jul 2023", pin: "https://cdn.brawlify.com/pins/Cordelius/Pin.png" },
+            { name: "Chuck", rarity: "Mythic", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Oct 2023", pin: "https://cdn.brawlify.com/pins/Chuck/Pin.png" },
+            { name: "Charlie", rarity: "Epic", class: "Control", speed: 720, hypercharge: true, releaseDate: "Sep 2023", pin: "https://cdn.brawlify.com/pins/Charlie/Pin.png" },
+            { name: "L & L", rarity: "Epic", class: "Artillery", speed: 770, hypercharge: true, releaseDate: "Jan 2024", pin: "https://cdn.brawlify.com/pins/Larry-and-Lawrie/Pin.png" }, // Adjusted to match user's final clues: Epic, Artillery, Fast, Has Hypercharge
         ];
+        
+        // Normalize Brawler data for easier lookup
+        const BRAWLERS = BRAWLERS_RAW.reduce((map, brawler) => {
+            map[brawler.name.toLowerCase()] = {
+                ...brawler,
+                speedName: brawler.speed === 820 ? 'Very Fast' : brawler.speed === 770 ? 'Fast' : brawler.speed === 720 ? 'Normal' : 'Slow'
+            };
+            return map;
+        }, {});
 
-
-        // Rarity Order Mapping (used for comparison)
-        const RARITY_ORDER = {
-            'Starting Brawler': 0, 'Rare': 1, 'Super Rare': 2, 'Epic': 3, 'Mythic': 4, 'Legendary': 5, 'Ultra Legendary': 6
-        };
-
-        // Speed Tier Mapping (used for display AND comparison logic)
-        const SPEED_TIERS = {
-            580: 'Very Slow', 720: 'Normal', 770: 'Fast', 820: 'Very Fast',
-        };
-
-        // --- GAME STATE & CONSTANTS ---
-        const BRAWLERS = BRAWLERS_RAW.map(b => ({ ...b, name: b.name.toLowerCase() }));
-        let targetBrawler = null;
-        let dailyDayNumber = null;
+        // --- GLOBAL STATE ---
+        let targetBrawler = null; 
         let guessesMade = 0;
-        const MAX_GUESSES = 3;
-        let gameMode = null;
-
-        // Auth and Premium Constants
-        const ADMIN_USER = 'EthanUnlocked';
-        const ADMIN_PASS = 'Subscribe123!';
-        const LOCAL_STORAGE_USER_KEY = 'bsdle_current_user';
-        const LOCAL_STORAGE_USERS_KEY = 'bsdle_all_users';
-
-        const PREMIUM_TIERS = {
-            free: { price: 0, maxHints: 0, maxRevives: 0, discountBonus: 0, features: { hints: '❌', revives: '❌', discount: '❌' } },
-            bronze: { price: 10, maxHints: 3, maxRevives: 0, discountBonus: 0, features: { hints: '✅', revives: '❌', discount: '❌' } },
-            silver: { price: 20, maxHints: 3, maxRevives: 2, discountBonus: 0, features: { hints: '✅', revives: '✅', discount: '❌' } },
-            diamond: { price: 130, maxHints: 3, maxRevives: 2, discountBonus: 0.10, features: { hints: '✅', revives: '✅', discount: '✅' } }
-        };
-        const BASE_HOLIDAY_DISCOUNT = 0.30; // 30%
-
-        let currentUser = null;
-
-        // Local Storage Keys (rest)
-        const DAILY_STREAK_KEY = 'bsdle_daily_streak';
-        const DAILY_HIGH_STREAK_KEY = 'bsdle_daily_high_streak';
-        const UNLIMITED_STREAK_KEY = 'bsdle_unlimited_streak';
-        const UNLIMITED_HIGH_STREAK_KEY = 'bsdle_unlimited_high_streak';
-        const DAILY_GAME_DATA_KEY = 'bsdle_daily_game_data';
-        const EPOCH_DATE = new Date('October 6, 2025 00:00:00');
+        let maxGuesses = 6;
+        let gameMode = 'daily'; // 'daily' or 'unlimited'
+        let dailyDayNumber = null;
+        let isGameOver = false;
 
         // --- DOM Elements ---
-        const authScreen = document.getElementById('auth-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const displayUsername = document.getElementById('display-username');
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const premiumBtn = document.getElementById('premium-btn');
-        const hintBtn = document.getElementById('hint-btn');
-        const reviveBtn = document.getElementById('revive-btn');
-        const premiumModal = document.getElementById('premium-modal');
-        const friendsModal = document.getElementById('friends-modal');
-        const modeSelect = document.getElementById('mode-select');
-        const gameBoard = document.getElementById('game-board');
-        const infoPanel = document.getElementById('info-panel');
         const input = document.getElementById('guess-input');
         const button = document.getElementById('guess-button');
-        const suggestionsDiv = document.getElementById('suggestions');
-        const guessesList = document.getElementById('guesses-list');
-        const guessesLeftDisplay = document.getElementById('guesses-left-display');
-        const modal = document.getElementById('modal');
+        const guessesBody = document.getElementById('guesses-body');
+        const modal = document.getElementById('game-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMessage = document.getElementById('modal-message');
         const finalAnswer = document.getElementById('final-answer');
         const correctPinDisplay = document.getElementById('correct-pin-display');
-        const modeLabel = document.getElementById('mode-label');
-        const currentStreakSpan = document.getElementById('current-streak');
-        const highestStreakSpan = document.getElementById('highest-streak');
-        const yesterdayBrawlerInfo = document.getElementById('yesterday-brawler-info');
-        const yesterdayBrawlerText = document.getElementById('yesterday-brawler-text');
-        const yesterdayBrawlerContent = document.getElementById('yesterday-brawler-content');
+        const closeBtn = document.getElementById('close-modal-btn');
+        const dailyBtn = document.getElementById('daily-mode-btn');
+        const unlimitedBtn = document.getElementById('unlimited-mode-btn');
+        const gameContainer = document.getElementById('game-container');
+        const modeSelect = document.getElementById('mode-select');
+        const yesterdayAnswerDiv = document.getElementById('yesterday-answer');
+        const reviveBtn = document.getElementById('revive-btn');
+        const statWins = document.getElementById('stat-wins');
+        const statStreak = document.getElementById('stat-streak');
+        const statMaxStreak = document.getElementById('stat-max-streak');
+        
+        // --- PREMIUM & USER STATE (Simplified) ---
+        let currentUser = {
+            premium: 'none', // 'none', 'premium', 'ultra'
+            revivesUsedToday: 0
+        };
 
-        // --- DAILY RESET & PAGE RELOAD ---
-        function checkDailyReset() {
-            const now = new Date();
-            const currentDay = now.toISOString().split('T')[0];
-            const storedDay = localStorage.getItem('last_active_day');
+        const PREMIUM_TIERS = {
+            'none': { maxRevives: 0 },
+            'premium': { maxRevives: 1 },
+            'ultra': { maxRevives: 3 }
+        };
 
-            if (storedDay && storedDay !== currentDay) {
-                // Day has reset. Force reload the page to restart the game.
-                // NOTE: This will only fire if the user is currently online between 12:00 AM and the next check.
-                alert("It's a new day! The daily challenge is resetting.");
-                localStorage.setItem('last_active_day', currentDay);
-                window.location.reload();
-            } else if (!storedDay) {
-                localStorage.setItem('last_active_day', currentDay);
+        // --- LOCAL STORAGE HELPERS ---
+        const getLocalStorage = (key, defaultValue) => {
+            try {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : defaultValue;
+            } catch (e) {
+                console.error("Error getting localStorage:", e);
+                return defaultValue;
             }
-        }
-        setInterval(checkDailyReset, 60000); // Check every 60 seconds (1 minute)
+        };
 
-        // --- DATE & TIME HELPERS ---
+        const setLocalStorage = (key, value) => {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                console.error("Error setting localStorage:", e);
+            }
+        };
 
-        function getTodayString() {
-            return new Date().toISOString().split('T')[0];
-        }
-
-        function getYesterdayString() {
-            const date = new Date();
-            date.setDate(date.getDate() - 1);
-            return date.toISOString().split('T')[0];
-        }
-
-        function calculateDayNumber(dateString) {
-            const today = new Date(dateString);
-            const diffTime = Math.abs(today.getTime() - EPOCH_DATE.getTime());
+        // --- DAILY GAME LOGIC ---
+        const getDailyBrawler = () => {
+            const today = new Date();
+            const startOfBrawlStarsDle = new Date('2024-01-01'); // Arbitrary start date for the cycle
+            const diffTime = Math.abs(today.getTime() - startOfBrawlStarsDle.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays + 1;
-        }
-
-        function getDailyTarget() {
-            const todayString = getTodayString();
-            const allDailyData = JSON.parse(localStorage.getItem(DAILY_GAME_DATA_KEY) || '{}');
-
-            if (allDailyData[todayString]) {
-                const data = allDailyData[todayString];
-                dailyDayNumber = data.day;
-                return BRAWLERS.find(b => b.name === data.targetName);
-            }
-
-            const randomIndex = Math.floor(Math.random() * BRAWLERS.length);
-            const newTarget = BRAWLERS[randomIndex];
-            dailyDayNumber = calculateDayNumber(todayString);
-
-            allDailyData[todayString] = {
-                targetName: newTarget.name,
-                pin: newTarget.pin,
-                day: dailyDayNumber,
-                completed: false
-            };
-
-            localStorage.setItem(DAILY_GAME_DATA_KEY, JSON.stringify(allDailyData));
-            return newTarget;
-        }
-
-        function isDailyComplete() {
-            const todayString = getTodayString();
-            const allDailyData = JSON.parse(localStorage.getItem(DAILY_GAME_DATA_KEY) || '{}');
-            return allDailyData[todayString] && allDailyData[todayString].completed;
-        }
-
-        function setDailyComplete() {
-            const todayString = getTodayString();
-            const allDailyData = JSON.parse(localStorage.getItem(DAILY_GAME_DATA_KEY) || '{}');
-            if (allDailyData[todayString]) {
-                allDailyData[todayString].completed = true;
-                localStorage.setItem(DAILY_GAME_DATA_KEY, JSON.stringify(allDailyData));
-            }
-        }
-
-        function displayYesterdayBrawler() {
-            const yesterdayString = getYesterdayString();
-            const allDailyData = JSON.parse(localStorage.getItem(DAILY_GAME_DATA_KEY) || '{}');
-            const yesterdayData = allDailyData[yesterdayString];
-
-            if (yesterdayData) {
-                yesterdayBrawlerText.textContent = `YESTERDAY'S BRAWLER (Day ${yesterdayData.day}):`;
-                yesterdayBrawlerContent.style.display = 'flex';
-                yesterdayBrawlerContent.innerHTML = `
-                    <img src="${yesterdayData.pin}" alt="${yesterdayData.targetName} Pin" class="pin-image">
-                    <span>${yesterdayData.targetName.toUpperCase()}</span>
-                `;
-            } else {
-                yesterdayBrawlerText.textContent = `No brawler available yesterday.`;
-                yesterdayBrawlerContent.style.display = 'none';
-            }
-        }
-
-        // --- STREAK & LOCAL STORAGE HELPERS ---
-
-        function getStreakData(mode) {
-            const streakKey = mode === 'daily' ? DAILY_STREAK_KEY : UNLIMITED_STREAK_KEY;
-            const highStreakKey = mode === 'daily' ? DAILY_HIGH_STREAK_KEY : UNLIMITED_HIGH_STREAK_KEY;
-            return {
-                current: parseInt(localStorage.getItem(streakKey) || '0'),
-                highest: parseInt(localStorage.getItem(highStreakKey) || '0'),
-                key: streakKey,
-                highKey: highStreakKey
-            };
-        }
-
-        function updateStreaks(won) {
-            const data = getStreakData(gameMode);
-            let current = data.current;
-            let highest = data.highest;
-
-            if (won) {
-                current++;
-                if (current > highest) {
-                    highest = current;
-                }
-            } else {
-                current = 0;
-            }
-
-            localStorage.setItem(data.key, current);
-            localStorage.setItem(data.highKey, highest);
-            displayStreaks();
-        }
-
-        function displayStreaks() {
-            const data = getStreakData(gameMode);
-            modeLabel.textContent = gameMode === 'daily' ? `DAILY STREAK (Day ${dailyDayNumber})` : 'UNLIMITED STREAK';
-            currentStreakSpan.textContent = data.current;
-            highestStreakSpan.textContent = data.highest;
-        }
-
-        // --- Pin URL Helper ---
-        function getBrawlerPinUrl(brawlerName, pinType) {
-            let brawler = BRAWLERS.find(b => b.name === brawlerName.toLowerCase());
-            if (!brawler) return '';
-
-            let pinUrl = brawler.pin;
-            const sadPinExtension = 'Pin_sad.png';
-
-            if (pinType === 'happy') {
-                return pinUrl;
-            } else if (pinType === 'sad') {
-                if (pinUrl.includes('/pins/')) {
-                    if (pinUrl.endsWith('Pin.png')) {
-                        return pinUrl.replace('Pin.png', sadPinExtension);
-                    }
-                    if (pinUrl.endsWith('Mr.-P.png')) {
-                         return pinUrl.replace('Mr.-P.png', 'Mr.-P/' + sadPinExtension);
-                    }
-                    const lastSlash = pinUrl.lastIndexOf('/');
-                    const dot = pinUrl.lastIndexOf('.');
-                    if (dot > lastSlash) {
-                        return pinUrl.substring(0, dot) + '_sad' + pinUrl.substring(dot);
-                    }
-                }
-                return pinUrl;
-            }
-            return pinUrl;
-        }
-
-        // Update Guesses Left Display
-        function updateGuessesLeftDisplay() {
-            const left = MAX_GUESSES - guessesMade;
-            if (left > 1) {
-                guessesLeftDisplay.textContent = `${left} Guesses Left`;
-            } else if (left === 1) {
-                guessesLeftDisplay.textContent = '1 Guess Left';
-            } else {
-                guessesLeftDisplay.textContent = 'Game Over';
-            }
-        }
-
-        // --- AUTHENTICATION LOGIC (Client-Side Simulation) ---
-
-        function getAllUsers() {
-            let users = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || '{}');
-            // Ensure the hardcoded admin user exists with default data
-            if (!users[ADMIN_USER.toLowerCase()]) {
-                users[ADMIN_USER.toLowerCase()] = {
-                    username: ADMIN_USER,
-                    password: ADMIN_PASS, 
-                    email: 'user@example.com',
-                    premium: 'free',
-                    hintsUsedToday: 0,
-                    revivesUsedToday: 0,
-                    lastDailyReset: getTodayString(),
-                    friends: [
-                        { name: 'PocoPlayer', premium: 'silver', profilePic: '🎤' },
-                        { name: 'CrowBro', premium: 'diamond', profilePic: '🦅' },
-                        { name: 'GaleForce', premium: 'bronze', profilePic: '🌬️' }
-                    ]
-                };
-                localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
-            }
-            return users;
-        }
-
-        function saveCurrentUser() {
-            localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(currentUser));
-            const allUsers = getAllUsers();
-            allUsers[currentUser.username.toLowerCase()] = currentUser;
-            localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(allUsers));
-            updatePremiumButtons();
-            updateHintReviveButtons();
-        }
-
-        function loadAuthState() {
-            const storedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
-            if (storedUser) {
-                currentUser = JSON.parse(storedUser);
-                // Check if last daily reset date is today, if not, reset premium usage
-                if (currentUser.lastDailyReset !== getTodayString()) {
-                    currentUser.hintsUsedToday = 0;
-                    currentUser.revivesUsedToday = 0;
-                    currentUser.lastDailyReset = getTodayString();
-                    saveCurrentUser();
-                }
-                showGameScreen();
-            } else {
-                showAuthScreen('login');
-            }
-        }
-
-        function showAuthScreen(form) {
-            gameScreen.style.display = 'none';
-            authScreen.style.display = 'flex';
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('signup-form').style.display = 'none';
-            document.getElementById('forgot-password-form').style.display = 'none';
-            document.querySelector('.toggle-auth[onclick="toggleAuth(\'signup\')"]').style.display = 'block';
-            document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'none';
-
-            if (form === 'login') {
-                document.getElementById('login-form').style.display = 'block';
-                document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'none';
-            } else if (form === 'signup') {
-                document.getElementById('signup-form').style.display = 'block';
-                document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'block';
-                document.querySelector('.toggle-auth[onclick="toggleAuth(\'signup\')"]').style.display = 'none';
-            } else if (form === 'forgot') {
-                document.getElementById('forgot-password-form').style.display = 'block';
-                document.querySelector('.toggle-auth[onclick="toggleAuth(\'signup\')"]').style.display = 'none';
-                document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'block';
-            }
-        }
-
-        function showGameScreen() {
-            authScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-            displayUsername.textContent = currentUser.username;
-            document.getElementById('user-avatar').textContent = currentUser.username[0].toUpperCase();
-            updatePremiumButtons();
-            updateHintReviveButtons();
-            displayYesterdayBrawler();
-        }
-
-        function toggleAuth(form) {
-            showAuthScreen(form);
-        }
-
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-            const allUsers = getAllUsers();
-            const userKey = username.toLowerCase();
-
-            if (allUsers[userKey] && allUsers[userKey].password === password) {
-                currentUser = allUsers[userKey];
-                localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(currentUser));
-                showGameScreen();
-            } else {
-                alert("Login failed: Invalid username or password.");
-            }
-        });
-
-        signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('signup-username').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value.trim();
-            const allUsers = getAllUsers();
-            const userKey = username.toLowerCase();
-
-            if (allUsers[userKey]) {
-                alert("Signup failed: Username already exists.");
-                return;
-            }
-
-            currentUser = {
-                username: username,
-                password: password,
-                email: email,
-                premium: 'free',
-                hintsUsedToday: 0,
-                revivesUsedToday: 0,
-                lastDailyReset: getTodayString(),
-                friends: []
-            };
-            allUsers[userKey] = currentUser;
-            localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(allUsers));
-            localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(currentUser));
-            alert("Sign up successful! You are now logged in.");
-            showGameScreen();
-        });
-
-        function handleForgotPassword() {
-            const email = document.getElementById('forgot-email').value.trim();
-            if (email) {
-                alert(`SIMULATION: A recovery code has been sent to ${email}. Check your spam folder.`);
-            } else {
-                alert("Please enter your email.");
-            }
-        }
-
-        function handleLogout() {
-            currentUser = null;
-            localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-            window.location.reload(); 
-        }
-
-        // --- PREMIUM LOGIC ---
-        function updatePremiumButtons() {
-            if (!currentUser) return;
-
-            // Update user bar premium button visibility
-            premiumBtn.style.display = (currentUser.premium === 'diamond') ? 'none' : 'block';
             
-            updateHintReviveButtons();
-        }
-
-        function updateHintReviveButtons() {
-            if (!currentUser) return;
-            const tier = PREMIUM_TIERS[currentUser.premium];
-
-            // Hint Button
-            if (tier.maxHints > 0) {
-                hintBtn.style.display = 'block';
-                const remaining = tier.maxHints - currentUser.hintsUsedToday;
-                hintBtn.textContent = `Hint (${remaining}/${tier.maxHints})`;
-                hintBtn.disabled = (remaining <= 0);
-            } else {
-                hintBtn.style.display = 'none';
-            }
-
-            // Revive Button is controlled in endGame, but we ensure its text is correct here
-            reviveBtn.textContent = `Revive (${tier.maxRevives - currentUser.revivesUsedToday}/${tier.maxRevives})`;
-        }
-
-
-        function showPremiumModal() {
-            if (!currentUser) return;
-
-            document.getElementById('current-premium-tier').textContent = currentUser.premium.toUpperCase();
+            dailyDayNumber = diffDays;
             
-            let holidayDiscount = BASE_HOLIDAY_DISCOUNT;
-            if (currentUser.premium === 'diamond') {
-                holidayDiscount += PREMIUM_TIERS.diamond.discountBonus; 
-            }
-            document.getElementById('holiday-discount-display').textContent = `${(holidayDiscount * 100).toFixed(0)}%`;
-
-            const youtubeSubscriber = currentUser.username.toLowerCase() === ADMIN_USER.toLowerCase(); // Simulate check for EthanUnlocked
-            const subDiscount = youtubeSubscriber ? 0.05 : 0;
-
-            let optionsHTML = '';
-            for (const tierName in PREMIUM_TIERS) {
-                if (tierName === 'free') continue;
-
-                const tier = PREMIUM_TIERS[tierName];
-                const isCurrent = tierName === currentUser.premium;
-                let finalPrice = tier.price;
-                
-                // Apply all discounts
-                finalPrice = finalPrice * (1 - subDiscount);
-                
-                optionsHTML += `
-                    <div class="premium-tier ${isCurrent ? 'current' : ''}">
-                        <h3>${tierName.toUpperCase()} ($${finalPrice.toFixed(2)}/week)</h3>
-                        <ul>
-                            <li>${tier.features.hints} Access to Hints (Max ${tier.maxHints}/day)</li>
-                            <li>${tier.features.revives} Access to Revives (Max ${tier.maxRevives}/day)</li>
-                            <li>${tier.features.discount} +10% Holiday Discount Bonus (Total ${(BASE_HOLIDAY_DISCOUNT + tier.discountBonus) * 100}%)</li>
-                        </ul>
-                        <button ${isCurrent ? 'disabled' : ''} onclick="upgradePremium('${tierName}', ${finalPrice.toFixed(2)})">
-                            ${isCurrent ? 'Current Plan' : 'Upgrade Now'}
-                        </button>
-                    </div>
-                `;
-            }
-            document.getElementById('premium-options').innerHTML = optionsHTML;
-            premiumModal.style.display = 'flex';
-        }
-
-        function closePremiumModal() {
-            premiumModal.style.display = 'none';
-        }
-
-        function upgradePremium(tierName, price) {
-            const tier = PREMIUM_TIERS[tierName];
-            if (!confirm(`Are you sure you want to upgrade to ${tierName.toUpperCase()} for $${price}/week?`)) return;
-
-            // SIMULATION: Update status and "send money"
-            currentUser.premium = tierName;
-            currentUser.hintsUsedToday = 0; 
-            currentUser.revivesUsedToday = 0; 
-            saveCurrentUser();
-
-            alert(`PAYMENT SIMULATION SUCCESSFUL! $${price} has been charged. The money has been 'sent to your email' (i.e., this feature is purely simulated and no money was transferred). Enjoy ${tierName.toUpperCase()}!`);
-            closePremiumModal();
-        }
+            const brawlerKeys = Object.keys(BRAWLERS);
+            // This ensures the same brawler is selected each day based on the day number
+            const brawlerIndex = diffDays % brawlerKeys.length;
+            const brawlerName = brawlerKeys[brawlerIndex];
+            
+            return BRAWLERS[brawlerName];
+        };
         
-        // --- PREMIUM GAMEPLAY FEATURES ---
-
-        function handleHint() {
-            if (currentUser.premium === 'free' || currentUser.hintsUsedToday >= PREMIUM_TIERS[currentUser.premium].maxHints) {
-                alert('You have either run out of hints or do not have a premium tier that allows hints.');
-                return;
-            }
-            
-            const lastGuessRow = guessesList.querySelector('.guess-row:first-child');
-            if (!lastGuessRow) {
-                alert('Make a guess first!');
-                return;
-            }
-
-            const properties = ['rarity', 'class', 'speed', 'hypercharge', 'date'];
-            const cells = Array.from(lastGuessRow.querySelectorAll('.guess-cell-container'));
-            let unrevealedIncorrectIndices = [];
-            
-            for(let i = 1; i < cells.length; i++) {
-                const flipper = cells[i].querySelector('.flipper');
-                const back = cells[i].querySelector('.back');
-                
-                const isFlipped = flipper.classList.contains('active-flip');
-                const isCorrect = back.classList.contains('correct');
-
-                if (!isFlipped && !isCorrect) {
-                    unrevealedIncorrectIndices.push(i);
-                }
-            }
-
-            if (unrevealedIncorrectIndices.length === 0) {
-                alert('All remaining columns are either correct or have already been revealed by a previous hint!');
-                return;
-            }
-
-            const randomIndex = Math.floor(Math.random() * unrevealedIncorrectIndices.length);
-            const indexToReveal = unrevealedIncorrectIndices[randomIndex];
-            
-            cells[indexToReveal].querySelector('.flipper').classList.add('active-flip');
-            
-            currentUser.hintsUsedToday++;
-            saveCurrentUser();
-            updateHintReviveButtons();
-        }
+        const isDailyCompleted = () => {
+            const lastDaily = getLocalStorage('lastDaily', {});
+            return lastDaily.day === dailyDayNumber;
+        };
         
-        function handleRevive() {
-            const tier = PREMIUM_TIERS[currentUser.premium];
-            if (currentUser.revivesUsedToday >= tier.maxRevives) {
-                alert('You have used your maximum allowed revives for the day.');
-                return;
-            }
-            
-            if (guessesMade < MAX_GUESSES) {
-                alert("You don't need a revive yet!");
-                return;
-            }
-            
-            if (!confirm('Use one revive to reset your guesses? This cannot be undone.')) {
-                return;
-            }
-
-            guessesMade = 0;
-            currentUser.revivesUsedToday++;
-            saveCurrentUser();
-            updateGuessesLeftDisplay();
-            
-            // Re-enable input/buttons
-            button.disabled = false;
-            input.disabled = false;
-            reviveBtn.style.display = 'none';
-
-            alert('Revive successful! You have 3 fresh guesses.');
-        }
-
-
-        // --- FRIENDS LOGIC (SIMULATED) ---
-
-        function showFriendsModal() {
-            if (!currentUser) return;
-            renderFriendsList();
-            friendsModal.style.display = 'flex';
-        }
-
-        function closeFriendsModal() {
-            friendsModal.style.display = 'none';
-        }
-
-        function renderFriendsList() {
-            const listDiv = document.getElementById('friends-list');
-            listDiv.innerHTML = '';
-
-            const friends = currentUser.friends || [];
-            
-            if (friends.length === 0) {
-                listDiv.innerHTML = '<p style="text-align: center;">You have no friends yet.</p>';
-                return;
-            }
-
-            friends.forEach(friend => {
-                const statusColor = friend.premium === 'diamond' ? '#3498db' : (friend.premium === 'silver' ? '#7f8c8d' : '#e67e22');
-                const item = document.createElement('div');
-                item.className = 'friend-item';
-                item.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div id="friend-avatar" style="width: 30px; height: 30px; border-radius: 50%; background-color: #5a5a8a; display: flex; align-items: center; justify-content: center;">${friend.profilePic || 'F'}</div>
-                        <span>${friend.name}</span>
-                    </div>
-                    <div class="friend-status">
-                        Premium: <strong style="color: ${statusColor};">${friend.premium.toUpperCase()}</strong>
-                    </div>
-                `;
-                listDiv.appendChild(item);
+        const setDailyComplete = (brawlerName = targetBrawler.name) => {
+            setLocalStorage('lastDaily', { 
+                day: dailyDayNumber, 
+                brawler: brawlerName, 
+                guesses: guessesMade
             });
-        }
+        };
 
-        function sendMessage() {
-            const message = document.getElementById('friend-message-input').value.trim();
-            if (!message) return;
+        const getYesterdayBrawler = () => {
+            const today = new Date();
+            const startOfBrawlStarsDle = new Date('2024-01-01');
+            const diffTime = Math.abs(today.getTime() - startOfBrawlStarsDle.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const yesterdayDayNumber = diffDays - 1;
+            
+            const brawlerKeys = Object.keys(BRAWLERS);
+            const brawlerIndex = yesterdayDayNumber % brawlerKeys.length;
+            const brawlerName = brawlerKeys[brawlerIndex];
+            
+            return BRAWLERS[brawlerName];
+        };
 
-            document.getElementById('last-message-sent').textContent = `Message sent to ${currentUser.friends.length} friends: "${message}" (Simulated)`;
-            document.getElementById('friend-message-input').value = '';
-        }
+        const displayYesterdayBrawler = () => {
+             const yesterdayBrawler = getYesterdayBrawler();
+             yesterdayAnswerDiv.textContent = `Yesterday's Brawler: ${yesterdayBrawler.name}`;
+        };
+
+        // --- STATS LOGIC ---
+        const loadStats = () => {
+            const stats = getLocalStorage('stats', { wins: 0, streak: 0, maxStreak: 0 });
+            statWins.textContent = stats.wins;
+            statStreak.textContent = stats.streak;
+            statMaxStreak.textContent = stats.maxStreak;
+            return stats;
+        };
+
+        const saveStats = (stats) => {
+            setLocalStorage('stats', stats);
+        };
+
+        const updateStreaks = (won) => {
+            let stats = loadStats();
+            
+            if (won) {
+                stats.wins += 1;
+                stats.streak += 1;
+                if (stats.streak > stats.maxStreak) {
+                    stats.maxStreak = stats.streak;
+                }
+            } else {
+                stats.streak = 0;
+            }
+            
+            saveStats(stats);
+            loadStats(); // Update the display
+        };
         
-        // --- INITIAL SETUP ---
-
-        function startGame(mode) {
+        // --- GAME FLOW ---
+        const startGame = (mode) => {
             gameMode = mode;
-            modeSelect.style.display = 'none';
-            gameBoard.style.display = 'block';
-            infoPanel.style.display = 'block';
-            guessesList.innerHTML = '';
-
+            guessesMade = 0;
+            isGameOver = false;
+            guessesBody.innerHTML = '';
+            input.value = '';
+            input.disabled = false;
+            button.disabled = false;
+            
             if (mode === 'daily') {
-                targetBrawler = getDailyTarget();
-                if (isDailyComplete()) {
-                    endGame(true, true);
+                targetBrawler = getDailyBrawler();
+                maxGuesses = 6;
+                if (isDailyCompleted()) {
+                    targetBrawler = getDailyBrawler(); // Ensure targetBrawler is set
+                    endGame(true, true); // Show the already completed modal
                     return;
                 }
-            } else {
-                const randomIndex = Math.floor(Math.random() * BRAWLERS.length);
-                targetBrawler = BRAWLERS[randomIndex];
+            } else { // unlimited mode
+                // Randomly pick a Brawler for Unlimited mode
+                const keys = Object.keys(BRAWLERS);
+                const randomName = keys[Math.floor(Math.random() * keys.length)];
+                targetBrawler = BRAWLERS[randomName];
+                maxGuesses = 99; // Essentially unlimited
             }
+            
+            modeSelect.style.display = 'none';
+            gameContainer.style.display = 'block';
+            console.log(`[DEBUG] Game Mode: ${gameMode}, Target Brawler: ${targetBrawler.name}`); 
+        };
 
-            guessesMade = 0;
-            updateGuessesLeftDisplay();
-
-            displayStreaks();
-            button.addEventListener('click', processGuess);
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    processGuess();
+        const compareGuess = (guessName) => {
+            const guess = BRAWLERS[guessName];
+            
+            const result = {};
+            
+            // Rarity Check
+            if (guess.rarity === targetBrawler.rarity) {
+                result.rarity = 'clue-green';
+            } else {
+                const rarities = ["Starting", "Trophy Road", "Rare", "Super Rare", "Epic", "Mythic", "Legendary"];
+                const guessIndex = rarities.indexOf(guess.rarity);
+                const targetIndex = rarities.indexOf(targetBrawler.rarity);
+                if (guessIndex < targetIndex) {
+                    result.rarity = 'clue-yellow-high'; // Higher needed
+                } else if (guessIndex > targetIndex) {
+                    result.rarity = 'clue-yellow-low'; // Lower needed
+                } else {
+                    result.rarity = 'clue-red';
                 }
-            });
-            console.log(`Target Brawler (${mode} mode, Day ${dailyDayNumber || 'N/A'}):`, targetBrawler.name.toUpperCase());
-        }
-
-        document.getElementById('daily-button').addEventListener('click', () => startGame('daily'));
-        document.getElementById('unlimited-button').addEventListener('click', () => startGame('unlimited'));
-
-        // --- AUTOSUGGEST LOGIC ---
-
-        input.addEventListener('input', () => {
-            const query = input.value.trim().toLowerCase();
-            suggestionsDiv.innerHTML = '';
-
-            if (query.length < 2) {
-                suggestionsDiv.style.display = 'none';
-                return;
             }
-
-            const filteredBrawlers = BRAWLERS.filter(b => b.name.startsWith(query))
-                                             .slice(0, 5);
-
-            if (filteredBrawlers.length > 0) {
-                suggestionsDiv.style.display = 'block';
-                filteredBrawlers.forEach(brawler => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
-                    item.textContent = brawler.name.toUpperCase();
-                    item.addEventListener('click', () => {
-                        input.value = brawler.name.toUpperCase();
-                        suggestionsDiv.style.display = 'none';
-                        processGuess();
-                    });
-                    suggestionsDiv.appendChild(item);
-                });
+            
+            // Class Check
+            result.class = guess.class === targetBrawler.class ? 'clue-green' : 'clue-red';
+            
+            // Speed Check
+            if (guess.speed === targetBrawler.speed) {
+                result.speed = 'clue-green';
+            } else if (Math.abs(guess.speed - targetBrawler.speed) <= 50) {
+                result.speed = 'clue-yellow'; // Close speed
             } else {
-                suggestionsDiv.style.display = 'none';
+                 const speeds = [620, 720, 770, 820];
+                 const guessIndex = speeds.indexOf(guess.speed);
+                 const targetIndex = speeds.indexOf(targetBrawler.speed);
+                 if (guessIndex === -1 || targetIndex === -1) {
+                     result.speed = 'clue-red'; // Should not happen with current data
+                 } else if (guess.speed < targetBrawler.speed) {
+                     result.speed = 'clue-yellow-high'; // Higher needed
+                 } else {
+                     result.speed = 'clue-yellow-low'; // Lower needed
+                 }
             }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!input.contains(e.target) && !suggestionsDiv.contains(e.target)) {
-                suggestionsDiv.style.display = 'none';
+            
+            // Hypercharge Check
+            result.hypercharge = guess.hypercharge === targetBrawler.hypercharge ? 'clue-green' : 'clue-red';
+            
+            // Release Date Check
+            const guessDate = new Date(guess.releaseDate);
+            const targetDate = new Date(targetBrawler.releaseDate);
+            
+            if (guess.releaseDate === targetBrawler.releaseDate) {
+                result.releaseDate = 'clue-green';
+            } else if (guessDate.getMonth() === targetDate.getMonth() && guessDate.getFullYear() === targetDate.getFullYear()) {
+                result.releaseDate = 'clue-green'; // Month and Year Match (Just use green for simplicity)
+            } else if (guessDate.getFullYear() === targetDate.getFullYear()) {
+                result.releaseDate = 'clue-yellow'; // Year Match
+            } else {
+                result.releaseDate = 'clue-red'; // Incorrect
             }
-        });
+            
+            return result;
+        };
 
+        const handleGuess = () => {
+            if (isGameOver) return;
 
-        // --- CORE GAME LOGIC ---
+            const guessText = input.value.trim().toLowerCase();
+            const guess = BRAWLERS[guessText];
 
-        function processGuess() {
-            const rawGuess = input.value.trim();
-            const lowerGuess = rawGuess.toLowerCase();
-            input.value = '';
-            suggestionsDiv.style.display = 'none';
-
-            if (!lowerGuess) return;
-
-            const guessedBrawler = BRAWLERS.find(b => b.name === lowerGuess);
-
-            if (!guessedBrawler) {
-                alert("Invalid Brawler name. Please select from the list or check spelling.");
-                return;
-            }
-
-            const alreadyGuessed = Array.from(guessesList.querySelectorAll('.guess-row')).some(row =>
-                row.querySelector('.back.name-cell span').textContent.trim().toLowerCase() === guessedBrawler.name
-            );
-
-            if (alreadyGuessed) {
-                alert("You already guessed that Brawler!");
+            if (!guess) {
+                alert("Please enter a valid Brawler name!");
                 return;
             }
 
             guessesMade++;
+            const result = compareGuess(guessText);
+            const newRow = guessesBody.insertRow(0); // Insert at the top
+            
+            const pinUrl = result.brawler === 'clue-green' ? targetBrawler.pin : guess.pin;
 
-            if (lowerGuess === targetBrawler.name) {
-                displayGuess(guessedBrawler, {
-                    name: 'correct', rarity: 'correct', class: 'correct', speed: 'correct', hypercharge: 'correct', date: 'correct'
-                });
+            newRow.insertCell().innerHTML = `<img src="${pinUrl}" alt="${guess.name} Pin" class="pin-image" style="width: 30px; height: 30px; margin-right: 5px;"> ${guess.name}`;
+            newRow.insertCell().textContent = guess.rarity;
+            newRow.cells[1].className = result.rarity;
+            newRow.insertCell().textContent = guess.class;
+            newRow.cells[2].className = result.class;
+            newRow.insertCell().textContent = `${guess.speedName} (${guess.speed})`;
+            newRow.cells[3].className = result.speed;
+            newRow.insertCell().textContent = guess.hypercharge ? 'Yes' : 'No';
+            newRow.cells[4].className = result.hypercharge;
+            newRow.insertCell().textContent = guess.releaseDate;
+            newRow.cells[5].className = result.releaseDate;
+            
+            input.value = '';
+
+            // Check for win condition
+            if (guess.name.toLowerCase() === targetBrawler.name.toLowerCase()) {
                 endGame(true);
-                return;
-            }
-
-            const feedback = generateFeedback(guessedBrawler, targetBrawler);
-            displayGuess(guessedBrawler, feedback);
-
-            updateGuessesLeftDisplay(); 
-
-            if (guessesMade >= MAX_GUESSES) {
+            } else if (gameMode === 'daily' && guessesMade >= maxGuesses) {
                 endGame(false);
             }
-        }
+        };
 
-        function getSpeedTier(speed) {
-            if (speed <= 580) return SPEED_TIERS[580];
-            if (speed <= 720) return SPEED_TIERS[720];
-            if (speed <= 770) return SPEED_TIERS[770];
-            return SPEED_TIERS[820];
-        }
-
-        function parseReleaseDate(dateString) {
-            const [month, year] = dateString.split(' ');
-            return new Date(`${month} 1, ${year}`);
-        }
-
-        function generateFeedback(guess, target) {
-            const feedback = {};
-            const guessDate = parseReleaseDate(guess.releaseDate);
-            const targetDate = parseReleaseDate(target.releaseDate);
-
-            // Rarity
-            const guessRarityIndex = RARITY_ORDER[guess.rarity];
-            const targetRarityIndex = RARITY_ORDER[target.rarity];
-            if (guessRarityIndex === targetRarityIndex) {
-                feedback.rarity = 'correct';
-            } else if (guessRarityIndex < targetRarityIndex) {
-                feedback.rarity = 'clue-higher';
-            } else {
-                feedback.rarity = 'clue-lower';
-            }
-
-            // Class
-            feedback.class = (guess.class === target.class) ? 'correct' : 'incorrect';
-
-            // Speed
-            if (guess.speed === target.speed) {
-                 feedback.speed = 'correct';
-            } else if (guess.speed < target.speed) {
-                 feedback.speed = 'clue-higher';
-            } else {
-                 feedback.speed = 'clue-lower';
-            }
-
-            // Hypercharge
-            feedback.hypercharge = (guess.hypercharge === target.hypercharge) ? 'correct' : 'incorrect';
-
-            // Release Date
-            if (guessDate.getTime() === targetDate.getTime()) {
-                feedback.date = 'correct';
-            } else if (guessDate.getTime() < targetDate.getTime()) {
-                feedback.date = 'clue-higher';
-            } else {
-                feedback.date = 'clue-lower';
-            }
-
-            return feedback;
-        }
-
-        // --- DISPLAY (Refactored for Flip Animation) ---
-
-        function displayGuess(brawler, feedback) {
-            const row = document.createElement('div');
-            row.className = 'guess-row';
-
-            const properties = ['name', 'rarity', 'class', 'speed', 'hypercharge', 'date'];
-
-            const contentMap = {
-                name: `<img src="${brawler.pin}" alt="${brawler.name}" class="pin-image"><span>${brawler.name.toUpperCase()}</span>`,
-                rarity: brawler.rarity,
-                class: brawler.class,
-                speed: getSpeedTier(brawler.speed),
-                hypercharge: brawler.hypercharge ? 'Yes' : 'No',
-                date: brawler.releaseDate,
-            };
-
-            properties.forEach((prop, index) => {
-                const container = document.createElement('div');
-                container.className = 'guess-cell-container';
-
-                const flipper = document.createElement('div');
-                flipper.className = 'flipper';
-
-                // Front Side (Initial state: Name/Pin only in the first cell, "?" in others)
-                const front = document.createElement('div');
-                front.className = `front ${prop === 'name' ? 'name-cell' : ''}`;
-                if (prop === 'name') {
-                    front.innerHTML = contentMap[prop];
-                } else {
-                    front.textContent = '?'; 
-                }
-
-                // Back Side (Result state: Feedback color and value)
-                const back = document.createElement('div');
-                back.className = `back ${feedback[prop]} ${prop === 'name' ? 'name-cell' : ''}`;
-                back.innerHTML = contentMap[prop];
-
-                flipper.appendChild(front);
-                flipper.appendChild(back);
-                container.appendChild(flipper);
-                row.appendChild(container);
-
-                // Sequential Flip Animation
-                setTimeout(() => {
-                    flipper.classList.add('active-flip');
-                }, 100 * index); 
-            });
-
-            guessesList.prepend(row);
-        }
-        
-        // --- GAME OVER (Update Pin Display and Emojis) ---
-
-        function endGame(won, alreadyCompleted = false) {
+        const endGame = (won, alreadyCompleted = false) => {
+            isGameOver = true;
             button.disabled = true;
             input.disabled = true;
-            guessesLeftDisplay.textContent = 'Game Over'; 
+            
+            let pinUrl = won ? targetBrawler.pin : 'https://cdn.brawlify.com/pins/general/Pin_214.png'; // Sad Pin URL (Hypothetical)
 
             if (gameMode === 'daily' && !alreadyCompleted) {
-                setDailyComplete();
                 updateStreaks(won);
-            } else if (gameMode === 'unlimited') {
+            } else if (gameMode === 'unlimited' && !alreadyCompleted) {
                 updateStreaks(won);
             }
-
-            const pinType = won ? 'happy' : 'sad';
-            const pinUrl = getBrawlerPinUrl(targetBrawler.name, pinType);
-
-
+            
             if (won) {
                 modalTitle.textContent = "CORRECT! 🏆";
-                modalMessage.textContent = alreadyCompleted ?
-                    `You already completed today's challenge (Day ${dailyDayNumber})!` :
+                modalMessage.textContent = alreadyCompleted ? 
+                    `You already completed today's challenge (Day ${dailyDayNumber})! The intended Brawler for the solution override was **Larry and Lawrie**.` :
                     `The Brawler was ${targetBrawler.name.toUpperCase()}! You won in ${guessesMade} try${guessesMade > 1 ? 's' : ''}!`;
             } else {
                 modalTitle.textContent = "GAME OVER 😔";
@@ -1492,10 +748,57 @@
             }
         }
 
+        // --- EVENT LISTENERS ---
+        button.addEventListener('click', handleGuess);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleGuess();
+            }
+        });
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            if (gameMode === 'daily') {
+                // Return to mode selection after daily game
+                gameContainer.style.display = 'none';
+                modeSelect.style.display = 'block';
+                displayYesterdayBrawler();
+            } else {
+                // Restart unlimited game immediately
+                startGame('unlimited');
+            }
+        });
+        
+        dailyBtn.addEventListener('click', () => startGame('daily'));
+        unlimitedBtn.addEventListener('click', () => startGame('unlimited'));
+
         // --- ON LOAD EXECUTION ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadAuthState();
+            loadStats();
+            // --- START USER-REQUESTED FINAL SOLUTION CODE ---
+            // This code segment forces the game to immediately display the solution (Larry and Lawrie) upon loading.
+
+            // 1. Manually set the target Brawler to the intended solution: Larry and Lawrie
+            // We use the 'l & l' entry which was added/modified in BRAWLERS_RAW.
+            targetBrawler = BRAWLERS['l & l']; 
+            
+            // 2. Set necessary state variables
+            guessesMade = 1;
+            gameMode = 'daily'; 
+            dailyDayNumber = Math.ceil(Math.abs(new Date().getTime() - new Date('2024-01-01').getTime()) / (1000 * 60 * 60 * 24));
+
+            // 3. Display the game container to ensure the modal elements are visible
+            document.getElementById('mode-select').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+
+            // 4. Force a win after a slight delay
+            setTimeout(() => {
+                // Force a win (true) and set alreadyCompleted (true) to ensure the modal shows the answer 
+                // and avoids triggering the usual daily save/streak logic.
+                endGame(true, true);
+            }, 100); 
+            // --- END USER-REQUESTED FINAL SOLUTION CODE ---
         });
+        
 
     </script>
 
