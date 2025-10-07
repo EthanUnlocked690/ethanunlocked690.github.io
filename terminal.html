@@ -192,6 +192,23 @@
 
 
         // --- Simulated Data Storage ---
+        // Define the core location template once to avoid repetition
+        const locationTemplate = {
+            text: (query) => `GEO-LOCATION TARGET ACQUIRED: ${query.toUpperCase()}.\n\nSTRUCTURE STATUS: Stable. VISUAL FEED: Live satellite feed initiated. Location successfully plotted on virtual map. Click the Map Core panel to view image gallery.`,
+            sources: [
+                { title: "Google Maps/Earth Link (Simulated)", uri: "#" },
+                { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
+            ],
+            status: "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.",
+            isLocation: true,
+            simulatedImages: [
+                { title: "ATLAS SAT FEED 1: VIEW 1", color: "bg-purple-900" },
+                { title: "GOOGLE MAPS 3D VIEW", color: "bg-green-700" },
+                { title: "INFRARED HEATMAP SCAN", color: "bg-blue-900" },
+                { title: "GOOGLE STREET VIEW", color: "bg-red-800" } 
+            ]
+        };
+
         const simulatedResponses = {
             // SPECIAL CASE 1: Your Secret Profile
             "ethan angel ioannou": {
@@ -202,24 +219,11 @@
                 ],
                 status: "SUBJECT PROFILE ACQUIRED. ACCESS LEVEL: DELTA. STATUS: ACTIVE."
             },
-
-            // SPECIAL CASE 2: Location Example
-            "eiffel tower": {
-                text: "GEO-LOCATION TARGET ACQUIRED: EIFFEL TOWER, PARIS, FRANCE.\n\nSTRUCTURE STATUS: Stable. VISUAL FEED: Live satellite feed shows high tourist density around base perimeter. Weather conditions: Clear. Access routes nominal. Map Core automatically engaged for visual confirmation.",
-                sources: [
-                    { title: "Google Maps/Earth Link (Simulated)", uri: "#" },
-                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
-                ],
-                status: "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.",
-                isLocation: true,
-                simulatedImages: [
-                    { title: "ATLAS SAT FEED 1: PARIS", color: "bg-purple-900" },
-                    { title: "GOOGLE MAPS 3D VIEW", color: "bg-green-700" },
-                    { title: "INFRARED HEATMAP SCAN", color: "bg-blue-900" },
-                    { title: "GOOGLE STREET VIEW", color: "bg-red-800" } 
-                ]
-            },
             
+            // Specific Location Overrides (for testing)
+            "eiffel tower": { ...locationTemplate, text: locationTemplate.text("EIFFEL TOWER") },
+            "paris": { ...locationTemplate, text: locationTemplate.text("PARIS, FRANCE") },
+
             // Default response for anything else
             "default": {
                 text: "QUERY AMBIGUOUS. LOCAL DATABASE SEARCH RESULTS:\n\nData not found for the specified query. ATLAS protocols require precise, actionable keywords for retrieval from classified reserves. Suggest re-querying with a specific target name or classified project title.",
@@ -307,6 +311,16 @@
             return (parts.length >= 2 && parts.length <= 3 && parts.every(part => /^[a-zA-Z]{2,}$/.test(part)));
         }
 
+        /**
+         * Checks if the query looks like a generic location.
+         */
+        function isGenericLocationQuery(query) {
+            // Updated list of common location keywords
+            const keywords = ['tower', 'bridge', 'city', 'street', 'london', 'tokyo', 'paris', 'australia', 'china', 'building', 'river', 'park', 'square', 'mountain', 'terminal', 'airport', 'statue', 'palace'];
+            return keywords.some(keyword => query.includes(keyword));
+        }
+
+
         // --- Simulated Search Function ---
         async function performAtlasSearch(query) {
             const normalizedQuery = query.toLowerCase().trim();
@@ -326,7 +340,21 @@
             if (simulatedResponses[normalizedQuery]) {
                  responseData = simulatedResponses[normalizedQuery];
             } 
-            // Check for generic human name pattern (famous people not in the database)
+            // Check for generic location query (uses the template)
+            else if (isGenericLocationQuery(normalizedQuery)) {
+                const locationName = query.toUpperCase();
+                
+                // Clone the location template and fill in the details
+                responseData = JSON.parse(JSON.stringify(locationTemplate));
+                responseData.text = responseData.text(locationName);
+                responseData.sources = [
+                    { title: `Google Maps/Earth Link (Simulated for ${locationName})`, uri: "#" },
+                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
+                ];
+                responseData.status = "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.";
+                responseData.isLocation = true;
+            }
+            // Check for generic human name pattern
             else if (isHumanNameQuery(query)) {
                 // Generic failure response for unknown names
                 responseData = JSON.parse(JSON.stringify(simulatedResponses.default));
@@ -335,21 +363,7 @@
                 responseData.status = `SUBJECT TRACE FAILURE. No profile found for ${query}.`;
                 responseData.isHuman = true;
             } 
-            // Check for general location query (if not an exact match, use the template)
-            else if (normalizedQuery.includes("tower") || normalizedQuery.includes("city") || normalizedQuery.includes("street") || normalizedQuery.includes("london") || normalizedQuery.includes("tokyo") || normalizedQuery.includes("paris") || normalizedQuery.includes("australia") || normalizedQuery.includes("china")) {
-                
-                const locationName = query.toUpperCase();
-                // Use the Eiffel Tower response template for an unknown location
-                responseData = JSON.parse(JSON.stringify(simulatedResponses["eiffel tower"]));
-                responseData.text = `GEO-LOCATION TARGET ACQUIRED: ${locationName}.\n\nVISUAL FEED: Live satellite feed initiated. Location successfully plotted on virtual map. Click the Map Core panel to view image gallery.`;
-                responseData.sources = [
-                    { title: `Google Maps/Earth Link (Simulated for ${locationName})`, uri: "#" },
-                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
-                ];
-                responseData.status = "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.";
-                responseData.isLocation = true;
-            }
-
+            
             // 3. Simulate Network Latency (The Cool Delay)
             const delay = Math.random() * 1500 + 1500; 
             await new Promise(resolve => setTimeout(resolve, delay));
