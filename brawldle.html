@@ -345,8 +345,6 @@
 
     <script>
         // Data containing all Brawlers and their properties (simplified)
-        // NOTE: This list needs to be comprehensive and up-to-date for a real game.
-        // For the purpose of this demonstration, we use a small, slightly outdated set from the user's file.
         const BRAWLERS_RAW = [
             { name: "Shelly", rarity: "Starting", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Shelly/Pin.png" },
             { name: "Nita", rarity: "Trophy Road", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Nita/Pin.png" },
@@ -382,7 +380,7 @@
             { name: "Mandy", rarity: "Epic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Jan 2023", pin: "https://cdn.brawlify.com/pins/Mandy/Pin.png" },
             { name: "Hank", rarity: "Epic", class: "Tank", speed: 620, hypercharge: false, releaseDate: "Jun 2023", pin: "https://cdn.brawlify.com/pins/Hank/Pin.png" },
             { name: "Willow", rarity: "Epic", class: "Support", speed: 720, hypercharge: true, releaseDate: "Apr 2023", pin: "https://cdn.brawlify.com/pins/Willow/Pin.png" },
-            { name: "Meeple", rarity: "Epic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Mar 2024", pin: "https://cdn.brawlify.com/pins/Meeple/Pin.png" }, // Added as an Epic exception per user rule
+            { name: "Meeple", rarity: "Epic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Mar 2024", pin: "https://cdn.brawlify.com/pins/Meeple/Pin.png" }, 
             { name: "Mortis", rarity: "Mythic", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2016", pin: "https://cdn.brawlify.com/pins/Mortis/Pin.png" },
             { name: "Tara", rarity: "Mythic", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2017", pin: "https://cdn.brawlify.com/pins/Tara/Pin.png" },
             { name: "Gene", rarity: "Mythic", class: "Support", speed: 720, hypercharge: true, releaseDate: "Feb 2019", pin: "https://cdn.brawlify.com/pins/Gene/Pin.png" },
@@ -401,8 +399,8 @@
             { name: "Sam", rarity: "Mythic", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Sep 2022", pin: "https://cdn.brawlify.com/pins/Sam/Pin.png" },
             { name: "Chester", rarity: "Legendary", class: "Damage", speed: 770, hypercharge: true, releaseDate: "Dec 2022", pin: "https://cdn.brawlify.com/pins/Chester/Pin.png" },
             { name: "Mico", rarity: "Mythic", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2023", pin: "https://cdn.brawlify.com/pins/Mico/Pin.png" },
-            { name: "Juju", rarity: "Mythic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Apr 2024", pin: "https://cdn.brawlify.com/pins/Juju/Pin.png" }, // Added as a Mythic exception per user rule
-            { name: "Jae-Yong", rarity: "Mythic", class: "Damage", speed: 720, hypercharge: false, releaseDate: "May 2024", pin: "https://cdn.brawlify.com/pins/Jae-Yong/Pin.png" }, // Added as a Mythic exception per user rule
+            { name: "Juju", rarity: "Mythic", class: "Support", speed: 720, hypercharge: false, releaseDate: "Apr 2024", pin: "https://cdn.brawlify.com/pins/Juju/Pin.png" }, 
+            { name: "Jae-Yong", rarity: "Mythic", class: "Damage", speed: 720, hypercharge: false, releaseDate: "May 2024", pin: "https://cdn.brawlify.com/pins/Jae-Yong/Pin.png" }, 
             { name: "Spike", rarity: "Legendary", class: "Damage", speed: 720, hypercharge: true, releaseDate: "Dec 2016", pin: "https://cdn.brawlify.com/pins/Spike/Pin.png" },
             { name: "Crow", rarity: "Legendary", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2016", pin: "https://cdn.brawlify.com/pins/Crow/Pin.png" },
             { name: "Leon", rarity: "Legendary", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Dec 2018", pin: "https://cdn.brawlify.com/pins/Leon/Pin.png" },
@@ -420,7 +418,7 @@
             { name: "Cordelius", rarity: "Legendary", class: "Assassin", speed: 820, hypercharge: true, releaseDate: "Jul 2023", pin: "https://cdn.brawlify.com/pins/Cordelius/Pin.png" },
             { name: "Chuck", rarity: "Mythic", class: "Tank", speed: 770, hypercharge: true, releaseDate: "Oct 2023", pin: "https://cdn.brawlify.com/pins/Chuck/Pin.png" },
             { name: "Charlie", rarity: "Epic", class: "Control", speed: 720, hypercharge: true, releaseDate: "Sep 2023", pin: "https://cdn.brawlify.com/pins/Charlie/Pin.png" },
-            { name: "L & L", rarity: "Epic", class: "Artillery", speed: 770, hypercharge: true, releaseDate: "Jan 2024", pin: "https://cdn.brawlify.com/pins/Larry-and-Lawrie/Pin.png" }, // Adjusted to match user's final clues: Epic, Artillery, Fast, Has Hypercharge
+            { name: "L & L", rarity: "Epic", class: "Artillery", speed: 770, hypercharge: true, releaseDate: "Jan 2024", pin: "https://cdn.brawlify.com/pins/Larry-and-Lawrie/Pin.png" }, // Larry and Lawrie entry
         ];
         
         // Normalize Brawler data for easier lookup
@@ -510,7 +508,8 @@
         
         const isDailyCompleted = () => {
             const lastDaily = getLocalStorage('lastDaily', {});
-            return lastDaily.day === dailyDayNumber;
+            // Use <= to account for any slight time drift, although == is fine for the day number
+            return lastDaily.day && lastDaily.day >= dailyDayNumber; 
         };
         
         const setDailyComplete = (brawlerName = targetBrawler.name) => {
@@ -529,7 +528,7 @@
             const yesterdayDayNumber = diffDays - 1;
             
             const brawlerKeys = Object.keys(BRAWLERS);
-            const brawlerIndex = yesterdayDayNumber % brawlerKeys.length;
+            const brawlerIndex = (yesterdayDayNumber % brawlerKeys.length + brawlerKeys.length) % brawlerKeys.length;
             const brawlerName = brawlerKeys[brawlerIndex];
             
             return BRAWLERS[brawlerName];
@@ -614,9 +613,9 @@
                 const guessIndex = rarities.indexOf(guess.rarity);
                 const targetIndex = rarities.indexOf(targetBrawler.rarity);
                 if (guessIndex < targetIndex) {
-                    result.rarity = 'clue-yellow-high'; // Higher needed
+                    result.rarity = 'clue-yellow-high'; // Higher needed (represented by yellow)
                 } else if (guessIndex > targetIndex) {
-                    result.rarity = 'clue-yellow-low'; // Lower needed
+                    result.rarity = 'clue-yellow-low'; // Lower needed (represented by yellow)
                 } else {
                     result.rarity = 'clue-red';
                 }
@@ -637,9 +636,9 @@
                  if (guessIndex === -1 || targetIndex === -1) {
                      result.speed = 'clue-red'; // Should not happen with current data
                  } else if (guess.speed < targetBrawler.speed) {
-                     result.speed = 'clue-yellow-high'; // Higher needed
+                     result.speed = 'clue-yellow-high'; // Higher needed (represented by yellow)
                  } else {
-                     result.speed = 'clue-yellow-low'; // Lower needed
+                     result.speed = 'clue-yellow-low'; // Lower needed (represented by yellow)
                  }
             }
             
@@ -710,6 +709,7 @@
             let pinUrl = won ? targetBrawler.pin : 'https://cdn.brawlify.com/pins/general/Pin_214.png'; // Sad Pin URL (Hypothetical)
 
             if (gameMode === 'daily' && !alreadyCompleted) {
+                setDailyComplete(); // Must be called before updating streaks
                 updateStreaks(won);
             } else if (gameMode === 'unlimited' && !alreadyCompleted) {
                 updateStreaks(won);
@@ -718,7 +718,7 @@
             if (won) {
                 modalTitle.textContent = "CORRECT! 🏆";
                 modalMessage.textContent = alreadyCompleted ? 
-                    `You already completed today's challenge (Day ${dailyDayNumber})! The intended Brawler for the solution override was **Larry and Lawrie**.` :
+                    `You already completed today's challenge (Day ${dailyDayNumber})! Play the unlimited mode or come back tomorrow.` :
                     `The Brawler was ${targetBrawler.name.toUpperCase()}! You won in ${guessesMade} try${guessesMade > 1 ? 's' : ''}!`;
             } else {
                 modalTitle.textContent = "GAME OVER 😔";
@@ -737,11 +737,12 @@
             const tier = PREMIUM_TIERS[currentUser.premium];
             const remainingRevives = tier.maxRevives - currentUser.revivesUsedToday;
             if (!won && remainingRevives > 0) {
+                reviveBtn.textContent = `Use Premium Revive (${remainingRevives} Remaining)`;
                 reviveBtn.style.display = 'block';
                 // Delay showing the main modal to give the user a moment to see the revive button
                 setTimeout(() => {
                     modal.style.display = 'flex';
-                }, 1000);
+                }, 100);
             } else {
                 reviveBtn.style.display = 'none';
                 modal.style.display = 'flex';
@@ -774,29 +775,7 @@
         // --- ON LOAD EXECUTION ---
         document.addEventListener('DOMContentLoaded', () => {
             loadStats();
-            // --- START USER-REQUESTED FINAL SOLUTION CODE ---
-            // This code segment forces the game to immediately display the solution (Larry and Lawrie) upon loading.
-
-            // 1. Manually set the target Brawler to the intended solution: Larry and Lawrie
-            // We use the 'l & l' entry which was added/modified in BRAWLERS_RAW.
-            targetBrawler = BRAWLERS['l & l']; 
-            
-            // 2. Set necessary state variables
-            guessesMade = 1;
-            gameMode = 'daily'; 
-            dailyDayNumber = Math.ceil(Math.abs(new Date().getTime() - new Date('2024-01-01').getTime()) / (1000 * 60 * 60 * 24));
-
-            // 3. Display the game container to ensure the modal elements are visible
-            document.getElementById('mode-select').style.display = 'none';
-            document.getElementById('game-container').style.display = 'block';
-
-            // 4. Force a win after a slight delay
-            setTimeout(() => {
-                // Force a win (true) and set alreadyCompleted (true) to ensure the modal shows the answer 
-                // and avoids triggering the usual daily save/streak logic.
-                endGame(true, true);
-            }, 100); 
-            // --- END USER-REQUESTED FINAL SOLUTION CODE ---
+            displayYesterdayBrawler();
         });
         
 
