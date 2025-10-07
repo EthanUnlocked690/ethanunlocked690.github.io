@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars-dle</title>
+    <title>Brawl Stars-dle: Daily &amp; Unlimited</title>
     <style>
         /* --- General CSS --- */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
-        
+
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #1a1a2e;
@@ -106,7 +105,7 @@
         .grid-header, .guess-row {
             display: grid;
             /* Name/Pin | Rarity | Class | Speed | Hypercharge | Release Date */
-            grid-template-columns: 1.5fr 1fr 1fr 0.8fr 0.8fr 1.2fr; 
+            grid-template-columns: 1.5fr 1fr 1fr 0.8fr 0.8fr 1.2fr;
             gap: 5px;
             text-align: center;
         }
@@ -139,7 +138,7 @@
             font-size: 0.9em;
             font-weight: 700;
         }
-        
+
         .name-cell {
             justify-content: flex-start;
             padding-left: 10px;
@@ -151,16 +150,16 @@
             width: 30px;
             height: 30px;
             border-radius: 50%;
-            object-fit: contain; 
+            object-fit: contain;
         }
-        
+
         /* --- Color Feedback --- */
         .correct { background-color: #4CAF50; }
         .incorrect { background-color: #F44336; }
         .clue-higher { background-color: #2196F3; position: relative; }
-        .clue-higher::after { content: '▲'; margin-left: 5px; }
+        .clue-higher::after { content: '笆ｲ'; margin-left: 5px; }
         .clue-lower { background-color: #FFEB3B; color: #000; position: relative; }
-        .clue-lower::after { content: '▼'; margin-left: 5px; color: #000; }
+        .clue-lower::after { content: '笆ｼ'; margin-left: 5px; color: #000; }
 
         /* --- Info Panel --- */
         #info-panel {
@@ -185,7 +184,7 @@
         .flame-icon {
             width: 30px;
             height: 30px;
-            content: '🔥'; 
+            content: '櫨';
             line-height: 1;
         }
 
@@ -247,18 +246,18 @@
             <div id="guesses-list"></div>
         </div>
     </div>
-    
+
     <div id="info-panel" style="display: none;">
         <p id="mode-label" style="font-size: 1.1em; margin-bottom: 5px;"></p>
         <div class="streak-display">
-            <span class="flame-icon">🔥</span>
+            <span class="flame-icon">櫨</span>
             <span id="current-streak">0</span>
         </div>
         <p style="font-size: 0.8em; color: #aaa;">Highest Streak: <span id="highest-streak">0</span></p>
     </div>
 
     <div id="yesterday-brawler-info">
-        <p id="yesterday-brawler-text">Loading...</p>
+        <p id="yesterday-brawler-text">No brawler available yesterday.</p>
         <div id="yesterday-brawler-content" style="display: none;"></div>
     </div>
 
@@ -322,7 +321,7 @@
             { name: 'Janet', rarity: 'Mythic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'May 2022', pin: 'https://cdn.brawlify.com/pins/Janet/Pin.png' },
             { name: 'Melodie', rarity: 'Mythic', class: 'Assassin', speed: 770, hypercharge: false, releaseDate: 'Mar 2024', pin: 'https://cdn.brawlify.com/pins/Melodie/Pin.png' },
             { name: 'Chuck', rarity: 'Mythic', class: 'Controller', speed: 770, hypercharge: false, releaseDate: 'Oct 2023', pin: 'https://cdn.brawlify.com/pins/Chuck/Pin.png' },
-            { name: 'Jae-Yong', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Apr 2024', pin: 'https://cdn.brawlify.com/pins/Jae-Yong/Pin.png' }, 
+            { name: 'Jae-Yong', rarity: 'Mythic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Apr 2024', pin: 'https://cdn.brawlify.com/pins/Jae-Yong/Pin.png' },
             { name: 'Mortis', rarity: 'Mythic', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Dec 2018', pin: 'https://cdn.brawlify.com/pins/Mortis/Pin.png' },
             { name: 'Tara', rarity: 'Mythic', class: 'Damage Dealer', speed: 770, hypercharge: true, releaseDate: 'Jan 2019', pin: 'https://cdn.brawlify.com/pins/Tara/Pin.png' },
             { name: 'Gene', rarity: 'Mythic', class: 'Controller', speed: 720, hypercharge: false, releaseDate: 'Feb 2019', pin: 'https://cdn.brawlify.com/pins/Gene/Pin.png' },
@@ -358,10 +357,10 @@
             { name: 'Surge', rarity: 'Legendary', class: 'Damage Dealer', speed: 770, hypercharge: false, releaseDate: 'Jul 2020', pin: 'https://cdn.brawlify.com/pins/Surge/Pin.png' },
             { name: 'Kaze', rarity: 'Ultra Legendary', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Mar 2025', pin: 'https://cdn.brawlify.com/pins/Kaze/Pin.png' },
         ];
-        
+
         // Rarity Order Mapping (used for comparison)
         const RARITY_ORDER = {
-            'Starting Brawler': 0, 'Rare': 1, 'Super Rare': 2, 'Epic': 3, 'Mythic': 4, 'Legendary': 5, 'Ultra Legendary': 6 
+            'Starting Brawler': 0, 'Rare': 1, 'Super Rare': 2, 'Epic': 3, 'Mythic': 4, 'Legendary': 5, 'Ultra Legendary': 6
         };
 
         // Speed Tier Mapping (used for display AND comparison logic)
@@ -374,18 +373,18 @@
         let targetBrawler = null;
         let dailyDayNumber = null;
         let guessesMade = 0;
-        const MAX_GUESSES = 3; 
-        let gameMode = null; 
-        
+        const MAX_GUESSES = 3;
+        let gameMode = null;
+
         // Local Storage Keys
         const DAILY_STREAK_KEY = 'bsdle_daily_streak';
         const DAILY_HIGH_STREAK_KEY = 'bsdle_daily_high_streak';
         const UNLIMITED_STREAK_KEY = 'bsdle_unlimited_streak';
         const UNLIMITED_HIGH_STREAK_KEY = 'bsdle_unlimited_high_streak';
         // New key for yesterday's brawler info
-        const DAILY_GAME_DATA_KEY = 'bsdle_daily_game_data'; 
+        const DAILY_GAME_DATA_KEY = 'bsdle_daily_game_data';
         // Fixed date to calculate the Day Number from (e.g., the day the game went live)
-        const EPOCH_DATE = new Date('October 6, 2025 00:00:00'); 
+        const EPOCH_DATE = new Date('October 6, 2025 00:00:00');
 
         // --- DOM Elements ---
         const modeSelect = document.getElementById('mode-select');
@@ -414,7 +413,7 @@
             // Returns YYYY-MM-DD for storage key
             return new Date().toISOString().split('T')[0];
         }
-        
+
         function getYesterdayString() {
             const date = new Date();
             date.setDate(date.getDate() - 1);
@@ -426,19 +425,19 @@
             const diffTime = Math.abs(today.getTime() - EPOCH_DATE.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             // Add 1 because the epoch day itself is Day 1
-            return diffDays + 1; 
+            return diffDays + 1;
         }
 
         function getDailyTarget() {
             const todayString = getTodayString();
             const allDailyData = JSON.parse(localStorage.getItem(DAILY_GAME_DATA_KEY) || '{}');
-            
+
             if (allDailyData[todayString]) {
                 const data = allDailyData[todayString];
                 dailyDayNumber = data.day;
                 return BRAWLERS.find(b => b.name === data.targetName);
             }
-            
+
             // If new day, pick a new brawler
             const randomIndex = Math.floor(Math.random() * BRAWLERS.length);
             const newTarget = BRAWLERS[randomIndex];
@@ -536,7 +535,7 @@
             modeSelect.style.display = 'none';
             gameBoard.style.display = 'block';
             infoPanel.style.display = 'block';
-            guessesList.innerHTML = ''; 
+            guessesList.innerHTML = '';
 
             if (mode === 'daily') {
                 targetBrawler = getDailyTarget();
@@ -560,7 +559,7 @@
             });
             console.log(`Target Brawler (${mode} mode, Day ${dailyDayNumber || 'N/A'}):`, targetBrawler.name.toUpperCase()); // Dev Cheat
         }
-        
+
         document.getElementById('daily-button').addEventListener('click', () => startGame('daily'));
         document.getElementById('unlimited-button').addEventListener('click', () => startGame('unlimited'));
 
@@ -576,7 +575,7 @@
             }
 
             const filteredBrawlers = BRAWLERS.filter(b => b.name.startsWith(query))
-                                             .slice(0, 5); 
+                                             .slice(0, 5);
 
             if (filteredBrawlers.length > 0) {
                 suggestionsDiv.style.display = 'block';
@@ -620,7 +619,7 @@
                 return;
             }
 
-            const alreadyGuessed = Array.from(guessesList.querySelectorAll('.name-cell')).some(cell => 
+            const alreadyGuessed = Array.from(guessesList.querySelectorAll('.name-cell')).some(cell =>
                 cell.textContent.trim().toLowerCase() === guessedBrawler.name
             );
             if (alreadyGuessed) {
@@ -630,7 +629,7 @@
 
 
             guessesMade++;
-            
+
             if (lowerGuess === targetBrawler.name) {
                 displayGuess(guessedBrawler, {
                     name: 'correct', rarity: 'correct', class: 'correct', speed: 'correct', hypercharge: 'correct', date: 'correct'
@@ -648,12 +647,12 @@
         }
 
         function getSpeedTier(speed) {
-            if (speed <= 580) return SPEED_TIERS[580]; 
-            if (speed <= 720) return SPEED_TIERS[720]; 
-            if (speed <= 770) return SPEED_TIERS[770]; 
-            return SPEED_TIERS[820]; 
+            if (speed <= 580) return SPEED_TIERS[580];
+            if (speed <= 720) return SPEED_TIERS[720];
+            if (speed <= 770) return SPEED_TIERS[770];
+            return SPEED_TIERS[820];
         }
-        
+
         function parseReleaseDate(dateString) {
             const [month, year] = dateString.split(' ');
             return new Date(`${month} 1, ${year}`);
@@ -670,9 +669,9 @@
             if (guessRarityIndex === targetRarityIndex) {
                 feedback.rarity = 'correct';
             } else if (guessRarityIndex < targetRarityIndex) {
-                feedback.rarity = 'clue-higher'; 
+                feedback.rarity = 'clue-higher';
             } else {
-                feedback.rarity = 'clue-lower'; 
+                feedback.rarity = 'clue-lower';
             }
 
             // Class
@@ -682,21 +681,21 @@
             if (guess.speed === target.speed) {
                  feedback.speed = 'correct';
             } else if (guess.speed < target.speed) {
-                 feedback.speed = 'clue-higher'; 
+                 feedback.speed = 'clue-higher';
             } else {
-                 feedback.speed = 'clue-lower'; 
+                 feedback.speed = 'clue-lower';
             }
 
             // Hypercharge
             feedback.hypercharge = (guess.hypercharge === target.hypercharge) ? 'correct' : 'incorrect';
-            
+
             // Release Date
             if (guessDate.getTime() === targetDate.getTime()) {
                 feedback.date = 'correct';
             } else if (guessDate.getTime() < targetDate.getTime()) {
-                feedback.date = 'clue-higher'; 
+                feedback.date = 'clue-higher';
             } else {
-                feedback.date = 'clue-lower'; 
+                feedback.date = 'clue-lower';
             }
 
             return feedback;
@@ -739,26 +738,26 @@
         function endGame(won, alreadyCompleted = false) {
             button.disabled = true;
             input.disabled = true;
-            
+
             if (gameMode === 'daily' && !alreadyCompleted) {
                 setDailyComplete();
                 updateStreaks(won);
             } else if (gameMode === 'unlimited') {
                 updateStreaks(won);
             }
-            
+
             if (won) {
-                modalTitle.textContent = "CORRECT! 🏆";
-                modalMessage.textContent = alreadyCompleted ? 
+                modalTitle.textContent = "CORRECT! 醇";
+                modalMessage.textContent = alreadyCompleted ?
                     `You already completed today's challenge (Day ${dailyDayNumber})!` :
                     `The Brawler was ${targetBrawler.name.toUpperCase()}! You won in ${guessesMade} try${guessesMade > 1 ? 's' : ''}!`;
             } else {
-                modalTitle.textContent = "GAME OVER 😭";
+                modalTitle.textContent = "GAME OVER 亊";
                 modalMessage.textContent = `You ran out of guesses! The correct Brawler was: ${targetBrawler.name.toUpperCase()}`;
-                
+
                 // For daily mode, we still save the target even if they lost, so it's recorded for tomorrow's "yesterday" answer.
                 if(gameMode === 'daily') {
-                    setDailyComplete(); 
+                    setDailyComplete();
                 }
             }
 
@@ -772,5 +771,5 @@
         displayYesterdayBrawler();
 
     </script>
-</body>
-</html>
+
+</body></html>
