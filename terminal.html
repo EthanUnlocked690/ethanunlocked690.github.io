@@ -102,15 +102,36 @@
     const twoDaysInMs = 48 * 60 * 60 * 1000;
     const currentTime = Date.now();
     let proceedToTerminal = false;
+    
+    // Check for the name saved in cookies (assuming the user is already authenticated once)
+    function getCookie(cname) {
+        let name = cname + "=";
+        let decodedCookie = decodeURIComponent(document.cookie);
+        let ca = decodedCookie.split(';');
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+    
+    const user = getCookie("username");
 
     if (authFlag === 'true') {
-        // Successful login, clear flag and proceed (if coming from login.html)
+        // Successful login, clear flag and proceed (if coming directly from a fresh login)
         localStorage.removeItem('terminal_authenticated');
         proceedToTerminal = true;
     } else if (authTime) {
-        // If an authTime exists, check if it's within 2 days OR if the user is EthanUnlocked
-        if ((currentTime - parseInt(authTime, 10) < twoDaysInMs) || true /* EthanUnlocked exemption */) {
-            console.log("Auto-login successful. User is exempt from time limit.");
+        const timeElapsed = currentTime - parseInt(authTime, 10);
+        
+        // Check for EthanUnlocked permanent exemption OR 2-day limit for others
+        if (user === CORRECT_USERNAME || timeElapsed < twoDaysInMs) {
+            console.log(`Auto-login successful. User is ${user === CORRECT_USERNAME ? 'EthanUnlocked (exempt).' : 'within the 48-hour window.'}`);
             proceedToTerminal = true;
         }
     } 
@@ -160,7 +181,7 @@
 
     function welcomeMessage() {
         outputDiv.innerHTML += `<div class="system-message">ATLAS Terminal v3.1 Boot Sequence Initiated...</div>`;
-        outputDiv.innerHTML += `<div class="system-message">Access granted for user: ${CORRECT_USERNAME}</div>`;
+        outputDiv.innerHTML += `<div class="system-message">Access granted for user: ${user}</div>`; // Use the actual user name
         outputDiv.innerHTML += `<div class="response-info">Type 'help' for a list of commands.</div>`;
         outputDiv.innerHTML += `<br>`;
     }
@@ -185,7 +206,7 @@
                 welcomeMessage(); // Re-display welcome message after clear
                 break;
             case 'whoami':
-                printOutput(`Current user: <span class="response-info">${CORRECT_USERNAME}</span>`);
+                printOutput(`Current user: <span class="response-info">${user}</span>`);
                 break;
             case 'status':
                 printOutput(`ATLAS system status: <span class="response-success">Operational</span>`);
@@ -290,7 +311,7 @@
         
         // Update the password in LocalStorage for the login page
         localStorage.setItem('loginPassword', newPassword);
-        printOutput(`<span class="response-info">Password for user ${CORRECT_USERNAME} successfully updated.</span>`);
+        printOutput(`<span class="response-info">Password for user ${user} successfully updated.</span>`);
         printOutput(`Remember to use this password next time you log in.`);
     }
 
