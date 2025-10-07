@@ -43,7 +43,7 @@
             position: relative;
         }
         
-        /* Active map with pointer simulation (Enhanced Grid/Wireframe Look) */
+        /* Active map with pointer simulation (Wireframe Look) */
         #map-display.map-active {
             background-color: #002200; /* Darker green map base */
             border-color: #00FF00;
@@ -52,7 +52,7 @@
                 linear-gradient(0deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%), 
                 linear-gradient(90deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%),
                 radial-gradient(rgba(0, 255, 0, 0.2) 1px, transparent 1px);
-            background-size: 50px 50px, 50px 50px, 10px 10px;
+            background-size: 50px 50px, 50px 50px, 10px 10px; 
         }
 
         .red-pointer {
@@ -135,7 +135,7 @@
                 <p class="text-neon-cyan opacity-80 text-center text-sm p-4">
                     MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
                 </p>
-                </div>
+            </div>
             <div id="map-instructions" class="text-xs text-gray-500 text-center"></div>
         </div>
 
@@ -176,17 +176,20 @@
         let lastLocationQuery = null; // Store the last successful location query data
 
         /**
-         * Generates the HTML for a simulated image tile using a real URL.
+         * Generates the HTML for a simulated image tile with a custom color/text.
+         * This uses colored divs for 100% local stability.
          */
-        function createImageTileHTML(url, title) {
-             // The URL is now a real image from Google's content server
+        function createImageTileHTML(title, colorClass) {
              return `
                 <div class="p-2 bg-[#050e18] border border-green-500/50 rounded-lg">
                     <p class="text-xs text-green-500 mb-1">${title}</p>
-                    <img src="${url}" alt="Simulated Image Feed" class="w-full h-32 object-cover rounded-md border border-gray-700" loading="lazy" />
+                    <div class="w-full h-32 ${colorClass} flex items-center justify-center rounded-md">
+                        <span class="text-sm font-bold text-white/80 text-center">${title.replace(/[^a-zA-Z\s]/g, '').toUpperCase()}</span>
+                    </div>
                 </div>
             `;
         }
+
 
         // --- Simulated Data Storage ---
         const simulatedResponses = {
@@ -200,7 +203,7 @@
                 status: "SUBJECT PROFILE ACQUIRED. ACCESS LEVEL: DELTA. STATUS: ACTIVE."
             },
 
-            // SPECIAL CASE 2: Location Example (using REAL Google Image URLs from search)
+            // SPECIAL CASE 2: Location Example
             "eiffel tower": {
                 text: "GEO-LOCATION TARGET ACQUIRED: EIFFEL TOWER, PARIS, FRANCE.\n\nSTRUCTURE STATUS: Stable. VISUAL FEED: Live satellite feed shows high tourist density around base perimeter. Weather conditions: Clear. Access routes nominal. Map Core automatically engaged for visual confirmation.",
                 sources: [
@@ -210,10 +213,10 @@
                 status: "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.",
                 isLocation: true,
                 simulatedImages: [
-                    { title: "ATLAS SAT FEED 1: PARIS (Satellite)", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_0" },
-                    { title: "GOOGLE MAPS 3D VIEW", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_1" },
-                    { title: "INFRARED HEATMAP SCAN", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_2" },
-                    { title: "GOOGLE STREET VIEW", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_3" } 
+                    { title: "ATLAS SAT FEED 1: PARIS", color: "bg-purple-900" },
+                    { title: "GOOGLE MAPS 3D VIEW", color: "bg-green-700" },
+                    { title: "INFRARED HEATMAP SCAN", color: "bg-blue-900" },
+                    { title: "GOOGLE STREET VIEW", color: "bg-red-800" } 
                 ]
             },
             
@@ -275,7 +278,6 @@
          */
         function handleMapClick() {
             if (!lastLocationQuery || !lastLocationQuery.isLocation) {
-                // If map is not active, do nothing or show a message
                 statusMessage.textContent = "ALERT: Map core requires location query to engage. Try 'Eiffel Tower'.";
                 return;
             }
@@ -287,12 +289,12 @@
             galleryHTML += `<div class="grid grid-cols-2 gap-4">`;
 
             images.forEach((img) => {
-                galleryHTML += createImageTileHTML(img.url, img.title);
+                galleryHTML += createImageTileHTML(img.title, img.color);
             });
 
             galleryHTML += `</div>`;
             resultsOutput.innerHTML = galleryHTML;
-            statusMessage.textContent = `STATUS: GALLERY VIEW ACTIVE. Displaying 4 real Google feeds for ${queryName}.`;
+            statusMessage.textContent = `STATUS: GALLERY VIEW ACTIVE. Displaying 4 high-res feeds for ${queryName}.`;
             sourceList.innerHTML = `<li>Geo-Imagery Feed Links Engaged.</li>`;
         }
 
@@ -320,11 +322,11 @@
             // 2. Determine which simulated response to use
             let responseData = simulatedResponses.default;
             
-            // Check for explicit, pre-programmed queries (including names and locations)
+            // Check for explicit, pre-programmed queries
             if (simulatedResponses[normalizedQuery]) {
                  responseData = simulatedResponses[normalizedQuery];
             } 
-            // Check for generic human name pattern (unrecognized names)
+            // Check for generic human name pattern (famous people not in the database)
             else if (isHumanNameQuery(query)) {
                 // Generic failure response for unknown names
                 responseData = JSON.parse(JSON.stringify(simulatedResponses.default));
