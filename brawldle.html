@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars-dle: Daily &amp; Unlimited</title>
+    <title>Brawl Stars-dle: Daily & Unlimited</title>
     <style>
-        /* --- General CSS --- */
+        /* --- General CSS & Overrides --- */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
 
         body {
@@ -24,14 +25,17 @@
             margin-bottom: 10px;
         }
 
-        #game-container {
+        #app-root {
             width: 100%;
-            max-width: 900px; /* Slightly wider */
+            max-width: 900px;
+        }
+
+        #game-container {
             background-color: #2c2c54;
             padding: 20px;
             border-radius: 15px;
             box-shadow: 0 0 30px rgba(255, 193, 7, 0.3);
-            margin-bottom: 20px; /* Space for the new info block */
+            margin-bottom: 20px;
         }
 
         /* --- Mode Selection (Initial Screen) --- */
@@ -54,18 +58,103 @@
             max-width: 300px;
             transition: transform 0.2s;
         }
-        .mode-button:hover {
-            transform: translateY(-3px);
-        }
+        .mode-button:hover { transform: translateY(-3px); }
         #daily-button { background-color: #e74c3c; color: white; }
         #unlimited-button { background-color: #3498db; color: white; }
 
-        /* --- Input Area with Autosuggest --- */
+        /* --- Auth/Login Styles --- */
+        #auth-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px;
+            background-color: #2c2c54;
+            border-radius: 15px;
+            margin-top: 50px;
+        }
+
+        #auth-screen input {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ffc107;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #3f3f6e;
+            color: #fff;
+        }
+
+        #auth-screen button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        #auth-screen button:hover { background-color: #c0392b; }
+        .toggle-auth {
+            margin-top: 15px;
+            color: #ffc107;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        /* --- User Header Bar --- */
+        #user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 2px solid #5a5a8a;
+        }
+
+        #user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #ffc107;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 900;
+        }
+
+        #action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+        .action-btn:hover { background-color: #2980b9; }
+
+        /* --- Input Area with Hints/Revives --- */
         #input-area {
             position: relative;
             display: flex;
             gap: 10px;
             margin-bottom: 10px;
+            align-items: center;
         }
         #guess-input {
             flex-grow: 1;
@@ -79,11 +168,21 @@
             outline: none;
         }
 
+        #guesses-left-display {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #ffc107;
+            padding: 5px 10px;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+        
         #suggestions {
             position: absolute;
             top: 100%;
             left: 0;
-            right: 120px; /* Aligns with input field, away from button */
+            right: 0; 
             background-color: #444;
             border: 1px solid #ffc107;
             border-top: none;
@@ -99,6 +198,22 @@
         }
         .suggestion-item:hover {
             background-color: #555;
+        }
+
+        /* Style for Hint/Revive buttons */
+        #hint-btn, #revive-btn {
+            background-color: #e67e22; /* Orange for hints */
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            white-space: nowrap;
+            display: none; /* Hidden by default, shown based on premium status */
+        }
+        #revive-btn {
+            background-color: #2ecc71; /* Green for revives */
         }
 
         /* --- Guess Grid --- */
@@ -124,42 +239,44 @@
         }
 
         .guess-row {
-            padding: 10px 0;
+            padding: 0;
+            border-radius: 8px;
+            background-color: transparent;
+        }
+
+        /* --- 3D Flip Card Structure --- */
+        .guess-cell-container { perspective: 1000px; height: 100%; padding: 0; }
+        .flipper {
+            position: relative;
+            width: 100%; height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            transform: rotateX(0deg);
+        }
+        .flipper.active-flip { transform: rotateX(180deg); }
+        .front, .back {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
             border-radius: 8px;
             background-color: #3f3f6e;
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px 5px; box-sizing: border-box;
+            font-size: 0.9em; font-weight: 700;
         }
+        .front { z-index: 2; transform: rotateX(0deg); }
+        .name-cell { justify-content: flex-start; padding-left: 10px; font-size: 1.1em; gap: 10px; }
+        .back { transform: rotateX(180deg); }
+        .pin-image { width: 30px; height: 30px; border-radius: 50%; object-fit: contain; }
 
-        .guess-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            font-weight: 700;
-        }
-
-        .name-cell {
-            justify-content: flex-start;
-            padding-left: 10px;
-            font-size: 1.1em;
-            gap: 10px;
-        }
-
-        .pin-image {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            object-fit: contain;
-        }
-
-        /* --- Color Feedback --- */
-        .correct { background-color: #4CAF50; }
-        .incorrect { background-color: #F44336; }
-        .clue-higher { background-color: #2196F3; position: relative; }
-        .clue-higher::after { content: '笆ｲ'; margin-left: 5px; }
-        .clue-lower { background-color: #FFEB3B; color: #000; position: relative; }
-        .clue-lower::after { content: '笆ｼ'; margin-left: 5px; color: #000; }
+        /* --- Color Feedback (Applied to .back) --- */
+        .back.correct { background-color: #4CAF50; }
+        .back.incorrect { background-color: #F44336; }
+        .back.clue-higher { background-color: #2196F3; position: relative; }
+        .back.clue-higher::after { content: '▲'; margin-left: 5px; } 
+        .back.clue-lower { background-color: #FFEB3B; color: #000; position: relative; }
+        .back.clue-lower::after { content: '▼'; margin-left: 5px; color: #000; } 
 
         /* --- Info Panel --- */
         #info-panel {
@@ -182,10 +299,10 @@
             margin-bottom: 5px;
         }
         .flame-icon {
-            width: 30px;
+            width: 30px; 
             height: 30px;
-            content: '櫨';
             line-height: 1;
+            font-size: 1.2em;
         }
 
         /* --- Yesterday's Brawler Info --- */
@@ -216,53 +333,150 @@
             object-fit: contain;
             border: 2px solid #ffc107;
         }
+
+        /* --- Modal Styles (reused for Premium/Friends) --- */
+        #modal, #premium-modal, #friends-modal {
+            display: none;
+            position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center; align-items: center;
+        }
+        .modal-content-base {
+            background-color: #2c2c54; padding: 40px; border-radius: 20px;
+            text-align: center; box-shadow: 0 0 50px #ffc107;
+            max-width: 90%; min-width: 350px;
+            border: 5px solid #ffc107;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 10px; right: 20px;
+            font-size: 30px; color: #fff; cursor: pointer;
+        }
+
+        /* --- Premium Modal Specifics --- */
+        .premium-tier {
+            border: 2px solid #5a5a8a;
+            padding: 15px; margin: 15px 0;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .premium-tier h3 { margin-top: 0; color: #ffc107; }
+        .premium-tier ul { list-style: none; padding: 0; margin: 5px 0; }
+        .premium-tier li { margin: 5px 0; }
+        .premium-tier button {
+            width: 100%;
+            background-color: #3498db;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .premium-tier.current { border-color: #4CAF50; background-color: #3f3f6e; }
+
+        /* --- Friends Modal Specifics --- */
+        #friends-list { text-align: left; margin-top: 20px; }
+        .friend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #5a5a8a;
+        }
+        .friend-status { font-size: 0.8em; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
+    <div id="app-root">
         <h1>BRAWL STARS-DLE</h1>
-        <div id="mode-select">
-            <button id="daily-button" class="mode-button">Daily Challenge</button>
-            <button id="unlimited-button" class="mode-button">Unlimited Play</button>
-        </div>
 
-        <div id="game-board" style="display: none;">
-            <div id="input-area">
-                <input type="text" id="guess-input" placeholder="Start typing Brawler name..." autocomplete="off">
-                <button id="guess-button">Guess</button>
-                <div id="suggestions"></div>
+        <div id="auth-screen">
+            <h2>Log In to Play</h2>
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="Username" required="">
+                <input type="password" id="login-password" placeholder="Password" required="">
+                <button type="submit">Log In</button>
+            </form>
+            <form id="signup-form" style="display: none;">
+                <input type="text" id="signup-username" placeholder="Username" required="">
+                <input type="email" id="signup-email" placeholder="Email (for password recovery)" required="">
+                <input type="password" id="signup-password" placeholder="Password" required="">
+                <button type="submit">Sign Up</button>
+            </form>
+            <form id="forgot-password-form" style="display: none;">
+                <input type="email" id="forgot-email" placeholder="Enter your Email" required="">
+                <button type="button" onclick="handleForgotPassword()">Send Recovery Code (Simulated)</button>
+            </form>
+
+            <p class="toggle-auth" onclick="toggleAuth('signup')">Don't have an account? Sign Up</p>
+            <p class="toggle-auth" onclick="toggleAuth('login')" style="display: none;">Already have an account? Log In</p>
+            <p class="toggle-auth" onclick="toggleAuth('forgot')">Forgot Password?</p>
+        </div>
+        
+        <div id="game-screen" style="display: none;">
+
+            <div id="user-header">
+                <div id="user-info">
+                    <div id="user-avatar">👤</div>
+                    <span id="display-username"></span>
+                </div>
+                <div id="action-buttons">
+                    <button id="premium-btn" class="action-btn" onclick="showPremiumModal()">Premium</button>
+                    <button id="friends-btn" class="action-btn" onclick="showFriendsModal()">Friends</button>
+                    <button class="action-btn" onclick="handleLogout()">Log Out</button>
+                </div>
             </div>
 
-            <div class="grid-header">
-                <div class="header-name">BRAWLER</div>
-                <div class="header-rarity">RARITY</div>
-                <div class="header-class">CLASS</div>
-                <div class="header-speed">SPEED</div>
-                <div class="header-hc">HC</div>
-                <div class="header-date">RELEASE DATE</div>
+            <div id="game-container">
+                <div id="mode-select">
+                    <button id="daily-button" class="mode-button">Daily Challenge</button>
+                    <button id="unlimited-button" class="mode-button">Unlimited Play</button>
+                </div>
+
+                <div id="game-board" style="display: none;">
+                    <div id="input-area">
+                        <input type="text" id="guess-input" placeholder="Start typing Brawler name..." autocomplete="off">
+                        <button id="guess-button">Guess</button>
+                        <div id="suggestions"></div>
+                        <button id="hint-btn" onclick="handleHint()">Hint (3/3)</button>
+                        <button id="revive-btn" onclick="handleRevive()">Revive (2/2)</button>
+                        <div id="guesses-left-display">3 Guesses Left</div>
+                    </div>
+
+                    <div class="grid-header">
+                        <div class="header-name">BRAWLER</div>
+                        <div class="header-rarity">RARITY</div>
+                        <div class="header-class">CLASS</div>
+                        <div class="header-speed">SPEED</div>
+                        <div class="header-hc">HC</div>
+                        <div class="header-date">RELEASE DATE</div>
+                    </div>
+
+                    <div id="guesses-list"></div>
+                </div>
             </div>
 
-            <div id="guesses-list"></div>
+            <div id="info-panel" style="display: none;">
+                <p id="mode-label" style="font-size: 1.1em; margin-bottom: 5px;"></p>
+                <div class="streak-display">
+                    <span class="flame-icon">🔥</span>
+                    <span id="current-streak">0</span>
+                </div>
+                <p style="font-size: 0.8em; color: #aaa;">Highest Streak: <span id="highest-streak">0</span></p>
+            </div>
+
+            <div id="yesterday-brawler-info">
+                <p id="yesterday-brawler-text">No brawler available yesterday.</p>
+                <div id="yesterday-brawler-content" style="display: none;"></div>
+            </div>
         </div>
     </div>
 
-    <div id="info-panel" style="display: none;">
-        <p id="mode-label" style="font-size: 1.1em; margin-bottom: 5px;"></p>
-        <div class="streak-display">
-            <span class="flame-icon">櫨</span>
-            <span id="current-streak">0</span>
-        </div>
-        <p style="font-size: 0.8em; color: #aaa;">Highest Streak: <span id="highest-streak">0</span></p>
-    </div>
-
-    <div id="yesterday-brawler-info">
-        <p id="yesterday-brawler-text">No brawler available yesterday.</p>
-        <div id="yesterday-brawler-content" style="display: none;"></div>
-    </div>
-
-    <div id="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center;">
-        <div id="modal-content" style="background-color: #2c2c54; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 0 50px #ffc107; max-width: 90%; border: 5px solid #ffc107;">
+    <div id="modal">
+        <div id="modal-content" class="modal-content-base">
             <h2 id="modal-title"></h2>
             <p id="modal-message"></p>
             <p style="margin-top: 15px;">The Brawler was: <span id="final-answer" style="color: #ffc107; font-weight: 700;"></span></p>
@@ -270,6 +484,35 @@
             <button onclick="window.location.reload()">New Game</button>
         </div>
     </div>
+
+    <div id="premium-modal">
+        <div class="modal-content-base">
+            <span class="modal-close" onclick="closePremiumModal()">×</span>
+            <h2>Upgrade to Premium</h2>
+            <p>Your current plan: <strong id="current-premium-tier">Free</strong></p>
+            <p style="font-size: 0.9em; color: #aaa;">Current holiday discount: <strong id="holiday-discount-display">30%</strong> (Diamond users get 40%)</p>
+            <p style="font-size: 0.9em; color: #4CAF50;">YouTube Subscriber Discount: 5% off (simulated)</p>
+            
+            <div id="premium-options">
+                </div>
+            <p style="font-size: 0.8em; margin-top: 20px;">You can cancel your subscription at any time.</p>
+        </div>
+    </div>
+
+    <div id="friends-modal">
+        <div class="modal-content-base">
+            <span class="modal-close" onclick="closeFriendsModal()">×</span>
+            <h2>My Friends</h2>
+            <div id="friends-list">
+                </div>
+            <div style="margin-top: 20px;">
+                <input type="text" id="friend-message-input" placeholder="Type a message to all friends..." style="width: 80%; padding: 8px;">
+                <button onclick="sendMessage()" class="action-btn" style="padding: 8px 10px;">Send</button>
+                <p id="last-message-sent" style="font-size: 0.9em; color: #ffeb3b; margin-top: 10px;"></p>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         // --- JAVASCRIPT: BRAWLER DATA ---
@@ -307,13 +550,14 @@
             { name: 'Edgar', rarity: 'Epic', class: 'Assassin', speed: 820, hypercharge: true, releaseDate: 'Dec 2020', pin: 'https://cdn.brawlify.com/pins/Edgar/Pin.png' },
             { name: 'Grom', rarity: 'Epic', class: 'Artillery', speed: 720, hypercharge: false, releaseDate: 'Dec 2021', pin: 'https://cdn.brawlify.com/pins/Grom/Pin.png' },
             { name: 'Bonnie', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'May 2022', pin: 'https://cdn.brawlify.com/pins/Bonnie/Pin.png' },
-            { name: 'Stu', rarity: 'Epic', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Mar 2021', pin: 'https://cdn.brawlify.pins/Stu/Pin.png' },
+            { name: 'Stu', rarity: 'Epic', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Mar 2021', pin: 'https://cdn.brawlify.com/pins/Stu/Pin.png' },
             { name: 'Colette', rarity: 'Epic', class: 'Damage Dealer', speed: 720, hypercharge: true, releaseDate: 'Sep 2020', pin: 'https://cdn.brawlify.com/pins/Colette/Pin.png' },
             { name: 'Belle', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'Apr 2021', pin: 'https://cdn.brawlify.com/pins/Belle/Pin.png' },
             { name: 'Ash', rarity: 'Epic', class: 'Tank', speed: 720, hypercharge: false, releaseDate: 'Aug 2021', pin: 'https://cdn.brawlify.com/pins/Ash/Pin.png' },
             { name: 'Lola', rarity: 'Epic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Nov 2021', pin: 'https://cdn.brawlify.com/pins/Lola/Pin.png' },
             { name: 'Sam', rarity: 'Epic', class: 'Controller', speed: 770, hypercharge: false, releaseDate: 'Sep 2022', pin: 'https://cdn.brawlify.com/pins/Sam/Pin.png' },
             { name: 'Mandy', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: false, releaseDate: 'Dec 2022', pin: 'https://cdn.brawlify.com/pins/Mandy/Pin.png' },
+            { name: 'Larry and Lawrie', rarity: 'Epic', class: 'Artillery', speed: 770, hypercharge: false, releaseDate: 'Dec 2022', pin: 'https://cdn.brawlify.com/pins/Mandy/Pin.png' },
             { name: 'Hank', rarity: 'Epic', class: 'Tank', speed: 720, hypercharge: false, releaseDate: 'Jun 2023', pin: 'https://cdn.brawlify.com/pins/Hank/Pin.png' },
             { name: 'Pearl', rarity: 'Epic', class: 'Damage Dealer', speed: 720, hypercharge: false, releaseDate: 'Sep 2023', pin: 'https://cdn.brawlify.com/pins/Pearl/Pin.png' },
             { name: 'Maisie', rarity: 'Epic', class: 'Marksman', speed: 720, hypercharge: true, releaseDate: 'Apr 2023', pin: 'https://cdn.brawlify.com/pins/Maisie/Pin.png' },
@@ -358,6 +602,7 @@
             { name: 'Kaze', rarity: 'Ultra Legendary', class: 'Assassin', speed: 820, hypercharge: false, releaseDate: 'Mar 2025', pin: 'https://cdn.brawlify.com/pins/Kaze/Pin.png' },
         ];
 
+
         // Rarity Order Mapping (used for comparison)
         const RARITY_ORDER = {
             'Starting Brawler': 0, 'Rare': 1, 'Super Rare': 2, 'Epic': 3, 'Mythic': 4, 'Legendary': 5, 'Ultra Legendary': 6
@@ -376,17 +621,41 @@
         const MAX_GUESSES = 3;
         let gameMode = null;
 
-        // Local Storage Keys
+        // Auth and Premium Constants
+        const ADMIN_USER = 'EthanUnlocked';
+        const ADMIN_PASS = 'Subscribe123!';
+        const LOCAL_STORAGE_USER_KEY = 'bsdle_current_user';
+        const LOCAL_STORAGE_USERS_KEY = 'bsdle_all_users';
+
+        const PREMIUM_TIERS = {
+            free: { price: 0, maxHints: 0, maxRevives: 0, discountBonus: 0, features: { hints: '❌', revives: '❌', discount: '❌' } },
+            bronze: { price: 10, maxHints: 3, maxRevives: 0, discountBonus: 0, features: { hints: '✅', revives: '❌', discount: '❌' } },
+            silver: { price: 20, maxHints: 3, maxRevives: 2, discountBonus: 0, features: { hints: '✅', revives: '✅', discount: '❌' } },
+            diamond: { price: 130, maxHints: 3, maxRevives: 2, discountBonus: 0.10, features: { hints: '✅', revives: '✅', discount: '✅' } }
+        };
+        const BASE_HOLIDAY_DISCOUNT = 0.30; // 30%
+
+        let currentUser = null;
+
+        // Local Storage Keys (rest)
         const DAILY_STREAK_KEY = 'bsdle_daily_streak';
         const DAILY_HIGH_STREAK_KEY = 'bsdle_daily_high_streak';
         const UNLIMITED_STREAK_KEY = 'bsdle_unlimited_streak';
         const UNLIMITED_HIGH_STREAK_KEY = 'bsdle_unlimited_high_streak';
-        // New key for yesterday's brawler info
         const DAILY_GAME_DATA_KEY = 'bsdle_daily_game_data';
-        // Fixed date to calculate the Day Number from (e.g., the day the game went live)
         const EPOCH_DATE = new Date('October 6, 2025 00:00:00');
 
         // --- DOM Elements ---
+        const authScreen = document.getElementById('auth-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const displayUsername = document.getElementById('display-username');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const premiumBtn = document.getElementById('premium-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const reviveBtn = document.getElementById('revive-btn');
+        const premiumModal = document.getElementById('premium-modal');
+        const friendsModal = document.getElementById('friends-modal');
         const modeSelect = document.getElementById('mode-select');
         const gameBoard = document.getElementById('game-board');
         const infoPanel = document.getElementById('info-panel');
@@ -394,6 +663,7 @@
         const button = document.getElementById('guess-button');
         const suggestionsDiv = document.getElementById('suggestions');
         const guessesList = document.getElementById('guesses-list');
+        const guessesLeftDisplay = document.getElementById('guesses-left-display');
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMessage = document.getElementById('modal-message');
@@ -406,11 +676,27 @@
         const yesterdayBrawlerText = document.getElementById('yesterday-brawler-text');
         const yesterdayBrawlerContent = document.getElementById('yesterday-brawler-content');
 
+        // --- DAILY RESET & PAGE RELOAD ---
+        function checkDailyReset() {
+            const now = new Date();
+            const currentDay = now.toISOString().split('T')[0];
+            const storedDay = localStorage.getItem('last_active_day');
+
+            if (storedDay && storedDay !== currentDay) {
+                // Day has reset. Force reload the page to restart the game.
+                // NOTE: This will only fire if the user is currently online between 12:00 AM and the next check.
+                alert("It's a new day! The daily challenge is resetting.");
+                localStorage.setItem('last_active_day', currentDay);
+                window.location.reload();
+            } else if (!storedDay) {
+                localStorage.setItem('last_active_day', currentDay);
+            }
+        }
+        setInterval(checkDailyReset, 60000); // Check every 60 seconds (1 minute)
 
         // --- DATE & TIME HELPERS ---
 
         function getTodayString() {
-            // Returns YYYY-MM-DD for storage key
             return new Date().toISOString().split('T')[0];
         }
 
@@ -424,7 +710,6 @@
             const today = new Date(dateString);
             const diffTime = Math.abs(today.getTime() - EPOCH_DATE.getTime());
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            // Add 1 because the epoch day itself is Day 1
             return diffDays + 1;
         }
 
@@ -438,12 +723,10 @@
                 return BRAWLERS.find(b => b.name === data.targetName);
             }
 
-            // If new day, pick a new brawler
             const randomIndex = Math.floor(Math.random() * BRAWLERS.length);
             const newTarget = BRAWLERS[randomIndex];
             dailyDayNumber = calculateDayNumber(todayString);
 
-            // Save the new target
             allDailyData[todayString] = {
                 targetName: newTarget.name,
                 pin: newTarget.pin,
@@ -488,7 +771,7 @@
             }
         }
 
-        // --- STREAK & LOCAL STORAGE HELPERS (Unchanged from previous version) ---
+        // --- STREAK & LOCAL STORAGE HELPERS ---
 
         function getStreakData(mode) {
             const streakKey = mode === 'daily' ? DAILY_STREAK_KEY : UNLIMITED_STREAK_KEY;
@@ -527,7 +810,409 @@
             highestStreakSpan.textContent = data.highest;
         }
 
+        // --- Pin URL Helper ---
+        function getBrawlerPinUrl(brawlerName, pinType) {
+            let brawler = BRAWLERS.find(b => b.name === brawlerName.toLowerCase());
+            if (!brawler) return '';
 
+            let pinUrl = brawler.pin;
+            const sadPinExtension = 'Pin_sad.png';
+
+            if (pinType === 'happy') {
+                return pinUrl;
+            } else if (pinType === 'sad') {
+                if (pinUrl.includes('/pins/')) {
+                    if (pinUrl.endsWith('Pin.png')) {
+                        return pinUrl.replace('Pin.png', sadPinExtension);
+                    }
+                    if (pinUrl.endsWith('Mr.-P.png')) {
+                         return pinUrl.replace('Mr.-P.png', 'Mr.-P/' + sadPinExtension);
+                    }
+                    const lastSlash = pinUrl.lastIndexOf('/');
+                    const dot = pinUrl.lastIndexOf('.');
+                    if (dot > lastSlash) {
+                        return pinUrl.substring(0, dot) + '_sad' + pinUrl.substring(dot);
+                    }
+                }
+                return pinUrl;
+            }
+            return pinUrl;
+        }
+
+        // Update Guesses Left Display
+        function updateGuessesLeftDisplay() {
+            const left = MAX_GUESSES - guessesMade;
+            if (left > 1) {
+                guessesLeftDisplay.textContent = `${left} Guesses Left`;
+            } else if (left === 1) {
+                guessesLeftDisplay.textContent = '1 Guess Left';
+            } else {
+                guessesLeftDisplay.textContent = 'Game Over';
+            }
+        }
+
+        // --- AUTHENTICATION LOGIC (Client-Side Simulation) ---
+
+        function getAllUsers() {
+            let users = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || '{}');
+            // Ensure the hardcoded admin user exists with default data
+            if (!users[ADMIN_USER.toLowerCase()]) {
+                users[ADMIN_USER.toLowerCase()] = {
+                    username: ADMIN_USER,
+                    password: ADMIN_PASS, 
+                    email: 'user@example.com',
+                    premium: 'free',
+                    hintsUsedToday: 0,
+                    revivesUsedToday: 0,
+                    lastDailyReset: getTodayString(),
+                    friends: [
+                        { name: 'PocoPlayer', premium: 'silver', profilePic: '🎤' },
+                        { name: 'CrowBro', premium: 'diamond', profilePic: '🦅' },
+                        { name: 'GaleForce', premium: 'bronze', profilePic: '🌬️' }
+                    ]
+                };
+                localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(users));
+            }
+            return users;
+        }
+
+        function saveCurrentUser() {
+            localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(currentUser));
+            const allUsers = getAllUsers();
+            allUsers[currentUser.username.toLowerCase()] = currentUser;
+            localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(allUsers));
+            updatePremiumButtons();
+            updateHintReviveButtons();
+        }
+
+        function loadAuthState() {
+            const storedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
+                // Check if last daily reset date is today, if not, reset premium usage
+                if (currentUser.lastDailyReset !== getTodayString()) {
+                    currentUser.hintsUsedToday = 0;
+                    currentUser.revivesUsedToday = 0;
+                    currentUser.lastDailyReset = getTodayString();
+                    saveCurrentUser();
+                }
+                showGameScreen();
+            } else {
+                showAuthScreen('login');
+            }
+        }
+
+        function showAuthScreen(form) {
+            gameScreen.style.display = 'none';
+            authScreen.style.display = 'flex';
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('signup-form').style.display = 'none';
+            document.getElementById('forgot-password-form').style.display = 'none';
+            document.querySelector('.toggle-auth[onclick="toggleAuth(\'signup\')"]').style.display = 'block';
+            document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'none';
+
+            if (form === 'login') {
+                document.getElementById('login-form').style.display = 'block';
+                document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'none';
+            } else if (form === 'signup') {
+                document.getElementById('signup-form').style.display = 'block';
+                document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'block';
+                document.querySelector('.toggle-auth[onclick="toggleAuth(\'signup\')"]').style.display = 'none';
+            } else if (form === 'forgot') {
+                document.getElementById('forgot-password-form').style.display = 'block';
+                document.querySelector('.toggle-auth[onclick="toggleAuth(\'signup\')"]').style.display = 'none';
+                document.querySelector('.toggle-auth[onclick="toggleAuth(\'login\')"]').style.display = 'block';
+            }
+        }
+
+        function showGameScreen() {
+            authScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            displayUsername.textContent = currentUser.username;
+            document.getElementById('user-avatar').textContent = currentUser.username[0].toUpperCase();
+            updatePremiumButtons();
+            updateHintReviveButtons();
+            displayYesterdayBrawler();
+        }
+
+        function toggleAuth(form) {
+            showAuthScreen(form);
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            const allUsers = getAllUsers();
+            const userKey = username.toLowerCase();
+
+            if (allUsers[userKey] && allUsers[userKey].password === password) {
+                currentUser = allUsers[userKey];
+                localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(currentUser));
+                showGameScreen();
+            } else {
+                alert("Login failed: Invalid username or password.");
+            }
+        });
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value.trim();
+            const allUsers = getAllUsers();
+            const userKey = username.toLowerCase();
+
+            if (allUsers[userKey]) {
+                alert("Signup failed: Username already exists.");
+                return;
+            }
+
+            currentUser = {
+                username: username,
+                password: password,
+                email: email,
+                premium: 'free',
+                hintsUsedToday: 0,
+                revivesUsedToday: 0,
+                lastDailyReset: getTodayString(),
+                friends: []
+            };
+            allUsers[userKey] = currentUser;
+            localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(allUsers));
+            localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(currentUser));
+            alert("Sign up successful! You are now logged in.");
+            showGameScreen();
+        });
+
+        function handleForgotPassword() {
+            const email = document.getElementById('forgot-email').value.trim();
+            if (email) {
+                alert(`SIMULATION: A recovery code has been sent to ${email}. Check your spam folder.`);
+            } else {
+                alert("Please enter your email.");
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+            window.location.reload(); 
+        }
+
+        // --- PREMIUM LOGIC ---
+        function updatePremiumButtons() {
+            if (!currentUser) return;
+
+            // Update user bar premium button visibility
+            premiumBtn.style.display = (currentUser.premium === 'diamond') ? 'none' : 'block';
+            
+            updateHintReviveButtons();
+        }
+
+        function updateHintReviveButtons() {
+            if (!currentUser) return;
+            const tier = PREMIUM_TIERS[currentUser.premium];
+
+            // Hint Button
+            if (tier.maxHints > 0) {
+                hintBtn.style.display = 'block';
+                const remaining = tier.maxHints - currentUser.hintsUsedToday;
+                hintBtn.textContent = `Hint (${remaining}/${tier.maxHints})`;
+                hintBtn.disabled = (remaining <= 0);
+            } else {
+                hintBtn.style.display = 'none';
+            }
+
+            // Revive Button is controlled in endGame, but we ensure its text is correct here
+            reviveBtn.textContent = `Revive (${tier.maxRevives - currentUser.revivesUsedToday}/${tier.maxRevives})`;
+        }
+
+
+        function showPremiumModal() {
+            if (!currentUser) return;
+
+            document.getElementById('current-premium-tier').textContent = currentUser.premium.toUpperCase();
+            
+            let holidayDiscount = BASE_HOLIDAY_DISCOUNT;
+            if (currentUser.premium === 'diamond') {
+                holidayDiscount += PREMIUM_TIERS.diamond.discountBonus; 
+            }
+            document.getElementById('holiday-discount-display').textContent = `${(holidayDiscount * 100).toFixed(0)}%`;
+
+            const youtubeSubscriber = currentUser.username.toLowerCase() === ADMIN_USER.toLowerCase(); // Simulate check for EthanUnlocked
+            const subDiscount = youtubeSubscriber ? 0.05 : 0;
+
+            let optionsHTML = '';
+            for (const tierName in PREMIUM_TIERS) {
+                if (tierName === 'free') continue;
+
+                const tier = PREMIUM_TIERS[tierName];
+                const isCurrent = tierName === currentUser.premium;
+                let finalPrice = tier.price;
+                
+                // Apply all discounts
+                finalPrice = finalPrice * (1 - subDiscount);
+                
+                optionsHTML += `
+                    <div class="premium-tier ${isCurrent ? 'current' : ''}">
+                        <h3>${tierName.toUpperCase()} ($${finalPrice.toFixed(2)}/week)</h3>
+                        <ul>
+                            <li>${tier.features.hints} Access to Hints (Max ${tier.maxHints}/day)</li>
+                            <li>${tier.features.revives} Access to Revives (Max ${tier.maxRevives}/day)</li>
+                            <li>${tier.features.discount} +10% Holiday Discount Bonus (Total ${(BASE_HOLIDAY_DISCOUNT + tier.discountBonus) * 100}%)</li>
+                        </ul>
+                        <button ${isCurrent ? 'disabled' : ''} onclick="upgradePremium('${tierName}', ${finalPrice.toFixed(2)})">
+                            ${isCurrent ? 'Current Plan' : 'Upgrade Now'}
+                        </button>
+                    </div>
+                `;
+            }
+            document.getElementById('premium-options').innerHTML = optionsHTML;
+            premiumModal.style.display = 'flex';
+        }
+
+        function closePremiumModal() {
+            premiumModal.style.display = 'none';
+        }
+
+        function upgradePremium(tierName, price) {
+            const tier = PREMIUM_TIERS[tierName];
+            if (!confirm(`Are you sure you want to upgrade to ${tierName.toUpperCase()} for $${price}/week?`)) return;
+
+            // SIMULATION: Update status and "send money"
+            currentUser.premium = tierName;
+            currentUser.hintsUsedToday = 0; 
+            currentUser.revivesUsedToday = 0; 
+            saveCurrentUser();
+
+            alert(`PAYMENT SIMULATION SUCCESSFUL! $${price} has been charged. The money has been 'sent to your email' (i.e., this feature is purely simulated and no money was transferred). Enjoy ${tierName.toUpperCase()}!`);
+            closePremiumModal();
+        }
+        
+        // --- PREMIUM GAMEPLAY FEATURES ---
+
+        function handleHint() {
+            if (currentUser.premium === 'free' || currentUser.hintsUsedToday >= PREMIUM_TIERS[currentUser.premium].maxHints) {
+                alert('You have either run out of hints or do not have a premium tier that allows hints.');
+                return;
+            }
+            
+            const lastGuessRow = guessesList.querySelector('.guess-row:first-child');
+            if (!lastGuessRow) {
+                alert('Make a guess first!');
+                return;
+            }
+
+            const properties = ['rarity', 'class', 'speed', 'hypercharge', 'date'];
+            const cells = Array.from(lastGuessRow.querySelectorAll('.guess-cell-container'));
+            let unrevealedIncorrectIndices = [];
+            
+            for(let i = 1; i < cells.length; i++) {
+                const flipper = cells[i].querySelector('.flipper');
+                const back = cells[i].querySelector('.back');
+                
+                const isFlipped = flipper.classList.contains('active-flip');
+                const isCorrect = back.classList.contains('correct');
+
+                if (!isFlipped && !isCorrect) {
+                    unrevealedIncorrectIndices.push(i);
+                }
+            }
+
+            if (unrevealedIncorrectIndices.length === 0) {
+                alert('All remaining columns are either correct or have already been revealed by a previous hint!');
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * unrevealedIncorrectIndices.length);
+            const indexToReveal = unrevealedIncorrectIndices[randomIndex];
+            
+            cells[indexToReveal].querySelector('.flipper').classList.add('active-flip');
+            
+            currentUser.hintsUsedToday++;
+            saveCurrentUser();
+            updateHintReviveButtons();
+        }
+        
+        function handleRevive() {
+            const tier = PREMIUM_TIERS[currentUser.premium];
+            if (currentUser.revivesUsedToday >= tier.maxRevives) {
+                alert('You have used your maximum allowed revives for the day.');
+                return;
+            }
+            
+            if (guessesMade < MAX_GUESSES) {
+                alert("You don't need a revive yet!");
+                return;
+            }
+            
+            if (!confirm('Use one revive to reset your guesses? This cannot be undone.')) {
+                return;
+            }
+
+            guessesMade = 0;
+            currentUser.revivesUsedToday++;
+            saveCurrentUser();
+            updateGuessesLeftDisplay();
+            
+            // Re-enable input/buttons
+            button.disabled = false;
+            input.disabled = false;
+            reviveBtn.style.display = 'none';
+
+            alert('Revive successful! You have 3 fresh guesses.');
+        }
+
+
+        // --- FRIENDS LOGIC (SIMULATED) ---
+
+        function showFriendsModal() {
+            if (!currentUser) return;
+            renderFriendsList();
+            friendsModal.style.display = 'flex';
+        }
+
+        function closeFriendsModal() {
+            friendsModal.style.display = 'none';
+        }
+
+        function renderFriendsList() {
+            const listDiv = document.getElementById('friends-list');
+            listDiv.innerHTML = '';
+
+            const friends = currentUser.friends || [];
+            
+            if (friends.length === 0) {
+                listDiv.innerHTML = '<p style="text-align: center;">You have no friends yet.</p>';
+                return;
+            }
+
+            friends.forEach(friend => {
+                const statusColor = friend.premium === 'diamond' ? '#3498db' : (friend.premium === 'silver' ? '#7f8c8d' : '#e67e22');
+                const item = document.createElement('div');
+                item.className = 'friend-item';
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div id="friend-avatar" style="width: 30px; height: 30px; border-radius: 50%; background-color: #5a5a8a; display: flex; align-items: center; justify-content: center;">${friend.profilePic || 'F'}</div>
+                        <span>${friend.name}</span>
+                    </div>
+                    <div class="friend-status">
+                        Premium: <strong style="color: ${statusColor};">${friend.premium.toUpperCase()}</strong>
+                    </div>
+                `;
+                listDiv.appendChild(item);
+            });
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('friend-message-input').value.trim();
+            if (!message) return;
+
+            document.getElementById('last-message-sent').textContent = `Message sent to ${currentUser.friends.length} friends: "${message}" (Simulated)`;
+            document.getElementById('friend-message-input').value = '';
+        }
+        
         // --- INITIAL SETUP ---
 
         function startGame(mode) {
@@ -540,15 +1225,16 @@
             if (mode === 'daily') {
                 targetBrawler = getDailyTarget();
                 if (isDailyComplete()) {
-                    // Stop the user from playing again today.
                     endGame(true, true);
                     return;
                 }
             } else {
-                // Unlimited mode: pick a new random brawler
                 const randomIndex = Math.floor(Math.random() * BRAWLERS.length);
                 targetBrawler = BRAWLERS[randomIndex];
             }
+
+            guessesMade = 0;
+            updateGuessesLeftDisplay();
 
             displayStreaks();
             button.addEventListener('click', processGuess);
@@ -557,13 +1243,13 @@
                     processGuess();
                 }
             });
-            console.log(`Target Brawler (${mode} mode, Day ${dailyDayNumber || 'N/A'}):`, targetBrawler.name.toUpperCase()); // Dev Cheat
+            console.log(`Target Brawler (${mode} mode, Day ${dailyDayNumber || 'N/A'}):`, targetBrawler.name.toUpperCase());
         }
 
         document.getElementById('daily-button').addEventListener('click', () => startGame('daily'));
         document.getElementById('unlimited-button').addEventListener('click', () => startGame('unlimited'));
 
-        // --- AUTOSUGGEST LOGIC (Unchanged from previous version) ---
+        // --- AUTOSUGGEST LOGIC ---
 
         input.addEventListener('input', () => {
             const query = input.value.trim().toLowerCase();
@@ -602,7 +1288,7 @@
         });
 
 
-        // --- CORE GAME LOGIC (Unchanged from previous version) ---
+        // --- CORE GAME LOGIC ---
 
         function processGuess() {
             const rawGuess = input.value.trim();
@@ -619,14 +1305,14 @@
                 return;
             }
 
-            const alreadyGuessed = Array.from(guessesList.querySelectorAll('.name-cell')).some(cell =>
-                cell.textContent.trim().toLowerCase() === guessedBrawler.name
+            const alreadyGuessed = Array.from(guessesList.querySelectorAll('.guess-row')).some(row =>
+                row.querySelector('.back.name-cell span').textContent.trim().toLowerCase() === guessedBrawler.name
             );
+
             if (alreadyGuessed) {
                 alert("You already guessed that Brawler!");
                 return;
             }
-
 
             guessesMade++;
 
@@ -640,6 +1326,8 @@
 
             const feedback = generateFeedback(guessedBrawler, targetBrawler);
             displayGuess(guessedBrawler, feedback);
+
+            updateGuessesLeftDisplay(); 
 
             if (guessesMade >= MAX_GUESSES) {
                 endGame(false);
@@ -701,43 +1389,64 @@
             return feedback;
         }
 
-        // --- DISPLAY & GAME OVER (Updated to call displayYesterdayBrawler on load/end) ---
+        // --- DISPLAY (Refactored for Flip Animation) ---
 
         function displayGuess(brawler, feedback) {
             const row = document.createElement('div');
             row.className = 'guess-row';
 
-            const createCell = (content, className) => {
-                const cell = document.createElement('div');
-                cell.className = `guess-cell ${className}`;
-                cell.textContent = content;
-                return cell;
+            const properties = ['name', 'rarity', 'class', 'speed', 'hypercharge', 'date'];
+
+            const contentMap = {
+                name: `<img src="${brawler.pin}" alt="${brawler.name}" class="pin-image"><span>${brawler.name.toUpperCase()}</span>`,
+                rarity: brawler.rarity,
+                class: brawler.class,
+                speed: getSpeedTier(brawler.speed),
+                hypercharge: brawler.hypercharge ? 'Yes' : 'No',
+                date: brawler.releaseDate,
             };
 
-            // Cell 1: Name and Pin
-            const nameCell = document.createElement('div');
-            nameCell.className = 'guess-cell name-cell';
-            const pinImg = document.createElement('img');
-            pinImg.src = brawler.pin;
-            pinImg.alt = brawler.name;
-            pinImg.className = 'pin-image';
-            nameCell.appendChild(pinImg);
-            nameCell.append(brawler.name.toUpperCase());
-            row.appendChild(nameCell);
+            properties.forEach((prop, index) => {
+                const container = document.createElement('div');
+                container.className = 'guess-cell-container';
 
-            // Cell 2-6 (rest of properties)
-            row.appendChild(createCell(brawler.rarity, feedback.rarity));
-            row.appendChild(createCell(brawler.class, feedback.class));
-            row.appendChild(createCell(getSpeedTier(brawler.speed), feedback.speed));
-            row.appendChild(createCell(brawler.hypercharge ? 'Yes' : 'No', feedback.hypercharge));
-            row.appendChild(createCell(brawler.releaseDate, feedback.date));
+                const flipper = document.createElement('div');
+                flipper.className = 'flipper';
+
+                // Front Side (Initial state: Name/Pin only in the first cell, "?" in others)
+                const front = document.createElement('div');
+                front.className = `front ${prop === 'name' ? 'name-cell' : ''}`;
+                if (prop === 'name') {
+                    front.innerHTML = contentMap[prop];
+                } else {
+                    front.textContent = '?'; 
+                }
+
+                // Back Side (Result state: Feedback color and value)
+                const back = document.createElement('div');
+                back.className = `back ${feedback[prop]} ${prop === 'name' ? 'name-cell' : ''}`;
+                back.innerHTML = contentMap[prop];
+
+                flipper.appendChild(front);
+                flipper.appendChild(back);
+                container.appendChild(flipper);
+                row.appendChild(container);
+
+                // Sequential Flip Animation
+                setTimeout(() => {
+                    flipper.classList.add('active-flip');
+                }, 100 * index); 
+            });
 
             guessesList.prepend(row);
         }
+        
+        // --- GAME OVER (Update Pin Display and Emojis) ---
 
         function endGame(won, alreadyCompleted = false) {
             button.disabled = true;
             input.disabled = true;
+            guessesLeftDisplay.textContent = 'Game Over'; 
 
             if (gameMode === 'daily' && !alreadyCompleted) {
                 setDailyComplete();
@@ -746,29 +1455,47 @@
                 updateStreaks(won);
             }
 
+            const pinType = won ? 'happy' : 'sad';
+            const pinUrl = getBrawlerPinUrl(targetBrawler.name, pinType);
+
+
             if (won) {
-                modalTitle.textContent = "CORRECT! 醇";
+                modalTitle.textContent = "CORRECT! 🏆";
                 modalMessage.textContent = alreadyCompleted ?
                     `You already completed today's challenge (Day ${dailyDayNumber})!` :
                     `The Brawler was ${targetBrawler.name.toUpperCase()}! You won in ${guessesMade} try${guessesMade > 1 ? 's' : ''}!`;
             } else {
-                modalTitle.textContent = "GAME OVER 亊";
+                modalTitle.textContent = "GAME OVER 😔";
                 modalMessage.textContent = `You ran out of guesses! The correct Brawler was: ${targetBrawler.name.toUpperCase()}`;
 
-                // For daily mode, we still save the target even if they lost, so it's recorded for tomorrow's "yesterday" answer.
-                if(gameMode === 'daily') {
+                if(gameMode === 'daily' && !alreadyCompleted) {
                     setDailyComplete();
                 }
             }
 
             finalAnswer.textContent = targetBrawler.name.toUpperCase();
-            correctPinDisplay.innerHTML = `<img src="${targetBrawler.pin}" alt="${targetBrawler.name} Pin">`;
+            // Display the happy or sad pin
+            correctPinDisplay.innerHTML = `<img src="${pinUrl}" alt="${targetBrawler.name} Pin" class="pin-image" style="width: 50px; height: 50px; margin-top: 10px; border: 3px solid ${won ? '#4CAF50' : '#F44336'};">`;
 
-            modal.style.display = 'flex';
+            // Check if a revive is available and show the option if needed
+            const tier = PREMIUM_TIERS[currentUser.premium];
+            const remainingRevives = tier.maxRevives - currentUser.revivesUsedToday;
+            if (!won && remainingRevives > 0) {
+                reviveBtn.style.display = 'block';
+                // Delay showing the main modal to give the user a moment to see the revive button
+                setTimeout(() => {
+                    modal.style.display = 'flex';
+                }, 1000);
+            } else {
+                reviveBtn.style.display = 'none';
+                modal.style.display = 'flex';
+            }
         }
 
         // --- ON LOAD EXECUTION ---
-        displayYesterdayBrawler();
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAuthState();
+        });
 
     </script>
 
