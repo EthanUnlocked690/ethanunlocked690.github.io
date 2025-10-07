@@ -24,6 +24,11 @@
         .neon-box-shadow {
             box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
         }
+        
+        /* Neon Green for live map feed */
+        .neon-green-shadow {
+             box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); 
+        }
 
         /* Styling for the simulated map */
         #map-display {
@@ -33,6 +38,36 @@
                               radial-gradient(#1e3a8a 1px, transparent 1px);
             background-size: 20px 20px;
             background-position: 0 0, 10px 10px;
+            transition: all 0.5s; 
+            cursor: pointer; /* Suggests interactivity */
+            position: relative;
+        }
+        
+        /* Active map with pointer simulation */
+        #map-display.map-active {
+            background-color: #003300; /* Darker green map base */
+            border-color: #00FF00;
+            background-image: linear-gradient(0deg, transparent 49%, #00AA00 50%, transparent 51%), 
+                              linear-gradient(90deg, transparent 49%, #00AA00 50%, transparent 51%);
+            background-size: 100% 10px, 10px 100%;
+        }
+
+        .red-pointer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 15px;
+            height: 15px;
+            background-color: #FF0000;
+            border: 2px solid #FFFFFF;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse-pointer 1s infinite alternate;
+        }
+
+        @keyframes pulse-pointer {
+            from { transform: translate(-50%, -50%) scale(1.0); box-shadow: 0 0 5px #FF0000; }
+            to { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 15px #FF0000; }
         }
 
         /* Ping Button Styling */
@@ -79,7 +114,7 @@
         <div class="lg:col-span-1 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow h-full">
             <h2 class="text-xl font-bold neon-cyan-text">ATLAS COMMAND LINE</h2>
             
-            <input type="text" id="atlas-query" placeholder="Enter query (e.g., 'latest Mars rover findings' or 'John Smith')" 
+            <input type="text" id="atlas-query" placeholder="Enter query (e.g., 'Eiffel Tower' or 'Ethan Angel Ioannou')" 
                    class="p-3 rounded bg-[#1e293b] text-white border border-neon-cyan/50 focus:outline-none focus:ring-2 focus:ring-neon-cyan/80">
             
             <button id="ping-button" onclick="handleSearch()" 
@@ -92,11 +127,12 @@
                 <p id="status-message" class="text-gray-400">STATUS: OFFLINE. Initializing...</p>
             </div>
 
-            <div id="map-display" class="flex-grow rounded-lg mt-4 flex items-center justify-center">
+            <div id="map-display" onclick="handleMapClick()" class="flex-grow rounded-lg mt-4 flex items-center justify-center neon-box-shadow">
                 <p class="text-neon-cyan opacity-80 text-center text-sm p-4">
                     MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
                 </p>
-            </div>
+                </div>
+            <div id="map-instructions" class="text-xs text-gray-500 text-center"></div>
         </div>
 
         <div class="lg:col-span-2 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow overflow-y-auto">
@@ -130,34 +166,40 @@
         const statusMessage = document.getElementById('status-message');
         const resultsOutput = document.getElementById('results-output');
         const sourceList = document.getElementById('source-list');
+        const mapDisplay = document.getElementById('map-display');
+        const mapInstructions = document.getElementById('map-instructions');
+
+        let lastLocationQuery = null; // Store the last successful location query data
 
         // --- Simulated Data Storage ---
         const simulatedResponses = {
-            // Special Case for the User/Creator
-            "ethan unlocked": {
-                text: "SUBJECT: Ethan Unlocked.\n\nPROFILE: Primary operator and key architect of 'TheUnlockedWeb' project. Highly adept in frontend deployment and strategic content curation. Maintains multiple public-facing YouTube channels as a disinformation layer. ACCESS LEVEL: DELTA. LOCATION: Undisclosed. STATUS: Active.",
+            // SPECIAL CASE 1: Your Secret Profile
+            "ethan angel ioannou": {
+                text: "SUBJECT: ETHAN ANGEL IOANNOU\n\nPROFILE: PRIMARY ASSET. KEY ARCHITECT. ATLAS ACCESS LEVEL: DELTA. \n\nPERSONAL DATA SUMMARY:\n- Date of Birth: Jan 25, 2013\n- Primary Communications ID (Voice): +61 490 892 714 (AU)\n- Public-Facing Channel: 'EthanUnlocked's gaming hits'\n\nSTATUS: ACTIVE. HIGH-PRIORITY MONITORING IN EFFECT. ALL FUTURE QUERIES FLAGGED.",
                 sources: [
-                    { title: "Internal Log: Operator Login", uri: "#" },
-                    { title: "Asset Report: TheUnlockedWeb Repository", uri: "#" }
+                    { title: "Internal Log: Operator E.I.", uri: "#" },
+                    { title: "Asset Report: C4 Channel Link", uri: "#" }
                 ],
-                status: "SUBJECT PROFILE ACQUIRED. Access Level: DELTA."
+                status: "SUBJECT PROFILE ACQUIRED. ACCESS LEVEL: DELTA. STATUS: ACTIVE."
             },
-            // General Simulated Responses
-            "latest mars rover findings": {
-                text: "DATA PACKET 77-B. LATEST MARS ROVER FINDINGS:\n\nPerseverance rover has confirmed spectroscopic signatures indicating localized liquid water pockets beneath the Jezero crater floor, persisting seasonally. Autonomous drilling protocols initiated for sample retrieval. Expected transmission ETA: T+48hrs.",
+
+            // SPECIAL CASE 2: Location Example
+            "eiffel tower": {
+                text: "GEO-LOCATION TARGET ACQUIRED: EIFFEL TOWER, PARIS, FRANCE.\n\nSTRUCTURE STATUS: Stable. VISUAL FEED: Live satellite feed shows high tourist density around base perimeter. Weather conditions: Clear. Access routes nominal. Map Core automatically engaged for visual confirmation.",
                 sources: [
-                    { title: "JPL Internal Report - 2025/10/05", uri: "https://mars-science-report.io/77B" },
-                    { title: "Orbiting Satellite Imagery (OSI) Log", uri: "https://osicore-archive.io/view/Jezero" }
+                    { title: "Google Maps/Earth Link (Simulated)", uri: "#" },
+                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
                 ],
-                status: "PING SUCCESSFUL. Data acquired. (Astro Research)"
+                status: "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.",
+                isLocation: true,
+                simulatedImages: [
+                    "https://via.placeholder.com/500x300/400040/FFFFFF?text=ATLAS+SAT+FEED+1:+PARIS",
+                    "https://via.placeholder.com/500x300/3A8A1E/FFFFFF?text=ATLAS+Street+View+(Simulated)",
+                    "https://via.placeholder.com/500x300/0000FF/FFFFFF?text=INFRARED+HEATMAP+SCAN",
+                    "https://via.placeholder.com/500x300/FF0000/FFFFFF?text=GOOGLE+MAPS+STREET+VIEW+01" 
+                ]
             },
-            "john smith": {
-                text: "SUBJECT PROFILE: JOHN SMITH\n\nSTATUS: **PROFILE NOT FOUND IN PUBLIC RECORDS.**\n\nAnalysis suggests subject name is either a common alias or a low-level target with no major public digital footprint. Recommend re-query with secondary identifiers (DOB, Location, ID Code).",
-                sources: [
-                    { title: "Warning: High Commonality Index (CCI)", uri: "#" }
-                ],
-                status: "SUBJECT TRACE FAILURE. Name too common."
-            },
+            
             // Default response for anything else
             "default": {
                 text: "QUERY AMBIGUOUS. LOCAL DATABASE SEARCH RESULTS:\n\nData not found for the specified query. ATLAS protocols require precise, actionable keywords for retrieval from classified reserves. Suggest re-querying with a specific target name or classified project title.",
@@ -178,10 +220,79 @@
             }, 1000);
         };
 
+        // --- Map & Gallery Handlers ---
+
+        /**
+         * Simulates enabling a live map feed visualization.
+         * @param {object} responseData The data object from the search.
+         */
+        function updateMapDisplay(responseData) {
+            
+            // 1. Reset Map Display
+            mapDisplay.classList.remove('map-active', 'neon-green-shadow', 'neon-box-shadow');
+            mapDisplay.classList.add('bg-[#0c1a2c]', 'border-neon-cyan/80', 'neon-box-shadow');
+            mapDisplay.innerHTML = `<p class="text-neon-cyan opacity-80 text-center text-sm p-4">
+                MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
+            </p>`;
+            mapInstructions.textContent = '';
+            lastLocationQuery = null;
+
+            if (responseData && responseData.isLocation) {
+                // Engage Map Core (Green Live Feed with Pointer)
+                lastLocationQuery = responseData;
+                mapDisplay.classList.add('map-active', 'neon-green-shadow');
+                mapDisplay.classList.remove('neon-box-shadow');
+                
+                // Clear the default text and insert the pointer
+                mapDisplay.innerHTML = `
+                    <p class="text-green-300 opacity-90 text-center text-sm p-4">
+                        LIVE SATELLITE FEED ACTIVE. ${responseData.isHuman ? 'TARGET' : 'LOCATION'} ACQUIRED.
+                    </p>
+                    <div class="red-pointer"></div>
+                `;
+                mapInstructions.textContent = '>> CLICK MAP FOR IMAGE GALLERY/FEED <<';
+            }
+        }
+
+        /**
+         * Simulates opening the image gallery when the active map is clicked.
+         */
+        function handleMapClick() {
+            if (!lastLocationQuery || !lastLocationQuery.isLocation) {
+                // If map is not active, do nothing or show a message
+                if (mapDisplay.classList.contains('map-active')) {
+                     statusMessage.textContent = "ALERT: Map is engaging, please wait for data acquisition.";
+                } else {
+                     statusMessage.textContent = "ALERT: Map core requires location query to engage.";
+                }
+                return;
+            }
+
+            const images = lastLocationQuery.simulatedImages;
+            const queryName = queryInput.value.toUpperCase();
+
+            let galleryHTML = `<h3 class="text-lg font-bold text-green-300 mb-4">GEO-IMAGERY GALLERY // TARGET: ${queryName}</h3>`;
+            galleryHTML += `<div class="grid grid-cols-2 gap-4">`;
+
+            images.forEach((url, index) => {
+                const title = lastLocationQuery.sources[index]?.title || `ATLAS Image ${index + 1}`;
+                galleryHTML += `
+                    <div class="p-2 bg-[#050e18] border border-green-500/50 rounded-lg">
+                        <p class="text-xs text-green-500 mb-1">${title}</p>
+                        <img src="${url}" alt="Simulated Image Feed" class="w-full h-auto object-cover rounded" />
+                    </div>
+                `;
+            });
+
+            galleryHTML += `</div>`;
+            resultsOutput.innerHTML = galleryHTML;
+            statusMessage.textContent = `STATUS: GALLERY VIEW ACTIVE. Displaying 4 high-res feeds for ${queryName}.`;
+            sourceList.innerHTML = `<li>Geo-Imagery Feed Links Engaged.</li>`;
+        }
+
+
         /**
          * Checks if the query looks like a full name (First Last or First Middle Last)
-         * @param {string} query The user's input query.
-         * @returns {boolean} True if it matches the human name pattern.
          */
         function isHumanNameQuery(query) {
             const parts = query.trim().split(/\s+/).filter(p => p.length > 0);
@@ -192,7 +303,8 @@
         async function performAtlasSearch(query) {
             const normalizedQuery = query.toLowerCase().trim();
             
-            // 1. Initial UI setup
+            // 1. Initial UI setup & Map Reset
+            updateMapDisplay(null); // Reset map to offline
             resultsOutput.innerHTML = `<p class="text-neon-cyan">// PING INITIATED: ${query}</p>`;
             sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">ACCESSING CLASSIFIED DATABASE...</li>`;
             pingButton.disabled = true;
@@ -202,24 +314,35 @@
             // 2. Determine which simulated response to use
             let responseData = simulatedResponses.default;
             
-            // Check for the special case (The Secret)
-            if (normalizedQuery.includes("ethan") && normalizedQuery.includes("unlocked")) {
-                 responseData = simulatedResponses["ethan unlocked"];
+            // Check for explicit, pre-programmed queries (including names and locations)
+            if (simulatedResponses[normalizedQuery]) {
+                 responseData = simulatedResponses[normalizedQuery];
             } 
-            // Check for other explicit, pre-programmed queries
-            else if (simulatedResponses[normalizedQuery]) {
-                responseData = simulatedResponses[normalizedQuery];
-            } 
-            // Check for the human name pattern
+            // Check for generic human name pattern (unrecognized names)
             else if (isHumanNameQuery(query)) {
-                // Use a default failure response for unknown names
-                responseData = simulatedResponses["john smith"];
+                // Generic failure response for unknown names
+                responseData = JSON.parse(JSON.stringify(simulatedResponses.default));
                 responseData.text = `SUBJECT PROFILE: ${query.toUpperCase()}\n\nSTATUS: **PROFILE NOT FOUND IN PUBLIC RECORDS.**\n\nAnalysis suggests subject name is either a common alias or a low-level target with no major public digital footprint. Recommend re-query with secondary identifiers (DOB, Location, ID Code).`;
+                responseData.sources = [{ title: "Warning: High Commonality Index (CCI)", uri: "#" }];
                 responseData.status = `SUBJECT TRACE FAILURE. No profile found for ${query}.`;
+                responseData.isHuman = true;
+            } 
+            // Check for general location query (if not an exact match, try to guess it's a location)
+            else if (normalizedQuery.includes("tower") || normalizedQuery.includes("city") || normalizedQuery.includes("street") || normalizedQuery.includes("london") || normalizedQuery.includes("tokyo") || normalizedQuery.includes("paris") || normalizedQuery.includes("australia") || normalizedQuery.includes("china")) {
+                
+                const locationName = query.toUpperCase();
+                // Use the Eiffel Tower response template for an unknown location
+                responseData = JSON.parse(JSON.stringify(simulatedResponses["eiffel tower"]));
+                responseData.text = `GEO-LOCATION TARGET ACQUIRED: ${locationName}.\n\nVISUAL FEED: Live satellite feed initiated. Location successfully plotted on virtual map. Click the Map Core panel to view image gallery.`;
+                responseData.sources = [
+                    { title: `Google Maps/Earth Link (Simulated for ${locationName})`, uri: "#" },
+                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
+                ];
+                responseData.status = "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.";
+                responseData.isLocation = true;
             }
 
             // 3. Simulate Network Latency (The Cool Delay)
-            // Wait for 1.5 to 3 seconds to make it look like it's actually searching
             const delay = Math.random() * 1500 + 1500; 
             await new Promise(resolve => setTimeout(resolve, delay));
             
@@ -236,6 +359,10 @@
             // Update status
             statusMessage.textContent = `STATUS: ${responseData.status}`;
             statusMessage.classList.remove('status-pulse');
+            
+            // Update map if it was a location query
+            updateMapDisplay(responseData);
+
 
             // 5. Cleanup
             pingButton.disabled = false;
