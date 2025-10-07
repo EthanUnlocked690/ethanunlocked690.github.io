@@ -60,11 +60,11 @@ font-weight: bold;
 text-align: center;
 }
 .bouncy-text span {
-animation: bounce 0.5s infinite alternate;
-display: inline-block;
 background: linear-gradient(to bottom, #ff6600, #ffcc33);
 -webkit-background-clip: text;
 color: transparent;
+animation: bounce 0.5s infinite alternate;
+display: inline-block;
 }
 @keyframes bounce {
 0% { transform: translateY(0); }
@@ -274,7 +274,7 @@ const audio = new Audio('do-not-click-me.mp3'); // Replace with your audio file 
 const textElement = document.getElementById('displayText');
 playButton.addEventListener('click', function() {
 audio.play();
-textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!! 🤣🤣🤣'; // Text to display on click
+textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣🤣🤣'; // Text to display on click
 });
 </script>
 <h2 style="color:red;">Our latest video</h2>
@@ -617,7 +617,7 @@ handleSendMessage();
 });
 
 // =========================================================================
-// NEW LOGIC FOR RIGHT-CLICK MENU ON CHATBOT CLOSE BUTTON
+// NEW LOGIC FOR SECRET RIGHT-CLICK MENU ON CHATBOT CLOSE BUTTON
 // =========================================================================
 
 // Function to check if the current user is 'EthanUnlocked'
@@ -631,7 +631,7 @@ function showCustomMenu(event) {
     // 1. Prevent the default browser context menu from showing
     event.preventDefault();
 
-    // 2. Check the username condition
+    // 2. Check the username condition (The Secret Key)
     if (!isEthanUnlocked()) {
         return; // Stop if not EthanUnlocked
     }
