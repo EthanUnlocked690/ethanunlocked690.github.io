@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PROJECT ATLAS: GLOBAL INTELLIGENCE INTERFACE</title>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -68,7 +67,6 @@
 </head>
 <body class="flex flex-col justify-between items-center h-screen">
 
-    <!-- Header -->
     <header class="w-full text-center pt-6 pb-4 bg-[#050e18]">
         <h1 class="text-3xl font-extrabold neon-cyan-text tracking-wider">
             PROJECT ATLAS // CLASSIFIED ACCESS
@@ -76,14 +74,12 @@
         <p class="text-sm text-gray-500 mt-1">QUERY EXTERNAL DATABASES VIA GEMINI NETWORK. HIGH LATENCY WARNING.</p>
     </header>
 
-    <!-- Main Content Grid -->
     <main class="w-full max-w-7xl flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden">
         
-        <!-- Left Panel: Search & Controls -->
         <div class="lg:col-span-1 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow h-full">
             <h2 class="text-xl font-bold neon-cyan-text">ATLAS COMMAND LINE</h2>
             
-            <input type="text" id="atlas-query" placeholder="Enter query (e.g., 'latest Mars rover findings')" 
+            <input type="text" id="atlas-query" placeholder="Enter query (e.g., 'latest Mars rover findings' or 'John Smith')" 
                    class="p-3 rounded bg-[#1e293b] text-white border border-neon-cyan/50 focus:outline-none focus:ring-2 focus:ring-neon-cyan/80">
             
             <button id="ping-button" onclick="handleSearch()" 
@@ -96,7 +92,6 @@
                 <p id="status-message" class="text-gray-400">STATUS: OFFLINE. Initializing...</p>
             </div>
 
-            <!-- Map Placeholder -->
             <div id="map-display" class="flex-grow rounded-lg mt-4 flex items-center justify-center">
                 <p class="text-neon-cyan opacity-80 text-center text-sm p-4">
                     MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
@@ -104,7 +99,6 @@
             </div>
         </div>
 
-        <!-- Right Panel: Output & Results -->
         <div class="lg:col-span-2 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow overflow-y-auto">
             <h2 class="text-xl font-bold neon-cyan-text">QUERY OUTPUT</h2>
             
@@ -121,7 +115,6 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="w-full py-2 flex justify-between px-6 text-xs bg-[#0c1a2c] border-t border-neon-cyan/30">
         <div class="text-gray-600">
             ATLAS CORE V3.1 // GEMINI FUSION INITIATED
@@ -138,7 +131,9 @@
         const resultsOutput = document.getElementById('results-output');
         const sourceList = document.getElementById('source-list');
 
-        const systemPrompt = "You are PROJECT ATLAS, a high-level intelligence interface providing concise, neutral, and factual summaries based on real-time data. Respond directly to the user's query with a brief, helpful summary.";
+        const systemPrompt_General = "You are PROJECT ATLAS, a high-level intelligence interface providing concise, neutral, and factual summaries based on real-time data. Respond directly to the user's query with a brief, helpful summary.";
+        const systemPrompt_Human = "You are PROJECT ATLAS, a high-level intelligence interface. The operator is performing a **Human Subject Query**. Based on public information found, provide a brief, professional biography or summary of the individual. If no public information is found, state 'SUBJECT PROFILE NOT FOUND IN PUBLIC RECORDS.'";
+        
         const apiKey = "";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
@@ -185,18 +180,49 @@
             }
         }
 
+        /**
+         * Checks if the query looks like a full name (First Last or First Middle Last)
+         * This triggers the secret human database mode.
+         * @param {string} query The user's input query.
+         * @returns {boolean} True if it matches the human name pattern.
+         */
+        function isHumanNameQuery(query) {
+            // Trim and split the query by whitespace
+            const parts = query.trim().split(/\s+/).filter(p => p.length > 0);
+            
+            // A name must have at least 2 parts (First Last) and at most 3 parts (First Middle Last)
+            if (parts.length < 2 || parts.length > 3) {
+                return false;
+            }
+
+            // Simple check: make sure all parts look like words (not numbers or symbols)
+            const allWords = parts.every(part => /^[a-zA-Z]{2,}$/.test(part)); // 2+ letters
+            
+            return allWords;
+        }
+
         // --- Search Function ---
         async function performAtlasSearch(query) {
+            // Determine if the query is for a human subject
+            const isHuman = isHumanNameQuery(query);
+
+            // Set up initial UI state
             resultsOutput.innerHTML = `<p class="text-neon-cyan">// PING INITIATED: ${query}</p>`;
-            sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">ACCESSING GEMINI NETWORK...</li>`;
+            sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">${isHuman ? 'TARGETING HUMAN INTELLIGENCE NETWORK...' : 'ACCESSING GEMINI NETWORK...'}</li>`;
             pingButton.disabled = true;
-            statusMessage.textContent = "STATUS: PINGING EXTERNAL DATABASES...";
+            statusMessage.textContent = `STATUS: ${isHuman ? 'HUMAN SUBJECT TRACE INITIATED...' : 'PINGING EXTERNAL DATABASES...'}`;
+
+            // Define the system instruction based on the query type
+            const finalSystemPrompt = isHuman ? systemPrompt_Human : systemPrompt_General;
 
             const payload = {
                 contents: [{ parts: [{ text: query }] }],
+                // Enable Google Search for grounding in both cases
                 tools: [{ "google_search": {} }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
+                config: {
+                    systemInstruction: {
+                        parts: [{ text: finalSystemPrompt }]
+                    },
                 },
             };
 
@@ -230,7 +256,7 @@
                         sourceList.innerHTML = `<li>No external sources cited for this query.</li>`;
                     }
                     
-                    statusMessage.textContent = "STATUS: PING SUCCESSFUL. Data acquired.";
+                    statusMessage.textContent = `STATUS: PING SUCCESSFUL. Data acquired. (${isHuman ? 'Human Subject' : 'General Query'})`;
 
                 } else {
                     resultsOutput.innerHTML = `<p class="text-red-500">ERROR: Network response contained no usable data.</p>`;
