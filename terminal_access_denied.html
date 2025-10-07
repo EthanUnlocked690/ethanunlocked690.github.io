@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCESS DENIED</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #050e18;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .error-box {
+            background-color: #1a0508;
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+        .text-neon-red {
+            color: #ff0000;
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="error-box p-10 rounded-lg w-full max-w-md text-white text-center">
+    <h2 class="text-4xl font-bold mb-4 text-neon-red">TERMINAL INTERFERENCE</h2>
+    <h3 class="text-xl font-medium mb-6 text-gray-400">(ACCESS TEMPORARILY DISABLED)</h3>
+    
+    <p class="text-lg mb-6">
+        BREAK-IN PROTOCOL INITIATED. ATLAS TERMINAL HAS BEEN SHUT DOWN REMOTELY.
+    </p>
+    
+    <p class="text-sm text-gray-500 mb-8" id="timer-message">
+        SYSTEM LOCKOUT DURATION: 10 MINUTES.
+    </p>
+
+    <a href="index.html" class="inline-block p-3 rounded font-bold uppercase bg-red-600 text-white hover:bg-red-700 transition-colors">
+        RETURN TO MAIN SITE
+    </a>
+</div>
+
+<script>
+    const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
+    const timerMessage = document.getElementById('timer-message');
+
+    function updateTimer() {
+        const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
+        const currentTime = new Date().getTime();
+
+        if (lockoutEndTime) {
+            const timeLeft = parseInt(lockoutEndTime) - currentTime;
+            
+            if (timeLeft <= 0) {
+                // Lockout has expired
+                localStorage.removeItem(TERMINAL_LOCKOUT_KEY);
+                timerMessage.textContent = "LOCKOUT EXPIRED. ACCESS RESTORED on Main Site.";
+                // Redirect user back to the main site to refresh the link state
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+                return;
+            } else {
+                // Calculate minutes and seconds remaining
+                const totalSeconds = Math.ceil(timeLeft / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+
+                const minutesStr = String(minutes).padStart(2, '0');
+                const secondsStr = String(seconds).padStart(2, '0');
+
+                timerMessage.textContent = `SYSTEM LOCKOUT DURATION: ${minutesStr}:${secondsStr} REMAINING.`;
+            }
+        } else {
+            // If LocalStorage key is missing, redirect to main site (unlocked)
+            window.location.href = 'index.html'; 
+            return;
+        }
+
+        // Use setTimeout for a periodic update (easier than requestAnimationFrame here)
+        setTimeout(updateTimer, 1000); 
+    }
+
+    updateTimer(); 
+</script>
+
+</body>
+</html>
