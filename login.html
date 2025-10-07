@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATLAS Security Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #050e18;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-box {
+            background-color: #0c1a2c;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        .neon-cyan-text {
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+        }
+        .btn-primary {
+            background-color: #00ffff;
+            color: #050e18;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box p-8 rounded-lg w-96 text-white">
+    <h2 class="text-3xl font-bold text-center mb-6 neon-cyan-text">ATLAS ACCESS PORTAL</h2>
+    <p id="error-message" class="text-red-500 text-center mb-4 hidden">Invalid credentials. Access denied.</p>
+
+    <div class="mb-4">
+        <label for="username" class="block text-sm font-medium neon-cyan-text mb-2">USERNAME:</label>
+        <input type="text" id="username" class="w-full p-3 rounded bg-[#1e293b] border border-[#00ffff] focus:ring-1 focus:ring-[#00ffff] focus:border-transparent text-white" required>
+    </div>
+
+    <div class="mb-6">
+        <label for="password" class="block text-sm font-medium neon-cyan-text mb-2">PASSWORD:</label>
+        <input type="password" id="password" class="w-full p-3 rounded bg-[#1e293b] border border-[#00ffff] focus:ring-1 focus:ring-[#00ffff] focus:border-transparent text-white" required>
+    </div>
+
+    <button id="login-button" class="w-full p-3 rounded font-bold uppercase btn-primary" onclick="handleLogin()">
+        ACCESS TERMINAL
+    </button>
+    
+    <div class="text-center mt-4">
+        <a href="reset.html" class="text-xs text-gray-400 hover:text-[#00ffff] transition-colors">Forgot Password?</a>
+        </div>
+</div>
+
+<script>
+    // Correct credentials (The password can be updated via the reset flow in LocalStorage)
+    const CORRECT_USERNAME = "EthanUnlocked";
+    
+    // Retrieve password from LocalStorage if set (via password reset), otherwise use the default.
+    function getCorrectPassword() {
+        return localStorage.getItem('loginPassword') || "t3chno123!";
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordInput = document.getElementById('password');
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+        // Prefill username for convenience
+        document.getElementById('username').value = CORRECT_USERNAME;
+    });
+
+    function handleLogin() {
+        const usernameInput = document.getElementById('username').value.trim();
+        const passwordInput = document.getElementById('password').value.trim();
+        const errorMessage = document.getElementById('error-message');
+        const currentCorrectPassword = getCorrectPassword();
+
+        if (usernameInput === CORRECT_USERNAME && passwordInput === currentCorrectPassword) {
+            // Success: Set an authentication flag and redirect
+            localStorage.setItem('terminal_authenticated', 'true');
+            window.location.href = 'terminal.html';
+        } else {
+            // Failure: Show error message
+            errorMessage.textContent = 'Invalid credentials. Access denied.';
+            errorMessage.classList.remove('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>
