@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATLAS Password Reset</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #050e18;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .reset-box {
+            background-color: #0c1a2c;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            min-height: 300px;
+        }
+        .neon-cyan-text {
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+        }
+        .btn-primary {
+            background-color: #00ffff;
+            color: #050e18;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover { background-color: #ffffff; }
+    </style>
+</head>
+<body>
+
+<div class="reset-box p-8 rounded-lg w-96 text-white" id="step-1">
+    <h2 class="text-2xl font-bold text-center mb-6 neon-cyan-text">FORGOT PASSWORD?</h2>
+    <p class="mb-4 text-center text-gray-400">Enter your recovery email to start the process. Only authorized emails are accepted.</p>
+
+    <div class="mb-6">
+        <label for="email" class="block text-sm font-medium neon-cyan-text mb-2">EMAIL ADDRESS:</label>
+        <input type="email" id="email" class="w-full p-3 rounded bg-[#1e293b] border border-[#00ffff] focus:ring-1 focus:ring-[#00ffff] focus:border-transparent text-white" required>
+    </div>
+
+    <button class="w-full p-3 rounded font-bold uppercase btn-primary" onclick="sendResetEmail()">
+        SEND CONFIRMATION
+    </button>
+</div>
+
+<div class="reset-box p-8 rounded-lg w-96 text-white hidden" id="step-2">
+    <h2 class="text-2xl font-bold text-center mb-6 neon-cyan-text">EMAIL SENT! (SIMULATED)</h2>
+    <p class="mb-6 text-center text-gray-300">A confirmation link has been "sent" to your email. Click an option below to simulate the action taken:</p>
+    
+    <div class="flex flex-col space-y-4">
+        <button class="p-3 rounded font-bold uppercase btn-primary" onclick="simulateEmailAction('yes')">
+            YES, START IT UP! (New Password)
+        </button>
+        <button class="p-3 rounded font-bold uppercase bg-red-600 text-white hover:bg-red-700" onclick="simulateEmailAction('no')">
+            NO, SHUT IT DOWN! (Lock Terminal)
+        </button>
+    </div>
+</div>
+
+<div class="reset-box p-8 rounded-lg w-96 text-white hidden" id="step-3">
+    <h2 class="text-2xl font-bold text-center mb-6 neon-cyan-text">SET NEW PASSWORD</h2>
+    <p id="password-error" class="text-red-500 text-center mb-4 hidden">Passwords do not match.</p>
+
+    <div class="mb-4">
+        <label for="new-password" class="block text-sm font-medium neon-cyan-text mb-2">NEW PASSWORD:</label>
+        <input type="password" id="new-password" class="w-full p-3 rounded bg-[#1e293b] border border-[#00ffff] focus:ring-1 focus:ring-[#00ffff] focus:border-transparent text-white" required>
+    </div>
+    <div class="mb-6">
+        <label for="confirm-password" class="block text-sm font-medium neon-cyan-text mb-2">RETYPE NEW PASSWORD:</label>
+        <input type="password" id="confirm-password" class="w-full p-3 rounded bg-[#1e293b] border border-[#00ffff] focus:ring-1 focus:ring-[#00ffff] focus:border-transparent text-white" required>
+    </div>
+
+    <button class="w-full p-3 rounded font-bold uppercase btn-primary" onclick="changePassword()">
+        CHANGE PASSWORD
+    </button>
+</div>
+
+<div class="reset-box p-8 rounded-lg w-96 text-white hidden" id="step-4">
+    <h2 class="text-2xl font-bold text-center mb-6 text-green-400">SUCCESS!</h2>
+    <p class="mb-6 text-center text-gray-300">Your password has been securely changed. You can now return to the login page.</p>
+    <a href="login.html" class="block w-full text-center p-3 rounded font-bold uppercase btn-primary">
+        RETURN TO LOGIN
+    </a>
+</div>
+
+<script>
+    // Authorized emails (stored here but not displayed to the user)
+    const AUTHORIZED_EMAILS = [
+        "ethan.unlocked@gmail.com", 
+        "ethan.ioannou30@student.ccgs.nsw.edu.au"
+    ];
+
+    // LocalStorage Key for lockout
+    const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
+
+    function showStep(stepId) {
+        document.querySelectorAll('.reset-box').forEach(el => el.classList.add('hidden'));
+        document.getElementById(stepId).classList.remove('hidden');
+    }
+
+    function sendResetEmail() {
+        const emailInput = document.getElementById('email').value.toLowerCase().trim();
+        
+        if (AUTHORIZED_EMAILS.includes(emailInput)) {
+            showStep('step-2');
+        } else {
+            alert("Error: Email not authorized for password recovery.");
+        }
+    }
+
+    function simulateEmailAction(action) {
+        if (action === 'yes') {
+            // Yes, start it up! -> Go to password change
+            showStep('step-3');
+        } else {
+            // No, shut it down! -> Lock the terminal for 10 minutes
+            const lockoutDuration = 10 * 60 * 1000; // 10 minutes
+            const lockoutEndTime = new Date().getTime() + lockoutDuration;
+            localStorage.setItem(TERMINAL_LOCKOUT_KEY, lockoutEndTime.toString());
+
+            alert("Terminal locked down for 10 minutes. The main website link is now disabled.");
+            window.location.href = 'index.html';
+        }
+    }
+
+    function changePassword() {
+        const newPass = document.getElementById('new-password').value.trim();
+        const confirmPass = document.getElementById('confirm-password').value.trim();
+        const errorElement = document.getElementById('password-error');
+
+        if (newPass === '' || confirmPass === '') {
+            errorElement.textContent = 'Password fields cannot be empty.';
+            errorElement.classList.remove('hidden');
+            return;
+        }
+
+        if (newPass === confirmPass) {
+            // Store the new password in LocalStorage for the login page to use
+            localStorage.setItem('loginPassword', newPass); 
+
+            showStep('step-4');
+        } else {
+            errorElement.textContent = 'Passwords do not match.';
+            errorElement.classList.remove('hidden');
+        }
+    }
+
+    // Start at Step 1
+    showStep('step-1');
+</script>
+
+</body>
+</html>
