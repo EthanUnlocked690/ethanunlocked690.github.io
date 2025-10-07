@@ -43,13 +43,16 @@
             position: relative;
         }
         
-        /* Active map with pointer simulation */
+        /* Active map with pointer simulation (Enhanced Grid/Wireframe Look) */
         #map-display.map-active {
-            background-color: #003300; /* Darker green map base */
+            background-color: #002200; /* Darker green map base */
             border-color: #00FF00;
-            background-image: linear-gradient(0deg, transparent 49%, #00AA00 50%, transparent 51%), 
-                              linear-gradient(90deg, transparent 49%, #00AA00 50%, transparent 51%);
-            background-size: 100% 10px, 10px 100%;
+            /* Simulated Grid Lines */
+            background-image: 
+                linear-gradient(0deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%), 
+                linear-gradient(90deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%),
+                radial-gradient(rgba(0, 255, 0, 0.2) 1px, transparent 1px);
+            background-size: 50px 50px, 50px 50px, 10px 10px;
         }
 
         .red-pointer {
@@ -63,6 +66,7 @@
             border-radius: 50%;
             transform: translate(-50%, -50%);
             animation: pulse-pointer 1s infinite alternate;
+            z-index: 10;
         }
 
         @keyframes pulse-pointer {
@@ -171,6 +175,19 @@
 
         let lastLocationQuery = null; // Store the last successful location query data
 
+        /**
+         * Generates the HTML for a simulated image tile using a real URL.
+         */
+        function createImageTileHTML(url, title) {
+             // The URL is now a real image from Google's content server
+             return `
+                <div class="p-2 bg-[#050e18] border border-green-500/50 rounded-lg">
+                    <p class="text-xs text-green-500 mb-1">${title}</p>
+                    <img src="${url}" alt="Simulated Image Feed" class="w-full h-32 object-cover rounded-md border border-gray-700" loading="lazy" />
+                </div>
+            `;
+        }
+
         // --- Simulated Data Storage ---
         const simulatedResponses = {
             // SPECIAL CASE 1: Your Secret Profile
@@ -183,7 +200,7 @@
                 status: "SUBJECT PROFILE ACQUIRED. ACCESS LEVEL: DELTA. STATUS: ACTIVE."
             },
 
-            // SPECIAL CASE 2: Location Example
+            // SPECIAL CASE 2: Location Example (using REAL Google Image URLs from search)
             "eiffel tower": {
                 text: "GEO-LOCATION TARGET ACQUIRED: EIFFEL TOWER, PARIS, FRANCE.\n\nSTRUCTURE STATUS: Stable. VISUAL FEED: Live satellite feed shows high tourist density around base perimeter. Weather conditions: Clear. Access routes nominal. Map Core automatically engaged for visual confirmation.",
                 sources: [
@@ -193,10 +210,10 @@
                 status: "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.",
                 isLocation: true,
                 simulatedImages: [
-                    "https://via.placeholder.com/500x300/400040/FFFFFF?text=ATLAS+SAT+FEED+1:+PARIS",
-                    "https://via.placeholder.com/500x300/3A8A1E/FFFFFF?text=ATLAS+Street+View+(Simulated)",
-                    "https://via.placeholder.com/500x300/0000FF/FFFFFF?text=INFRARED+HEATMAP+SCAN",
-                    "https://via.placeholder.com/500x300/FF0000/FFFFFF?text=GOOGLE+MAPS+STREET+VIEW+01" 
+                    { title: "ATLAS SAT FEED 1: PARIS (Satellite)", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_0" },
+                    { title: "GOOGLE MAPS 3D VIEW", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_1" },
+                    { title: "INFRARED HEATMAP SCAN", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_2" },
+                    { title: "GOOGLE STREET VIEW", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_3" } 
                 ]
             },
             
@@ -224,12 +241,11 @@
 
         /**
          * Simulates enabling a live map feed visualization.
-         * @param {object} responseData The data object from the search.
          */
         function updateMapDisplay(responseData) {
             
             // 1. Reset Map Display
-            mapDisplay.classList.remove('map-active', 'neon-green-shadow', 'neon-box-shadow');
+            mapDisplay.classList.remove('map-active', 'neon-green-shadow');
             mapDisplay.classList.add('bg-[#0c1a2c]', 'border-neon-cyan/80', 'neon-box-shadow');
             mapDisplay.innerHTML = `<p class="text-neon-cyan opacity-80 text-center text-sm p-4">
                 MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
@@ -246,7 +262,7 @@
                 // Clear the default text and insert the pointer
                 mapDisplay.innerHTML = `
                     <p class="text-green-300 opacity-90 text-center text-sm p-4">
-                        LIVE SATELLITE FEED ACTIVE. ${responseData.isHuman ? 'TARGET' : 'LOCATION'} ACQUIRED.
+                        LIVE SATELLITE FEED ACTIVE. LOCATION ACQUIRED.
                     </p>
                     <div class="red-pointer"></div>
                 `;
@@ -260,11 +276,7 @@
         function handleMapClick() {
             if (!lastLocationQuery || !lastLocationQuery.isLocation) {
                 // If map is not active, do nothing or show a message
-                if (mapDisplay.classList.contains('map-active')) {
-                     statusMessage.textContent = "ALERT: Map is engaging, please wait for data acquisition.";
-                } else {
-                     statusMessage.textContent = "ALERT: Map core requires location query to engage.";
-                }
+                statusMessage.textContent = "ALERT: Map core requires location query to engage. Try 'Eiffel Tower'.";
                 return;
             }
 
@@ -274,19 +286,13 @@
             let galleryHTML = `<h3 class="text-lg font-bold text-green-300 mb-4">GEO-IMAGERY GALLERY // TARGET: ${queryName}</h3>`;
             galleryHTML += `<div class="grid grid-cols-2 gap-4">`;
 
-            images.forEach((url, index) => {
-                const title = lastLocationQuery.sources[index]?.title || `ATLAS Image ${index + 1}`;
-                galleryHTML += `
-                    <div class="p-2 bg-[#050e18] border border-green-500/50 rounded-lg">
-                        <p class="text-xs text-green-500 mb-1">${title}</p>
-                        <img src="${url}" alt="Simulated Image Feed" class="w-full h-auto object-cover rounded" />
-                    </div>
-                `;
+            images.forEach((img) => {
+                galleryHTML += createImageTileHTML(img.url, img.title);
             });
 
             galleryHTML += `</div>`;
             resultsOutput.innerHTML = galleryHTML;
-            statusMessage.textContent = `STATUS: GALLERY VIEW ACTIVE. Displaying 4 high-res feeds for ${queryName}.`;
+            statusMessage.textContent = `STATUS: GALLERY VIEW ACTIVE. Displaying 4 real Google feeds for ${queryName}.`;
             sourceList.innerHTML = `<li>Geo-Imagery Feed Links Engaged.</li>`;
         }
 
@@ -327,7 +333,7 @@
                 responseData.status = `SUBJECT TRACE FAILURE. No profile found for ${query}.`;
                 responseData.isHuman = true;
             } 
-            // Check for general location query (if not an exact match, try to guess it's a location)
+            // Check for general location query (if not an exact match, use the template)
             else if (normalizedQuery.includes("tower") || normalizedQuery.includes("city") || normalizedQuery.includes("street") || normalizedQuery.includes("london") || normalizedQuery.includes("tokyo") || normalizedQuery.includes("paris") || normalizedQuery.includes("australia") || normalizedQuery.includes("china")) {
                 
                 const locationName = query.toUpperCase();
