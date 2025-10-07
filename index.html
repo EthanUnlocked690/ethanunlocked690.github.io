@@ -35,6 +35,14 @@ position: relative;
 li a:hover {
 background-color: #964B00;
 }
+/* NEW style for disabled terminal link */
+li a.disabled-link {
+background-color: #555555; /* Grayed out */
+cursor: not-allowed;
+}
+li a.disabled-link:hover {
+background-color: #555555;
+}
 /* NEW indicator styles */
 .new-indicator {
 position: absolute;
@@ -220,7 +228,7 @@ backdrop-filter: blur(5px);
 }
 </style>
 </head>
-<body onload="checkCookie(); checkNewsUpdate();">
+<body onload="checkCookie(); checkNewsUpdate(); checkTerminalStatus();">
 <div id="custom-alert-modal" class="custom-modal">
 <div class="custom-modal-content">
 <h3 id="alert-message"></h3>
@@ -248,7 +256,7 @@ backdrop-filter: blur(5px);
 <li><a href="short.html">Shorts</a></li>
 <li><a href="videos.html">Video Gallery</a></li>
 <li><a href="images.html">Image Gallery</a></li>
-<li><a href="animate.html">LEGO Animations</a></li>
+<li><a href="#" id="terminal-link">Terminal</a></li><li><a href="animate.html">LEGO Animations</a></li>
 <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
 <li><a href="turtle.html">Others</a></li>
 </ul>
@@ -364,6 +372,48 @@ window.history.forward()
 </div>
 </div>
 <script>
+// =========================================================================
+// NEW TERMINAL LOCKOUT LOGIC
+// =========================================================================
+const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
+
+// Function to check and update the Terminal link status
+function checkTerminalStatus() {
+    const terminalLink = document.getElementById('terminal-link');
+    const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
+    const currentTime = new Date().getTime();
+
+    if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
+        // Terminal is locked
+        terminalLink.href = 'terminal_access_denied.html';
+        terminalLink.textContent = 'Terminal Interference (Disabled for break-in)';
+        terminalLink.classList.add('disabled-link');
+        terminalLink.style.backgroundColor = '#555555'; // Use a disabled color
+        
+        // Check again when the lockout expires
+        setTimeout(checkTerminalStatus, parseInt(lockoutEndTime) - currentTime + 1000);
+
+    } else {
+        // Terminal is unlocked
+        localStorage.removeItem(TERMINAL_LOCKOUT_KEY); // Clear expired lockout
+        terminalLink.href = 'login.html'; // Direct to login page
+        terminalLink.textContent = 'Terminal';
+        terminalLink.classList.remove('disabled-link');
+        terminalLink.style.backgroundColor = ''; // Reset to original color
+    }
+}
+
+// Update the body onload to call the new function
+window.onload = function() {
+    checkCookie(); 
+    checkNewsUpdate();
+    checkTerminalStatus(); // <--- NEW CALL
+};
+
+// =========================================================================
+// END NEW TERMINAL LOCKOUT LOGIC
+// =========================================================================
+
 // News update functionality
 function setNewsUpdate() {
 // Call this function whenever you update the news page
@@ -622,68 +672,72 @@ handleSendMessage();
 
 // Function to check if the current user is 'EthanUnlocked'
 function isEthanUnlocked() {
-    // getCookie is already defined above
-    return getCookie("username") === "EthanUnlocked";
+    // getCookie is already defined above
+    return getCookie("username") === "EthanUnlocked";
 }
 
 // Function to handle the custom context menu
 function showCustomMenu(event) {
-    // 1. Prevent the default browser context menu from showing
-    event.preventDefault();
+    // 1. Prevent the default browser context menu from showing
+    event.preventDefault();
 
-    // 2. Check the username condition (The Secret Key)
-    if (!isEthanUnlocked()) {
-        return; // Stop if not EthanUnlocked
-    }
+    // 2. Check the username condition (The Secret Key)
+    if (!isEthanUnlocked()) {
+        return; // Stop if not EthanUnlocked
+    }
 
-    // 3. Remove any existing custom menu to prevent duplicates
-    let customMenu = document.getElementById('custom-context-menu');
-    if (customMenu) {
-        customMenu.remove();
-    }
+    // 3. Remove any existing custom menu to prevent duplicates
+    let customMenu = document.getElementById('custom-context-menu');
+    if (customMenu) {
+        customMenu.remove();
+    }
 
-    // 4. Create and style the custom menu element
-    customMenu = document.createElement('div');
-    customMenu.id = 'custom-context-menu';
-    customMenu.style.cssText = `
-        position: fixed;
-        top: ${event.clientY}px;
-        left: ${event.clientX}px;
-        background-color: #2d3748; /* Dark gray */
-        border: 1px solid #4a5568;
-        border-radius: 4px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-        z-index: 4000; /* Ensure it's on top of everything */
-        padding: 5px 0;
-        cursor: default;
-        font-family: 'Inter', sans-serif;
-        color: #e2e8f0;
-        min-width: 180px;
-    `;
+    // 4. Create and style the custom menu element
+    customMenu = document.createElement('div');
+    customMenu.id = 'custom-context-menu';
+    customMenu.style.cssText = `
+        position: fixed;
+        top: ${event.clientY}px;
+        left: ${event.clientX}px;
+        background-color: #2d3748; /* Dark gray */
+        border: 1px solid #4a5568;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        z-index: 4000; /* Ensure it's on top of everything */
+        padding: 5px 0;
+        cursor: default;
+        font-family: 'Inter', sans-serif;
+        color: #e2e8f0;
+        min-width: 180px;
+    `;
 
-    // 5. Create the menu item
-    const menuItem = document.createElement('div');
-    menuItem.textContent = "Terminal Interference";
-    menuItem.style.cssText = `
-        padding: 8px 15px;
-        transition: background-color 0.1s;
-        font-size: 14px;
-        cursor: pointer;
-    `;
-    
-    // Add hover effects for a better user experience
-    menuItem.onmouseover = () => menuItem.style.backgroundColor = '#4a5568';
-    menuItem.onmouseout = () => menuItem.style.backgroundColor = 'transparent';
+    // 5. Create the menu item
+    const menuItem = document.createElement('div');
+    menuItem.textContent = "Terminal Interference";
+    menuItem.style.cssText = `
+        padding: 8px 15px;
+        transition: background-color 0.1s;
+        font-size: 14px;
+        cursor: pointer;
+    `;
+    
+    // Add hover effects for a better user experience
+    menuItem.onmouseover = () => menuItem.style.backgroundColor = '#4a5568';
+    menuItem.onmouseout = () => menuItem.style.backgroundColor = 'transparent';
 
-    // 6. Handle the click event for the menu item
-    menuItem.addEventListener('click', () => {
-        window.location.href = 'terminal.html'; // Open the new page
-        customMenu.remove(); // Close the menu after clicking
-    });
+    // 6. Handle the click event for the menu item (Updated to respect lockout)
+    menuItem.addEventListener('click', () => {
+        if (localStorage.getItem(TERMINAL_LOCKOUT_KEY)) {
+            window.location.href = 'terminal_access_denied.html';
+        } else {
+            window.location.href = 'login.html'; 
+        }
+        customMenu.remove(); // Close the menu after clicking
+    });
 
-    // 7. Append and display the menu
-    customMenu.appendChild(menuItem);
-    document.body.appendChild(customMenu);
+    // 7. Append and display the menu
+    customMenu.appendChild(menuItem);
+    document.body.appendChild(customMenu);
 }
 
 // 8. Add the right-click (contextmenu) event listener to the close button
@@ -691,23 +745,23 @@ closeButton.addEventListener('contextmenu', showCustomMenu);
 
 // 9. Hide the custom menu when clicking anywhere else on the page
 document.addEventListener('click', () => {
-    const customMenu = document.getElementById('custom-context-menu');
-    if (customMenu) {
-        customMenu.remove();
-    }
+    const customMenu = document.getElementById('custom-context-menu');
+    if (customMenu) {
+        customMenu.remove();
+    }
 });
 
 // Also hide it if the user scrolls the page
 document.addEventListener('scroll', () => {
-    const customMenu = document.getElementById('custom-context-menu');
-    if (customMenu) {
-        customMenu.remove();
-    }
+    const customMenu = document.getElementById('custom-context-menu');
+    if (customMenu) {
+        customMenu.remove();
+    }
 });
 
-// =========================================================================
+// ========================================================================
 // END OF NEW LOGIC
-// =========================================================================
+// ========================================================================
 
 </script>
 </body>
