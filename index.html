@@ -135,19 +135,45 @@ padding: 1.5rem; /* Tailwind p-6 */
 box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 position: relative;
 }
-.chatbot-close-button {
-position: absolute;
-top: 1rem;
-right: 1rem;
-font-size: 2rem;
-color: #d1d5db; /* Tailwind gray-400 */
-cursor: pointer;
-line-height: 1;
-transition: color 0.2s ease-in-out;
+/* NEW STYLES FOR THE DYNAMIC TERMINAL BUTTON */
+.header-bar-custom {
+    display: flex;
+    justify-content: flex-end; /* Push the button to the right */
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
 }
-.chatbot-close-button:hover {
-color: #ef4444; /* Tailwind red-500 */
+#terminalCloseBtn {
+    background-color: #1f2937; /* Match modal background */
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    transition: all 0.2s;
+    line-height: normal;
 }
+#terminalCloseBtn.active:hover {
+    background-color: #00ff00;
+    color: #0d0d0d;
+    box-shadow: 0 0 5px #00ff00;
+}
+#terminalCloseBtn.locked {
+    cursor: not-allowed;
+    border: 1px solid #ff0000; /* Red border for lockdown */
+    color: #ff0000;           /* Red text for lockdown */
+    box-shadow: none;
+    pointer-events: none; /* Crucial: Makes it truly unclickable */
+    animation: pulseRed 1s infinite alternate;
+}
+@keyframes pulseRed {
+    0% { opacity: 0.8; box-shadow: 0 0 4px #ff0000; }
+    100% { opacity: 1; box-shadow: 0 0 8px #ff0000; }
+}
+/* REMOVED: .chatbot-close-button styles as they are replaced by #terminalCloseBtn */
+
 /* Custom Alert/Prompt Modal styles (kept) */
 .custom-modal {
 position: fixed;
@@ -353,7 +379,9 @@ window.history.forward()
 </div>
 <div id="chatbot-modal" class="chatbot-modal">
 <div class="chatbot-modal-content">
-<span class="chatbot-close-button">&times;</span>
+<div class="header-bar-custom">
+    <button id="terminalCloseBtn" class="terminal-btn active">ATLAS TERMINAL</button>
+</div>
 <div id="chatbot-container" class="flex flex-col h-full">
 <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">Chat with TheUnlockedBot</h1>
 <div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
@@ -379,35 +407,35 @@ const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
 
 // Function to check and update the Terminal link status
 function checkTerminalStatus() {
-    const terminalLink = document.getElementById('terminal-link');
-    const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
-    const currentTime = new Date().getTime();
+    const terminalLink = document.getElementById('terminal-link');
+    const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
+    const currentTime = new Date().getTime();
 
-    if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
-        // Terminal is locked
-        terminalLink.href = 'terminal_access_denied.html';
-        terminalLink.textContent = 'Terminal Interference (Disabled for break-in)';
-        terminalLink.classList.add('disabled-link');
-        terminalLink.style.backgroundColor = '#555555'; // Use a disabled color
-        
-        // Check again when the lockout expires
-        setTimeout(checkTerminalStatus, parseInt(lockoutEndTime) - currentTime + 1000);
+    if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
+        // Terminal is locked
+        terminalLink.href = 'terminal_access_denied.html';
+        terminalLink.textContent = 'Terminal Interference (Disabled for break-in)';
+        terminalLink.classList.add('disabled-link');
+        terminalLink.style.backgroundColor = '#555555'; // Use a disabled color
+        
+        // Check again when the lockout expires
+        setTimeout(checkTerminalStatus, parseInt(lockoutEndTime) - currentTime + 1000);
 
-    } else {
-        // Terminal is unlocked
-        localStorage.removeItem(TERMINAL_LOCKOUT_KEY); // Clear expired lockout
-        terminalLink.href = 'login.html'; // Direct to login page
-        terminalLink.textContent = 'Terminal';
-        terminalLink.classList.remove('disabled-link');
-        terminalLink.style.backgroundColor = ''; // Reset to original color
-    }
+    } else {
+        // Terminal is unlocked
+        localStorage.removeItem(TERMINAL_LOCKOUT_KEY); // Clear expired lockout
+        terminalLink.href = 'login.html'; // Direct to login page
+        terminalLink.textContent = 'Terminal';
+        terminalLink.classList.remove('disabled-link');
+        terminalLink.style.backgroundColor = ''; // Reset to original color
+    }
 }
 
 // Update the body onload to call the new function
 window.onload = function() {
-    checkCookie(); 
-    checkNewsUpdate();
-    checkTerminalStatus(); // <--- NEW CALL
+    checkCookie(); 
+    checkNewsUpdate();
+    checkTerminalStatus(); // <--- NEW CALL
 };
 
 // =========================================================================
@@ -529,11 +557,19 @@ setCookie("username", user, 7);
 // --- Chatbot UI References ---
 const chatbotButton = document.getElementById('chatbot-button');
 const chatbotModal = document.getElementById('chatbot-modal');
-const closeButton = document.querySelector('.chatbot-close-button');
+// UPDATED: Use the ID of the new button
+const terminalCloseBtn = document.getElementById('terminalCloseBtn'); 
+// REMOVED: const closeButton = document.querySelector('.chatbot-close-button');
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatHistoryDiv = document.getElementById('chat-history');
 const loadingIndicator = document.getElementById('loading-indicator');
+
+// --- Lockdown Variables ---
+let isLocked = false;
+let lockdownDuration = 60; // 60 seconds
+let countdownInterval;
+
 // --- Chat History State ---
 let chatHistory = [];
 // --- Hardcoded responses for basic conversation ---
@@ -650,9 +686,8 @@ if (chatHistory.length === 0) {
 addMessageToChat('model', "Hello! I'm TheUnlockedBot. What can I help you with today?");
 }
 });
-closeButton.addEventListener('click', () => {
-chatbotModal.style.display = 'none';
-});
+// REMOVED: closeButton.addEventListener('click', ...); - Replaced by terminalCloseBtn logic below
+
 window.addEventListener('click', (event) => {
 if (event.target == chatbotModal) {
 chatbotModal.style.display = 'none';
@@ -666,103 +701,37 @@ handleSendMessage();
 }
 });
 
+
 // =========================================================================
-// NEW LOGIC FOR SECRET RIGHT-CLICK MENU ON CHATBOT CLOSE BUTTON
+// DYNAMIC BUTTON AND LOCKDOWN LOGIC (REPLACES OLD CLOSE BUTTON LOGIC)
 // =========================================================================
 
-// Function to check if the current user is 'EthanUnlocked'
-function isEthanUnlocked() {
-    // getCookie is already defined above
-    return getCookie("username") === "EthanUnlocked";
+// Function to update the remaining time display
+function updateCountdown() {
+    if (lockdownDuration <= 0) {
+        clearInterval(countdownInterval);
+        exitLockdown();
+        // Also update the main navigation link status
+        checkTerminalStatus();
+        return;
+    }
+
+    const remainingTime = lockdownDuration;
+    // Formats seconds into MM:SS
+    const formattedTime = new Date(remainingTime * 1000).toISOString().substr(14, 5); 
+    
+    terminalCloseBtn.textContent = `ATLAS TERMINAL (Lockdown for ${formattedTime})`;
+    lockdownDuration--;
 }
 
-// Function to handle the custom context menu
-function showCustomMenu(event) {
-    // 1. Prevent the default browser context menu from showing
-    event.preventDefault();
+// Function to enter the lockdown state
+function enterLockdown() {
+    // Set lockout in localStorage for the main navigation link to see
+    const lockoutEndTime = new Date().getTime() + (lockdownDuration * 1000);
+    localStorage.setItem(TERMINAL_LOCKOUT_KEY, lockoutEndTime.toString());
 
-    // 2. Check the username condition (The Secret Key)
-    if (!isEthanUnlocked()) {
-        return; // Stop if not EthanUnlocked
-    }
-
-    // 3. Remove any existing custom menu to prevent duplicates
-    let customMenu = document.getElementById('custom-context-menu');
-    if (customMenu) {
-        customMenu.remove();
-    }
-
-    // 4. Create and style the custom menu element
-    customMenu = document.createElement('div');
-    customMenu.id = 'custom-context-menu';
-    customMenu.style.cssText = `
-        position: fixed;
-        top: ${event.clientY}px;
-        left: ${event.clientX}px;
-        background-color: #2d3748; /* Dark gray */
-        border: 1px solid #4a5568;
-        border-radius: 4px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-        z-index: 4000; /* Ensure it's on top of everything */
-        padding: 5px 0;
-        cursor: default;
-        font-family: 'Inter', sans-serif;
-        color: #e2e8f0;
-        min-width: 180px;
-    `;
-
-    // 5. Create the menu item
-    const menuItem = document.createElement('div');
-    menuItem.textContent = "Terminal Interference";
-    menuItem.style.cssText = `
-        padding: 8px 15px;
-        transition: background-color 0.1s;
-        font-size: 14px;
-        cursor: pointer;
-    `;
-    
-    // Add hover effects for a better user experience
-    menuItem.onmouseover = () => menuItem.style.backgroundColor = '#4a5568';
-    menuItem.onmouseout = () => menuItem.style.backgroundColor = 'transparent';
-
-    // 6. Handle the click event for the menu item (Updated to respect lockout)
-    menuItem.addEventListener('click', () => {
-        if (localStorage.getItem(TERMINAL_LOCKOUT_KEY)) {
-            window.location.href = 'terminal_access_denied.html';
-        } else {
-            window.location.href = 'login.html'; 
-        }
-        customMenu.remove(); // Close the menu after clicking
-    });
-
-    // 7. Append and display the menu
-    customMenu.appendChild(menuItem);
-    document.body.appendChild(customMenu);
-}
-
-// 8. Add the right-click (contextmenu) event listener to the close button
-closeButton.addEventListener('contextmenu', showCustomMenu);
-
-// 9. Hide the custom menu when clicking anywhere else on the page
-document.addEventListener('click', () => {
-    const customMenu = document.getElementById('custom-context-menu');
-    if (customMenu) {
-        customMenu.remove();
-    }
-});
-
-// Also hide it if the user scrolls the page
-document.addEventListener('scroll', () => {
-    const customMenu = document.getElementById('custom-context-menu');
-    if (customMenu) {
-        customMenu.remove();
-    }
-});
-
-// ========================================================================
-// END OF NEW LOGIC
-// ========================================================================
-
-</script>
-</body>
-</html>
+    isLocked = true;
+    lockdownDuration = 60; // Reset timer to 60 seconds
+    
+    terminalCloseBtn.classList.remove('active');
+    terminalCloseBtn.classList.add('locked');
