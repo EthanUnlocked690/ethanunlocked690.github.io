@@ -135,44 +135,57 @@ padding: 1.5rem; /* Tailwind p-6 */
 box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 position: relative;
 }
-/* NEW STYLES FOR THE DYNAMIC TERMINAL BUTTON */
-.header-bar-custom {
-    display: flex;
-    justify-content: flex-end; /* Push the button to the right */
+
+/* --- DYNAMIC EXIT BUTTON STYLES --- */
+#chatbotExitBtn {
+    /* Position the button at the top right corner */
     position: absolute;
     top: 1rem;
     right: 1rem;
     z-index: 10;
-}
-#terminalCloseBtn {
-    background-color: #1f2937; /* Match modal background */
-    color: #00ff00;
-    border: 1px solid #00ff00;
-    padding: 5px 10px;
+    
+    /* Default style for the exit button (the 'X') */
+    font-size: 2rem;
+    color: #d1d5db;
     cursor: pointer;
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 14px;
-    transition: all 0.2s;
-    line-height: normal;
+    line-height: 1;
+    transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    background: none;
+    border: none;
+    padding: 0;
+    
+    /* ATLAS TERMINAL HACK styles */
+    font-family: 'Inter', sans-serif; /* Fallback to default when not locked */
+    width: 2rem; /* Keep a fixed size when 'X' */
+    height: 2rem;
+    text-align: center;
 }
-#terminalCloseBtn.active:hover {
-    background-color: #00ff00;
-    color: #0d0d0d;
-    box-shadow: 0 0 5px #00ff00;
+#chatbotExitBtn:hover {
+    color: #ef4444; /* Red-500 hover for 'X' */
+    transform: rotate(90deg);
 }
-#terminalCloseBtn.locked {
+
+#chatbotExitBtn.locked {
     cursor: not-allowed;
     border: 1px solid #ff0000; /* Red border for lockdown */
     color: #ff0000;           /* Red text for lockdown */
     box-shadow: none;
     pointer-events: none; /* Crucial: Makes it truly unclickable */
     animation: pulseRed 1s infinite alternate;
+    
+    /* Style overrides for the ATLAS TERMINAL state */
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    padding: 5px 10px;
+    width: auto;
+    height: auto;
+    background-color: #1f2937;
+    transform: none; /* Disable rotation */
 }
 @keyframes pulseRed {
     0% { opacity: 0.8; box-shadow: 0 0 4px #ff0000; }
     100% { opacity: 1; box-shadow: 0 0 8px #ff0000; }
 }
-/* REMOVED: .chatbot-close-button styles as they are replaced by #terminalCloseBtn */
 
 /* Custom Alert/Prompt Modal styles (kept) */
 .custom-modal {
@@ -379,9 +392,8 @@ window.history.forward()
 </div>
 <div id="chatbot-modal" class="chatbot-modal">
 <div class="chatbot-modal-content">
-<div class="header-bar-custom">
-    <button id="terminalCloseBtn" class="terminal-btn active">ATLAS TERMINAL</button>
-</div>
+<button id="chatbotExitBtn" class="chatbot-close-button">&times;</button>
+
 <div id="chatbot-container" class="flex flex-col h-full">
 <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">Chat with TheUnlockedBot</h1>
 <div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
@@ -557,9 +569,7 @@ setCookie("username", user, 7);
 // --- Chatbot UI References ---
 const chatbotButton = document.getElementById('chatbot-button');
 const chatbotModal = document.getElementById('chatbot-modal');
-// UPDATED: Use the ID of the new button
-const terminalCloseBtn = document.getElementById('terminalCloseBtn'); 
-// REMOVED: const closeButton = document.querySelector('.chatbot-close-button');
+const chatbotExitBtn = document.getElementById('chatbotExitBtn'); // The combined exit/hack button
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatHistoryDiv = document.getElementById('chat-history');
@@ -686,8 +696,8 @@ if (chatHistory.length === 0) {
 addMessageToChat('model', "Hello! I'm TheUnlockedBot. What can I help you with today?");
 }
 });
-// REMOVED: closeButton.addEventListener('click', ...); - Replaced by terminalCloseBtn logic below
-
+// REMOVED: Redundant chatbotCloseSpan.addEventListener('click')
+// Window click to close modal
 window.addEventListener('click', (event) => {
 if (event.target == chatbotModal) {
 chatbotModal.style.display = 'none';
@@ -703,7 +713,7 @@ handleSendMessage();
 
 
 // =========================================================================
-// DYNAMIC BUTTON AND LOCKDOWN LOGIC (REPLACES OLD CLOSE BUTTON LOGIC)
+// DYNAMIC BUTTON AND LOCKDOWN LOGIC (THE HACK)
 // =========================================================================
 
 // Function to update the remaining time display
@@ -720,7 +730,7 @@ function updateCountdown() {
     // Formats seconds into MM:SS
     const formattedTime = new Date(remainingTime * 1000).toISOString().substr(14, 5); 
     
-    terminalCloseBtn.textContent = `ATLAS TERMINAL (Lockdown for ${formattedTime})`;
+    chatbotExitBtn.textContent = `ATLAS TERMINAL (Lockdown for ${formattedTime})`;
     lockdownDuration--;
 }
 
@@ -733,8 +743,7 @@ function enterLockdown() {
     isLocked = true;
     lockdownDuration = 60; // Reset timer to 60 seconds
     
-    terminalCloseBtn.classList.remove('active');
-    terminalCloseBtn.classList.add('locked');
+    chatbotExitBtn.classList.add('locked');
     
     // Start the countdown
     updateCountdown();
@@ -744,9 +753,8 @@ function enterLockdown() {
 // Function to exit the lockdown state
 function exitLockdown() {
     isLocked = false;
-    terminalCloseBtn.classList.remove('locked');
-    terminalCloseBtn.classList.add('active');
-    terminalCloseBtn.textContent = 'ATLAS TERMINAL';
+    chatbotExitBtn.classList.remove('locked');
+    chatbotExitBtn.textContent = '×'; // Reset to exit symbol
     localStorage.removeItem(TERMINAL_LOCKOUT_KEY);
     // Ensure the navigation link is also updated immediately
     checkTerminalStatus();
@@ -756,14 +764,15 @@ function exitLockdown() {
 // --- EVENT LISTENERS FOR THE NEW BUTTON ---
 
 // 1. NORMAL ACTION: Left-click on the button (closes the modal)
-terminalCloseBtn.addEventListener('click', function() {
+chatbotExitBtn.addEventListener('click', function(e) {
     if (!isLocked) {
         chatbotModal.style.display = 'none';
     }
+    // If locked, the button is not clickable (due to CSS pointer-events: none)
 });
 
-// 2. SECRET HACK TRIGGER: Right-click on the button (triggers lockdown)
-terminalCloseBtn.addEventListener('contextmenu', function(e) {
+// 2. SECRET HACK TRIGGER: Right-click on the dynamic button (triggers lockdown)
+chatbotExitBtn.addEventListener('contextmenu', function(e) {
     e.preventDefault(); // Prevents the browser's default context menu
 
     if (!isLocked) {
@@ -778,15 +787,22 @@ terminalCloseBtn.addEventListener('contextmenu', function(e) {
     }
 });
 
-// Check if a lockdown is currently active when the page loads (in case of a redirect loop)
+// Check if a lockdown is currently active when the page loads
 if (localStorage.getItem(TERMINAL_LOCKOUT_KEY)) {
-    // Calculate remaining time and start the countdown visualization on the button
     const lockoutEndTime = parseInt(localStorage.getItem(TERMINAL_LOCKOUT_KEY));
     const currentTime = new Date().getTime();
     lockdownDuration = Math.ceil((lockoutEndTime - currentTime) / 1000);
     
     if (lockdownDuration > 0) {
-        enterLockdown();
+        // Only call enterLockdown if the chatbot modal is currently open
+        if (chatbotModal.style.display === 'flex') {
+            enterLockdown();
+        } else {
+             // If locked but modal isn't open, ensure the button shows the lockdown state
+            chatbotExitBtn.classList.add('locked');
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
     } else {
         exitLockdown();
     }
