@@ -282,7 +282,7 @@ backdrop-filter: blur(5px);
 <li><a href="short.html">Shorts</a></li>
 <li><a href="videos.html">Video Gallery</a></li>
 <li><a href="images.html">Image Gallery</a></li>
-<li><a href="animate.html">LEGO Animations</a></li>
+<li><a href="#" id="terminal-link">Terminal</a></li><li><a href="animate.html">LEGO Animations</a></li>
 <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
 <li><a href="turtle.html">Others</a></li>
 </ul>
@@ -735,3 +735,66 @@ function enterLockdown() {
     
     terminalCloseBtn.classList.remove('active');
     terminalCloseBtn.classList.add('locked');
+    
+    // Start the countdown
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+// Function to exit the lockdown state
+function exitLockdown() {
+    isLocked = false;
+    terminalCloseBtn.classList.remove('locked');
+    terminalCloseBtn.classList.add('active');
+    terminalCloseBtn.textContent = 'ATLAS TERMINAL';
+    localStorage.removeItem(TERMINAL_LOCKOUT_KEY);
+    // Ensure the navigation link is also updated immediately
+    checkTerminalStatus();
+}
+
+
+// --- EVENT LISTENERS FOR THE NEW BUTTON ---
+
+// 1. NORMAL ACTION: Left-click on the button (closes the modal)
+terminalCloseBtn.addEventListener('click', function() {
+    if (!isLocked) {
+        chatbotModal.style.display = 'none';
+    }
+});
+
+// 2. SECRET HACK TRIGGER: Right-click on the button (triggers lockdown)
+terminalCloseBtn.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // Prevents the browser's default context menu
+
+    if (!isLocked) {
+        console.log("Secret Access Attempt. Initiating Lockdown.");
+        showAlert("SECURITY BREACH DETECTED. ATLAS TERMINAL LOCKDOWN INITIATED.");
+
+        // Start the lockdown process and redirect
+        enterLockdown();
+        
+        // Immediately redirect to the login page to show the Interference Screen
+        window.location.href = 'login.html?interference=true'; 
+    }
+});
+
+// Check if a lockdown is currently active when the page loads (in case of a redirect loop)
+if (localStorage.getItem(TERMINAL_LOCKOUT_KEY)) {
+    // Calculate remaining time and start the countdown visualization on the button
+    const lockoutEndTime = parseInt(localStorage.getItem(TERMINAL_LOCKOUT_KEY));
+    const currentTime = new Date().getTime();
+    lockdownDuration = Math.ceil((lockoutEndTime - currentTime) / 1000);
+    
+    if (lockdownDuration > 0) {
+        enterLockdown();
+    } else {
+        exitLockdown();
+    }
+}
+// ========================================================================
+// END OF DYNAMIC BUTTON AND LOCKDOWN LOGIC
+// ========================================================================
+
+</script>
+</body>
+</html>
