@@ -3,254 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS Terminal - Login</title>
-    <link rel="stylesheet" href="style.css">
+    <title>ATLAS Terminal Login</title>
     <style>
-        /* =====================================================
-        GENERAL LOGIN PAGE STYLES (Required for this layout)
-        =====================================================
-        */
         body {
             background-color: #0d0d0d;
             color: #00ff00;
             font-family: 'Consolas', 'Monaco', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            padding: 20px;
             margin: 0;
+            display: flex;
             flex-direction: column;
-            overflow: hidden; /* Hide scrollbar when interference is off */
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-
-        .login-container {
-            border: 1px solid #00ff00;
+        .container {
+            width: 100%;
+            max-width: 500px;
             padding: 40px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            width: 300px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
             text-align: center;
         }
-
-        .atlas-header {
-            font-size: 24px;
+        h1 {
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
             margin-bottom: 30px;
-            text-shadow: 0 0 5px #00ff00;
         }
-
-        .login-form input[type="text"],
-        .login-form input[type="password"] {
-            width: 90%;
-            padding: 10px;
-            margin-bottom: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 1px solid #00ff00;
+        input[type="text"], input[type="password"] {
+            background-color: #1a1a1a;
             color: #00ff00;
-            font-family: inherit;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            width: 90%;
             font-size: 16px;
-            box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.5);
+            box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.3);
+            font-family: 'Consolas', 'Monaco', monospace;
         }
-
-        .login-form button {
+        button {
             background-color: #00ff00;
             color: #0d0d0d;
-            border: 2px solid #00ff00;
+            border: none;
             padding: 10px 20px;
+            margin-top: 20px;
             cursor: pointer;
-            font-family: inherit;
+            font-size: 18px;
             font-weight: bold;
-            font-size: 16px;
             transition: background-color 0.3s, color 0.3s;
         }
-
-        .login-form button:hover {
-            background-color: #0d0d0d;
-            color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+        button:hover {
+            background-color: #00cc00;
         }
-
-        .system-message {
+        #message {
             margin-top: 20px;
-            color: #ffff00;
-            font-size: 14px;
+            font-weight: bold;
         }
-
-        /* =====================================================
-        TERMINAL INTERFERENCE ELEMENT STYLES (REQUIRED FOR HACK)
-        =====================================================
-        */
-        #terminal-interference {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            /* This is the key: it must be display: none; initially */
-            display: none; 
-            z-index: 1000;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-            color: #00ff00;
-            font-family: 'Consolas', 'Monaco', monospace;
-            overflow: auto;
-        }
-
-        .terminal-header {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
-
-        .close-btn {
-            background: none;
-            border: 1px solid #ff0000;
+        .interference-screen {
+            background-color: #8b0000;
             color: #ff0000;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-family: inherit;
+            border: 5px solid #ff0000;
+            padding: 20px;
+            text-align: center;
+            animation: glitch 0.5s infinite;
         }
-
-        .interference-text {
-            white-space: pre-wrap;
-            /* Make the text content look like a terminal */
-            line-height: 1.2;
-            animation: flicker 0.01s infinite alternate;
+        @keyframes glitch {
+            0% { transform: translate(1px, 1px); }
+            25% { transform: translate(-1px, -1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, 1px); }
+            100% { transform: translate(1px, 1px); }
         }
-        
-        /* Optional: Add a subtle flicker effect to the text */
-        @keyframes flicker {
-            0% { opacity: 1; }
-            100% { opacity: 0.98; }
+        .hidden {
+            display: none;
         }
-
     </style>
 </head>
 <body>
 
-    <div class="login-container">
-        <div class="atlas-header">ATLAS TERMINAL ACCESS</div>
-        <form class="login-form" id="loginForm">
-            <input type="text" id="username" placeholder="USERNAME" required>
-            <input type="password" id="password" placeholder="PASSWORD" required>
-            <button type="submit">LOG IN (SECURE SHELL)</button>
-        </form>
-        <div class="system-message" id="message">Awaiting Credentials...</div>
+    <div id="interference-container" class="container interference-screen hidden">
+        <h1>ACCESS INTERFERENCE</h1>
+        <p>A **Security Lockdown** has been initiated due to an unauthorized break-in attempt from the main chatbot interface.</p>
+        <p>The system is currently locked to prevent further tampering. Please wait 60 seconds for the lockdown to expire.</p>
+        <p id="countdown-text"></p>
+        <button onclick="window.location.href='index.html'">Return to Main Site</button>
     </div>
 
-    <div id="terminal-interference">
-        <div class="terminal-header">
-            <button class="close-btn" onclick="hideInterference();">CLOSE [X]</button>
-        </div>
-        <pre id="interference-text" class="interference-text"></pre>
+    <div id="login-container" class="container">
+        <h1>ATLAS TERMINAL LOGIN</h1>
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter Username">
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="handleLogin()">Login</button>
+        <div id="message"></div>
     </div>
 
     <script>
-        // =====================================================
-        // JAVASCRIPT FUNCTIONS (REQUIRED)
-        // =====================================================
+        const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
+        const loginContainer = document.getElementById('login-container');
+        const interferenceContainer = document.getElementById('interference-container');
+        const countdownText = document.getElementById('countdown-text');
+        let countdownInterval;
 
-        // A function to hide the interference screen
-        function hideInterference() {
-            document.getElementById('terminal-interference').style.display = 'none';
+        function updateCountdownDisplay(remainingTime) {
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            countdownText.textContent = `Time remaining: ${formattedTime}`;
         }
 
-        // A function to display the interference screen and start the text animation
-        function showInterference() {
-            const interferenceScreen = document.getElementById('terminal-interference');
-            const interferenceText = document.getElementById('interference-text');
-            interferenceScreen.style.display = 'flex';
+        function checkLockout() {
+            const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
+            const currentTime = new Date().getTime();
             
-            // The text content to display on the interference screen
-            const textContent = `
-            [SYSTEM WARNING]
-            
-            UNAUTHORIZED ACCESS ATTEMPT DETECTED.
-            
-            INITIATING BLACK ICE PROTOCOL...
-            
-            ACCESS ATTEMPT ORIGIN: ${window.location.hostname}
-            USER AGENT: ${navigator.userAgent}
-            
-            [STATUS: BREACH IN PROGRESS]
-            
-            [00:00:00] -- TERMINAL INTERFERENCE PROTOCOL ACTIVATED.
-            [00:00:01] -- INITIATING ROOT-LEVEL ACCESS LOCKDOWN...
-            [00:00:02] -- CORE FUNCTIONALITY BLOCKED.
-            [00:00:03] -- AUTHENTICATION FAILED - ERROR CODE 403: SYSTEM INTEGRITY COMPROMISED
-            
-            > TRACE ATTEMPT: FAILED
-            > DISCONNECTING SESSION: PENDING
-            > AWAITING MANUAL OVERRIDE...
-            
-            *** DANGER *** DANGER *** DANGER ***
-            
-            ${'█'.repeat(Math.floor(Math.random() * 80))}
-            ${'█'.repeat(Math.floor(Math.random() * 80))}
-            ${'█'.repeat(Math.floor(Math.random() * 80))}
-            
-            // SYSTEM SHUTDOWN PENDING IN 10 SECONDS...
-            `;
-            
-            // Clear existing text and start the typing simulation
-            let i = 0;
-            interferenceText.textContent = '';
-            const speed = 15; // Typing speed in milliseconds
+            if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
+                // LOCKOUT ACTIVE: Display Interference Screen
+                loginContainer.classList.add('hidden');
+                interferenceContainer.classList.remove('hidden');
+                
+                let remainingSeconds = Math.ceil((parseInt(lockoutEndTime) - currentTime) / 1000);
+                
+                updateCountdownDisplay(remainingSeconds);
 
-            function typeWriter() {
-                if (i < textContent.length) {
-                    // Append the next character
-                    interferenceText.textContent += textContent.charAt(i);
-                    i++;
-                    // Introduce a random delay for a more chaotic look
-                    setTimeout(typeWriter, speed + (Math.random() * 20));
-                }
+                if (countdownInterval) clearInterval(countdownInterval);
+
+                countdownInterval = setInterval(() => {
+                    remainingSeconds--;
+                    if (remainingSeconds <= 0) {
+                        clearInterval(countdownInterval);
+                        localStorage.removeItem(TERMINAL_LOCKOUT_KEY);
+                        // Redirect to the clean login page to refresh the state
+                        window.location.href = 'login.html'; 
+                    } else {
+                        updateCountdownDisplay(remainingSeconds);
+                    }
+                }, 1000);
+
+                return true;
+            } else {
+                // NO LOCKOUT: Display Login Screen
+                localStorage.removeItem(TERMINAL_LOCKOUT_KEY); // Clean up expired lock
+                loginContainer.classList.remove('hidden');
+                interferenceContainer.classList.add('hidden');
+                return false;
             }
-
-            typeWriter();
         }
 
-        // =====================================================
-        // LOGIN FORM LOGIC (PLACEHOLDER)
-        // =====================================================
-        
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Stop the form from submitting normally
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const messageElement = document.getElementById('message');
+        // Run the check immediately on load
+        checkLockout();
 
-            messageElement.textContent = 'Verifying credentials...';
-            
-            // Simulate a network delay
-            setTimeout(() => {
-                // --- YOUR HACK/TRIGGER CONDITION GOES HERE ---
-                if (username === 'HACKER_CODE' && password === 'HACKER_PASSWORD') {
-                    // ** HACKER SUCCESS - Redirect to a secret page or execute code **
-                    messageElement.textContent = 'ACCESS GRANTED. Redirecting to Terminal...';
-                    window.location.href = 'terminal.html'; // Or whatever your target page is
-                } else if (username === 'SECRET_FAIL' || password === 'SECRET_FAIL') {
-                    // ** TRIGGER THE INTERFERENCE SCREEN ON A FAILED LOGIN **
-                    messageElement.textContent = 'CRITICAL FAILURE. System Lockdown.';
-                    showInterference();
-                } else {
-                    // ** NORMAL FAIL **
-                    messageElement.textContent = 'ACCESS DENIED. Invalid credentials. Please try again.';
-                }
-            }, 1000); // 1 second delay
-        });
-        
-        // --- OPTIONAL: Add a secret right-click trigger anywhere on the page ---
-        document.addEventListener('contextmenu', function(e) {
-            // Check for a specific key press with the right click, for example, 'Shift'
-            if (e.shiftKey) { 
-                e.preventDefault(); // Prevent the default context menu
-                showInterference();
+        function handleLogin() {
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+
+            const CORRECT_USERNAME = "EthanUnlocked";
+            const CORRECT_PASSWORD = "t3ch!";
+
+            if (usernameInput === CORRECT_USERNAME && passwordInput === CORRECT_PASSWORD) {
+                messageDiv.style.color = '#00ff00';
+                messageDiv.textContent = 'ACCESS GRANTED. Redirecting to PROJECT ATLAS Terminal...';
+                
+                // Successful login redirects to the main terminal page
+                setTimeout(() => {
+                    window.location.href = 'terminal.html'; 
+                }, 1500);
+            } else {
+                messageDiv.style.color = '#ff0000';
+                messageDiv.textContent = 'ACCESS DENIED. Invalid Credentials. Attempt logged.';
             }
-        });
-
+        }
     </script>
 </body>
 </html>
