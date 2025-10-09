@@ -1,170 +1,655 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal Access</title>
-    <style>
-        body {
-            background-color: #0d0d0d;
-            color: #00ff00;
-            font-family: 'Consolas', 'Monaco', monospace;
-            padding: 20px;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .container {
-            width: 100%;
-            max-width: 500px;
-            padding: 40px;
-            border: 2px solid #00ff00;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-            text-align: center;
-        }
-        h1 {
-            color: #ff00ff;
-            text-shadow: 0 0 5px #ff00ff;
-            margin-bottom: 30px;
-        }
-        input[type="text"], input[type="password"] {
-            background-color: #1a1a1a;
-            color: #00ff00;
-            border: 1px solid #00ff00;
-            padding: 10px;
-            margin: 10px 0;
-            width: 90%;
-            font-size: 16px;
-            box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.3);
-            font-family: 'Consolas', 'Monaco', monospace;
-        }
-        button {
-            background-color: #00ff00;
-            color: #0d0d0d;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: bold;
-            transition: background-color 0.3s, color 0.3s;
-        }
-        button:hover {
-            background-color: #00cc00;
-        }
-        #message {
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        .interference-screen {
-            background-color: #8b0000; /* Dark Red */
-            color: #ff0000; /* Bright Red */
-            border: 5px solid #ff0000;
-            padding: 20px;
-            text-align: center;
-            animation: glitch 0.5s infinite;
-        }
-        @keyframes glitch {
-            0% { transform: translate(1px, 1px); }
-            25% { transform: translate(-1px, -1px); }
-            50% { transform: translate(1px, -1px); }
-            75% { transform: translate(-1px, 1px); }
-            100% { transform: translate(1px, 1px); }
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PROJECT ATLAS: GLOBAL INTELLIGENCE INTERFACE</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+
+        /* Custom styles for the ATLAS aesthetic */
+
+        body {
+
+            background-color: #050e18; /* Deep dark background */
+
+            font-family: 'Space Mono', monospace;
+
+            overflow: hidden; 
+
+            color: #d1d5db; /* Light gray text */
+
+        }
+
+        
+
+        /* Neon Cyan for key elements */
+
+        .neon-cyan-text {
+
+            color: #00ffff; 
+
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+
+        }
+
+
+
+        .neon-box-shadow {
+
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+
+        }
+
+        
+
+        /* Neon Green for live map feed */
+
+        .neon-green-shadow {
+
+             box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); 
+
+        }
+
+
+
+        /* Styling for the simulated map */
+
+        #map-display {
+
+            background: #0c1a2c;
+
+            border: 1px solid #00ffff;
+
+            background-image: radial-gradient(#1e3a8a 1px, transparent 1px),
+
+                              radial-gradient(#1e3a8a 1px, transparent 1px);
+
+            background-size: 20px 20px;
+
+            background-position: 0 0, 10px 10px;
+
+            transition: all 0.5s; 
+
+            cursor: pointer; /* Suggests interactivity */
+
+            position: relative;
+
+        }
+
+        
+
+        /* Active map with pointer simulation (Enhanced Grid/Wireframe Look) */
+
+        #map-display.map-active {
+
+            background-color: #002200; /* Darker green map base */
+
+            border-color: #00FF00;
+
+            /* Simulated Grid Lines */
+
+            background-image: 
+
+                linear-gradient(0deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%), 
+
+                linear-gradient(90deg, transparent 95%, rgba(0, 255, 0, 0.5) 5%),
+
+                radial-gradient(rgba(0, 255, 0, 0.2) 1px, transparent 1px);
+
+            background-size: 50px 50px, 50px 50px, 10px 10px;
+
+        }
+
+
+
+        .red-pointer {
+
+            position: absolute;
+
+            top: 50%;
+
+            left: 50%;
+
+            width: 15px;
+
+            height: 15px;
+
+            background-color: #FF0000;
+
+            border: 2px solid #FFFFFF;
+
+            border-radius: 50%;
+
+            transform: translate(-50%, -50%);
+
+            animation: pulse-pointer 1s infinite alternate;
+
+            z-index: 10;
+
+        }
+
+
+
+        @keyframes pulse-pointer {
+
+            from { transform: translate(-50%, -50%) scale(1.0); box-shadow: 0 0 5px #FF0000; }
+
+            to { transform: translate(-50%, -50%) scale(1.2); box-shadow: 0 0 15px #FF0000; }
+
+        }
+
+
+
+        /* Ping Button Styling */
+
+        #ping-button {
+
+            transition: all 0.2s;
+
+        }
+
+        #ping-button:hover {
+
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+
+            background-color: #008888;
+
+        }
+
+
+
+        /* Pulsing status indicator */
+
+        @keyframes pulse-status {
+
+            0%, 100% { opacity: 1; }
+
+            50% { opacity: 0.5; }
+
+        }
+
+        .status-pulse {
+
+            animation: pulse-status 1s infinite;
+
+        }
+
+    </style>
+
+    <script>
+
+        tailwind.config = {
+
+            theme: {
+
+                extend: {
+
+                    colors: {
+
+                        'neon-cyan': '#00ffff',
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    </script>
+
 </head>
-<body>
 
-    <div id="interference-container" class="container interference-screen hidden">
-        <h1>ACCESS INTERFERENCE</h1>
-        <p>A **Security Lockdown** has been initiated due to an unauthorized break-in attempt from the main chatbot interface.</p>
-        <p>The system is currently locked to prevent further tampering. Please wait 60 seconds for the lockdown to expire.</p>
-        <button onclick="window.location.href='index.html'">Return to Main Site</button>
-    </div>
+<body class="flex flex-col justify-between items-center h-screen">
 
-    <div id="login-container" class="container">
-        <h1>ATLAS TERMINAL LOGIN</h1>
-        <label for="username">Username:</label>
-        <input type="text" id="username" placeholder="Enter Username">
-        <label for="password">Password:</label>
-        <input type="password" id="password" placeholder="Enter Password">
-        <button onclick="handleLogin()">Login</button>
-        <div id="message"></div>
-    </div>
 
-    <script>
-        // Check for the interference flag from the redirect
-        const params = new URLSearchParams(window.location.search);
-        const interference = params.get('interference');
-        const interferenceContainer = document.getElementById('interference-container');
-        const loginContainer = document.getElementById('login-container');
-        
-        // This is the same key used in index.html for the lockout timer
-        const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
 
-        // Check if the lockout is active
-        function checkLockout() {
-            const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
-            const currentTime = new Date().getTime();
+    <header class="w-full text-center pt-6 pb-4 bg-[#050e18]">
 
-            // Display the Interference Screen if the flag is present OR if the lockout is still active
-            if (interference || (lockoutEndTime && currentTime < parseInt(lockoutEndTime))) {
-                loginContainer.classList.add('hidden');
-                interferenceContainer.classList.remove('hidden');
-                
-                // Add a check to clear the interference screen when the timer is up
-                const remainingTime = parseInt(lockoutEndTime) - currentTime;
-                if (remainingTime > 0) {
-                    setTimeout(() => {
-                        // After lockdown expires, refresh the page to show the login
-                        window.location.href = 'terminal.html'; 
-                    }, remainingTime + 100);
-                } else if (interference) {
-                     // If the flag is set but the timer has expired, clear storage and redirect back to clean login
-                    localStorage.removeItem(TERMINAL_LOCKOUT_KEY);
-                    window.location.href = 'terminal.html';
-                }
+        <h1 class="text-3xl font-extrabold neon-cyan-text tracking-wider">
 
-                return true;
-            }
-            // If the lockout has expired or was never set, ensure the login screen is visible
-            loginContainer.classList.remove('hidden');
-            interferenceContainer.classList.add('hidden');
-            return false;
-        }
+            PROJECT ATLAS // CLASSIFIED ACCESS
 
-        // Run the check immediately
-        checkLockout();
+        </h1>
 
-        function handleLogin() {
-            const usernameInput = document.getElementById('username').value;
-            const passwordInput = document.getElementById('password').value;
-            const messageDiv = document.getElementById('message');
+        <p class="text-sm text-gray-500 mt-1">QUERY STANDALONE DATABASE. HIGH LATENCY WARNING.</p>
 
-            // --- CORRECT CREDENTIALS (Case-Sensitive) ---
-            const CORRECT_USERNAME = "EthanUnlocked";
-            const CORRECT_PASSWORD = "t3ch!";
-            // --- END CREDENTIALS ---
+    </header>
 
-            if (usernameInput === CORRECT_USERNAME && passwordInput === CORRECT_PASSWORD) {
-                messageDiv.style.color = '#00ff00';
-                messageDiv.textContent = 'ACCESS GRANTED. Redirecting to Terminal Interface...';
-                
-                // You will need to create a terminal_success.html page for the redirect to work.
-                setTimeout(() => {
-                    window.location.href = 'terminal_success.html'; 
-                }, 1500);
-            } else {
-                messageDiv.style.color = '#ff0000';
-                messageDiv.textContent = 'ACCESS DENIED. Invalid Credentials. Attempt logged.';
-            }
-        }
-    </script>
+
+
+    <main class="w-full max-w-7xl flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden">
+
+        
+
+        <div class="lg:col-span-1 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow h-full">
+
+            <h2 class="text-xl font-bold neon-cyan-text">ATLAS COMMAND LINE</h2>
+
+            
+
+            <input type="text" id="atlas-query" placeholder="Enter query (e.g., 'Eiffel Tower' or 'Ethan Angel Ioannou')" 
+
+                   class="p-3 rounded bg-[#1e293b] text-white border border-neon-cyan/50 focus:outline-none focus:ring-2 focus:ring-neon-cyan/80">
+
+            
+
+            <button id="ping-button" onclick="handleSearch()" 
+
+                    class="p-3 rounded font-bold bg-neon-cyan text-[#050e18] uppercase tracking-wider hover:bg-white disabled:opacity-50"
+
+                    disabled>
+
+                PING NETWORK
+
+            </button>
+
+            
+
+            <div id="status-panel" class="p-3 bg-[#1e293b] rounded text-sm min-h-[4rem]">
+
+                <p id="status-message" class="text-gray-400">STATUS: OFFLINE. Initializing...</p>
+
+            </div>
+
+
+
+            <div id="map-display" onclick="handleMapClick()" class="flex-grow rounded-lg mt-4 flex items-center justify-center neon-box-shadow">
+
+                <p class="text-neon-cyan opacity-80 text-center text-sm p-4">
+
+                    MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
+
+                </p>
+
+                </div>
+
+            <div id="map-instructions" class="text-xs text-gray-500 text-center"></div>
+
+        </div>
+
+
+
+        <div class="lg:col-span-2 flex flex-col space-y-4 bg-[#0c1a2c] p-4 rounded-lg neon-box-shadow overflow-y-auto">
+
+            <h2 class="text-xl font-bold neon-cyan-text">QUERY OUTPUT</h2>
+
+            
+
+            <div id="results-output" class="p-4 bg-[#1e293b] rounded-lg border border-gray-700 space-y-4 text-sm text-gray-300 flex-grow">
+
+                <p>Welcome, Operator. Enter a query in the left panel to begin a search. Atlas uses local classified resources for data retrieval.</p>
+
+            </div>
+
+
+
+            <div id="sources-output" class="p-3 bg-[#1e293b] rounded-lg text-xs border border-gray-700">
+
+                <p class="font-bold text-neon-cyan mb-1">DATA SOURCES:</p>
+
+                <ul id="source-list" class="text-gray-500 space-y-1">
+
+                    <li>No sources yet.</li>
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+
+    <footer class="w-full py-2 flex justify-between px-6 text-xs bg-[#0c1a2c] border-t border-neon-cyan/30">
+
+        <div class="text-gray-600">
+
+            ATLAS CORE V3.1 // LOCAL DATABASE FUSION INITIATED
+
+        </div>
+
+        <button onclick="window.location.href='index.html';" class="text-gray-500 hover:text-white transition duration-200">
+
+            [TERMINATE SESSION]
+
+        </button>
+
+    </footer>
+
+
+
+    <script>
+
+        const queryInput = document.getElementById('atlas-query');
+
+        const pingButton = document.getElementById('ping-button');
+
+        const statusMessage = document.getElementById('status-message');
+
+        const resultsOutput = document.getElementById('results-output');
+
+        const sourceList = document.getElementById('source-list');
+
+        const mapDisplay = document.getElementById('map-display');
+
+        const mapInstructions = document.getElementById('map-instructions');
+
+
+
+        let lastLocationQuery = null; // Store the last successful location query data
+
+
+
+        /**
+
+         * Generates the HTML for a simulated image tile using a real URL.
+
+         */
+
+        function createImageTileHTML(url, title) {
+
+             // The URL is now a real image from Google's content server
+
+             return `
+
+                <div class="p-2 bg-[#050e18] border border-green-500/50 rounded-lg">
+
+                    <p class="text-xs text-green-500 mb-1">${title}</p>
+
+                    <img src="${url}" alt="Simulated Image Feed" class="w-full h-32 object-cover rounded-md border border-gray-700" loading="lazy" />
+
+                </div>
+
+            `;
+
+        }
+
+
+
+        // --- Simulated Data Storage ---
+
+        const simulatedResponses = {
+
+            // SPECIAL CASE 1: Your Secret Profile
+
+            "ethan angel ioannou": {
+
+                text: "SUBJECT: ETHAN ANGEL IOANNOU\n\nPROFILE: PRIMARY ASSET. KEY ARCHITECT. ATLAS ACCESS LEVEL: DELTA. \n\nPERSONAL DATA SUMMARY:\n- Date of Birth: Jan 25, 2013\n- Primary Communications ID (Voice): +61 490 892 714 (AU)\n- Public-Facing Channel: 'EthanUnlocked's gaming hits'\n\nSTATUS: ACTIVE. HIGH-PRIORITY MONITORING IN EFFECT. ALL FUTURE QUERIES FLAGGED.",
+
+                sources: [
+
+                    { title: "Internal Log: Operator E.I.", uri: "#" },
+
+                    { title: "Asset Report: C4 Channel Link", uri: "#" }
+
+                ],
+
+                status: "SUBJECT PROFILE ACQUIRED. ACCESS LEVEL: DELTA. STATUS: ACTIVE."
+
+            },
+
+
+
+            // SPECIAL CASE 2: Location Example (using REAL Google Image URLs from search)
+
+            "eiffel tower": {
+
+                text: "GEO-LOCATION TARGET ACQUIRED: EIFFEL TOWER, PARIS, FRANCE.\n\nSTRUCTURE STATUS: Stable. VISUAL FEED: Live satellite feed shows high tourist density around base perimeter. Weather conditions: Clear. Access routes nominal. Map Core automatically engaged for visual confirmation.",
+
+                sources: [
+
+                    { title: "Google Maps/Earth Link (Simulated)", uri: "#" },
+
+                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
+
+                ],
+
+                status: "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.",
+
+                isLocation: true,
+
+                simulatedImages: [
+
+                    { title: "ATLAS SAT FEED 1: PARIS (Satellite)", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_0" },
+
+                    { title: "GOOGLE MAPS 3D VIEW", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_1" },
+
+                    { title: "INFRARED HEATMAP SCAN", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_2" },
+
+                    { title: "GOOGLE STREET VIEW", url: "http://googleusercontent.com/image_collection/image_retrieval/10457192688996598570_3" } 
+
+                ]
+
+            },
+
+            
+
+            // Default response for anything else
+
+            "default": {
+
+                text: "QUERY AMBIGUOUS. LOCAL DATABASE SEARCH RESULTS:\n\nData not found for the specified query. ATLAS protocols require precise, actionable keywords for retrieval from classified reserves. Suggest re-querying with a specific target name or classified project title.",
+
+                sources: [
+
+                    { title: "Protocol Document: Atlas Search V3", uri: "#" }
+
+                ],
+
+                status: "QUERY FAILED. Precision Required."
+
+            }
+
+        };
+
+
+
+        // --- Initialization ---
+
+        window.onload = function() {
+
+            // Enable button after a short delay to simulate initialization
+
+            setTimeout(() => {
+
+                pingButton.disabled = false;
+
+                statusMessage.textContent = "STATUS: ONLINE. Awaiting command.";
+
+                statusMessage.classList.add('neon-cyan-text', 'status-pulse');
+
+            }, 1000);
+
+        };
+
+
+
+        // --- Map & Gallery Handlers ---
+
+
+
+        /**
+
+         * Simulates enabling a live map feed visualization.
+
+         */
+
+        function updateMapDisplay(responseData) {
+
+            
+
+            // 1. Reset Map Display
+
+            mapDisplay.classList.remove('map-active', 'neon-green-shadow');
+
+            mapDisplay.classList.add('bg-[#0c1a2c]', 'border-neon-cyan/80', 'neon-box-shadow');
+
+            mapDisplay.innerHTML = `<p class="text-neon-cyan opacity-80 text-center text-sm p-4">
+
+                MAP CORE OFFLINE. DEDICATING RESOURCES TO DATA PING.
+
+            </p>`;
+
+            mapInstructions.textContent = '';
+
+            lastLocationQuery = null;
+
+
+
+            if (responseData && responseData.isLocation) {
+
+                // Engage Map Core (Green Live Feed with Pointer)
+
+                lastLocationQuery = responseData;
+
+                mapDisplay.classList.add('map-active', 'neon-green-shadow');
+
+                mapDisplay.classList.remove('neon-box-shadow');
+
+                
+
+                // Clear the default text and insert the pointer
+                mapDisplay.innerHTML = `
+                    <p class="text-green-300 opacity-90 text-center text-sm p-4">
+                        LIVE SATELLITE FEED ACTIVE. LOCATION ACQUIRED.
+                    </p>
+                    <div class="red-pointer"></div>
+                `;
+                mapInstructions.textContent = '>> CLICK MAP FOR IMAGE GALLERY/FEED <<';
+            }
+        }
+
+        /**
+         * Simulates opening the image gallery when the active map is clicked.
+         */
+        function handleMapClick() {
+            if (!lastLocationQuery || !lastLocationQuery.isLocation) {
+                // If map is not active, do nothing or show a message
+                statusMessage.textContent = "ALERT: Map core requires location query to engage. Try 'Eiffel Tower'.";
+                return;
+            }
+
+            const images = lastLocationQuery.simulatedImages;
+            const queryName = queryInput.value.toUpperCase();
+
+            let galleryHTML = `<h3 class="text-lg font-bold text-green-300 mb-4">GEO-IMAGERY GALLERY // TARGET: ${queryName}</h3>`;
+            galleryHTML += `<div class="grid grid-cols-2 gap-4">`;
+
+            images.forEach((img) => {
+                galleryHTML += createImageTileHTML(img.url, img.title);
+            });
+
+            galleryHTML += `</div>`;
+            resultsOutput.innerHTML = galleryHTML;
+            statusMessage.textContent = `STATUS: GALLERY VIEW ACTIVE. Displaying 4 real Google feeds for ${queryName}.`;
+            sourceList.innerHTML = `<li>Geo-Imagery Feed Links Engaged.</li>`;
+        }
+
+
+        /**
+         * Checks if the query looks like a full name (First Last or First Middle Last)
+         */
+        function isHumanNameQuery(query) {
+            const parts = query.trim().split(/\s+/).filter(p => p.length > 0);
+            return (parts.length >= 2 && parts.length <= 3 && parts.every(part => /^[a-zA-Z]{2,}$/.test(part)));
+        }
+
+        // --- Simulated Search Function ---
+        async function performAtlasSearch(query) {
+            const normalizedQuery = query.toLowerCase().trim();
+
+            // 1. Initial UI setup & Map Reset
+            updateMapDisplay(null); // Reset map to offline
+            resultsOutput.innerHTML = `<p class="text-neon-cyan">// PING INITIATED: ${query}</p>`;
+            sourceList.innerHTML = `<li class="text-neon-cyan status-pulse">ACCESSING CLASSIFIED DATABASE...</li>`;
+            pingButton.disabled = true;
+            statusMessage.textContent = "STATUS: INITIATING DATA RETRIEVAL SEQUENCE...";
+            statusMessage.classList.add('neon-cyan-text', 'status-pulse');
+
+            // 2. Determine which simulated response to use
+            let responseData = simulatedResponses.default;
+            
+            // Check for explicit, pre-programmed queries (including names and locations)
+            if (simulatedResponses[normalizedQuery]) {
+                 responseData = simulatedResponses[normalizedQuery];
+            } 
+            // Check for generic human name pattern (unrecognized names)
+            else if (isHumanNameQuery(query)) {
+                // Generic failure response for unknown names
+                responseData = JSON.parse(JSON.stringify(simulatedResponses.default));
+                responseData.text = `SUBJECT PROFILE: ${query.toUpperCase()}\n\nSTATUS: **PROFILE NOT FOUND IN PUBLIC RECORDS.**\n\nAnalysis suggests subject name is either a common alias or a low-level target with no major public digital footprint. Recommend re-query with secondary identifiers (DOB, Location, ID Code).`;
+                responseData.sources = [{ title: "Warning: High Commonality Index (CCI)", uri: "#" }];
+                responseData.status = `SUBJECT TRACE FAILURE. No profile found for ${query}.`;
+                responseData.isHuman = true;
+            } 
+            // Check for general location query (if not an exact match, use the template)
+            else if (normalizedQuery.includes("tower") || normalizedQuery.includes("city") || normalizedQuery.includes("street") || normalizedQuery.includes("london") || normalizedQuery.includes("tokyo") || normalizedQuery.includes("paris") || normalizedQuery.includes("australia") || normalizedQuery.includes("china")) {
+                
+                const locationName = query.toUpperCase();
+                // Use the Eiffel Tower response template for an unknown location
+                responseData = JSON.parse(JSON.stringify(simulatedResponses["eiffel tower"]));
+                responseData.text = `GEO-LOCATION TARGET ACQUIRED: ${locationName}.\n\nVISUAL FEED: Live satellite feed initiated. Location successfully plotted on virtual map. Click the Map Core panel to view image gallery.`;
+                responseData.sources = [
+                    { title: `Google Maps/Earth Link (Simulated for ${locationName})`, uri: "#" },
+                    { title: "Live Satellite Imagery Feed (ATLAS-5)", uri: "#" }
+                ];
+                responseData.status = "GEO-LOCATION ACQUIRED. MAP CORE ONLINE.";
+                responseData.isLocation = true;
+            }
+
+            // 3. Simulate Network Latency (The Cool Delay)
+            const delay = Math.random() * 1500 + 1500; 
+            await new Promise(resolve => setTimeout(resolve, delay));
+            
+            // 4. Update UI with Simulated Results
+            
+            // Display main text
+            resultsOutput.innerHTML = `<p class="text-white whitespace-pre-wrap">${responseData.text}</p>`;
+
+            // Display sources
+            sourceList.innerHTML = responseData.sources.map((s, index) => 
+                `<li>[SOURCE ${index + 1}]: <a href="${s.uri}" target="_blank" class="text-blue-400 hover:text-neon-cyan underline">${s.title}</a></li>`
+            ).join('');
+
+            // Update status
+            statusMessage.textContent = `STATUS: ${responseData.status}`;
+            statusMessage.classList.remove('status-pulse');
+            
+            // Update map if it was a location query
+            updateMapDisplay(responseData);
+
+
+            // 5. Cleanup
+            pingButton.disabled = false;
+        }
+
+        function handleSearch() {
+            const query = queryInput.value.trim();
+            if (query) {
+                performAtlasSearch(query);
+            } else {
+                statusMessage.textContent = "ALERT: Query field cannot be empty.";
+            }
+        }
+        
+        // Allow pressing Enter to search
+        queryInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !pingButton.disabled) {
+                handleSearch();
+            }
+        });
+    </script>
 </body>
 </html>
