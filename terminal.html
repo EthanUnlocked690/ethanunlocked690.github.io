@@ -83,7 +83,7 @@
 
     <div id="interference-container" class="container interference-screen hidden">
         <h1>ACCESS INTERFERENCE</h1>
-        <p>A Security Lockdown has been initiated due to an unauthorized break-in attempt from the main chatbot interface.</p>
+        <p>A **Security Lockdown** has been initiated due to an unauthorized break-in attempt from the main chatbot interface.</p>
         <p>The system is currently locked to prevent further tampering. Please wait 60 seconds for the lockdown to expire.</p>
         <button onclick="window.location.href='index.html'">Return to Main Site</button>
     </div>
@@ -113,8 +113,8 @@
             const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
             const currentTime = new Date().getTime();
 
+            // Display the Interference Screen if the flag is present OR if the lockout is still active
             if (interference || (lockoutEndTime && currentTime < parseInt(lockoutEndTime))) {
-                // Display the Interference Screen if the flag is present OR if the lockout is active
                 loginContainer.classList.add('hidden');
                 interferenceContainer.classList.remove('hidden');
                 
@@ -133,24 +133,21 @@
 
                 return true;
             }
-            // Clear the interference flag if we are showing the login screen
-            if (!interferenceContainer.classList.contains('hidden')) {
-                 interferenceContainer.classList.add('hidden');
-            }
+            // If the lockout has expired or was never set, ensure the login screen is visible
+            loginContainer.classList.remove('hidden');
+            interferenceContainer.classList.add('hidden');
             return false;
         }
 
         // Run the check immediately
-        if (!checkLockout()) {
-            loginContainer.classList.remove('hidden');
-        }
+        checkLockout();
 
         function handleLogin() {
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
             const messageDiv = document.getElementById('message');
 
-            // --- CORRECT CREDENTIALS ---
+            // --- CORRECT CREDENTIALS (Case-Sensitive) ---
             const CORRECT_USERNAME = "EthanUnlocked";
             const CORRECT_PASSWORD = "t3ch!";
             // --- END CREDENTIALS ---
@@ -158,10 +155,10 @@
             if (usernameInput === CORRECT_USERNAME && passwordInput === CORRECT_PASSWORD) {
                 messageDiv.style.color = '#00ff00';
                 messageDiv.textContent = 'ACCESS GRANTED. Redirecting to Terminal Interface...';
-                // In a real application, you would redirect to a secured terminal page here.
-                // For now, redirect to a success page or the main terminal page.
+                
+                // You will need to create a terminal_success.html page for the redirect to work.
                 setTimeout(() => {
-                    window.location.href = 'terminal_success.html'; // Create a new success page!
+                    window.location.href = 'terminal_success.html'; 
                 }, 1500);
             } else {
                 messageDiv.style.color = '#ff0000';
