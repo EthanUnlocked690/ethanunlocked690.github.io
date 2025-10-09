@@ -136,7 +136,7 @@ box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 position: relative;
 }
 
-/* --- DYNAMIC EXIT BUTTON STYLES --- */
+/* --- CHATBOT EXIT BUTTON STYLES --- */
 #chatbotExitBtn {
     /* Position the button at the top right corner */
     position: absolute;
@@ -153,38 +153,14 @@ position: relative;
     background: none;
     border: none;
     padding: 0;
-    
-    /* ATLAS TERMINAL HACK styles */
-    font-family: 'Inter', sans-serif; /* Fallback to default when not locked */
-    width: 2rem; /* Keep a fixed size when 'X' */
+    font-family: 'Inter', sans-serif;
+    width: 2rem; 
     height: 2rem;
     text-align: center;
 }
 #chatbotExitBtn:hover {
     color: #ef4444; /* Red-500 hover for 'X' */
     transform: rotate(90deg);
-}
-
-#chatbotExitBtn.locked {
-    cursor: not-allowed;
-    border: 1px solid #ff0000; /* Red border for lockdown */
-    color: #ff0000;           /* Red text for lockdown */
-    box-shadow: none;
-    pointer-events: none; /* Crucial: Makes it truly unclickable */
-    animation: pulseRed 1s infinite alternate;
-    
-    /* Style overrides for the ATLAS TERMINAL state */
-    font-family: 'Consolas', 'Monaco', monospace;
-    font-size: 14px;
-    padding: 5px 10px;
-    width: auto;
-    height: auto;
-    background-color: #1f2937;
-    transform: none; /* Disable rotation */
-}
-@keyframes pulseRed {
-    0% { opacity: 0.8; box-shadow: 0 0 4px #ff0000; }
-    100% { opacity: 1; box-shadow: 0 0 8px #ff0000; }
 }
 
 /* Custom Alert/Prompt Modal styles (kept) */
@@ -295,7 +271,7 @@ backdrop-filter: blur(5px);
 <li><a href="short.html">Shorts</a></li>
 <li><a href="videos.html">Video Gallery</a></li>
 <li><a href="images.html">Image Gallery</a></li>
-<li><a href="#" id="terminal-link">Terminal</a></li><li><a href="animate.html">LEGO Animations</a></li>
+<li><a href="terminal.html" id="terminal-link">Terminal</a></li><li><a href="animate.html">LEGO Animations</a></li>
 <li><a href="tutorial.html">Tutorials & Speedruns</a></li>
 <li><a href="turtle.html">Others</a></li>
 </ul>
@@ -394,6 +370,8 @@ window.history.forward()
 <div class="chatbot-modal-content">
 <button id="chatbotExitBtn" class="chatbot-close-button">&times;</button>
 
+<button id="terminalHackBtn" style="display:none; position:absolute; top:1rem; left:1rem; background-color: darkred; color: white; padding: 5px 10px; border: 1px solid red; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; cursor: pointer;">ATLAS TERMINAL ACCESS</button>
+
 <div id="chatbot-container" class="flex flex-col h-full">
 <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">Chat with TheUnlockedBot</h1>
 <div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
@@ -413,54 +391,51 @@ window.history.forward()
 </div>
 <script>
 // =========================================================================
-// NEW TERMINAL LOCKOUT LOGIC
+// TERMINAL LOCKOUT LOGIC & INITIALIZATION
 // =========================================================================
 const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
 
-// Function to check and update the Terminal link status
+// Function to check and update the Terminal link status in the Navbar
 function checkTerminalStatus() {
-    const terminalLink = document.getElementById('terminal-link');
-    const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
-    const currentTime = new Date().getTime();
+    const terminalLink = document.getElementById('terminal-link');
+    const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
+    const currentTime = new Date().getTime();
 
-    if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
-        // Terminal is locked
-        terminalLink.href = 'terminal_access_denied.html';
-        terminalLink.textContent = 'Terminal Interference (Disabled for break-in)';
-        terminalLink.classList.add('disabled-link');
-        terminalLink.style.backgroundColor = '#555555'; // Use a disabled color
-        
-        // Check again when the lockout expires
-        setTimeout(checkTerminalStatus, parseInt(lockoutEndTime) - currentTime + 1000);
+    if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
+        // Terminal is locked
+        terminalLink.href = 'terminal.html?interference=active'; // Ensures the link goes to the denied screen
+        terminalLink.textContent = 'Terminal Interference (Disabled)';
+        terminalLink.classList.add('disabled-link');
+        terminalLink.style.backgroundColor = '#555555'; 
+        
+        // Re-check when the lockout expires
+        setTimeout(checkTerminalStatus, parseInt(lockoutEndTime) - currentTime + 1000);
 
-    } else {
-        // Terminal is unlocked
-        localStorage.removeItem(TERMINAL_LOCKOUT_KEY); // Clear expired lockout
-        terminalLink.href = 'login.html'; // Direct to login page
-        terminalLink.textContent = 'Terminal';
-        terminalLink.classList.remove('disabled-link');
-        terminalLink.style.backgroundColor = ''; // Reset to original color
-    }
+    } else {
+        // Terminal is unlocked
+        localStorage.removeItem(TERMINAL_LOCKOUT_KEY); 
+        terminalLink.href = 'terminal.html'; 
+        terminalLink.textContent = 'Terminal';
+        terminalLink.classList.remove('disabled-link');
+        terminalLink.style.backgroundColor = ''; 
+    }
 }
 
-// Update the body onload to call the new function
+// Initial setup on body load
 window.onload = function() {
-    checkCookie(); 
-    checkNewsUpdate();
-    checkTerminalStatus(); // <--- NEW CALL
+    checkCookie(); 
+    checkNewsUpdate();
+    checkTerminalStatus(); 
 };
 
 // =========================================================================
-// END NEW TERMINAL LOCKOUT LOGIC
+// END TERMINAL LOCKOUT LOGIC
 // =========================================================================
 
 // News update functionality
 function setNewsUpdate() {
-// Call this function whenever you update the news page
-// You can add this to your GitHub workflow or call it manually
 const updateTime = new Date().getTime();
 const newsData = { hasUpdate: true, updateTime: updateTime };
-// Store in a variable that persists across sessions
 const existingData = getNewsData();
 if (!existingData || updateTime > existingData.updateTime) {
 storeNewsData(newsData);
@@ -493,11 +468,9 @@ return null;
 }
 }
 function storeNewsData(data) {
-setCookie('newsUpdateData', JSON.stringify(data), 30); // Store for 30 days
+setCookie('newsUpdateData', JSON.stringify(data), 30); 
 }
-// Simulate a news update - you would call setNewsUpdate() when you actually update the news
-// For testing purposes, uncomment the line below:
-// setNewsUpdate();
+
 // Custom Alert/Prompt Modals Logic
 const alertModal = document.getElementById('custom-alert-modal');
 const alertMessage = document.getElementById('alert-message');
@@ -505,7 +478,7 @@ const promptModal = document.getElementById('custom-prompt-modal');
 const promptMessage = document.getElementById('prompt-message');
 const promptInput = document.getElementById('prompt-input');
 let promptResolve;
-// Replaces window.alert()
+
 function showAlert(message) {
 alertMessage.textContent = message;
 alertModal.style.display = 'flex';
@@ -513,7 +486,7 @@ alertModal.style.display = 'flex';
 function hideAlert() {
 alertModal.style.display = 'none';
 }
-// Replaces window.prompt() and returns a Promise
+
 function showPrompt(message, defaultValue = "") {
 return new Promise(resolve => {
 promptMessage.textContent = message;
@@ -528,7 +501,7 @@ promptModal.style.display = 'none';
 if (isOk) {
 promptResolve(promptInput.value);
 } else {
-promptResolve(null); // Return null on cancel
+promptResolve(null); 
 }
 }
 // --- Custom Alert on page load, replaces original window.alert() ---
@@ -569,16 +542,12 @@ setCookie("username", user, 7);
 // --- Chatbot UI References ---
 const chatbotButton = document.getElementById('chatbot-button');
 const chatbotModal = document.getElementById('chatbot-modal');
-const chatbotExitBtn = document.getElementById('chatbotExitBtn'); // The combined exit/hack button
+const chatbotExitBtn = document.getElementById('chatbotExitBtn'); 
+const terminalHackBtn = document.getElementById('terminalHackBtn'); // NEW: The hack button
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatHistoryDiv = document.getElementById('chat-history');
 const loadingIndicator = document.getElementById('loading-indicator');
-
-// --- Lockdown Variables ---
-let isLocked = false;
-let lockdownDuration = 60; // 60 seconds
-let countdownInterval;
 
 // --- Chat History State ---
 let chatHistory = [];
@@ -614,12 +583,11 @@ chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
 }
 async function fetchGeminiResponse(prompt) {
 loadingIndicator.classList.remove('hidden');
-// Create a temporary chat history for the API call to avoid mutation issues
 let currentChatHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
 const payload = { contents: currentChatHistory };
-const apiKey = "";
+const apiKey = ""; // API Key placeholder
 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-let backoffDelay = 1000; // Start with 1 second delay
+let backoffDelay = 1000; 
 const maxRetries = 5;
 let retryCount = 0;
 while (retryCount < maxRetries) {
@@ -632,12 +600,11 @@ headers: {
 body: JSON.stringify(payload)
 });
 if (response.status === 429) {
-// Too Many Requests
 retryCount++;
 if (retryCount < maxRetries) {
 await new Promise(resolve => setTimeout(resolve, backoffDelay));
-backoffDelay *= 2; // Exponential backoff
-continue; // Retry the loop
+backoffDelay *= 2; 
+continue; 
 } else {
 throw new Error("API request limit exceeded. Please try again later.");
 }
@@ -648,18 +615,17 @@ throw new Error(`API call failed with status: ${response.status}`);
 const result = await response.json();
 if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
 const text = result.candidates[0].content.parts[0].text;
-// Update the persistent chat history
 chatHistory.push({ role: "user", parts: [{ text: prompt }] });
 chatHistory.push({ role: "model", parts: [{ text }] });
 addMessageToChat('model', text);
 } else {
 addMessageToChat('model', "Sorry, I couldn't generate a response. The response was empty or malformed.");
 }
-break; // Break the retry loop on success
+break; 
 } catch (error) {
 console.error("Error fetching response:", error);
 addMessageToChat('model', `An error occurred: ${error.message}`);
-break; // Exit the loop on other errors
+break; 
 } finally {
 loadingIndicator.classList.add('hidden');
 }
@@ -670,7 +636,6 @@ const prompt = userInput.value.trim();
 if (prompt) {
 addMessageToChat('user', prompt);
 userInput.value = '';
-// Check for hardcoded responses first
 const normalizedPrompt = prompt.toLowerCase().trim();
 let hardcodedResponseFound = false;
 for (const key in hardcodedResponses) {
@@ -691,16 +656,21 @@ fetchGeminiResponse(prompt);
 // --- Chatbot Event Listeners ---
 chatbotButton.addEventListener('click', () => {
 chatbotModal.style.display = 'flex';
-// Initial welcome message when modal is opened for the first time
 if (chatHistory.length === 0) {
 addMessageToChat('model', "Hello! I'm TheUnlockedBot. What can I help you with today?");
 }
 });
-// REMOVED: Redundant chatbotCloseSpan.addEventListener('click')
-// Window click to close modal
+
+// Listener to close modal and hide hack button
+chatbotExitBtn.addEventListener('click', function() {
+    chatbotModal.style.display = 'none';
+    terminalHackBtn.style.display = 'none'; // Hide the hack button when exiting
+});
+
 window.addEventListener('click', (event) => {
 if (event.target == chatbotModal) {
-chatbotModal.style.display = 'none';
+    chatbotModal.style.display = 'none';
+    terminalHackBtn.style.display = 'none'; // Hide the hack button when clicking outside
 }
 });
 sendButton.addEventListener('click', handleSendMessage);
@@ -713,100 +683,25 @@ handleSendMessage();
 
 
 // =========================================================================
-// DYNAMIC BUTTON AND LOCKDOWN LOGIC (THE HACK)
+// CHATBOT RIGHT-CLICK HACK (Reveals Terminal Button)
 // =========================================================================
 
-// Function to update the remaining time display
-function updateCountdown() {
-    if (lockdownDuration <= 0) {
-        clearInterval(countdownInterval);
-        exitLockdown();
-        // Also update the main navigation link status
-        checkTerminalStatus();
-        return;
-    }
-
-    const remainingTime = lockdownDuration;
-    // Formats seconds into MM:SS
-    const formattedTime = new Date(remainingTime * 1000).toISOString().substr(14, 5); 
-    
-    chatbotExitBtn.textContent = `ATLAS TERMINAL (Lockdown for ${formattedTime})`;
-    lockdownDuration--;
-}
-
-// Function to enter the lockdown state
-function enterLockdown() {
-    // Set lockout in localStorage for the main navigation link to see
-    const lockoutEndTime = new Date().getTime() + (lockdownDuration * 1000);
-    localStorage.setItem(TERMINAL_LOCKOUT_KEY, lockoutEndTime.toString());
-
-    isLocked = true;
-    lockdownDuration = 60; // Reset timer to 60 seconds
-    
-    chatbotExitBtn.classList.add('locked');
-    
-    // Start the countdown
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
-}
-
-// Function to exit the lockdown state
-function exitLockdown() {
-    isLocked = false;
-    chatbotExitBtn.classList.remove('locked');
-    chatbotExitBtn.textContent = '×'; // Reset to exit symbol
-    localStorage.removeItem(TERMINAL_LOCKOUT_KEY);
-    // Ensure the navigation link is also updated immediately
-    checkTerminalStatus();
-}
-
-
-// --- EVENT LISTENERS FOR THE NEW BUTTON ---
-
-// 1. NORMAL ACTION: Left-click on the button (closes the modal)
-chatbotExitBtn.addEventListener('click', function(e) {
-    if (!isLocked) {
-        chatbotModal.style.display = 'none';
-    }
-    // If locked, the button is not clickable (due to CSS pointer-events: none)
-});
-
-// 2. SECRET HACK TRIGGER: Right-click on the dynamic button (triggers lockdown)
+// 1. Right-click listener for chatbotExitBtn (the 'X')
 chatbotExitBtn.addEventListener('contextmenu', function(e) {
     e.preventDefault(); // Prevents the browser's default context menu
-
-    if (!isLocked) {
-        console.log("Secret Access Attempt. Initiating Lockdown.");
-        showAlert("SECURITY BREACH DETECTED. ATLAS TERMINAL LOCKDOWN INITIATED.");
-
-        // Start the lockdown process and redirect
-        enterLockdown();
-        
-        // Immediately redirect to the login page to show the Interference Screen
-        window.location.href = 'login.html?interference=true'; 
-    }
+    
+    // Show the secret terminal access button
+    terminalHackBtn.style.display = 'block';
+    
+    showAlert("Secret ATLAS TERMINAL link activated. This button will disappear when you close the chat."); 
 });
 
-// Check if a lockdown is currently active when the page loads
-if (localStorage.getItem(TERMINAL_LOCKOUT_KEY)) {
-    const lockoutEndTime = parseInt(localStorage.getItem(TERMINAL_LOCKOUT_KEY));
-    const currentTime = new Date().getTime();
-    lockdownDuration = Math.ceil((lockoutEndTime - currentTime) / 1000);
-    
-    if (lockdownDuration > 0) {
-        // Only call enterLockdown if the chatbot modal is currently open
-        if (chatbotModal.style.display === 'flex') {
-            enterLockdown();
-        } else {
-             // If locked but modal isn't open, ensure the button shows the lockdown state
-            chatbotExitBtn.classList.add('locked');
-            updateCountdown();
-            countdownInterval = setInterval(updateCountdown, 1000);
-        }
-    } else {
-        exitLockdown();
-    }
-}
+// 2. Listener for the new hack button (sends user to login)
+terminalHackBtn.addEventListener('click', function() {
+    // Redirect to terminal page
+    window.location.href = 'terminal.html';
+});
+
 // ========================================================================
 // END OF DYNAMIC BUTTON AND LOCKDOWN LOGIC
 // ========================================================================
