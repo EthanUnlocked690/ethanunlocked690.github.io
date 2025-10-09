@@ -3,375 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS Terminal Interface</title>
+    <title>Terminal Access</title>
     <style>
         body {
-            background-color: #000000;
-            color: #00ff00; /* Neon Green */
+            background-color: #0d0d0d;
+            color: #00ff00;
             font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            margin: 0;
             padding: 20px;
-            overflow-y: scroll;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
         .container {
             width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
+            max-width: 500px;
+            padding: 40px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            text-align: center;
         }
-        .prompt {
-            color: #00ffff; /* Cyan for prompt */
-            display: inline;
+        h1 {
+            color: #ff00ff;
+            text-shadow: 0 0 5px #ff00ff;
+            margin-bottom: 30px;
         }
-        .input-line {
-            display: flex;
-            align-items: center;
+        input[type="text"], input[type="password"] {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            width: 90%;
+            font-size: 16px;
+            box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.3);
+            font-family: 'Consolas', 'Monaco', monospace;
         }
-        #terminal-output {
-            white-space: pre-wrap;
-            margin-bottom: 10px;
-            min-height: calc(100vh - 80px); /* Ensure terminal fills viewport */
-        }
-        #atlas-query {
-            background: none;
+        button {
+            background-color: #00ff00;
+            color: #0d0d0d;
             border: none;
-            color: #00ff00;
-            font-family: inherit;
-            font-size: inherit;
-            flex-grow: 1;
-            padding: 0;
-            caret-color: #00ff00;
-            outline: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .response-success {
-            color: #00ff00;
+        button:hover {
+            background-color: #00cc00;
         }
-        .response-info {
-            color: #ffff00; /* Yellow */
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
         }
-        .response-error {
-            color: #ff0000;
+        .interference-screen {
+            background-color: #8b0000; /* Dark Red */
+            color: #ff0000; /* Bright Red */
+            border: 5px solid #ff0000;
+            padding: 20px;
+            text-align: center;
+            animation: glitch 0.5s infinite;
         }
-        .system-message {
-            color: #ffaa00; /* Orange */
+        @keyframes glitch {
+            0% { transform: translate(1px, 1px); }
+            25% { transform: translate(-1px, -1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, 1px); }
+            100% { transform: translate(1px, 1px); }
         }
-        .directory-item {
-            color: #00ffff; /* Cyan for directories */
-            padding-right: 15px;
-            display: inline-block;
-        }
-        .file-item {
-            color: #00ff00; /* Green for files */
-            padding-right: 15px;
-            display: inline-block;
-        }
-        /* Custom scrollbar style for terminal feel */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #111111;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #004400;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #008800;
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="terminal-output"></div>
-    <div class="input-line">
-        <span id="terminal-prompt" class="prompt">ATLAS@TheUnlockedWeb:~# </span>
-        <input type="text" id="atlas-query" autofocus>
+    <div id="interference-container" class="container interference-screen hidden">
+        <h1>ACCESS INTERFERENCE</h1>
+        <p>A Security Lockdown has been initiated due to an unauthorized break-in attempt from the main chatbot interface.</p>
+        <p>The system is currently locked to prevent further tampering. Please wait 60 seconds for the lockdown to expire.</p>
+        <button onclick="window.location.href='index.html'">Return to Main Site</button>
     </div>
-</div>
 
-<script>
-    const CORRECT_USERNAME = "EthanUnlocked";
+    <div id="login-container" class="container">
+        <h1>ATLAS TERMINAL LOGIN</h1>
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter Username">
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="handleLogin()">Login</button>
+        <div id="message"></div>
+    </div>
 
-    // =========================================================================
-    // SECURITY CHECK: PERMANENT AUTO-LOGIN FOR ETHANUNLOCKED & REDIRECT
-    // =========================================================================
-    const authFlag = localStorage.getItem('terminal_authenticated');
-    const authTime = localStorage.getItem('terminal_auth_timestamp');
-    const twoDaysInMs = 48 * 60 * 60 * 1000;
-    const currentTime = Date.now();
-    let proceedToTerminal = false;
-    
-    // Check for the name saved in cookies (assuming the user is already authenticated once)
-    function getCookie(cname) {
-        let name = cname + "=";
-        let decodedCookie = decodeURIComponent(document.cookie);
-        let ca = decodedCookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) == ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(name) == 0) {
-                return c.substring(name.length, c.length);
-            }
-        }
-        return "";
-    }
-    
-    const user = getCookie("username");
-
-    if (authFlag === 'true') {
-        // Successful login, clear flag and proceed (if coming directly from a fresh login)
-        localStorage.removeItem('terminal_authenticated');
-        proceedToTerminal = true;
-    } else if (authTime) {
-        const timeElapsed = currentTime - parseInt(authTime, 10);
+    <script>
+        // Check for the interference flag from the redirect
+        const params = new URLSearchParams(window.location.search);
+        const interference = params.get('interference');
+        const interferenceContainer = document.getElementById('interference-container');
+        const loginContainer = document.getElementById('login-container');
         
-        // Check for EthanUnlocked permanent exemption OR 2-day limit for others
-        if (user === CORRECT_USERNAME || timeElapsed < twoDaysInMs) {
-            console.log(`Auto-login successful. User is ${user === CORRECT_USERNAME ? 'EthanUnlocked (exempt).' : 'within the 48-hour window.'}`);
-            proceedToTerminal = true;
-        }
-    } 
+        // This is the same key used in index.html for the lockout timer
+        const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
 
-    if (!proceedToTerminal) {
-        // Security failure: not authenticated and timestamp is old or missing/invalid
-        console.log("Authentication failed. Redirecting to login.");
-        window.location.href = 'login.html';
-        throw new Error("Redirecting to login.html");
-    }
-    // =========================================================================
+        // Check if the lockout is active
+        function checkLockout() {
+            const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
+            const currentTime = new Date().getTime();
 
-    const queryInput = document.getElementById('atlas-query');
-    const outputDiv = document.getElementById('terminal-output');
-    const promptSpan = document.getElementById('terminal-prompt');
-    
-    // Command History
-    let history = [];
-    let historyIndex = -1;
+            if (interference || (lockoutEndTime && currentTime < parseInt(lockoutEndTime))) {
+                // Display the Interference Screen if the flag is present OR if the lockout is active
+                loginContainer.classList.add('hidden');
+                interferenceContainer.classList.remove('hidden');
+                
+                // Add a check to clear the interference screen when the timer is up
+                const remainingTime = parseInt(lockoutEndTime) - currentTime;
+                if (remainingTime > 0) {
+                    setTimeout(() => {
+                        // After lockdown expires, refresh the page to show the login
+                        window.location.href = 'terminal.html'; 
+                    }, remainingTime + 100);
+                } else if (interference) {
+                     // If the flag is set but the timer has expired, clear storage and redirect back to clean login
+                    localStorage.removeItem(TERMINAL_LOCKOUT_KEY);
+                    window.location.href = 'terminal.html';
+                }
 
-    // File System Simulation (for 'ls' command)
-    const fileSystem = {
-        './': [
-            { name: 'config/', type: 'dir' },
-            { name: 'log/', type: 'dir' },
-            { name: 'README.txt', type: 'file' },
-            { name: 'terminal.js', type: 'file' }
-        ],
-        './config/': [
-            { name: 'user_profiles.dat', type: 'file' },
-            { name: 'network_settings.conf', type: 'file' }
-        ],
-        './log/': [
-            { name: '2025_access.log', type: 'file' }
-        ]
-    };
-
-    // Current working directory state
-    let currentDir = './';
-
-    // Helper to get the current password, updated from the reset flow
-    function getCurrentPassword() {
-        return localStorage.getItem('loginPassword') || "t3chno123!";
-    }
-
-    // --- Core Functions ---
-
-    function welcomeMessage() {
-        outputDiv.innerHTML += `<div class="system-message">ATLAS Terminal v3.1 Boot Sequence Initiated...</div>`;
-        outputDiv.innerHTML += `<div class="system-message">Access granted for user: ${user}</div>`; // Use the actual user name
-        outputDiv.innerHTML += `<div class="response-info">Type 'help' for a list of commands.</div>`;
-        outputDiv.innerHTML += `<br>`;
-    }
-
-    function executeCommand(command) {
-        // Add command to history
-        if (command && history[0] !== command) {
-            history.unshift(command);
-        }
-        historyIndex = -1; // Reset history index
-
-        const parts = command.trim().split(/\s+/);
-        const cmd = parts[0].toLowerCase();
-        const args = parts.slice(1);
-
-        switch (cmd) {
-            case 'help':
-                printHelp();
-                break;
-            case 'clear':
-                outputDiv.innerHTML = '';
-                welcomeMessage(); // Re-display welcome message after clear
-                break;
-            case 'whoami':
-                printOutput(`Current user: <span class="response-info">${user}</span>`);
-                break;
-            case 'status':
-                printOutput(`ATLAS system status: <span class="response-success">Operational</span>`);
-                printOutput(`Uptime: 0 days, 0 hours, ${Math.floor(Math.random() * 59) + 1} minutes`);
-                break;
-            case 'ls':
-                listDirectory();
-                break;
-            case 'cd':
-                changeDirectory(args[0]);
-                break;
-            case 'passwd':
-                changeTerminalPassword(args);
-                break;
-            case 'ping':
-                pingWebsite(args[0]);
-                break;
-            case '':
-                break; // Do nothing on empty command
-            default:
-                printError(`Error: Command not found: ${cmd}. Type 'help' for assistance.`);
-        }
-        
-        // Scroll to bottom after execution
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-
-    function printOutput(text) {
-        outputDiv.innerHTML += `<div class="response-success">${text}</div>`;
-    }
-
-    function printError(text) {
-        outputDiv.innerHTML += `<div class="response-error">${text}</div>`;
-    }
-
-    function printHelp() {
-        printOutput(`Available Commands:`);
-        printOutput(`  <span class="response-info">help</span>     - Display this command list.`);
-        printOutput(`  <span class="response-info">clear</span>    - Clear the terminal screen.`);
-        printOutput(`  <span class="response-info">whoami</span>   - Display the current logged-in user.`);
-        printOutput(`  <span class="response-info">status</span>   - Check the ATLAS system status.`);
-        printOutput(`  <span class="response-info">ls</span>       - List files and directories in the current location.`);
-        printOutput(`  <span class="response-info">cd &lt;dir&gt;</span> - Change the current directory.`);
-        printOutput(`  <span class="response-info">passwd</span>   - Change the terminal login password.`);
-        printOutput(`  <span class="response-info">ping &lt;host&gt;</span>- Simulate pinging a network address (e.g., youtube.com).`);
-    }
-
-    // --- Command Implementations ---
-
-    function listDirectory() {
-        const files = fileSystem[currentDir];
-        if (!files) {
-            printError(`Error: Cannot access directory: ${currentDir}`);
-            return;
+                return true;
+            }
+            // Clear the interference flag if we are showing the login screen
+            if (!interferenceContainer.classList.contains('hidden')) {
+                 interferenceContainer.classList.add('hidden');
+            }
+            return false;
         }
 
-        let output = '';
-        files.forEach(item => {
-            if (item.type === 'dir') {
-                output += `<span class="directory-item">${item.name}</span>`;
+        // Run the check immediately
+        if (!checkLockout()) {
+            loginContainer.classList.remove('hidden');
+        }
+
+        function handleLogin() {
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+            const messageDiv = document.getElementById('message');
+
+            // --- CORRECT CREDENTIALS ---
+            const CORRECT_USERNAME = "EthanUnlocked";
+            const CORRECT_PASSWORD = "t3ch!";
+            // --- END CREDENTIALS ---
+
+            if (usernameInput === CORRECT_USERNAME && passwordInput === CORRECT_PASSWORD) {
+                messageDiv.style.color = '#00ff00';
+                messageDiv.textContent = 'ACCESS GRANTED. Redirecting to Terminal Interface...';
+                // In a real application, you would redirect to a secured terminal page here.
+                // For now, redirect to a success page or the main terminal page.
+                setTimeout(() => {
+                    window.location.href = 'terminal_success.html'; // Create a new success page!
+                }, 1500);
             } else {
-                output += `<span class="file-item">${item.name}</span>`;
-            }
-        });
-        outputDiv.innerHTML += `<div>${output}</div>`;
-    }
-
-    function changeDirectory(targetDir) {
-        if (!targetDir || targetDir === '.') {
-            // cd or cd .
-            return;
-        }
-
-        if (targetDir === '..') {
-            if (currentDir === './') {
-                printOutput(`Already at the root directory.`);
-                return;
-            }
-            // Move up one level
-            currentDir = './';
-            promptSpan.textContent = `ATLAS@TheUnlockedWeb:~# `;
-            return;
-        }
-
-        const newDirKey = currentDir + targetDir + '/';
-
-        if (fileSystem[newDirKey]) {
-            currentDir = newDirKey;
-            // Display path without the leading dot and trailing slash for cleaner prompt
-            promptSpan.textContent = `ATLAS@TheUnlockedWeb:${currentDir.slice(1, -1)}# `; 
-        } else {
-            printError(`Error: No such directory: ${targetDir}`);
-        }
-    }
-
-    function changeTerminalPassword(args) {
-        if (args.length !== 1) {
-            printError(`Usage: passwd <new_password>`);
-            return;
-        }
-        const newPassword = args[0];
-        
-        // Update the password in LocalStorage for the login page
-        localStorage.setItem('loginPassword', newPassword);
-        printOutput(`<span class="response-info">Password for user ${user} successfully updated.</span>`);
-        printOutput(`Remember to use this password next time you log in.`);
-    }
-
-    function pingWebsite(host) {
-        if (!host) {
-            printError('Usage: ping <hostname>');
-            return;
-        }
-        
-        printOutput(`Pinging ${host}...`);
-        
-        // Simulate network latency
-        const latency = Math.floor(Math.random() * 100) + 10;
-        
-        for (let i = 1; i <= 4; i++) {
-            const time = latency + Math.floor(Math.random() * 20);
-            printOutput(`Reply from ${host} (${Math.random().toFixed(2)}.${Math.floor(Math.random() * 255) + 1}): time=${time}ms TTL=64`);
-        }
-        printOutput(`\nPing statistics for ${host}:`);
-        printOutput(`    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)`);
-    }
-
-    // --- Event Listeners and Initialization ---
-
-    queryInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const command = queryInput.value.trim();
-            outputDiv.innerHTML += `<div class="input-line"><span class="prompt">${promptSpan.textContent}</span>${command}</div>`;
-            queryInput.value = '';
-            executeCommand(command);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            if (historyIndex < history.length - 1) {
-                historyIndex++;
-                queryInput.value = history[historyIndex];
-            }
-        } else if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            if (historyIndex > 0) {
-                historyIndex--;
-                queryInput.value = history[historyIndex];
-            } else if (historyIndex === 0) {
-                historyIndex--;
-                queryInput.value = '';
+                messageDiv.style.color = '#ff0000';
+                messageDiv.textContent = 'ACCESS DENIED. Invalid Credentials. Attempt logged.';
             }
         }
-    });
-
-    // Set initial focus
-    queryInput.focus();
-    
-    // Display welcome message on load
-    welcomeMessage();
-
-    // Re-focus the input box if the user clicks anywhere else
-    document.addEventListener('click', () => {
-        queryInput.focus();
-    });
-
-</script>
+    </script>
 </body>
 </html>
