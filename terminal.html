@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v4.0</title>
+    <title>ATLAS: DATA FLOW CONSOLE v4.0 (HIGH-LEVEL ACCESS)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
             line-height: 1.4;
         }
 
-        /* Simulated CRT/Scanline Effect (Optional but cool) */
+        /* Simulated CRT/Scanline Effect */
         body::before {
             content: "";
             position: fixed;
@@ -85,23 +85,38 @@
             font-size: 0.9rem;
         }
 
-        /* Decrypt Mini-Game Elements */
-        #decrypt-prompt {
-            color: #ffff00; /* Yellow */
-            font-size: 2rem;
+        /* SCAN - Lie Detector Simulation */
+        #lie-detector-panel {
+            background-color: #111;
+            border: 2px solid #00ffff;
+            padding: 20px;
+            margin: 10px 0;
             text-align: center;
-            margin-bottom: 10px;
         }
-        #decryption-input {
-            width: 80%;
-            background-color: #0a0a0a;
-            border: 2px solid #ffff00;
-            color: #fff;
-            text-align: center;
-            font-size: 1.5rem;
-            margin: 0 auto;
+        #video-feed {
+            width: 100%;
+            max-width: 400px;
+            margin: 10px auto;
             display: block;
-            padding: 10px;
+            border: 1px solid #00ffff;
+        }
+        #indicator-box {
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 15px;
+            margin-top: 10px;
+            border: 3px solid #00ff41;
+            transition: all 0.5s;
+        }
+        #record-btn {
+            background: #ff0000;
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            border: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
         }
     </style>
 </head>
@@ -131,21 +146,16 @@
     <script>
         const outputArea = document.getElementById('output-area');
         const commandInput = document.getElementById('command-input');
-        const statusPrefix = document.getElementById('input-prefix');
 
-        const scanTargets = [
-            "Project MIST: Status: Active, Latency: 12ms, Region: N/A",
-            "Asset 701: Location: Dormant, Last Ping: 2025-09-12",
-            "Encrypted Channel: ID: XULU404, Priority: High, Lock: Triple-Layered",
-            "Sub-System TETHYS: State: Offline, Reason: Manual Disconnect",
-            "OPERATOR LOG: E.I. (Ethan Ioannou) : Access Time Logged.",
-            "Warning: Public Net Traceback attempted. Source blocked."
-        ];
+        let isBusy = false; // Flag to prevent command overlap
+        let scanActive = false;
+        let decryptState = 0; // 0: Ready, 1: Guess, 2: Decrypting
 
-        let isScanning = false;
-        let isDecrypting = false;
-        let targetCode = '';
-        let scanInterval;
+        // --- Simulated Target Data ---
+        const SECRET_EMAIL = 'secret@gmail.com';
+        const SIMULATED_PASSWORD = 'p4ssw0rd!';
+        const PASSWORD_LENGTH = SIMULATED_PASSWORD.length;
+        const DECRYPT_TIMER_SECONDS = 5.0; // <-- CHANGED TIMER BACK TO 5 SECONDS
 
         /**
          * Core utility to add output.
@@ -158,153 +168,272 @@
             outputArea.appendChild(document.createElement('br'));
             outputArea.scrollTop = outputArea.scrollHeight;
         }
-        
-        /**
-         * Simulation of a dynamic data scan.
-         */
-        function startScan() {
-            if (isScanning) return;
-            isScanning = true;
-            writeOutput("INITIATING NETWORK SCAN... [MAY TAKE A MOMENT]", '#ffff00'); 
-            
-            let counter = 0;
-            scanInterval = setInterval(() => {
-                const randomTarget = scanTargets[Math.floor(Math.random() * scanTargets.length)];
-                
-                // Print 5 lines of random, glitching data before the real target
-                for (let i = 0; i < 5; i++) {
-                    const randomHex = Math.random().toString(16).substring(2, 10).toUpperCase();
-                    writeOutput(`>> [${randomHex}]: DATA STREAM OVERLOAD...`, '#004d1a'); // Darker green for background noise
-                }
 
-                writeOutput(`>> TARGET FOUND: ${randomTarget}`, '#00ff41');
-
-                counter++;
-                if (counter >= 10) { // Scan for 10 cycles
-                    clearInterval(scanInterval);
-                    isScanning = false;
-                    writeOutput("[SCAN COMPLETE]", '#ffff00');
-                    showPrompt();
-                }
-            }, 500); // Faster refresh for visual effect
-        }
-
-        /**
-         * Decryption mini-game logic.
-         */
-        function startDecryption() {
-            if (isDecrypting) return;
-            isDecrypting = true;
-            
-            // Generate a random 6-character hex code
-            targetCode = Math.random().toString(16).substring(2, 8).toUpperCase();
-
-            // Clear the command line area and display the game elements
-            outputArea.innerHTML += `<br><div id="decryption-sequence"></div>`;
-            const decryptionDiv = document.getElementById('decryption-sequence');
-            
-            decryptionDiv.innerHTML = `
-                <div id="decrypt-prompt">**CODE INTRUSION DETECTED** - ENTER CODE TO RE-ROUTE</div>
-                <div id="decrypt-code" style="font-size: 3rem; color: #ff0000; text-align: center; margin-bottom: 20px;">[ ${targetCode} ]</div>
-                <input type="text" id="decryption-input" placeholder="TYPE THE CODE ABOVE QUICKLY">
-                <div id="decrypt-timer" style="color: #fff; text-align: center; margin-top: 10px;">Time Remaining: 5.0s</div>
-            `;
-            
-            // Temporarily hide the command input
-            document.getElementById('input-line').style.display = 'none';
-
-            const decryptInput = document.getElementById('decryption-input');
-            const decryptTimer = document.getElementById('decrypt-timer');
-            let timeRemaining = 5.0;
-            
-            decryptInput.focus();
-
-            const timerInterval = setInterval(() => {
-                timeRemaining -= 0.1;
-                decryptTimer.textContent = `Time Remaining: ${timeRemaining.toFixed(1)}s`;
-
-                if (timeRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    handleDecryptionResult(false, decryptInput.value);
-                }
-            }, 100);
-
-            decryptInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    clearInterval(timerInterval);
-                    handleDecryptionResult(decryptInput.value.toUpperCase() === targetCode, decryptInput.value);
-                }
-            });
-        }
-
-        /**
-         * Handles the result of the decryption mini-game.
-         */
-        function handleDecryptionResult(success, enteredCode) {
-            isDecrypting = false;
-            document.getElementById('input-line').style.display = 'flex';
-            outputArea.removeChild(document.getElementById('decryption-sequence'));
-            commandInput.focus();
-
-            writeOutput(`> DECRYPT: Entered Code: ${enteredCode}`, '#ff00ff');
-
-            if (success) {
-                writeOutput(">> DECRYPTION SUCCESSFUL. Access to high-level network restored.", '#ffff00');
-                writeOutput(">> KEY DATA DOWNLOADED: [ACCESS LOG: PROJECT CHIMERA (2025-10-09)]", '#00ff41');
-            } else {
-                writeOutput(">> DECRYPTION FAILED. Code Mismatch or Timeout. Security level raised.", '#ff0000');
+        function showPrompt() {
+            if (!isBusy) {
+                writeOutput("", '#00ff41'); // Newline
+                commandInput.value = '';
             }
+            commandInput.focus();
+        }
+
+        // --- COMMAND HANDLERS ---
+
+        async function runSearch(query) {
+            isBusy = true;
+            writeOutput(`INITIATING PUBLIC WEB SCAN FOR: "${query}"...`, '#ffff00');
+
+            // Simulate delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Simplified simulation of results
+            const normalizedQuery = query.toLowerCase();
+
+            if (normalizedQuery.includes("eiffel") || normalizedQuery.includes("paris")) {
+                writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
+                writeOutput("[Source 1] Title: Eiffel Tower - Official Site", '#fff');
+                writeOutput("          Snippet: An iron lattice tower on the Champ de Mars in Paris, France...", '#00ff41');
+                writeOutput("          URL: [SIMULATED]", '#55ffaa');
+                writeOutput("[Source 2] Title: Gustave Eiffel Biography", '#fff');
+                writeOutput("          Snippet: French civil engineer and architect. Designed the Eiffel Tower...", '#00ff41');
+                writeOutput("          URL: [SIMULATED]", '#55ffaa');
+            } else if (normalizedQuery.includes("ethan") || normalizedQuery.includes("ioannou")) {
+                writeOutput(">> TARGET: ETHAN IOANNOU. DATA RETRIEVAL BLOCKED BY LEVEL DELTA OVERRIDE.", '#ff0000');
+                writeOutput("          REASON: PROHIBITED ACCESS TO SELF-IDENTITY FILES.", '#ff0000');
+            } else {
+                 writeOutput(">> NO SIGNIFICANT PUBLIC DATA FOUND. QUERY TOO VAGUE.", '#ff0000');
+            }
+
+            isBusy = false;
             showPrompt();
         }
 
         /**
-         * Displays the input prompt.
+         * COMMAND: DECRYPT (Mini-Game: Guess the email, then animate the password)
          */
-        function showPrompt() {
-            // Ensure the prompt is only written if not mid-game
-            if (!isScanning && !isDecrypting) {
-                writeOutput("", '#00ff41'); // Newline
-                commandInput.value = '';
+        function runDecrypt(input) {
+            if (decryptState === 0) {
+                // State 0: Initial prompt
+                writeOutput("ENCRYPTION MODULE ONLINE. Target email required for hash generation.", '#ffff00');
+                writeOutput("FORMAT: DECRYPT [target@email.com]", '#ffff00');
+                decryptState = 1; // Move to Guess state
+                
+            } else if (decryptState === 1) {
+                // State 1: Check the email guess
+                const emailGuess = input.toLowerCase().trim();
+                
+                if (emailGuess === SECRET_EMAIL) {
+                    writeOutput(`TARGET ACQUIRED: ${SECRET_EMAIL}. Initiating Level-4 Decryption...`, '#00ffff');
+                    decryptState = 2; // Move to Decrypting state
+                    isBusy = true;
+                    animateDecryption();
+                } else {
+                    writeOutput(`WARNING: ${emailGuess} - Target email not in high-priority registry. Aborting.`, '#ff0000');
+                    decryptState = 0; // Reset
+                }
             }
         }
 
-        /**
-         * Processes the user's command.
-         */
-        function processCommand(command) {
-            command = command.trim().toUpperCase();
-            writeOutput(`> ${command}`, '#ff00ff'); // Echo the command
+        function animateDecryption() {
+            const passwordContainer = document.createElement('span');
+            passwordContainer.id = 'decrypted-pass';
+            writeOutput("PASSWORD HASH: ", '#fff');
+            outputArea.appendChild(passwordContainer);
+            outputArea.appendChild(document.createElement('br'));
+            outputArea.scrollTop = outputArea.scrollHeight;
             
-            if (isScanning || isDecrypting) {
-                writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
+            let decryptedPassword = '';
+            let index = 0;
+            
+            // Set up the timer for the decryption game
+            let timeRemaining = DECRYPT_TIMER_SECONDS;
+            
+            const timerElement = document.createElement('div');
+            timerElement.style.color = '#ffff00';
+            timerElement.textContent = `TIME: ${timeRemaining.toFixed(1)}s`;
+            outputArea.appendChild(timerElement);
+
+            const timerInterval = setInterval(() => {
+                timeRemaining -= 0.1;
+                timerElement.textContent = `TIME: ${timeRemaining.toFixed(1)}s`;
+                
+                if (timeRemaining <= 0 || index >= PASSWORD_LENGTH) {
+                    clearInterval(timerInterval);
+                    outputArea.removeChild(timerElement);
+                    if (index >= PASSWORD_LENGTH) {
+                        writeOutput(`DECRYPTION COMPLETE. PASSWORD: ${SIMULATED_PASSWORD}`, '#ffff00');
+                    } else {
+                        writeOutput("DECRYPTION FAILED. PROCESS ABORTED DUE TO TIMEOUT.", '#ff0000');
+                    }
+                    decryptState = 0;
+                    isBusy = false;
+                    showPrompt();
+                    return;
+                }
+
+                // Decryption animation step
+                const randomChars = Array.from({length: 5}, () => Math.random().toString(36)[2]).join('');
+                const currentChar = SIMULATED_PASSWORD[index];
+                
+                passwordContainer.innerHTML = `<span style='color:#00ff41;'>${decryptedPassword}</span>` + 
+                                              `<span style='color:#ff00ff;'>${randomChars.substring(0, 1)}</span>`;
+                
+                // Simulate the "lock-in" of the correct character
+                setTimeout(() => {
+                    if (index < PASSWORD_LENGTH) {
+                        decryptedPassword += currentChar;
+                        passwordContainer.innerHTML = `<span style='color:#00ff41;'>${decryptedPassword}</span>`;
+                        index++;
+                    }
+                }, 100); 
+
+            }, 500); // Animation cycle rate
+        }
+        
+        /**
+         * COMMAND: SCAN (Simulates Lie Detector)
+         */
+        function runScan(input) {
+            if (!scanActive) {
+                // State 0: Initial setup
+                writeOutput("ATLAS POLYGRAPH INITIATED. Requires Camera/Mic access for bio-feedback scan.", '#ffff00');
+                
+                const panel = document.createElement('div');
+                panel.id = 'lie-detector-panel';
+                panel.innerHTML = `
+                    <p style='color:#00ffff;'>TARGET: <input type="text" id="target-name" placeholder="Enter Target Name" style="background: transparent; border: 1px solid #00ffff; color: #fff;"></p>
+                    <video id="video-feed" autoplay></video>
+                    <div id="indicator-box" style="border-color: #00ff41;">AWAITING START</div>
+                    <button id="record-btn">START ANALYSIS</button>
+                    <p style='font-size: 0.8rem; color: #555;'>**NOTE: Camera access is simulated for security compliance.**</p>
+                `;
+                outputArea.appendChild(panel);
+                outputArea.scrollTop = outputArea.scrollHeight;
+                scanActive = true;
+                
+                // Get the video feed (using a simulated permission prompt)
+                const videoFeed = document.getElementById('video-feed');
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        videoFeed.srcObject = stream;
+                    })
+                    .catch(err => {
+                        writeOutput("ACCESS ERROR: Cannot acquire live camera feed. Proceeding with simulated data...", '#ff0000');
+                        videoFeed.style.display = 'none';
+                    });
+                } else {
+                    videoFeed.style.display = 'none';
+                }
+
+                document.getElementById('record-btn').onclick = startLieDetection;
+            } else {
+                writeOutput("POLYGRAPH ALREADY ACTIVE. Type 'STOP SCAN' to terminate.", '#ff0000');
+            }
+        }
+
+        function startLieDetection() {
+            const targetName = document.getElementById('target-name').value || "Unknown Subject";
+            const indicatorBox = document.getElementById('indicator-box');
+            const recordBtn = document.getElementById('record-btn');
+            
+            if (recordBtn.textContent === "STOP ANALYSIS") {
+                // Stop the simulation
+                endLieDetection(targetName);
                 return;
             }
 
-            switch (command) {
+            writeOutput(`ANALYZING BIO-FEEDBACK FOR: ${targetName}...`, '#ffff00');
+            recordBtn.textContent = "STOP ANALYSIS";
+            recordBtn.style.background = '#00ffff';
+
+            indicatorBox.textContent = "CALIBRATING...";
+            indicatorBox.style.borderColor = '#00ffff';
+            indicatorBox.style.color = '#00ffff';
+
+            // Simulate the analysis
+            setTimeout(() => {
+                const isLying = Math.random() < 0.5; // 50% chance of lying
+                const resultText = isLying ? "DECEPTION DETECTED" : "VERIFIED TRUTH";
+                const resultColor = isLying ? '#ff0000' : '#00ff41';
+                
+                indicatorBox.textContent = resultText;
+                indicatorBox.style.borderColor = resultColor;
+                indicatorBox.style.color = resultColor;
+                indicatorBox.style.boxShadow = `0 0 15px ${resultColor}`;
+                
+                writeOutput(`RESULT: ${targetName} is ${isLying ? 'LYING' : 'TELLING THE TRUTH'} (98% Confidence).`, resultColor);
+
+            }, 3000); // 3-second simulation
+        }
+
+        function endLieDetection(targetName) {
+            const panel = document.getElementById('lie-detector-panel');
+            outputArea.removeChild(panel);
+            scanActive = false;
+            writeOutput(`POLYGRAPH SCAN TERMINATED. Report logged for ${targetName}.`, '#ffff00');
+            showPrompt();
+        }
+
+
+        // --- MAIN COMMAND PROCESSOR ---
+        
+        function processCommand(command) {
+            const parts = command.trim().split(/\s+/);
+            const cmd = parts[0].toUpperCase();
+            const args = parts.slice(1).join(' ');
+
+            if (isBusy && cmd !== 'LOGOUT') {
+                writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
+                return;
+            }
+            
+            // Handle decryption input during its specific state
+            if (decryptState === 1 && cmd !== 'LOGOUT' && cmd !== 'HELP') {
+                runDecrypt(command);
+                commandInput.value = '';
+                return;
+            }
+            
+            // Handle STOP SCAN command
+            if (cmd === 'STOP' && args.toUpperCase() === 'SCAN' && scanActive) {
+                endLieDetection("Unknown Subject");
+                return;
+            }
+
+            // Echo the command
+            writeOutput(`> ${command}`, '#ff00ff'); 
+            
+            switch (cmd) {
                 case 'HELP':
                     writeOutput("--- AVAILABLE COMMANDS ---", '#ffff00');
-                    writeOutput("SCAN    : Initiate deep-level network and asset scan.", '#00ff41');
-                    writeOutput("DECRYPT : Initiate emergency decryption sequence (Mini-Game).", '#00ff41');
-                    writeOutput("LOGOUT  : Terminate session and return to main site.", '#00ff41');
+                    writeOutput("SEARCH [query] : Fetch public data (people/locations).", '#00ff41');
+                    writeOutput("DECRYPT        : Start email password extraction module.", '#00ff41');
+                    writeOutput("SCAN           : Start bio-feedback analysis (lie detector).", '#00ff41');
+                    writeOutput("LOGOUT         : Terminate session.", '#00ff41');
+                    break;
+                case 'SEARCH':
+                    if (args.length > 2) {
+                        runSearch(args);
+                        return;
+                    } else {
+                        writeOutput("ERROR: SEARCH requires a query (e.g., SEARCH Eiffel Tower).", '#ff0000');
+                    }
+                    break;
+                case 'DECRYPT':
+                    runDecrypt(args);
                     break;
                 case 'SCAN':
-                    startScan();
-                    return;
-                case 'DECRYPT':
-                    startDecryption();
-                    return;
+                    runScan();
+                    break;
                 case 'LOGOUT':
-                    writeOutput("SESSION TERMINATED. Clearing logs...", '#ff0000');
+                    writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = 'https://ethanunlocked690.github.io';
                     }, 1000);
                     return;
-                case 'ETHAN':
-                case 'IOANNOU':
-                    writeOutput("QUERY VIOLATION. RE-QUERY PROTOCOL 3.01. LOGGING INCIDENT.", '#ff0000');
-                    break;
                 default:
-                    writeOutput(`ERROR: Command '${command}' not recognized. Try HELP.`, '#ff0000');
+                    writeOutput(`ERROR: Command '${cmd}' not recognized. Try HELP.`, '#ff0000');
                     break;
             }
             showPrompt();
@@ -314,7 +443,6 @@
 
         commandInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                if (isDecrypting) return; // Prevent interference with decryption game
                 processCommand(commandInput.value);
                 commandInput.value = '';
             }
