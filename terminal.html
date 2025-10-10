@@ -150,12 +150,13 @@
         let isBusy = false; // Flag to prevent command overlap
         let scanActive = false;
         let decryptState = 0; // 0: Ready, 1: Guess, 2: Decrypting
+        let scanInterval; // New variable to hold the continuous scan interval
 
         // --- Simulated Target Data ---
         const SECRET_EMAIL = 'secret@gmail.com';
         const SIMULATED_PASSWORD = 'p4ssw0rd!';
         const PASSWORD_LENGTH = SIMULATED_PASSWORD.length;
-        const DECRYPT_TIMER_SECONDS = 5.0; // <-- CHANGED TIMER BACK TO 5 SECONDS
+        const DECRYPT_TIMER_SECONDS = 5.0; // Timer remains at 5 seconds
 
         /**
          * Core utility to add output.
@@ -347,31 +348,45 @@
             recordBtn.textContent = "STOP ANALYSIS";
             recordBtn.style.background = '#00ffff';
 
+            // Initial calibration
             indicatorBox.textContent = "CALIBRATING...";
             indicatorBox.style.borderColor = '#00ffff';
             indicatorBox.style.color = '#00ffff';
 
-            // Simulate the analysis
+            // After a short calibration delay, start the continuous analysis
             setTimeout(() => {
-                const isLying = Math.random() < 0.5; // 50% chance of lying
-                const resultText = isLying ? "DECEPTION DETECTED" : "VERIFIED TRUTH";
-                const resultColor = isLying ? '#ff0000' : '#00ff41';
-                
-                indicatorBox.textContent = resultText;
-                indicatorBox.style.borderColor = resultColor;
-                indicatorBox.style.color = resultColor;
-                indicatorBox.style.boxShadow = `0 0 15px ${resultColor}`;
-                
-                writeOutput(`RESULT: ${targetName} is ${isLying ? 'LYING' : 'TELLING THE TRUTH'} (98% Confidence).`, resultColor);
+                writeOutput("LIVE ANALYSIS INITIATED. Indicator updating continuously...", '#00ff41');
 
-            }, 3000); // 3-second simulation
+                // Start continuous analysis flicker
+                scanInterval = setInterval(() => {
+                    // 50% chance of detecting deception vs truth
+                    const isLying = Math.random() < 0.5; 
+                    const resultText = isLying ? "DECEPTION DETECTED" : "VERIFIED TRUTH";
+                    const resultColor = isLying ? '#ff0000' : '#00ff41';
+                    
+                    indicatorBox.textContent = resultText;
+                    indicatorBox.style.borderColor = resultColor;
+                    indicatorBox.style.color = resultColor;
+                    indicatorBox.style.boxShadow = `0 0 15px ${resultColor}`;
+                }, 500); // Update every half second
+
+            }, 2000); // 2-second calibration
         }
 
         function endLieDetection(targetName) {
+            // Stop the continuous flickering interval
+            clearInterval(scanInterval); 
+            
+            const indicatorBox = document.getElementById('indicator-box');
+            // Finalize result (Simulate logging the last state)
+            const finalResult = indicatorBox.textContent;
+            const finalColor = indicatorBox.style.color;
+
             const panel = document.getElementById('lie-detector-panel');
             outputArea.removeChild(panel);
             scanActive = false;
-            writeOutput(`POLYGRAPH SCAN TERMINATED. Report logged for ${targetName}.`, '#ffff00');
+
+            writeOutput(`POLYGRAPH SCAN TERMINATED. Final State Logged: ${finalResult}.`, finalColor);
             showPrompt();
         }
 
@@ -397,7 +412,8 @@
             
             // Handle STOP SCAN command
             if (cmd === 'STOP' && args.toUpperCase() === 'SCAN' && scanActive) {
-                endLieDetection("Unknown Subject");
+                // Manually trigger the end sequence if running the text command
+                endLieDetection("Unknown Subject"); 
                 return;
             }
 
