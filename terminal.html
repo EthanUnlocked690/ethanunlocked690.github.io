@@ -214,7 +214,7 @@
     <script>
         const outputArea = document.getElementById('output-area');
         const commandInput = document.getElementById('command-input');
-        const passwordInput = document.getElementById('password-input'); // New reference
+        const passwordInput = document.getElementById('password-input'); 
 
         let isBusy = false; 
         let scanActive = false;
@@ -238,6 +238,9 @@
         
         // --- SCAN PASSWORD ---
         const SCAN_PASSWORD = 'SC4NN3R#';
+        
+        // --- OVERRIDE STATUS ---
+        let overrideEnabled = false;
 
         // Security Questions (Key is the question, Value is the expected answer string)
         const SECURITY_QUESTIONS = {
@@ -286,12 +289,21 @@
             writeOutput(`INITIATING PUBLIC WEB SCAN FOR: "${query}"...`, '#ffff00');
             await new Promise(resolve => setTimeout(resolve, 1500));
             const normalizedQuery = query.toLowerCase();
-
+            
+            // FIX: Expanded Search Results
+            writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
+            
             if (normalizedQuery.includes("eiffel") || normalizedQuery.includes("paris")) {
-                writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
                 writeOutput("[Source 1] Title: Eiffel Tower - Official Site", '#fff');
+                writeOutput("[Source 2] Status: HIGH TOURIST ALERT, heavy crowd movement.", '#ffff00');
             } else if (normalizedQuery.includes("ethan") || normalizedQuery.includes("ioannou")) {
                 writeOutput(">> TARGET: ETHAN IOANNOU. DATA RETRIEVAL BLOCKED BY LEVEL DELTA OVERRIDE.", '#ff0000');
+            } else if (normalizedQuery.includes("nasa") || normalizedQuery.includes("space")) {
+                 writeOutput("[Source 1] Title: NASA Official Portal - Mars Missions Log", '#fff');
+                 writeOutput("[Source 2] Geo-Loc: Kennedy Space Center, FL. Status: Routine Operations.", '#fff');
+            } else if (normalizedQuery.includes("crypto") || normalizedQuery.includes("bitcoin")) {
+                 writeOutput("[Source 1] Title: Global Market Index 2024 - Crypto Analysis", '#fff');
+                 writeOutput("[Source 2] Risk Factor: EXTREME VOLATILITY. Recommendation: HOLD.", '#ff0000');
             } else {
                  writeOutput(">> NO SIGNIFICANT PUBLIC DATA FOUND. QUERY TOO VAGUE.", '#ff0000');
             }
@@ -325,6 +337,7 @@
                 
                 await new Promise(resolve => setTimeout(resolve, 2500)); // 2.5 second "Google" search delay
 
+                // FIX: Corrected logic to recognize the two secret emails
                 if (emailGuess === SECRET_EMAIL || emailGuess === PASSWORD_DISABLED_EMAIL) {
                     targetEmail = emailGuess; 
                     writeOutput(`>> VERIFICATION SUCCESSFUL. Target exists in high-priority register.`, '#00ff41');
@@ -404,8 +417,8 @@
             showPrompt();
         }
 
+
         function animateDecryption() {
-            // ... (Decryption animation logic remains the same)
             const passwordContainer = document.createElement('span');
             passwordContainer.id = 'decrypted-pass';
             writeOutput("PASSWORD HASH: ", '#fff');
@@ -458,11 +471,9 @@
                 }, 100); 
 
             }, 500);
-            // ...
         }
 
         function handleDecryptPassword() {
-            // ... (Decrypt password logic remains the same)
              if (targetEmail === PASSWORD_DISABLED_EMAIL) {
                 writeOutput("!! AUTHENTICATION POLICY: PASSWORD DISABLED (Key Fob/Biometric Only)", '#ff0000');
             } else {
@@ -472,7 +483,6 @@
         }
 
         function handleComparePassword(inputPassword) {
-            // ... (Compare password logic remains the same)
             const correctPassword = SIMULATED_PASSWORD;
             let accuracy = 0;
             let suggestion = "Password strength is HIGH.";
@@ -678,6 +688,19 @@
             writeOutput(`REPORT LOGGED. SCAN TERMINATED.`, '#ffff00');
             showPrompt();
         }
+        
+        // --- NEW SECRET COMMAND: OVERRIDE ---
+        function runOverride() {
+            if (overrideEnabled) {
+                overrideEnabled = false;
+                writeOutput(">> SYSTEM OVERRIDE DISABLED. Returning to standard security protocols.", '#00ff41');
+            } else {
+                overrideEnabled = true;
+                writeOutput("!! EMERGENCY PROTOCOL: LEVEL ALPHA OVERRIDE INITIATED.", '#ff0000');
+                writeOutput("!! SECURITY WARNING: ALL USER LOGGING IS TEMPORARILY SUSPENDED.", '#ff0000');
+                writeOutput("!! STATUS: OPERATIONAL MODE SET TO 'UNTRACED'.", '#ff0000');
+            }
+        }
 
 
         // --- MAIN COMMAND PROCESSOR ---
@@ -687,21 +710,27 @@
             const cmd = parts[0].toUpperCase();
             const args = command.trim().substring(cmd.length).trim();
 
-            if (isBusy && cmd !== 'LOGOUT') {
+            if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE') {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
             }
             
             // Check for STOP SCAN regardless of current state
             if (cmd === 'STOP' && args.toUpperCase() === 'SCAN' && scanActive) {
-                // If in an active scan, terminate it
                 endLieDetection("Unknown Subject"); 
+                return;
+            }
+            
+            // Check for SECRET COMMAND
+            if (cmd === 'OVERRIDE') {
+                writeOutput(`> ${command}`, '#ff00ff');
+                runOverride();
+                showPrompt();
                 return;
             }
             
             // SECURITY QUESTION State (1.5)
             if (decryptState === 1.5) {
-                // Do not echo command until we know the answer result
                 handleSecurityAnswer(command);
                 commandInput.value = '';
                 return;
@@ -756,7 +785,6 @@
                     break;
                 case 'LOGOUT':
                     writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
-                    // Stop camera feed if active before redirecting
                     if (scanActive) {
                         const videoFeed = document.getElementById('video-feed');
                         if (videoFeed && videoFeed.srcObject) {
@@ -786,11 +814,10 @@
         
         // Listener for the new, hidden password input
         passwordInput.addEventListener('keydown', function(e) {
-            // Clear any existing timeout
             clearTimeout(passwordTimeout);
 
             if (e.key === 'Enter') {
-                e.preventDefault(); // Prevent newline or form submission
+                e.preventDefault(); 
                 handleScanPassword(actualPasswordAttempt);
                 return;
             }
