@@ -149,7 +149,7 @@
             z-index: 10;
         }
         .scanning #scan-line {
-            animation: scan-animate 1.5s infinite; /* 3 scans in 3 seconds total */
+            animation: scan-animate 1.5s infinite; 
             animation-iteration-count: 3; 
         }
 
@@ -227,7 +227,7 @@
         };
         let currentSecurityQuestion = null;
 
-        /** Utility functions (writeOutput, showPrompt) remain unchanged */
+        /** Utility functions */
         function writeOutput(text, color = '#00ff41') {
             const line = document.createElement('span');
             line.style.color = color;
@@ -270,7 +270,7 @@
         /**
          * COMMAND: DECRYPT (Multi-Stage Logic with Security Question)
          */
-        function runDecrypt(input) {
+        async function runDecrypt(input) {
             const cmd = input.trim().split(/\s+/)[0].toUpperCase();
 
             if (decryptState === 0) {
@@ -283,18 +283,27 @@
                 handleSecurityAnswer(input.trim());
                 
             } else if (decryptState === 1) {
-                // State 1: Email Input
+                // State 1: Email Input - Now includes the "thinking hard" step
+                isBusy = true; // Lock the input during the simulation
                 const emailGuess = input.toLowerCase().trim();
+
+                writeOutput(`Verifying email existence for ${emailGuess}...`, '#ffff00');
+                writeOutput(`Querying global DNS records and high-priority registers...`, '#00ffff');
                 
+                await new Promise(resolve => setTimeout(resolve, 2500)); // 2.5 second "Google" search delay
+
                 if (emailGuess === SECRET_EMAIL || emailGuess === PASSWORD_DISABLED_EMAIL) {
                     targetEmail = emailGuess; 
-                    writeOutput(`TARGET ACQUIRED: ${targetEmail}. Initiating Level-4 Decryption...`, '#00ffff');
+                    writeOutput(`>> VERIFICATION SUCCESSFUL. Target exists in high-priority register.`, '#00ff41');
+                    writeOutput(`Initiating Level-4 Decryption...`, '#00ffff');
                     decryptState = 2; // Move to Decrypting state
-                    isBusy = true;
                     animateDecryption();
                 } else {
-                    writeOutput(`WARNING: ${emailGuess} - Target email not in high-priority registry. Aborting.`, '#ff0000');
-                    decryptState = 0; // Reset
+                    // New Error Message
+                    writeOutput(`>> VERIFICATION FAILED: Target email ${emailGuess} not found in global DNS/registers.`, '#ff0000');
+                    writeOutput(`Sorry, this email is not real! Try correcting your spelling and puncuation.`, '#ff0000');
+                    decryptState = 0; // Reset to the start of the DECRYPT process
+                    isBusy = false;
                     showPrompt();
                 }
             } else if (decryptState === 3) {
@@ -318,26 +327,36 @@
             const randomIndex = Math.floor(Math.random() * questions.length);
             currentSecurityQuestion = questions[randomIndex];
 
-            writeOutput(`\nSECURITY CHALLENGE INITIATED. (10s Timeout)`, '#ff00ff');
+            writeOutput(`\nSECURITY CHALLENGE INITIATED. (10s to answer)`, '#ff00ff');
             writeOutput(`QUERY: ${currentSecurityQuestion}`, '#ffff00');
             
             decryptState = 1.5;
             isBusy = false;
             showPrompt();
 
-            // Set 10-second timer
+            // Set 10-second timer to execute handleSecurityAnswer with a blank answer if time runs out
             securityTimeout = setTimeout(() => {
                 if (decryptState === 1.5) {
-                    writeOutput("!! TIMEOUT: Security challenge failed.", '#ff0000');
-                    writeOutput("ACCESS DENIED. Resuming standard terminal operations.", '#ff0000');
-                    decryptState = 0;
-                    showPrompt();
+                    // Call handler with an empty string to simulate no answer/timeout
+                    handleSecurityAnswer(''); 
                 }
             }, 10000);
         }
 
         function handleSecurityAnswer(answer) {
             clearTimeout(securityTimeout); // Stop the timeout
+
+            if (decryptState !== 1.5) {
+                return; 
+            }
+            
+            if (answer.trim() === '') {
+                writeOutput("!! TIMEOUT: Security challenge failed.", '#ff0000');
+                writeOutput("ACCESS DENIED. Resuming standard terminal operations.", '#ff0000');
+                decryptState = 0;
+                showPrompt();
+                return;
+            }
 
             const expectedAnswer = SECURITY_QUESTIONS[currentSecurityQuestion];
             // Normalize both answers for a robust check
@@ -346,7 +365,7 @@
 
             if (normalizedAnswer === normalizedExpected) {
                 writeOutput("ACCESS GRANTED. Personal Query Verified.", '#00ff41');
-                writeOutput("\nEnter Target Email (e.g., secret@gmail.com):", '#ffff00');
+                writeOutput("\nEnter Target Email (e.g., secret@gmail.com or nopass@corp.net):", '#ffff00');
                 decryptState = 1; // Move to email input state
             } else {
                 writeOutput(`!! SECURITY BREACH: Answer '${answer}' is incorrect.`, '#ff0000');
