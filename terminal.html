@@ -290,9 +290,9 @@
             await new Promise(resolve => setTimeout(resolve, 1500));
             const normalizedQuery = query.toLowerCase();
             
-            // FIX: Expanded Search Results
             writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
             
+            // FIX: Expanded Search Results
             if (normalizedQuery.includes("eiffel") || normalizedQuery.includes("paris")) {
                 writeOutput("[Source 1] Title: Eiffel Tower - Official Site", '#fff');
                 writeOutput("[Source 2] Status: HIGH TOURIST ALERT, heavy crowd movement.", '#ffff00');
@@ -750,7 +750,16 @@
             }
 
             // EMAIL INPUT State (1)
+            // This is the critical block for email input in the DECRYPT process
             if (decryptState === 1 && cmd !== 'LOGOUT' && cmd !== 'HELP') {
+                 // Check if the input contains a space, which means it's not a single email address
+                 if (command.trim().includes(' ')) {
+                     writeOutput(`> ${command}`, '#ff00ff');
+                     writeOutput("ERROR: Invalid input format. Please enter only the email address.", '#ff0000');
+                     showPrompt();
+                     return;
+                 }
+                 
                  writeOutput(`> ${command}`, '#ff00ff');
                  runDecrypt(command);
                  commandInput.value = '';
@@ -763,10 +772,11 @@
             switch (cmd) {
                 case 'HELP':
                     writeOutput("--- AVAILABLE COMMANDS ---", '#ffff00');
-                    writeOutput("SEARCH [query] : Fetch public data (people/locations).", '#00ff41');
-                    writeOutput("DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
-                    writeOutput("SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
-                    writeOutput("LOGOUT         : Terminate session.", '#00ff41');
+                    writeOutput("1. SEARCH [query] : Fetch public data (e.g., NASA, Eiffel).", '#00ff41');
+                    writeOutput("2. DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
+                    writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
+                    writeOutput("4. LOGOUT         : Terminate session.", '#00ff41');
+                    writeOutput("5. [HIDDEN]       : A secret command for high-level system control.", '#ff00ff');
                     break;
                 case 'SEARCH':
                     if (args.length > 2) {
