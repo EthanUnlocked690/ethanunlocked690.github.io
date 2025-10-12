@@ -292,7 +292,6 @@
             
             writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
             
-            // FIX: Expanded Search Results
             if (normalizedQuery.includes("eiffel") || normalizedQuery.includes("paris")) {
                 writeOutput("[Source 1] Title: Eiffel Tower - Official Site", '#fff');
                 writeOutput("[Source 2] Status: HIGH TOURIST ALERT, heavy crowd movement.", '#ffff00');
@@ -320,15 +319,26 @@
 
             if (decryptState === 0) {
                 // State 0: Initial prompt -> Move to security question state (1.5)
-                writeOutput("ENCRYPTION MODULE ONLINE. Verifying Operator Clearance via Personal Query...", '#ffff00');
-                startSecurityQuestion();
+                writeOutput("ENCRYPTION MODULE ONLINE. Verifying Operator Clearance...", '#ffff00');
+                
+                if (overrideEnabled) {
+                    // OVERRIDE BYPASS: Skip security question directly to email input
+                    writeOutput("!! OVERRIDE ACTIVE: Security question bypass approved. Initiating direct input.", '#ff0000');
+                    writeOutput("\nEnter Target Email (e.g., secret@gmail.com or nopass@corp.net):", '#ffff00');
+                    decryptState = 1;
+                    showPrompt();
+                } else {
+                    // Standard Path: Start security question
+                    writeOutput("Verifying Operator Clearance via Personal Query...", '#ffff00');
+                    startSecurityQuestion();
+                }
                 
             } else if (decryptState === 1.5) {
                 // State 1.5: Security Question Answer Check
                 handleSecurityAnswer(input.trim());
                 
             } else if (decryptState === 1) {
-                // State 1: Email Input - Now includes the "thinking hard" step
+                // State 1: Email Input - Handles the actual decryption trigger
                 isBusy = true; // Lock the input during the simulation
                 const emailGuess = input.toLowerCase().trim();
 
@@ -337,7 +347,7 @@
                 
                 await new Promise(resolve => setTimeout(resolve, 2500)); // 2.5 second "Google" search delay
 
-                // FIX: Corrected logic to recognize the two secret emails
+                // Corrected logic to recognize the two secret emails
                 if (emailGuess === SECRET_EMAIL || emailGuess === PASSWORD_DISABLED_EMAIL) {
                     targetEmail = emailGuess; 
                     writeOutput(`>> VERIFICATION SUCCESSFUL. Target exists in high-priority register.`, '#00ff41');
@@ -541,6 +551,13 @@
         // --- SCAN LOGIC ---
 
         function runScan(passwordSuccess = false) {
+            
+            // OVERRIDE BYPASS: Skip password if override is active
+            if (overrideEnabled) {
+                 writeOutput("!! OVERRIDE ACTIVE: Scan password bypass approved. Initializing Polygraph...", '#ff0000');
+                 passwordSuccess = true;
+            }
+            
             if (!passwordSuccess && scanState === 0) {
                 startScanPasswordInput();
                 return;
@@ -689,16 +706,18 @@
             showPrompt();
         }
         
-        // --- NEW SECRET COMMAND: OVERRIDE ---
+        // --- SECRET COMMAND: OVERRIDE ---
         function runOverride() {
             if (overrideEnabled) {
                 overrideEnabled = false;
-                writeOutput(">> SYSTEM OVERRIDE DISABLED. Returning to standard security protocols.", '#00ff41');
+                writeOutput("!! OVERRIDE DEACTIVATED: Returning to Level Delta Clearance.", '#00ff41');
+                writeOutput("!! STATUS: User logging is now active.", '#00ff41');
             } else {
                 overrideEnabled = true;
                 writeOutput("!! EMERGENCY PROTOCOL: LEVEL ALPHA OVERRIDE INITIATED.", '#ff0000');
                 writeOutput("!! SECURITY WARNING: ALL USER LOGGING IS TEMPORARILY SUSPENDED.", '#ff0000');
                 writeOutput("!! STATUS: OPERATIONAL MODE SET TO 'UNTRACED'.", '#ff0000');
+                writeOutput("!! FUNCTION: DECRYPT Security Check and SCAN Password are now BYPASSED.", '#ffff00');
             }
         }
 
@@ -729,7 +748,7 @@
                 return;
             }
             
-            // SECURITY QUESTION State (1.5)
+            // SECURITY QUESTION State (1.5) - Only happens if OVERRIDE is OFF
             if (decryptState === 1.5) {
                 handleSecurityAnswer(command);
                 commandInput.value = '';
@@ -750,9 +769,7 @@
             }
 
             // EMAIL INPUT State (1)
-            // This is the critical block for email input in the DECRYPT process
             if (decryptState === 1 && cmd !== 'LOGOUT' && cmd !== 'HELP') {
-                 // Check if the input contains a space, which means it's not a single email address
                  if (command.trim().includes(' ')) {
                      writeOutput(`> ${command}`, '#ff00ff');
                      writeOutput("ERROR: Invalid input format. Please enter only the email address.", '#ff0000');
@@ -776,7 +793,7 @@
                     writeOutput("2. DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
                     writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
                     writeOutput("4. LOGOUT         : Terminate session.", '#00ff41');
-                    writeOutput("5. [HIDDEN]       : A secret command for high-level system control.", '#ff00ff');
+                    writeOutput("5. [HIDDEN]       : Use the command name OVERRIDE for high-level system control.", '#ff00ff');
                     break;
                 case 'SEARCH':
                     if (args.length > 2) {
@@ -791,6 +808,7 @@
                     runDecrypt(args);
                     break;
                 case 'SCAN':
+                    scanState = 0; // Ensure scan state is reset before running
                     runScan();
                     break;
                 case 'LOGOUT':
