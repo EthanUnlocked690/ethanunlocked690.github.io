@@ -97,6 +97,12 @@
             text-align: right;
             font-size: 0.9rem;
         }
+        
+        /* OVERRIDE Status Bar Effect */
+        .override-active {
+            background: #4d0000 !important; /* Dark Red */
+            box-shadow: 0 0 5px #ff0000;
+        }
 
         /* SCAN Panel Styles */
         #lie-detector-panel {
@@ -192,6 +198,7 @@
     <div class="console-container">
         
         <div id="status-bar">
+            <span id="override-indicator" style="color: #ff0000; float: left; display: none;">[ALPHA OVERRIDE ACTIVE]</span>
             ATLAS CONSOLE v4.0 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
         </div>
 
@@ -215,6 +222,8 @@
         const outputArea = document.getElementById('output-area');
         const commandInput = document.getElementById('command-input');
         const passwordInput = document.getElementById('password-input'); 
+        const statusBar = document.getElementById('status-bar');
+        const overrideIndicator = document.getElementById('override-indicator');
 
         let isBusy = false; 
         let scanActive = false;
@@ -310,6 +319,34 @@
             isBusy = false;
             showPrompt();
         }
+        
+        // --- NEW SECRET UTILITY: STATUS (Only available if OVERRIDE is active) ---
+        function runStatus(target) {
+            if (!overrideEnabled) {
+                writeOutput("ERROR: STATUS command requires LEVEL ALPHA OVERRIDE. Type HELP for official commands.", '#ff0000');
+                return;
+            }
+
+            if (target.toUpperCase() !== 'ETHAN' && target.toUpperCase() !== 'IOANNOU') {
+                writeOutput(`WARNING: Target '${target}' not found in high-priority registry. Monitoring only known subjects.`, '#ffff00');
+                return;
+            }
+
+            // Generate a 'live' status
+            const statuses = [
+                "STATUS: ONLINE - Device Activity: High (Game Session Active)",
+                "STATUS: ONLINE - Geo-Loc: Home, 1.2KM from designated safe zone.",
+                "STATUS: ONLINE - Bio-Telemetry: Stable, high dopamine levels (recent success).",
+                "STATUS: OFFLINE - Last Ping: 3 minutes ago. Power-Saving Mode suspected.",
+                "STATUS: ONLINE - Device Activity: Low (Background Sync/Sleep Mode).",
+                "STATUS: ONLINE - Alert: Target searching for 'best Brawl Stars brawlers'."
+            ];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            
+            writeOutput(`\n[HIGH-LEVEL MONITOR - TARGET: ETHAN IOANNOU]`, '#ff00ff');
+            writeOutput(`>> ${randomStatus}`, '#00ffff');
+        }
+
 
         /**
          * COMMAND: DECRYPT (Multi-Stage Logic with Security Question)
@@ -700,7 +737,7 @@
             scanActive = false;
 
             writeOutput(`\n--- POLYGRAPH REPORT GENERATED ---`, '#ffff00');
-            writeOutput(`TARGET: ${targetName} | AGE: ${targetAge} | BIRTH YEAR: ${targetBirthYear} | LOCATION: ${targetAddress}`, '#00ffff');
+            writeOutput(`TARGET: ${targetName} | AGE: ${targetAge} | BIRTH YEAR: ${target-birth-year} | LOCATION: ${targetAddress}`, '#00ffff');
             writeOutput(`FINAL RESULT: ${finalResult}`, finalColor);
             writeOutput(`REPORT LOGGED. SCAN TERMINATED.`, '#ffff00');
             showPrompt();
@@ -710,19 +747,23 @@
         function runOverride() {
             if (overrideEnabled) {
                 overrideEnabled = false;
-                decryptState = 0; // Reset decrypt state on deactivation
+                // Deactivate visual effects and status bar indicator
+                statusBar.classList.remove('override-active');
+                overrideIndicator.style.display = 'none';
+
                 writeOutput("!! OVERRIDE DEACTIVATED: Returning to Level Delta Clearance.", '#00ff41');
-                writeOutput("!! STATUS: Security checks are now MANDATORY.", '#00ff41');
+                writeOutput("!! STATUS: Security checks are now MANDATORY. STATUS command is disabled.", '#00ff41');
             } else {
                 overrideEnabled = true;
-                decryptState = 1; // HACK-FUL EFFECT: Skip security question directly to email input (State 1)
-                
+                // Activate visual effects and status bar indicator
+                statusBar.classList.add('override-active');
+                overrideIndicator.style.display = 'inline';
+
                 writeOutput("!! EMERGENCY PROTOCOL: LEVEL ALPHA OVERRIDE INITIATED.", '#ff0000');
                 writeOutput("!! SECURITY WARNING: ALL USER LOGGING IS TEMPORARILY SUSPENDED.", '#ff0000');
                 writeOutput("!! STATUS: OPERATIONAL MODE SET TO 'UNTRACED'.", '#ff0000');
-                writeOutput("!! INSTANT EFFECT: Security Bypassed. Proceed directly to DECRYPT email input.", '#ffff00');
+                writeOutput("!! UTILITY GRANTED: You can now use the secret command 'STATUS [Target Name]' to monitor subjects.", '#ffff00');
                 
-                writeOutput("\nEnter Target Email (e.g., secret@gmail.com or nopass@corp.net):", '#ffff00');
             }
         }
 
@@ -734,7 +775,7 @@
             const cmd = parts[0].toUpperCase();
             const args = command.trim().substring(cmd.length).trim();
 
-            if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE') {
+            if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE' && cmd !== 'STATUS') {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
             }
@@ -745,12 +786,20 @@
                 return;
             }
             
-            // Check for SECRET COMMAND
+            // Check for SECRET COMMANDS
             if (cmd === 'OVERRIDE') {
                 writeOutput(`> ${command}`, '#ff00ff');
                 runOverride();
                 showPrompt();
                 return;
+            }
+            
+            // Check for HIDDEN UTILITY STATUS
+            if (cmd === 'STATUS') {
+                 writeOutput(`> ${command}`, '#ff00ff');
+                 runStatus(args);
+                 showPrompt();
+                 return;
             }
             
             // SECURITY QUESTION State (1.5) - Only happens if OVERRIDE is OFF
@@ -798,7 +847,7 @@
                     writeOutput("2. DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
                     writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
                     writeOutput("4. LOGOUT         : Terminate session.", '#00ff41');
-                    writeOutput("5. [HIDDEN]       : A powerful, unlisted command to bypass security checks.", '#ff00ff');
+                    writeOutput("5. [HIDDEN]       : A powerful, unlisted command for system control.", '#ff00ff');
                     break;
                 case 'SEARCH':
                     if (args.length > 2) {
