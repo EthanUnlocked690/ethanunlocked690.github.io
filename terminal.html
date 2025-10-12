@@ -706,18 +706,23 @@
             showPrompt();
         }
         
-        // --- SECRET COMMAND: OVERRIDE ---
+        // --- SECRET COMMAND: OVERRIDE (HACK-FUL FEATURE) ---
         function runOverride() {
             if (overrideEnabled) {
                 overrideEnabled = false;
+                decryptState = 0; // Reset decrypt state on deactivation
                 writeOutput("!! OVERRIDE DEACTIVATED: Returning to Level Delta Clearance.", '#00ff41');
-                writeOutput("!! STATUS: User logging is now active.", '#00ff41');
+                writeOutput("!! STATUS: Security checks are now MANDATORY.", '#00ff41');
             } else {
                 overrideEnabled = true;
+                decryptState = 1; // HACK-FUL EFFECT: Skip security question directly to email input (State 1)
+                
                 writeOutput("!! EMERGENCY PROTOCOL: LEVEL ALPHA OVERRIDE INITIATED.", '#ff0000');
                 writeOutput("!! SECURITY WARNING: ALL USER LOGGING IS TEMPORARILY SUSPENDED.", '#ff0000');
                 writeOutput("!! STATUS: OPERATIONAL MODE SET TO 'UNTRACED'.", '#ff0000');
-                writeOutput("!! FUNCTION: DECRYPT Security Check and SCAN Password are now BYPASSED.", '#ffff00');
+                writeOutput("!! INSTANT EFFECT: Security Bypassed. Proceed directly to DECRYPT email input.", '#ffff00');
+                
+                writeOutput("\nEnter Target Email (e.g., secret@gmail.com or nopass@corp.net):", '#ffff00');
             }
         }
 
@@ -788,12 +793,12 @@
             
             switch (cmd) {
                 case 'HELP':
-                    writeOutput("--- AVAILABLE COMMANDS ---", '#ffff00');
+                    writeOutput("--- AVAILABLE COMMANDS (5 Core Features) ---", '#ffff00');
                     writeOutput("1. SEARCH [query] : Fetch public data (e.g., NASA, Eiffel).", '#00ff41');
                     writeOutput("2. DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
                     writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
                     writeOutput("4. LOGOUT         : Terminate session.", '#00ff41');
-                    writeOutput("5. [HIDDEN]       : Use the command name OVERRIDE for high-level system control.", '#ff00ff');
+                    writeOutput("5. [HIDDEN]       : A powerful, unlisted command to bypass security checks.", '#ff00ff');
                     break;
                 case 'SEARCH':
                     if (args.length > 2) {
