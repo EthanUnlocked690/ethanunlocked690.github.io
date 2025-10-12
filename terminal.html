@@ -51,7 +51,7 @@
             overflow-y: auto;
             padding: 1rem;
             background: rgba(0, 0, 0, 0.9);
-            white-space: pre-wrap; /* Preserve formatting for dynamic text */
+            white-space: pre-wrap;
         }
 
         /* Input Area */
@@ -62,7 +62,7 @@
         }
 
         #input-prefix {
-            color: #ff00ff; /* Magenta for the prompt */
+            color: #ff00ff;
         }
 
         #command-input {
@@ -85,7 +85,7 @@
             font-size: 0.9rem;
         }
 
-        /* SCAN - Lie Detector Simulation */
+        /* SCAN Panel Styles */
         #lie-detector-panel {
             background-color: #111;
             border: 2px solid #00ffff;
@@ -103,13 +103,57 @@
             font-family: 'VT323', monospace;
             font-size: 1.0rem;
         }
-        #video-feed {
+        #video-container {
+            position: relative;
             width: 100%;
             max-width: 400px;
             margin: 10px auto;
+        }
+        #video-feed {
+            width: 100%;
             display: block;
             border: 1px solid #00ffff;
         }
+        #grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: repeating-linear-gradient(to right, #00ff41 1px, transparent 1px, transparent 19px),
+                              repeating-linear-gradient(to bottom, #00ff41 1px, transparent 1px, transparent 19px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+            display: none; /* Hidden by default */
+        }
+        
+        /* Scanning Line Animation */
+        @keyframes scan-animate {
+            0% { transform: translateY(0%); opacity: 1; }
+            40% { transform: translateY(100%); opacity: 1; }
+            50% { transform: translateY(100%); opacity: 0; }
+            60% { transform: translateY(0%); opacity: 0; }
+            100% { transform: translateY(0%); opacity: 1; }
+        }
+        
+        #scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #00ff41;
+            box-shadow: 0 0 10px #00ff41;
+            opacity: 0;
+            z-index: 10;
+        }
+        .scanning #scan-line {
+            animation: scan-animate 1.5s infinite; /* 3 scans in 3 seconds total */
+            animation-iteration-count: 3; 
+        }
+
+        /* Indicator and Button Styles */
         #indicator-box {
             font-size: 2rem;
             font-weight: bold;
@@ -157,22 +201,33 @@
         const outputArea = document.getElementById('output-area');
         const commandInput = document.getElementById('command-input');
 
-        let isBusy = false; // Flag to prevent command overlap
+        let isBusy = false; 
         let scanActive = false;
-        let decryptState = 0; // 0: Ready, 1: Guess, 2: Decrypting (Password Animation), 3: Post-Decrypt Menu
-        let targetEmail = ''; // Stores the successfully guessed email
+        // States: 0: Ready, 1: Email Input, 1.5: Security Question, 2: Decrypt Animation, 3: Post-Decrypt Menu
+        let decryptState = 0; 
+        let targetEmail = ''; 
         let scanInterval; 
+        let securityTimeout; // Timer for the security question
 
-        // --- Simulated Target Data ---
+        // --- DECRYPT DATA ---
         const SECRET_EMAIL = 'secret@gmail.com';
         const SIMULATED_PASSWORD = 'p4ssw0rd!';
-        const PASSWORD_DISABLED_EMAIL = 'nopass@corp.net'; // New email for "Password Disabled" demo
-        const PASSWORD_LENGTH = SIMULATED_PASSWORD.length;
+        const PASSWORD_DISABLED_EMAIL = 'nopass@corp.net';
         const DECRYPT_TIMER_SECONDS = 5.0; 
+        const PASSWORD_LENGTH = SIMULATED_PASSWORD.length;
 
-        /**
-         * Core utility to add output.
-         */
+        // Security Questions (Key is the question, Value is the expected answer string)
+        const SECURITY_QUESTIONS = {
+            "What is EthanUnlocked's birth date?": "25 January 2013",
+            "How many pets does EthanUnlocked have?": "3",
+            "When did EthanUnlocked start brawl stars?": "2024",
+            "How many games does EthanUnlocked play?": "Unknown",
+            "What is EthanUnlocked's favourite food?": "Burger",
+            "What is EthanUnlocked's favourite drink?": "Pepsi"
+        };
+        let currentSecurityQuestion = null;
+
+        /** Utility functions (writeOutput, showPrompt) remain unchanged */
         function writeOutput(text, color = '#00ff41') {
             const line = document.createElement('span');
             line.style.color = color;
@@ -184,27 +239,24 @@
 
         function showPrompt() {
             if (!isBusy) {
-                writeOutput("", '#00ff41'); // Newline
+                writeOutput("", '#00ff41');
                 commandInput.value = '';
             }
             commandInput.focus();
         }
 
-        // --- COMMAND HANDLERS (SEARCH & LOGOUT remain unchanged) ---
+
+        // --- COMMAND HANDLERS ---
 
         async function runSearch(query) {
             isBusy = true;
             writeOutput(`INITIATING PUBLIC WEB SCAN FOR: "${query}"...`, '#ffff00');
-
             await new Promise(resolve => setTimeout(resolve, 1500));
-
             const normalizedQuery = query.toLowerCase();
 
             if (normalizedQuery.includes("eiffel") || normalizedQuery.includes("paris")) {
                 writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
                 writeOutput("[Source 1] Title: Eiffel Tower - Official Site", '#fff');
-                writeOutput("          Snippet: An iron lattice tower on the Champ de Mars in Paris, France...", '#00ff41');
-                writeOutput("          URL: [SIMULATED]", '#55ffaa');
             } else if (normalizedQuery.includes("ethan") || normalizedQuery.includes("ioannou")) {
                 writeOutput(">> TARGET: ETHAN IOANNOU. DATA RETRIEVAL BLOCKED BY LEVEL DELTA OVERRIDE.", '#ff0000');
             } else {
@@ -216,25 +268,26 @@
         }
 
         /**
-         * COMMAND: DECRYPT (Multi-Stage Logic)
+         * COMMAND: DECRYPT (Multi-Stage Logic with Security Question)
          */
         function runDecrypt(input) {
-            const parts = input.trim().split(/\s+/);
-            const cmd = parts[0].toUpperCase();
-            const args = parts.slice(1).join(' ');
+            const cmd = input.trim().split(/\s+/)[0].toUpperCase();
 
             if (decryptState === 0) {
-                // State 0: Initial prompt
-                writeOutput("ENCRYPTION MODULE ONLINE. Target email required for hash generation.", '#ffff00');
-                writeOutput("FORMAT: DECRYPT [target@email.com or nopass@corp.net]", '#ffff00');
-                decryptState = 1; 
+                // State 0: Initial prompt -> Move to security question state (1.5)
+                writeOutput("ENCRYPTION MODULE ONLINE. Verifying Operator Clearance via Personal Query...", '#ffff00');
+                startSecurityQuestion();
+                
+            } else if (decryptState === 1.5) {
+                // State 1.5: Security Question Answer Check
+                handleSecurityAnswer(input.trim());
                 
             } else if (decryptState === 1) {
-                // State 1: Check the email guess and start animation
+                // State 1: Email Input
                 const emailGuess = input.toLowerCase().trim();
                 
                 if (emailGuess === SECRET_EMAIL || emailGuess === PASSWORD_DISABLED_EMAIL) {
-                    targetEmail = emailGuess; // Store the target email
+                    targetEmail = emailGuess; 
                     writeOutput(`TARGET ACQUIRED: ${targetEmail}. Initiating Level-4 Decryption...`, '#00ffff');
                     decryptState = 2; // Move to Decrypting state
                     isBusy = true;
@@ -242,9 +295,13 @@
                 } else {
                     writeOutput(`WARNING: ${emailGuess} - Target email not in high-priority registry. Aborting.`, '#ff0000');
                     decryptState = 0; // Reset
+                    showPrompt();
                 }
             } else if (decryptState === 3) {
                 // State 3: Post-Decryption Menu
+                const parts = input.trim().split(/\s+/);
+                const args = input.trim().substring(cmd.length).trim();
+                
                 if (cmd === 'DECRYPT' && args.toUpperCase() === 'PASSWORD') {
                     handleDecryptPassword();
                 } else if (cmd === 'COMPARE' && args) {
@@ -254,6 +311,51 @@
                 }
             }
         }
+
+        function startSecurityQuestion() {
+            // Pick a random question
+            const questions = Object.keys(SECURITY_QUESTIONS);
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            currentSecurityQuestion = questions[randomIndex];
+
+            writeOutput(`\nSECURITY CHALLENGE INITIATED. (10s Timeout)`, '#ff00ff');
+            writeOutput(`QUERY: ${currentSecurityQuestion}`, '#ffff00');
+            
+            decryptState = 1.5;
+            isBusy = false;
+            showPrompt();
+
+            // Set 10-second timer
+            securityTimeout = setTimeout(() => {
+                if (decryptState === 1.5) {
+                    writeOutput("!! TIMEOUT: Security challenge failed.", '#ff0000');
+                    writeOutput("ACCESS DENIED. Resuming standard terminal operations.", '#ff0000');
+                    decryptState = 0;
+                    showPrompt();
+                }
+            }, 10000);
+        }
+
+        function handleSecurityAnswer(answer) {
+            clearTimeout(securityTimeout); // Stop the timeout
+
+            const expectedAnswer = SECURITY_QUESTIONS[currentSecurityQuestion];
+            // Normalize both answers for a robust check
+            const normalizedAnswer = answer.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const normalizedExpected = expectedAnswer.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            if (normalizedAnswer === normalizedExpected) {
+                writeOutput("ACCESS GRANTED. Personal Query Verified.", '#00ff41');
+                writeOutput("\nEnter Target Email (e.g., secret@gmail.com):", '#ffff00');
+                decryptState = 1; // Move to email input state
+            } else {
+                writeOutput(`!! SECURITY BREACH: Answer '${answer}' is incorrect.`, '#ff0000');
+                writeOutput("ACCESS DENIED. Resuming standard terminal operations.", '#ff0000');
+                decryptState = 0; // Reset all
+            }
+            showPrompt();
+        }
+
 
         function animateDecryption() {
             const passwordContainer = document.createElement('span');
@@ -314,7 +416,6 @@
         function handleDecryptPassword() {
             if (targetEmail === PASSWORD_DISABLED_EMAIL) {
                 writeOutput("!! AUTHENTICATION POLICY: PASSWORD DISABLED (Key Fob/Biometric Only)", '#ff0000');
-                writeOutput("  >> Password field is null.", '#ff0000');
             } else {
                 writeOutput(`DECRYPT SUCCESS. PASSWORD FOR ${targetEmail}:`, '#ffff00');
                 writeOutput(`  >> ${SIMULATED_PASSWORD}`, '#00ff41');
@@ -326,7 +427,6 @@
             let accuracy = 0;
             let suggestion = "Password strength is HIGH.";
             
-            // Calculate accuracy based on character matches (simplified)
             for (let i = 0; i < Math.min(inputPassword.length, correctPassword.length); i++) {
                 if (inputPassword[i] === correctPassword[i]) {
                     accuracy += 100 / correctPassword.length;
@@ -353,24 +453,15 @@
 
 
         /**
-         * COMMAND: SCAN (Simulates Lie Detector)
+         * COMMAND: SCAN (Simulates Lie Detector with full UI setup)
          */
         function runScan(input) {
             if (!scanActive) {
-                // State 0: Initial setup
                 writeOutput("ATLAS POLYGRAPH INITIATED. Requires Camera/Mic access for bio-feedback scan.", '#ffff00');
                 
                 const panel = document.createElement('div');
                 panel.id = 'lie-detector-panel';
                 panel.innerHTML = `
-                    <p style='color:#00ffff;'>-- TARGET DETAILS --</p>
-                    <input type="text" id="target-name" placeholder="Target Name (Required)">
-                    <input type="text" id="target-age" placeholder="Age">
-                    <input type="text" id="target-address" placeholder="Address/Location">
-                    
-                    <p style='color:#00ffff; margin-top: 15px;'>-- STATEMENT TO ANALYZE --</p>
-                    <textarea id="target-statement" placeholder="Type the statement the target will say..." rows="3"></textarea>
-                    
                     <p style='color:#ff00ff; margin-top: 15px;'>-- OPERATOR TRUTH INPUT (REQUIRED) --</p>
                     <select id="operator-truth-input">
                         <option value="">-- Select Actual Status --</option>
@@ -378,7 +469,21 @@
                         <option value="lie">Target IS LYING</option>
                     </select>
 
-                    <video id="video-feed" autoplay></video>
+                    <p style='color:#00ffff;'>-- TARGET DETAILS --</p>
+                    <input type="text" id="target-name" placeholder="Target Name (Required)">
+                    <input type="text" id="target-age" placeholder="Age">
+                    <input type="text" id="target-birth-year" placeholder="Birth Year">
+                    <input type="text" id="target-address" placeholder="Address/Location">
+                    
+                    <p style='color:#00ffff; margin-top: 15px;'>-- STATEMENT TO ANALYZE --</p>
+                    <textarea id="target-statement" placeholder="Type the statement the target will say..." rows="3"></textarea>
+                    
+                    <div id="video-container">
+                        <video id="video-feed" autoplay></video>
+                        <div id="grid-overlay"></div>
+                        <div id="scan-line"></div>
+                    </div>
+
                     <div id="indicator-box" style="border-color: #00ff41;">AWAITING START</div>
                     <button id="record-btn">START ANALYSIS</button>
                     <p style='font-size: 0.8rem; color: #555;'>**NOTE: Camera access is simulated for security compliance.**</p>
@@ -387,7 +492,7 @@
                 outputArea.scrollTop = outputArea.scrollHeight;
                 scanActive = true;
                 
-                // Camera access simulation
+                // Camera access 
                 const videoFeed = document.getElementById('video-feed');
                 if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                     navigator.mediaDevices.getUserMedia({ video: true })
@@ -412,6 +517,8 @@
             const operatorTruth = document.getElementById('operator-truth-input').value;
             const indicatorBox = document.getElementById('indicator-box');
             const recordBtn = document.getElementById('record-btn');
+            const videoContainer = document.getElementById('video-container');
+            const gridOverlay = document.getElementById('grid-overlay');
             
             if (!targetName || !targetStatement || operatorTruth === "") {
                 writeOutput("ERROR: Target Name, Statement, and Operator Truth Input are required to proceed.", '#ff0000');
@@ -427,6 +534,10 @@
             recordBtn.textContent = "STOP ANALYSIS";
             recordBtn.style.background = '#00ffff';
 
+            // Start Grid and Scanning Line Animation
+            gridOverlay.style.display = 'block';
+            videoContainer.classList.add('scanning');
+
             // Initial calibration
             indicatorBox.textContent = "CALIBRATING...";
             indicatorBox.style.borderColor = '#00ffff';
@@ -435,45 +546,48 @@
             // Determine the FINAL, GUARANTEED result based on operator input
             const isFinalLie = (operatorTruth === 'lie');
             
-            // After a short calibration delay, start the continuous analysis
+            // After a short calibration delay (2s) + the scanning animation (1.5s x 3 scans = 4.5s), lock in the result
             setTimeout(() => {
                 writeOutput("LIVE ANALYSIS INITIATED. Indicator updating continuously...", '#00ff41');
                 
-                const startTime = Date.now();
+                // Stop the scanning animation
+                videoContainer.classList.remove('scanning');
 
-                // Start continuous analysis flicker
+                // Generate fixed, convincing percentages based on the operator's input
+                let liePercent = isFinalLie ? 89 : 11;
+                let truthPercent = isFinalLie ? 11 : 89;
+                
+                // Ensure the majority status is always > 50%
+                if (liePercent < 50 && truthPercent < 50) { 
+                    isFinalLie ? (liePercent = 55, truthPercent = 45) : (liePercent = 45, truthPercent = 55);
+                }
+
+                const finalStatusText = `TRUTH: ${truthPercent}% | LIE: ${liePercent}%`;
+                const finalColor = isFinalLie ? '#ff0000' : '#00ff41';
+
+                // Start continuous analysis (now just updates the fixed report based on operator input)
                 scanInterval = setInterval(() => {
-                    const randomFlicker = Math.random();
-                    let isLying = false;
+                    indicatorBox.textContent = finalStatusText;
+                    indicatorBox.style.borderColor = finalColor;
+                    indicatorBox.style.color = finalColor;
+                    indicatorBox.style.boxShadow = `0 0 15px ${finalColor}`;
+                }, 500); 
 
-                    // For the first 5 seconds, flicker randomly (to build tension)
-                    if (Date.now() - startTime < 5000) {
-                        isLying = randomFlicker < 0.5;
-                    } else {
-                        // After 5 seconds, lock in the result that matches the operator's input
-                        isLying = isFinalLie; 
-                    }
-                    
-                    const resultText = isLying ? "DECEPTION DETECTED (99.8%)" : "VERIFIED TRUTH (99.8%)";
-                    const resultColor = isLying ? '#ff0000' : '#00ff41';
-                    
-                    indicatorBox.textContent = resultText;
-                    indicatorBox.style.borderColor = resultColor;
-                    indicatorBox.style.color = resultColor;
-                    indicatorBox.style.boxShadow = `0 0 15px ${resultColor}`;
-                }, 500); // Update every half second
-
-
-            }, 2000); // 2-second calibration
+            }, 6500); // 2s calibration + 4.5s scanning animation delay = 6.5s
         }
 
         function endLieDetection(targetName) {
             clearInterval(scanInterval); 
             
+            // Remove visual overlays
+            document.getElementById('grid-overlay').style.display = 'none';
+            document.getElementById('video-container').classList.remove('scanning');
+
             const indicatorBox = document.getElementById('indicator-box');
             const finalResult = indicatorBox.textContent;
             const finalColor = indicatorBox.style.color;
             const targetAge = document.getElementById('target-age').value || "N/A";
+            const targetBirthYear = document.getElementById('target-birth-year').value || "N/A";
             const targetAddress = document.getElementById('target-address').value || "N/A";
 
             const panel = document.getElementById('lie-detector-panel');
@@ -481,7 +595,7 @@
             scanActive = false;
 
             writeOutput(`\n--- POLYGRAPH REPORT GENERATED ---`, '#ffff00');
-            writeOutput(`TARGET: ${targetName} | AGE: ${targetAge} | LOCATION: ${targetAddress}`, '#00ffff');
+            writeOutput(`TARGET: ${targetName} | AGE: ${targetAge} | BIRTH YEAR: ${targetBirthYear} | LOCATION: ${targetAddress}`, '#00ffff');
             writeOutput(`FINAL RESULT: ${finalResult}`, finalColor);
             writeOutput(`REPORT LOGGED. SCAN TERMINATED.`, '#ffff00');
             showPrompt();
@@ -500,11 +614,17 @@
                 return;
             }
             
-            // If in DECRYPT menu (State 3), all commands are handled by runDecrypt
+            // SECURITY QUESTION State (1.5)
+            if (decryptState === 1.5) {
+                // Do not echo command until we know the answer result
+                handleSecurityAnswer(command);
+                commandInput.value = '';
+                return;
+            }
+            
+            // DECRYPT MENU State (3)
             if (decryptState === 3 && cmd !== 'LOGOUT') {
-                // If the user types a command that matches the menu options, run it through the decrypt handler
                 if (cmd === 'DECRYPT' || cmd === 'COMPARE') {
-                    // We echo the command inside the handler for State 3 to avoid double-echo
                     writeOutput(`> ${command}`, '#ff00ff');
                     runDecrypt(command);
                     showPrompt();
@@ -515,7 +635,7 @@
                 return;
             }
 
-            // If in DECRYPT input state (State 1), or normal state, runDecrypt for email guess
+            // EMAIL INPUT State (1)
             if (decryptState === 1 && cmd !== 'LOGOUT' && cmd !== 'HELP') {
                  writeOutput(`> ${command}`, '#ff00ff');
                  runDecrypt(command);
