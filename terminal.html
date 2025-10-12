@@ -75,6 +75,19 @@
             font-family: 'VT323', monospace;
             font-size: 1.1rem;
         }
+        
+        /* Hidden input for password mode */
+        #password-input {
+            background: transparent;
+            border: none;
+            color: #00ff41;
+            flex-grow: 1;
+            outline: none;
+            margin-left: 5px;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            display: none; /* Hide standard input when in password mode */
+        }
 
         /* Status Bar */
         #status-bar {
@@ -193,6 +206,7 @@
         <div id="input-line">
             <span id="input-prefix">ATLAS ></span>
             <input type="text" id="command-input" autofocus>
+            <input type="password" id="password-input" style="display: none;"> 
         </div>
         
     </div>
@@ -200,14 +214,20 @@
     <script>
         const outputArea = document.getElementById('output-area');
         const commandInput = document.getElementById('command-input');
+        const passwordInput = document.getElementById('password-input'); // New reference
 
         let isBusy = false; 
         let scanActive = false;
         // States: 0: Ready, 1: Email Input, 1.5: Security Question, 2: Decrypt Animation, 3: Post-Decrypt Menu
         let decryptState = 0; 
+        let scanState = 0; // 0: Ready, 1: Password Input
         let targetEmail = ''; 
         let scanInterval; 
-        let securityTimeout; // Timer for the security question
+        let securityTimeout; 
+        
+        let currentPasswordDisplay = '';
+        let actualPasswordAttempt = '';
+        let passwordTimeout;
 
         // --- DECRYPT DATA ---
         const SECRET_EMAIL = 'secret@gmail.com';
@@ -215,6 +235,9 @@
         const PASSWORD_DISABLED_EMAIL = 'nopass@corp.net';
         const DECRYPT_TIMER_SECONDS = 5.0; 
         const PASSWORD_LENGTH = SIMULATED_PASSWORD.length;
+        
+        // --- SCAN PASSWORD ---
+        const SCAN_PASSWORD = 'SC4NN3R#';
 
         // Security Questions (Key is the question, Value is the expected answer string)
         const SECURITY_QUESTIONS = {
@@ -240,9 +263,19 @@
         function showPrompt() {
             if (!isBusy) {
                 writeOutput("", '#00ff41');
+            }
+            // Ensure the correct input is focused after every command/state change
+            if (scanState === 1) {
+                commandInput.style.display = 'none';
+                passwordInput.style.display = 'block';
+                passwordInput.focus();
+                passwordInput.value = currentPasswordDisplay;
+            } else {
+                commandInput.style.display = 'block';
+                passwordInput.style.display = 'none';
+                commandInput.focus();
                 commandInput.value = '';
             }
-            commandInput.focus();
         }
 
 
@@ -299,7 +332,7 @@
                     decryptState = 2; // Move to Decrypting state
                     animateDecryption();
                 } else {
-                    // New Error Message
+                    // Non-secret/non-real email error
                     writeOutput(`>> VERIFICATION FAILED: Target email ${emailGuess} not found in global DNS/registers.`, '#ff0000');
                     writeOutput(`Sorry, this email is not real! Try correcting your spelling and puncuation.`, '#ff0000');
                     decryptState = 0; // Reset to the start of the DECRYPT process
@@ -322,7 +355,6 @@
         }
 
         function startSecurityQuestion() {
-            // Pick a random question
             const questions = Object.keys(SECURITY_QUESTIONS);
             const randomIndex = Math.floor(Math.random() * questions.length);
             currentSecurityQuestion = questions[randomIndex];
@@ -334,17 +366,15 @@
             isBusy = false;
             showPrompt();
 
-            // Set 10-second timer to execute handleSecurityAnswer with a blank answer if time runs out
             securityTimeout = setTimeout(() => {
                 if (decryptState === 1.5) {
-                    // Call handler with an empty string to simulate no answer/timeout
                     handleSecurityAnswer(''); 
                 }
             }, 10000);
         }
 
         function handleSecurityAnswer(answer) {
-            clearTimeout(securityTimeout); // Stop the timeout
+            clearTimeout(securityTimeout); 
 
             if (decryptState !== 1.5) {
                 return; 
@@ -359,24 +389,23 @@
             }
 
             const expectedAnswer = SECURITY_QUESTIONS[currentSecurityQuestion];
-            // Normalize both answers for a robust check
             const normalizedAnswer = answer.toLowerCase().replace(/[^a-z0-9]/g, '');
             const normalizedExpected = expectedAnswer.toLowerCase().replace(/[^a-z0-9]/g, '');
 
             if (normalizedAnswer === normalizedExpected) {
                 writeOutput("ACCESS GRANTED. Personal Query Verified.", '#00ff41');
                 writeOutput("\nEnter Target Email (e.g., secret@gmail.com or nopass@corp.net):", '#ffff00');
-                decryptState = 1; // Move to email input state
+                decryptState = 1; 
             } else {
                 writeOutput(`!! SECURITY BREACH: Answer '${answer}' is incorrect.`, '#ff0000');
                 writeOutput("ACCESS DENIED. Resuming standard terminal operations.", '#ff0000');
-                decryptState = 0; // Reset all
+                decryptState = 0; 
             }
             showPrompt();
         }
 
-
         function animateDecryption() {
+            // ... (Decryption animation logic remains the same)
             const passwordContainer = document.createElement('span');
             passwordContainer.id = 'decrypted-pass';
             writeOutput("PASSWORD HASH: ", '#fff');
@@ -402,10 +431,9 @@
                     outputArea.removeChild(timerElement);
                     writeOutput("DECRYPTION PROCESS COMPLETE.", '#ffff00');
                     
-                    decryptState = 3; // Move to the Post-Decrypt Menu
+                    decryptState = 3; 
                     isBusy = false;
                     
-                    // Show new menu options
                     writeOutput(`\nTARGET: ${targetEmail} ACQUIRED. Select Action:`, '#00ffff');
                     writeOutput("  > DECRYPT PASSWORD - Retrieve the full password.", '#00ff41');
                     writeOutput("  > COMPARE [password] - Analyze a potential password's strength.", '#00ff41');
@@ -430,10 +458,12 @@
                 }, 100); 
 
             }, 500);
+            // ...
         }
 
         function handleDecryptPassword() {
-            if (targetEmail === PASSWORD_DISABLED_EMAIL) {
+            // ... (Decrypt password logic remains the same)
+             if (targetEmail === PASSWORD_DISABLED_EMAIL) {
                 writeOutput("!! AUTHENTICATION POLICY: PASSWORD DISABLED (Key Fob/Biometric Only)", '#ff0000');
             } else {
                 writeOutput(`DECRYPT SUCCESS. PASSWORD FOR ${targetEmail}:`, '#ffff00');
@@ -442,6 +472,7 @@
         }
 
         function handleComparePassword(inputPassword) {
+            // ... (Compare password logic remains the same)
             const correctPassword = SIMULATED_PASSWORD;
             let accuracy = 0;
             let suggestion = "Password strength is HIGH.";
@@ -471,10 +502,40 @@
         }
 
 
-        /**
-         * COMMAND: SCAN (Simulates Lie Detector with full UI setup)
-         */
-        function runScan(input) {
+        // --- SCAN PASSWORD PROTECTION HANDLERS ---
+
+        function handleScanPassword(password) {
+            writeOutput(`> ${currentPasswordDisplay}`, '#ff00ff'); // Echo the *'d password attempt
+            
+            if (password === SCAN_PASSWORD) {
+                writeOutput("SCAN MODULE: ACCESS GRANTED. Initializing Polygraph...", '#00ff41');
+                scanState = 0; // Reset state before running
+                runScan(true); // Run the actual scan setup
+            } else {
+                writeOutput("ERROR: Invalid SCAN password. Access denied.", '#ff0000');
+                scanState = 0; // Reset state
+            }
+            // Clear inputs for next command
+            actualPasswordAttempt = '';
+            currentPasswordDisplay = '';
+            showPrompt();
+        }
+
+        function startScanPasswordInput() {
+            writeOutput("SCAN MODULE: Authentication required.", '#ffff00');
+            writeOutput("PASSWORD:", '#ffff00');
+            scanState = 1;
+            showPrompt();
+        }
+        
+        // --- SCAN LOGIC ---
+
+        function runScan(passwordSuccess = false) {
+            if (!passwordSuccess && scanState === 0) {
+                startScanPasswordInput();
+                return;
+            }
+
             if (!scanActive) {
                 writeOutput("ATLAS POLYGRAPH INITIATED. Requires Camera/Mic access for bio-feedback scan.", '#ffff00');
                 
@@ -527,6 +588,7 @@
                 document.getElementById('record-btn').onclick = startLieDetection;
             } else {
                 writeOutput("POLYGRAPH ALREADY ACTIVE. Type 'STOP SCAN' to terminate.", '#ff0000');
+                showPrompt();
             }
         }
 
@@ -553,30 +615,23 @@
             recordBtn.textContent = "STOP ANALYSIS";
             recordBtn.style.background = '#00ffff';
 
-            // Start Grid and Scanning Line Animation
             gridOverlay.style.display = 'block';
             videoContainer.classList.add('scanning');
 
-            // Initial calibration
             indicatorBox.textContent = "CALIBRATING...";
             indicatorBox.style.borderColor = '#00ffff';
             indicatorBox.style.color = '#00ffff';
 
-            // Determine the FINAL, GUARANTEED result based on operator input
             const isFinalLie = (operatorTruth === 'lie');
             
-            // After a short calibration delay (2s) + the scanning animation (1.5s x 3 scans = 4.5s), lock in the result
             setTimeout(() => {
                 writeOutput("LIVE ANALYSIS INITIATED. Indicator updating continuously...", '#00ff41');
                 
-                // Stop the scanning animation
                 videoContainer.classList.remove('scanning');
 
-                // Generate fixed, convincing percentages based on the operator's input
                 let liePercent = isFinalLie ? 89 : 11;
                 let truthPercent = isFinalLie ? 11 : 89;
                 
-                // Ensure the majority status is always > 50%
                 if (liePercent < 50 && truthPercent < 50) { 
                     isFinalLie ? (liePercent = 55, truthPercent = 45) : (liePercent = 45, truthPercent = 55);
                 }
@@ -584,7 +639,6 @@
                 const finalStatusText = `TRUTH: ${truthPercent}% | LIE: ${liePercent}%`;
                 const finalColor = isFinalLie ? '#ff0000' : '#00ff41';
 
-                // Start continuous analysis (now just updates the fixed report based on operator input)
                 scanInterval = setInterval(() => {
                     indicatorBox.textContent = finalStatusText;
                     indicatorBox.style.borderColor = finalColor;
@@ -592,13 +646,18 @@
                     indicatorBox.style.boxShadow = `0 0 15px ${finalColor}`;
                 }, 500); 
 
-            }, 6500); // 2s calibration + 4.5s scanning animation delay = 6.5s
+            }, 6500); 
         }
 
         function endLieDetection(targetName) {
             clearInterval(scanInterval); 
             
-            // Remove visual overlays
+            const videoFeed = document.getElementById('video-feed');
+            if (videoFeed.srcObject) {
+                videoFeed.srcObject.getTracks().forEach(track => track.stop());
+                videoFeed.srcObject = null;
+            }
+
             document.getElementById('grid-overlay').style.display = 'none';
             document.getElementById('video-container').classList.remove('scanning');
 
@@ -633,6 +692,13 @@
                 return;
             }
             
+            // Check for STOP SCAN regardless of current state
+            if (cmd === 'STOP' && args.toUpperCase() === 'SCAN' && scanActive) {
+                // If in an active scan, terminate it
+                endLieDetection("Unknown Subject"); 
+                return;
+            }
+            
             // SECURITY QUESTION State (1.5)
             if (decryptState === 1.5) {
                 // Do not echo command until we know the answer result
@@ -661,22 +727,16 @@
                  commandInput.value = '';
                  return;
             }
-            
-            // Handle STOP SCAN command
-            if (cmd === 'STOP' && args.toUpperCase() === 'SCAN' && scanActive) {
-                endLieDetection("Unknown Subject"); 
-                return;
-            }
 
-            // Echo the command for all other states/commands
+            // Echo the command for all standard state commands
             writeOutput(`> ${command}`, '#ff00ff'); 
             
             switch (cmd) {
                 case 'HELP':
                     writeOutput("--- AVAILABLE COMMANDS ---", '#ffff00');
                     writeOutput("SEARCH [query] : Fetch public data (people/locations).", '#00ff41');
-                    writeOutput("DECRYPT        : Start email password extraction module.", '#00ff41');
-                    writeOutput("SCAN           : Start bio-feedback analysis (lie detector).", '#00ff41');
+                    writeOutput("DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
+                    writeOutput("SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
                     writeOutput("LOGOUT         : Terminate session.", '#00ff41');
                     break;
                 case 'SEARCH':
@@ -688,7 +748,6 @@
                     }
                     break;
                 case 'DECRYPT':
-                    // Reset decrypt state on initial call
                     if (decryptState !== 1) decryptState = 0; 
                     runDecrypt(args);
                     break;
@@ -697,6 +756,13 @@
                     break;
                 case 'LOGOUT':
                     writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
+                    // Stop camera feed if active before redirecting
+                    if (scanActive) {
+                        const videoFeed = document.getElementById('video-feed');
+                        if (videoFeed && videoFeed.srcObject) {
+                            videoFeed.srcObject.getTracks().forEach(track => track.stop());
+                        }
+                    }
                     setTimeout(() => {
                         window.location.href = 'https://ethanunlocked690.github.io';
                     }, 1000);
@@ -710,12 +776,55 @@
 
         // --- Event Listeners ---
 
+        // Listener for standard command input
         commandInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 processCommand(commandInput.value);
                 commandInput.value = '';
             }
         });
+        
+        // Listener for the new, hidden password input
+        passwordInput.addEventListener('keydown', function(e) {
+            // Clear any existing timeout
+            clearTimeout(passwordTimeout);
+
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent newline or form submission
+                handleScanPassword(actualPasswordAttempt);
+                return;
+            }
+            
+            // Handle Backspace/Delete
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                actualPasswordAttempt = actualPasswordAttempt.slice(0, -1);
+                currentPasswordDisplay = currentPasswordDisplay.slice(0, -1);
+                passwordInput.value = currentPasswordDisplay;
+                e.preventDefault(); 
+                return;
+            }
+
+            // Only allow single characters (to avoid issues with Ctrl/Alt/Shift)
+            if (e.key.length === 1) {
+                e.preventDefault(); // Stop default input behavior
+                
+                const char = e.key;
+                actualPasswordAttempt += char;
+                
+                // Show the new character for 2 seconds
+                currentPasswordDisplay += char;
+                passwordInput.value = currentPasswordDisplay;
+
+                // Set a timeout to replace the last character with '*'
+                passwordTimeout = setTimeout(() => {
+                    if (currentPasswordDisplay.length > 0) {
+                        currentPasswordDisplay = currentPasswordDisplay.slice(0, -1) + '*';
+                        passwordInput.value = currentPasswordDisplay;
+                    }
+                }, 2000); 
+            }
+        });
+
 
         // Initialize on load
         window.onload = function() {
