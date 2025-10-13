@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATLAS: DATA FLOW CONSOLE v4.5 (HIGH-LEVEL ACCESS)</title>
-    <script src="./ATLAS_ DATA FLOW CONSOLE v4.5 (HIGH-LEVEL ACCESS)_files/saved_resource"></script>
-    <link href="./ATLAS_ DATA FLOW CONSOLE v4.5 (HIGH-LEVEL ACCESS)_files/css2" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         /* General Console Theme */
         body {
@@ -145,8 +145,31 @@
             margin-top: 10px;
         }
         
+        /* --- Prank Button Styles (NEW) --- */
+        .prank-button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: 3px solid;
+            transition: all 0.2s;
+            font-family: 'VT323', monospace;
+            display: inline-block;
+        }
+        .prank-button-yes {
+            background-color: #008000;
+            border-color: #00ff41;
+            color: #fff;
+            box-shadow: 0 0 5px #00ff41;
+        }
+        .prank-button-no {
+            background-color: #800000;
+            border-color: #ff0000;
+            color: #fff;
+            box-shadow: 0 0 5px #ff0000;
+        }
+
         /* --- Holiday Themes --- */
-        /* NOTE: You need to ensure the 'hack.mp3', 'new.mp3', 'v.mp3', 'labor.mp3', 'easter.mp3', 'mother.mp3', 'scary.mp3', 'thank.mp3', and 'bells.mp3' files exist in the same directory for the audio to work. */
         .new-years-theme .console-container { border-color: #ffc107; box-shadow: 0 0 10px #ffc107; }
         .valentines-theme .console-container { border-color: #ff69b4; box-shadow: 0 0 10px #ff69b4; }
         .labour-theme .console-container { border-color: #dc3545; box-shadow: 0 0 10px #dc3545; }
@@ -159,7 +182,7 @@
         .christmas-theme .console-container { border-color: #006400; box-shadow: 0 0 10px #006400; }
         
     </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.p-4{padding:1rem}</style></head>
+</head>
 <body class="p-4 holiday-theme-active halloween-theme">
     
     <audio id="main-music" loop="" preload="auto" volume="1.0">
@@ -217,7 +240,11 @@
         let passwordTimeout;
         let musicStarted = false; 
         let currentHolidayAudio = null; 
-
+        
+        // --- TEMPORARY PRANK TEST FLAG (SET TO TRUE FOR TESTING OUTSIDE APRIL 1ST) ---
+        // I'll keep this disabled as the current time is Oct 13, 2025 (which is not April 1st).
+        // const TEST_PRANK_ACTIVE = true; 
+        
         // --- TRACE CHALLENGE DATA ---
         let traceCode = '';
         let traceTarget = '';
@@ -289,6 +316,91 @@
             10: { name: "Thanksgiving", color: "#8b4513", music: "thank.mp3", css: "thanksgiving-theme" }, 
             11: { name: "Christmas", color: "#006400", music: "bells.mp3", css: "christmas-theme" } 
         };
+
+        // =========================================================================
+        // --- Prank Logic (NEW) ---
+        // =========================================================================
+        
+        function isAprilFools() {
+            const today = new Date();
+            // Month is 0-indexed (April is 3), Day is 1-indexed
+            // return today.getMonth() === 3 && today.getDate() === 1; 
+            // TEMPORARY: Use this for testing outside of April 1st:
+            return false; // For now, I will keep it as false since it's not April 1st.
+        }
+
+        function startAprilFoolsPrank() {
+            isBusy = true;
+            decryptState = 99; // Prank State
+
+            // Hide input area while buttons are visible
+            commandInput.style.display = 'none';
+            passwordInput.style.display = 'none';
+
+            writeOutput("\n!!!! CRITICAL BREACH - PROTOCOL A1-F00L INITIATED !!!!", '#ff0000');
+            writeOutput("!! WARNING: DECRYPT function bypassed security on TARGET: White_House_Kernel_v2.0 !!", '#ff0000');
+
+            setTimeout(() => {
+                writeOutput("\n>> ACCESS GRANTED. SYSTEM LEVEL: OMEGA-01 (ADMINISTRATOR)", '#ffff00');
+                writeOutput(">> IDENTITY: President of the Free World.", '#00ff41');
+                writeOutput("\n!! CONFIRM NEW ROLE AND PROCEED TO THE OVAL OFFICE !!", '#ff00ff');
+
+                // Create buttons dynamically
+                const buttonContainer = document.createElement('div');
+                buttonContainer.id = 'prank-buttons';
+                outputArea.appendChild(buttonContainer);
+
+                // Red Button (NO)
+                const noButton = document.createElement('button');
+                noButton.className = 'prank-button prank-button-no';
+                noButton.id = 'prank-no-button';
+                noButton.textContent = 'NO, REJECT ROLE';
+                noButton.onclick = handlePrankNo;
+                buttonContainer.appendChild(noButton);
+
+                // Green Button (YES)
+                const yesButton = document.createElement('button');
+                yesButton.className = 'prank-button prank-button-yes';
+                yesButton.id = 'prank-yes-button';
+                yesButton.textContent = 'YES, PROCEED';
+                yesButton.onclick = handlePrankYes;
+                buttonContainer.appendChild(yesButton);
+
+                outputArea.scrollTop = outputArea.scrollHeight;
+
+                isBusy = false;
+            }, 2000);
+        }
+
+        function removePrankButtons() {
+            const container = document.getElementById('prank-buttons');
+            if (container) container.remove();
+            decryptState = 0; // Reset state
+            showPrompt();
+        }
+
+        function handlePrankYes() {
+            isBusy = true;
+            writeOutput("\nCOMMAND: YES, PROCEED", '#00ff41');
+            writeOutput("\n$$$ SYSTEM RESPONSE: APRIL FOOLS!!! $$$", '#ff00ff');
+            setTimeout(() => {
+                isBusy = false;
+                removePrankButtons();
+            }, 1500);
+        }
+
+        function handlePrankNo() {
+            writeOutput("\nCOMMAND: NO, REJECT ROLE", '#ff0000');
+            writeOutput("\n!!! SYSTEM WARNING !!! RECONSIDER!!!", '#ffff00');
+            
+            const noButton = document.getElementById('prank-no-button');
+            if (noButton) noButton.remove();
+
+            const yesButton = document.getElementById('prank-yes-button');
+            if (yesButton) {
+                yesButton.textContent = 'YES, PROCEED ANYWAY'; // Make it seem like the only way forward
+            }
+        }
         
         // =========================================================================
         // --- Utility Functions ---
@@ -340,6 +452,20 @@
 
         // --- SEARCH ---
         function runSearch(query) {
+            if (isAprilFools()) {
+                isBusy = true;
+                writeOutput(`INITIATING SEARCH FOR: "${query}"...`, '#ffff00');
+                new Promise(resolve => setTimeout(resolve, 1000)).then(() => {
+                    writeOutput(">> ERROR: IndexOutOfBoundException: 'Query' too big for database.", '#ff0000');
+                    writeOutput(">> DATABASE RESPONSE: 'My feelings are hurt. I'm taking a coffee break.'", '#ff00ff');
+                    writeOutput(">> System is now playing a low-quality loop of 'The Macarena'.", '#ffff00');
+                    isBusy = false;
+                    showPrompt();
+                });
+                return;
+            }
+
+            // Normal Search Logic
             isBusy = true;
             writeOutput(`INITIATING PUBLIC WEB SCAN FOR: "${query}"...`, '#ffff00');
             new Promise(resolve => setTimeout(resolve, 1500)).then(() => {
@@ -381,6 +507,15 @@
         }
 
         function runDecrypt(input) {
+            if (isAprilFools()) {
+                if (decryptState === 0) {
+                    startAprilFoolsPrank();
+                } else if (decryptState === 99) {
+                    writeOutput(`!! ATTENTION: The fate of the free world hangs in the balance. Choose your action below.`, '#ff0000');
+                }
+                return;
+            }
+
             if (decryptState === 0) {
                 // Initial DECRYPT command
                 isBusy = true;
@@ -553,7 +688,7 @@
         function generateTraceCode() {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let result = '';
-            for (let i = 0; i < 4; i++) {
+            for (let i = 4; i < 8; i++) {
                 result += characters.charAt(Math.floor(Math.random() * characters.length));
             }
             return result;
@@ -744,7 +879,7 @@
             window.open(egg.action_url, '_self'); 
         }
         
-        // --- NEW FUN/HACKER PLACEHOLDER COMMANDS (7-15) ---
+        // --- NEW FUN/HACKER PLACEHOLDER COMMANDS (6-14, excluding 15 OVERRIDE) ---
         function runPlaceholderCommand(cmd, args) {
             isBusy = true;
             writeOutput(`\n--- EXECUTING [${cmd}] PROTOCOL ---`, '#00ffff');
@@ -877,7 +1012,7 @@
             const cmd = parts[0].toUpperCase();
             const args = command.trim().substring(cmd.length).trim();
 
-            if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE' && cmd !== 'TRACE' && cmd !== 'STOP') {
+            if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE' && cmd !== 'TRACE' && cmd !== 'STOP' && decryptState !== 99) {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
             }
@@ -899,11 +1034,18 @@
                     return;
                 }
                 
+                if (decryptState === 99) { // Handle logout during prank
+                    writeOutput("PRANK TERMINATED. Returning to main console.", '#00ff41');
+                    removePrankButtons();
+                    return;
+                }
+                
                 writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
                 if (scanActive) endLieDetection();
                 if (securityTimeout) clearTimeout(securityTimeout);
                 
                 setTimeout(() => {
+                    // Redirect to a placeholder URL
                     window.location.href = 'https://ethanunlocked690.github.io'; 
                 }, 1000);
                 return;
@@ -915,6 +1057,14 @@
                  runTrace(args);
                  return;
             }
+            
+            // --- Prank Active Check (To prevent command input during button prompt) ---
+            if (decryptState === 99) {
+                writeOutput(`> ${command}`, '#ff00ff');
+                runDecrypt(command); // Will print an error message and wait for button input
+                return;
+            }
+
 
             // --- HUNT MODE SPECIFIC COMMANDS ---
             if (huntState === 1) {
@@ -976,17 +1126,35 @@
                     writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password). Use STOP SCAN to end.", '#00ff41');
                     writeOutput("4. HUNT           : Scan for global web Easter Eggs. 🐇", '#00ff41');
                     writeOutput("5. LOGOUT         : Terminate session.", '#00ff41');
-                    writeOutput("6. OVERRIDE       : A powerful, unlisted command for system control.", '#ff00ff');
-                    writeOutput("7. PING [IP]      : Network connectivity and latency test.", '#00ff41');
-                    writeOutput("8. VIEW_LOGS      : Display the system access and error logs.", '#00ff41');
-                    writeOutput("9. CONFIG         : View/modify system configuration (Restricted).", '#00ff41');
-                    writeOutput("10. REPORT [ID]   : Generate a detailed incident report.", '#00ff41');
-                    writeOutput("11. REBOOT        : Initiate system soft reboot sequence.", '#00ff41');
-                    writeOutput("12. SHUTDOWN      : Initiate system hard power-down sequence.", '#00ff41');
-                    writeOutput("13. INITIATE_FLOW : Begin the primary data flow injection sequence.", '#00ff41');
-                    writeOutput("14. CLEAR_CACHE   : Purge temporary system files and buffers.", '#00ff41');
-                    writeOutput("15. STATUS_REPORT : Display a high-level summary of system health.", '#00ff41');
+                    // April Fools Prank on HELP list
+                    if (isAprilFools()) {
+                        writeOutput("**. SUPER_HACK (SECRET)**: **DO NOT USE!** Instantly gains you unlimited power. (High Risk).", '#ff00ff');
+                    }
+                    writeOutput("6. PING [IP]      : Network connectivity and latency test.", '#00ff41');
+                    writeOutput("7. VIEW_LOGS      : Display the system access and error logs.", '#00ff41');
+                    writeOutput("8. CONFIG         : View/modify system configuration (Restricted).", '#00ff41');
+                    writeOutput("9. REPORT [ID]    : Generate a detailed incident report.", '#00ff41');
+                    writeOutput("10. REBOOT        : Initiate system soft reboot sequence.", '#00ff41');
+                    writeOutput("11. SHUTDOWN      : Initiate system hard power-down sequence.", '#00ff41');
+                    writeOutput("12. INITIATE_FLOW : Begin the primary data flow injection sequence.", '#00ff41');
+                    writeOutput("13. CLEAR_CACHE   : Purge temporary system files and buffers.", '#00ff41');
+                    writeOutput("14. STATUS_REPORT : Display a high-level summary of system health.", '#00ff41');
+                    writeOutput("15. OVERRIDE      : [HIDDEN]", '#ff00ff'); // Moved to the end and marked as hidden
                     break;
+                case 'SUPER_HACK':
+                    if (isAprilFools()) {
+                        isBusy = true;
+                        writeOutput("\n!! EXECUTING SUPER_HACK PROTOCOL !!", '#ff0000');
+                        writeOutput("...", '#ff0000');
+                        setTimeout(() => {
+                            writeOutput("HACK COMPLETE. Result: You now have the power to instantly make a sandwich.", '#00ff41');
+                            writeOutput("Enjoy your sandwich, Supreme Leader.", '#ff00ff');
+                            isBusy = false;
+                            showPrompt();
+                        }, 1000);
+                        return;
+                    }
+                    // Fall through to default if not April 1st
                 case 'SEARCH':
                     if (args.length > 2) {
                         runSearch(args);
@@ -996,7 +1164,7 @@
                     }
                     break;
                 case 'DECRYPT':
-                    if (decryptState !== 1) decryptState = 0; 
+                    if (decryptState !== 1 && decryptState !== 99) decryptState = 0; 
                     runDecrypt(args);
                     break;
                 case 'SCAN':
@@ -1010,7 +1178,7 @@
                     huntState = 0; 
                     runHunt(args);
                     break;
-                // --- Placeholder commands 7 through 15 (Now handled by unique logic) ---
+                // --- Placeholder commands 6 through 14 (Now handled by unique logic) ---
                 case 'PING':
                 case 'VIEW_LOGS':
                 case 'CONFIG':
@@ -1084,6 +1252,11 @@
                 activeTheme = { name: "ANZAC Day", color: "#6c757d", music: "labor.mp3", css: "anzac-theme" };
             }
             
+            // Check for April Fools to force the theme class
+            if (isAprilFools()) {
+                activeTheme = HOLIDAY_THEMES[3]; // Month 3 is April
+            }
+            
             if (activeTheme) {
                  // 1. Set the visual theme silently
                  bodyElement.className = bodyElement.className.split(' ').filter(c => !c.endsWith('-theme')).join(' ');
@@ -1123,6 +1296,12 @@
         document.addEventListener('keypress', function(e) {
             handleUserInteraction(); // Check for music start
             
+            if (decryptState === 99) {
+                // Prank is active, ignore keyboard input
+                e.preventDefault();
+                return;
+            }
+
             if (scanState === 2) {
                 // TRACE mode: handles input via the hidden passwordInput field
                 if (e.key === 'Enter') {
@@ -1199,4 +1378,5 @@
     </script>
 
 
-</body></html>
+</body>
+</html>
