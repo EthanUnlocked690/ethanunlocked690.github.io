@@ -743,6 +743,130 @@
             // This is the core action: open the search result in the current window to show the effect
             window.open(egg.action_url, '_self'); 
         }
+        
+        // --- NEW FUN/HACKER PLACEHOLDER COMMANDS (7-15) ---
+        function runPlaceholderCommand(cmd, args) {
+            isBusy = true;
+            writeOutput(`\n--- EXECUTING [${cmd}] PROTOCOL ---`, '#00ffff');
+
+            switch (cmd) {
+                case 'PING':
+                    writeOutput(`ATTEMPTING to contact target... [192.168.4.5]`, '#ffff00');
+                    setTimeout(() => {
+                        writeOutput(`REPLY from 192.168.4.5: Time=45ms TTL=64`, '#00ff41');
+                        writeOutput(`REPLY from 192.168.4.5: Time=8ms TTL=64`, '#00ff41');
+                        writeOutput(`REQUEST TIMED OUT.`, '#ff0000');
+                        writeOutput(`PING STATISTICS: 75% Success Rate. (WARNING: Potential active packet filtering.)`, '#ffff00');
+                        isBusy = false;
+                        showPrompt();
+                    }, 1000);
+                    break;
+
+                case 'VIEW_LOGS':
+                    writeOutput(`ACCESSING CLASSIFIED LOGS... Displaying last few entries:`, '#ffff00');
+                    setTimeout(() => {
+                        writeOutput(`[04:12:15] AUTH_SUCCESS: Operator:E.I. Source:LOCAL.TML`, '#00ff41');
+                        writeOutput(`[04:12:30] DATA_FLOW: Initiated stream B-7-GAMMA. Status: ACTIVE`, '#00ff41');
+                        writeOutput(`[04:12:35] AUDIT_VIOLATION: Attempt to access kernel-level memory @0xDE01. Action: **BLOCKED**`, '#ff0000');
+                        writeOutput(`[04:12:35] **ACCESS DENIED**. Log viewer module locked by KERNEL-AUTH.`, '#ff0000');
+                        isBusy = false;
+                        showPrompt();
+                    }, 800);
+                    break;
+
+                case 'CONFIG':
+                    writeOutput(`SYSTEM CONFIGURATION REQUESTED.`, '#ffff00');
+                    writeOutput(`..`, '#ffff00');
+                    writeOutput(`**SECURITY WARNING**: Configuration modification is restricted.`, '#ff0000');
+                    setTimeout(() => {
+                        writeOutput(`CURRENT PARAMETERS: { Max_Threads: 1024, Security_Level: DELTA, Core_Temp: 45°C }`, '#00ff41');
+                        writeOutput(`ACCESS FAILURE. **LEVEL DELTA** clearance required for advanced configuration settings.`, '#ffff00');
+                        isBusy = false;
+                        showPrompt();
+                    }, 500);
+                    break;
+
+                case 'REPORT':
+                    writeOutput(`INITIATING Data Integrity Check (DIC) for Report ID: ${args || 'DEFAULT-RPT'}...`, '#ffff00');
+                    setTimeout(() => {
+                        writeOutput(`DIC [20%] | Checking File Headers...`, '#00ff41');
+                    }, 500);
+                    setTimeout(() => {
+                        writeOutput(`DIC [85%] | **ERROR**: Corrupted Report Header. Data flow terminated.`, '#ff0000');
+                        writeOutput(`**ACTION**: Report generation failed. Please try a different ID.`, '#ff0000');
+                        isBusy = false;
+                        showPrompt();
+                    }, 1500);
+                    break;
+
+                case 'REBOOT':
+                    writeOutput(`INITIATING Soft Reboot Sequence in 3 seconds...`, '#ffff00');
+                    let countdown = 3;
+                    const rebootInterval = setInterval(() => {
+                        writeOutput(`[ ${countdown} ] ...`, '#ff00ff');
+                        countdown--;
+                        if (countdown === 0) {
+                            clearInterval(rebootInterval);
+                            writeOutput(`**REBOOT CANCELED**: User-initiated sequence aborted by System Priority Override (SPO).`, '#ff0000');
+                            isBusy = false;
+                            showPrompt();
+                        }
+                    }, 1000);
+                    break;
+
+                case 'SHUTDOWN':
+                    writeOutput(`!! WARNING !! SHUTDOWN requires Level Alpha Override.`, '#ff0000');
+                    setTimeout(() => {
+                        writeOutput(`Manual power down attempt detected.`, '#ffff00');
+                        writeOutput(`SAFETY PROTOCOL ENGAGED. Module is now locked.`, '#ff0000');
+                        isBusy = false;
+                        showPrompt();
+                    }, 700);
+                    break;
+
+                case 'INITIATE_FLOW':
+                    writeOutput(`**DATA FLOW INITIATED**... Stream active:`, '#00ff41');
+                    setTimeout(() => {
+                        writeOutput(`[<<| B-Stream | 400MB/s | Status: OK ]`, '#00ff41');
+                        writeOutput(`[<<| H-Stream | 900MB/s | Status: WAITING ]`, '#ffff00');
+                        writeOutput(`[<<| Z-Stream | **BLOCKED** | Protocol 77-Alpha ]`, '#ff0000');
+                        isBusy = false;
+                        showPrompt();
+                    }, 1200);
+                    break;
+
+                case 'CLEAR_CACHE':
+                    writeOutput(`PURGING TEMPORARY MEMORY...`, '#ffff00');
+                    setTimeout(() => {
+                        writeOutput(`[#####################] 100% Complete.`, '#00ff41');
+                        writeOutput(`SYSTEM CACHE WIPED. Memory state is now pristine. (Operation successful)`, '#00ff41');
+                        isBusy = false;
+                        showPrompt();
+                    }, 1000);
+                    break;
+
+                case 'STATUS_REPORT':
+                    writeOutput(`GENERATING SYSTEM HEALTH SUMMARY...`, '#ffff00');
+                    setTimeout(() => {
+                        writeOutput(`-- SYSTEM HEALTH REPORT (1-OCT-2025) --`, '#00ffff');
+                        writeOutput(`CPU Load: 45% (Nominal)`, '#00ff41');
+                        writeOutput(`Memory: 78% Used (Warning)`, '#ffff00');
+                        writeOutput(`Security Protocols: **Level Delta (Compromised)**`, '#ff0000');
+                        writeOutput(`**NOTE**: External threat vector A-14 is still active but contained.`, '#ff0000');
+                        isBusy = false;
+                        showPrompt();
+                    }, 1500);
+                    break;
+
+                default:
+                    // Fallback just in case
+                    writeOutput(`** ${cmd} **: Command received. This module is currently restricted to OPERATOR LEVEL OMEGA.`, '#ffff00');
+                    isBusy = false;
+                    showPrompt();
+                    break;
+            }
+        }
+        // --- END NEW FUN/HACKER PLACEHOLDER COMMANDS (7-15) ---
 
         // =========================================================================
         // --- Main Command Processor ---
@@ -846,13 +970,22 @@
             
             switch (cmd) {
                 case 'HELP':
-                    writeOutput("--- AVAILABLE COMMANDS (6 Core Features) ---", '#ffff00');
+                    writeOutput("--- AVAILABLE COMMANDS (15 Core Features) ---", '#ffff00');
                     writeOutput("1. SEARCH [query] : Fetch public data (e.g., NASA, Eiffel).", '#00ff41');
                     writeOutput("2. DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
                     writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password). Use STOP SCAN to end.", '#00ff41');
                     writeOutput("4. HUNT           : Scan for global web Easter Eggs. 🐇", '#00ff41');
                     writeOutput("5. LOGOUT         : Terminate session.", '#00ff41');
                     writeOutput("6. OVERRIDE       : A powerful, unlisted command for system control.", '#ff00ff');
+                    writeOutput("7. PING [IP]      : Network connectivity and latency test.", '#00ff41');
+                    writeOutput("8. VIEW_LOGS      : Display the system access and error logs.", '#00ff41');
+                    writeOutput("9. CONFIG         : View/modify system configuration (Restricted).", '#00ff41');
+                    writeOutput("10. REPORT [ID]   : Generate a detailed incident report.", '#00ff41');
+                    writeOutput("11. REBOOT        : Initiate system soft reboot sequence.", '#00ff41');
+                    writeOutput("12. SHUTDOWN      : Initiate system hard power-down sequence.", '#00ff41');
+                    writeOutput("13. INITIATE_FLOW : Begin the primary data flow injection sequence.", '#00ff41');
+                    writeOutput("14. CLEAR_CACHE   : Purge temporary system files and buffers.", '#00ff41');
+                    writeOutput("15. STATUS_REPORT : Display a high-level summary of system health.", '#00ff41');
                     break;
                 case 'SEARCH':
                     if (args.length > 2) {
@@ -877,6 +1010,18 @@
                     huntState = 0; 
                     runHunt(args);
                     break;
+                // --- Placeholder commands 7 through 15 (Now handled by unique logic) ---
+                case 'PING':
+                case 'VIEW_LOGS':
+                case 'CONFIG':
+                case 'REPORT':
+                case 'REBOOT':
+                case 'SHUTDOWN':
+                case 'INITIATE_FLOW':
+                case 'CLEAR_CACHE':
+                case 'STATUS_REPORT':
+                    runPlaceholderCommand(cmd, args);
+                    return; 
                 default:
                     writeOutput(`ERROR: Command '${cmd}' not recognized. Try HELP.`, '#ff0000');
                     break;
