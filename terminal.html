@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v4.2 (HIGH-LEVEL ACCESS)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v4.3 (HIGH-LEVEL ACCESS)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -162,23 +162,25 @@
 </head>
 <body class="p-4">
     
-    <audio id="main-music" loop preload="auto">
+    <audio id="main-music" loop preload="auto" volume="0.5">
         <source src="hack.mp3" type="audio/mp3">
         Your browser does not support the audio element.
     </audio>
+    
+    <div id="holiday-music-container"></div>
 
     <div class="console-container">
         
         <div id="status-bar">
             <span id="override-indicator" style="color: #ff0000; float: left; display: none;">[ALPHA OVERRIDE ACTIVE]</span>
-            ATLAS CONSOLE v4.2 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
+            ATLAS CONSOLE v4.3 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
         </div>
 
         <div id="output-area">
             [[INITIATING ACCESS. . .]]<br>
             [[WELCOME, OPERATOR. LEVEL DELTA CLEARANCE CONFIRMED.]]<br>
             <br>
-            <span style="color: #ffff00;">**Click anywhere on the console to start the main music.**</span>
+            <span style="color: #ffff00;">**Click anywhere on the console to start the music.**</span>
             <br>
             Type **HELP** for available commands.
             <br>
@@ -198,15 +200,16 @@
         const passwordInput = document.getElementById('password-input'); 
         const statusBar = document.getElementById('status-bar');
         const overrideIndicator = document.getElementById('override-indicator');
-        const bodyElement = document.body; // Reference to the body for decorations
+        const bodyElement = document.body; 
         const consoleContainer = document.querySelector('.console-container');
-        const mainMusic = document.getElementById('main-music'); // Reference to the audio element
+        const mainMusic = document.getElementById('main-music'); 
+        const holidayMusicContainer = document.getElementById('holiday-music-container');
 
         let isBusy = false; 
         let scanActive = false;
         let decryptState = 0; 
-        let scanState = 0; // 0: Ready, 1: Password Input, 2: TRACE Challenge
-        let huntState = 0; // 0: Ready, 1: Selection Phase
+        let scanState = 0; 
+        let huntState = 0; 
         let targetEmail = ''; 
         let scanInterval; 
         let securityTimeout; 
@@ -214,7 +217,8 @@
         let currentPasswordDisplay = '';
         let actualPasswordAttempt = '';
         let passwordTimeout;
-        let musicStarted = false; // New flag for music
+        let musicStarted = false; 
+        let currentHolidayAudio = null; // To hold the active holiday audio element reference
 
         // --- TRACE CHALLENGE DATA ---
         let traceCode = '';
@@ -246,7 +250,7 @@
         };
         let currentSecurityQuestion = null;
 
-        // --- HUNT EASTER EGG DATA ---
+        // --- HUNT EASTER EGG DATA (Same as before) ---
         const BROWSER_EASTER_EGGS = [
             {
                 name: "The T-Rex Dinosaur Game",
@@ -271,17 +275,18 @@
             }
         ];
 
-        // --- HOLIDAY THEMES (Australia-specific holidays included) ---
+        // --- HOLIDAY THEMES (Updated for local MP3 files) ---
         const HOLIDAY_THEMES = {
-            0: { name: "New Year's Eve", color: "#ffc107", music: "https://www.youtube.com/results?search_query=upbeat+new+years+music+no+vocals", emoji: "🎉", css: "new-years-theme" }, // January (Month 0)
-            1: { name: "Valentine's Day", color: "#ff69b4", music: "https://www.youtube.com/results?search_query=romantic+lo+fi+music+no+vocals", emoji: "💖", css: "valentines-theme" }, // February
-            2: { name: "Labour Day (AU/NZ)", color: "#dc3545", music: "https://www.youtube.com/results?search_query=motivational+work+music+no+vocals", emoji: "🛠️", css: "labour-theme" }, // March
-            3: { name: "Easter & ANZAC Day", color: "#007bff", music: "https://www.youtube.com/results?search_query=calm+easter+and+anzac+day+music", emoji: "🐰", css: "april-theme" }, // April
-            4: { name: "Mother's Day", color: "#6f42c1", music: "https://www.youtube.com/results?search_query=gentle+mother's+day+music", emoji: "🌷", css: "mothers-theme" }, // May
-            8: { name: "National Flag Day", color: "#000080", music: "https://www.youtube.com/results?search_query=australian+national+anthem+instrumental", emoji: "🇦🇺", css: "flag-theme" }, // September (Month 8)
-            9: { name: "Halloween", color: "#ff8c00", music: "https://www.youtube.com/results?search_query=spooky+halloween+lo+fi+no+vocals", emoji: "🎃", css: "halloween-theme" }, // October (Current Month)
-            10: { name: "Thanksgiving (US/Global)", color: "#8b4513", music: "https://www.youtube.com/results?search_query=cozy+thanksgiving+lo+fi", emoji: "🦃", css: "thanksgiving-theme" }, // November
-            11: { name: "Christmas", color: "#006400", music: "https://www.youtube.com/results?search_query=instrumental+christmas+carols+lo+fi", emoji: "🎄", css: "christmas-theme" } // December
+            // Month : { Name, Color, Music_File, Emoji, CSS_Class }
+            0: { name: "New Year's Eve", color: "#ffc107", music: "new.mp3", emoji: "🎉", css: "new-years-theme" }, 
+            1: { name: "Valentine's Day", color: "#ff69b4", music: "v.mp3", emoji: "💖", css: "valentines-theme" }, 
+            2: { name: "Labour Day (AU/NZ)", color: "#dc3545", music: "labor.mp3", emoji: "🛠️", css: "labour-theme" }, 
+            3: { name: "Easter & ANZAC Day", color: "#007bff", music: "easter.mp3", emoji: "🐰", css: "april-theme" }, 
+            4: { name: "Mother's Day", color: "#6f42c1", music: "mother.mp3", emoji: "🌷", css: "mothers-theme" }, 
+            8: { name: "National Flag Day", color: "#000080", music: "labor.mp3", emoji: "🇦🇺", css: "flag-theme" }, 
+            9: { name: "Halloween", color: "#ff8c00", music: "scary.mp3", emoji: "🎃", css: "halloween-theme" }, 
+            10: { name: "Thanksgiving", color: "#8b4513", music: "thank.mp3", emoji: "🦃", css: "thanksgiving-theme" }, 
+            11: { name: "Christmas", color: "#006400", music: "bells.mp3", emoji: "🎄", css: "christmas-theme" } 
         };
         
         /** Utility functions */
@@ -299,17 +304,14 @@
                 writeOutput("", '#00ff41');
             }
             
-            // If in a special state, redirect input focus
             if (scanState === 1 || scanState === 2) {
                 commandInput.style.display = 'none';
                 passwordInput.style.display = 'block';
                 passwordInput.focus();
-                // If in password mode, set type to password
                 if (scanState === 1) {
                     passwordInput.type = 'password';
                     passwordInput.value = currentPasswordDisplay;
                 } else {
-                    // If in TRACE mode, clear input and set to text type
                     passwordInput.type = 'text';
                     passwordInput.value = '';
                 }
@@ -322,8 +324,7 @@
         }
 
 
-        // --- COMMAND HANDLERS (Omitted for brevity, they are the same as before) ---
-
+        // --- COMMAND HANDLERS (Same logic as before) ---
         async function runSearch(query) {
             isBusy = true;
             writeOutput(`INITIATING PUBLIC WEB SCAN FOR: "${query}"...`, '#ffff00');
@@ -817,7 +818,7 @@
         }
 
 
-        // --- MAIN COMMAND PROCESSOR (Omitted for brevity, it is the same as before) ---
+        // --- MAIN COMMAND PROCESSOR (Same logic as before) ---
         
         function processCommand(command) {
             const parts = command.trim().split(/\s+/);
@@ -931,62 +932,95 @@
             showPrompt();
         }
 
-        // --- HOLIDAY INITIALIZER ---
+        // --- MUSIC CONTROL FUNCTIONS ---
+        
+        function stopAllMusic() {
+            mainMusic.pause();
+            if (currentHolidayAudio) {
+                currentHolidayAudio.pause();
+                currentHolidayAudio.remove(); // Remove the element when done
+                currentHolidayAudio = null;
+            }
+        }
+
+        function startMainMusic() {
+             // Only try to play if a theme isn't active
+            if (!bodyElement.classList.contains('holiday-theme-active')) {
+                mainMusic.volume = 0.5;
+                mainMusic.play().catch(error => {
+                    console.warn("Main music play blocked. Waiting for user interaction or holiday audio to finish.");
+                });
+            }
+        }
+
+        function startHolidayMusic(theme) {
+            // 1. Stop main music
+            mainMusic.pause();
+
+            // 2. Create the holiday audio element
+            const audio = document.createElement('audio');
+            audio.id = 'holiday-music';
+            audio.loop = true;
+            audio.autoplay = true;
+            audio.volume = 1.0; // Loud!
+            audio.innerHTML = `<source src="${theme.music}" type="audio/mp3">`;
+            
+            // 3. Clear container and append new audio
+            holidayMusicContainer.innerHTML = '';
+            holidayMusicContainer.appendChild(audio);
+            currentHolidayAudio = audio; // Keep reference
+            
+            // 4. Attempt to play (browser might still block until user interaction)
+            audio.play().catch(error => {
+                console.warn(`Holiday music (${theme.name}) play blocked. Waiting for user interaction.`);
+            });
+        }
+        
         function initializeHolidayTheme() {
             const today = new Date();
-            const month = today.getMonth(); // 0 (Jan) to 11 (Dec)
-            const day = today.getDate(); // Day of the month
+            const month = today.getMonth(); 
+            const day = today.getDate(); 
 
             let currentTheme = HOLIDAY_THEMES[month];
+            let themeFound = false;
 
-            // Specific day checks (Australian holidays and US Thanksgiving)
-            if (month === 2 && day > 7 && day < 15) { 
-                currentTheme = HOLIDAY_THEMES[2]; 
-            } else if (month === 3 && day === 25) { 
-                currentTheme = { name: "ANZAC Day", color: "#6c757d", music: "https://www.youtube.com/results?search_query=the+last+post+instrumental", emoji: "🌹", css: "anzac-theme" };
-            } else if (month === 4 && day > 7 && day < 15) { 
-                 currentTheme = HOLIDAY_THEMES[4];
-            } else if (month === 8 && day === 3) { 
-                 currentTheme = HOLIDAY_THEMES[8];
+            // Specific Australian/Floating date checks
+            if (month === 3 && day === 25) { 
+                currentTheme = { name: "ANZAC Day", color: "#6c757d", music: "labor.mp3", emoji: "🌹", css: "anzac-theme" };
             }
             
             if (currentTheme) {
+                 // Remove any existing theme classes
+                 bodyElement.className = bodyElement.className.split(' ').filter(c => !c.endsWith('-theme')).join(' ');
+                 bodyElement.classList.add('holiday-theme-active'); // Generic flag
+
                  const message = `\n${currentTheme.emoji} [SEASONAL UPDATE] ${currentTheme.name} Theme Active ${currentTheme.emoji}`;
                  writeOutput(message, currentTheme.color);
-                 writeOutput(`STATUS: Console environment optimized for festive operation.`, currentTheme.color);
-                 writeOutput(`MUSIC: Play this ${currentTheme.name} background music: (Open in new tab)`, '#ffff00');
-                 
-                 const musicLink = document.createElement('a');
-                 musicLink.href = currentTheme.music;
-                 musicLink.target = '_blank';
-                 musicLink.textContent = currentTheme.music;
-                 musicLink.style.color = currentTheme.color;
-                 musicLink.style.textDecoration = 'underline';
-                 outputArea.appendChild(document.createElement('span')).textContent = '  >> ';
-                 outputArea.appendChild(musicLink);
-                 outputArea.appendChild(document.createElement('br'));
+                 writeOutput(`MUSIC: Playing ${currentTheme.music} (Loud, Looped).`, '#ffff00');
                  
                  bodyElement.classList.add(currentTheme.css); 
+                 startHolidayMusic(currentTheme);
+                 themeFound = true;
             }
-        }
-        
-        // --- Music Starter Function ---
-        function startMusic() {
-            if (!musicStarted) {
-                mainMusic.play().catch(error => {
-                    // This error is expected if the user hasn't interacted with the page yet.
-                    console.log("Music play blocked, waiting for user interaction...");
-                });
-                musicStarted = true;
-            }
-            // Remove the event listener once music attempts to start
-            document.removeEventListener('click', startMusic);
+            
+            return themeFound;
         }
 
-        // --- Event Listeners ---
+
+        // --- Event Listener Handlers ---
+        
+        function handleUserClick() {
+            if (!musicStarted) {
+                musicStarted = true;
+                if (!initializeHolidayTheme()) {
+                    startMainMusic();
+                }
+            }
+             // Remove the event listener after the first click
+            document.removeEventListener('click', handleUserClick);
+        }
 
         document.addEventListener('keypress', function(e) {
-            
             if (scanState === 2) {
                 if (e.key === 'Enter') {
                     e.preventDefault(); 
@@ -1002,7 +1036,7 @@
             }
         });
         
-        document.addEventListener('click', startMusic); // Listen for the first click to start audio
+        document.addEventListener('click', handleUserClick); // Start music on first click
 
         passwordInput.addEventListener('keydown', function(e) {
             clearTimeout(passwordTimeout);
@@ -1048,6 +1082,7 @@
 
         // Initialize on load
         window.onload = function() {
+            // We check the theme, but don't start the music yet (wait for click)
             initializeHolidayTheme(); 
             commandInput.focus();
         };
