@@ -115,7 +115,7 @@
             color: #00ffff;
         }
 
-        /* SCAN Panel Styles (omitted for brevity) */
+        /* SCAN Panel Styles */
         #lie-detector-panel {
             border: 1px solid #00ffff;
             padding: 1rem;
@@ -146,7 +146,8 @@
             margin-top: 10px;
         }
         
-        /* --- Holiday Themes --- (omitted for brevity) */
+        /* --- Holiday Themes --- */
+        /* NOTE: You need to ensure the 'hack.mp3', 'new.mp3', 'v.mp3', 'labor.mp3', 'easter.mp3', 'mother.mp3', 'scary.mp3', 'thank.mp3', and 'bells.mp3' files exist in the same directory for the audio to work. */
         .new-years-theme .console-container { border-color: #ffc107; box-shadow: 0 0 10px #ffc107; }
         .valentines-theme .console-container { border-color: #ff69b4; box-shadow: 0 0 10px #ff69b4; }
         .labour-theme .console-container { border-color: #dc3545; box-shadow: 0 0 10px #dc3545; }
@@ -237,7 +238,7 @@
         // --- OVERRIDE STATUS ---
         let overrideEnabled = false;
 
-        // Security Questions (omitted for brevity) 
+        // Security Questions
         const SECURITY_QUESTIONS = {
             "What is EthanUnlocked's birth date?": "25 January 2013",
             "How many pets does EthanUnlocked have?": "3",
@@ -276,9 +277,9 @@
             }
         ];
 
-        // --- HOLIDAY THEMES (Local MP3 files - omitted for brevity) ---
+        // --- HOLIDAY THEMES (Local MP3 files) ---
         const HOLIDAY_THEMES = {
-            // Month : { Name, Color, Music_File, CSS_Class }
+            // Month (0-indexed) : { Name, Color, Music_File, CSS_Class }
             0: { name: "New Year's Eve", color: "#ffc107", music: "new.mp3", css: "new-years-theme" }, 
             1: { name: "Valentine's Day", color: "#ff69b4", music: "v.mp3", css: "valentines-theme" }, 
             2: { name: "Labour Day (AU/NZ)", color: "#dc3545", music: "labor.mp3", css: "labour-theme" }, 
@@ -290,7 +291,10 @@
             11: { name: "Christmas", color: "#006400", music: "bells.mp3", css: "christmas-theme" } 
         };
         
-        /** Utility functions (omitted for brevity) */
+        // =========================================================================
+        // --- Utility Functions ---
+        // =========================================================================
+
         function writeOutput(text, color = '#00ff41') {
             const line = document.createElement('span');
             line.style.color = color;
@@ -306,6 +310,7 @@
             }
             
             if (scanState === 1 || scanState === 2) {
+                // Password input for SCAN or TRACE challenge
                 commandInput.style.display = 'none';
                 passwordInput.style.display = 'block';
                 passwordInput.focus();
@@ -313,19 +318,361 @@
                     passwordInput.type = 'password';
                     passwordInput.value = currentPasswordDisplay;
                 } else {
+                    // TRACE challenge input is text
                     passwordInput.type = 'text';
                     passwordInput.value = '';
                 }
             } else {
+                // Regular command input
                 commandInput.style.display = 'block';
                 passwordInput.style.display = 'none';
                 commandInput.focus();
                 commandInput.value = '';
             }
         }
-        
-        // --- COMMAND HANDLERS --- (Only HUNT is modified)
 
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        // =========================================================================
+        // --- Core Command Handlers (Includes Stubs for Context) ---
+        // =========================================================================
+
+        // --- SEARCH ---
+        function runSearch(query) {
+            isBusy = true;
+            writeOutput(`INITIATING PUBLIC WEB SCAN FOR: "${query}"...`, '#ffff00');
+            new Promise(resolve => setTimeout(resolve, 1500)).then(() => {
+                writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
+                const normalizedQuery = query.toLowerCase();
+                if (normalizedQuery.includes("eiffel") || normalizedQuery.includes("paris")) {
+                    writeOutput("[Source 1] Title: Eiffel Tower - Official Site", '#fff');
+                    writeOutput("[Source 2] Status: HIGH TOURIST ALERT, heavy crowd movement.", '#ffff00');
+                } else if (normalizedQuery.includes("ethan") || normalizedQuery.includes("ioannou")) {
+                    writeOutput(">> TARGET: ETHAN IOANNOU. DATA RETRIEVAL BLOCKED BY LEVEL DELTA OVERRIDE.", '#ff0000');
+                } else {
+                    writeOutput(">> NO SIGNIFICANT PUBLIC DATA FOUND. QUERY TOO VAGUE.", '#ff0000');
+                }
+                isBusy = false;
+                showPrompt();
+            });
+        }
+        
+        // --- DECRYPT (Simplified Security Check Flow) ---
+        function startSecurityCheck() {
+            currentSecurityQuestion = getRandomElement(Object.keys(SECURITY_QUESTIONS));
+            decryptState = 1.5;
+            writeOutput(`\n--- SECURITY CHECK REQUIRED (LEVEL 2) ---`, '#ff00ff');
+            writeOutput(`>> QUESTION: ${currentSecurityQuestion}`, '#ffff00');
+            writeOutput(`(Please type the exact answer and press Enter)`, '#ffff00');
+        }
+
+        function handleSecurityAnswer(answer) {
+            if (answer.trim().toLowerCase() === SECURITY_QUESTIONS[currentSecurityQuestion].toLowerCase()) {
+                writeOutput(`>> ACCESS GRANTED. SECURITY KEY ACCEPTED.`, '#00ff41');
+                decryptState = 2; // Security passed
+                runDecrypt('init');
+            } else {
+                writeOutput(`>> ACCESS DENIED. SECURITY PROTOCOL VIOLATION.`, '#ff0000');
+                decryptState = 0; // Restart
+                isBusy = false;
+                showPrompt();
+            }
+        }
+
+        function runDecrypt(input) {
+            if (decryptState === 0) {
+                // Initial DECRYPT command
+                isBusy = true;
+                writeOutput("\nINITIATING DECRYPTION MODULE.", '#00ffff');
+                writeOutput("Please enter the target email address to begin a 2-step security check.", '#ffff00');
+                decryptState = 1;
+                isBusy = false;
+                showPrompt();
+            } else if (decryptState === 1) {
+                // Target email input
+                targetEmail = input.trim();
+                writeOutput(`>> TARGET: ${targetEmail}. ENCRYPTION LEVEL: HIGH.`, '#00ff41');
+                startSecurityCheck();
+            } else if (decryptState === 2) {
+                // Start decryption after security check
+                isBusy = true;
+                writeOutput(`\n--- DECRYPTING HASH FOR ${targetEmail} ---`, '#00ffff');
+                
+                let timer = DECRYPT_TIMER_SECONDS;
+                const decryptInterval = setInterval(() => {
+                    timer -= 0.5;
+                    const status = (Math.random() > 0.3) ? 'OK' : 'FAIL';
+                    const hash = Array(Math.floor(Math.random() * 5) + 10).fill().map(() => (Math.random() > 0.5 ? '0' : '1')).join('');
+                    const progress = Math.min(100, (DECRYPT_TIMER_SECONDS - timer) / DECRYPT_TIMER_SECONDS * 100);
+                    writeOutput(`[ ${Math.ceil(progress)}% ] ${hash} | STATUS: ${status}`, status === 'OK' ? '#ffff00' : '#ff0000');
+                    
+                    if (timer <= 0) {
+                        clearInterval(decryptInterval);
+                        writeOutput(`\nDECRYPTION COMPLETE. HASH GENERATED.`, '#00ff41');
+                        if (targetEmail === SECRET_EMAIL) {
+                            writeOutput(`TARGET HASH: 81b7e403d159a60c042d385f03a58e`, '#ff00ff');
+                            writeOutput(`**USE COMPARE [hash/password] to test decryption against database.**`, '#ffff00');
+                            decryptState = 3; // Ready for COMPARE
+                        } else if (targetEmail === PASSWORD_DISABLED_EMAIL) {
+                             writeOutput(`TARGET HASH: NULL-H6. Note: Password/Security Check Disabled on this target.`, '#ff00ff');
+                             decryptState = 0; // Session ended
+                        } else {
+                            writeOutput(`TARGET HASH: 09c2d1b8f4e7c3a9d0e1f2b4c5d6e7f8`, '#ff00ff');
+                            writeOutput(`**USE COMPARE [hash/password] to test decryption against database.**`, '#ffff00');
+                            decryptState = 3;
+                        }
+                        isBusy = false;
+                        showPrompt();
+                    }
+                }, 500);
+
+            } else if (decryptState === 3) {
+                // Handle COMPARE command
+                const parts = input.trim().split(/\s+/);
+                const compareCmd = parts[0].toUpperCase();
+                const compareArg = parts[1];
+                
+                if (compareCmd === 'COMPARE') {
+                    if (compareArg === SIMULATED_PASSWORD || compareArg === '81b7e403d159a60c042d385f03a58e') {
+                        writeOutput(`\n!! MATCH FOUND !!`, '#ff00ff');
+                        writeOutput(`TARGET: ${targetEmail}`, '#ff00ff');
+                        writeOutput(`PASSWORD: ${SIMULATED_PASSWORD}`, '#00ff41');
+                        writeOutput(`DECRYPT MODULE: SESSION COMPLETE.`, '#00ff41');
+                        decryptState = 0;
+                    } else {
+                        writeOutput(`\n!! COMPARISON FAILURE. NO MATCH FOUND. !!`, '#ff0000');
+                    }
+                    showPrompt();
+                } else if (compareCmd === 'DECRYPT' && parts.length > 1) {
+                    writeOutput(`\nERROR: DECRYPT is not needed now. Use COMPARE [hash/password].`, '#ff0000');
+                    showPrompt();
+                } else {
+                    writeOutput(`\nERROR: Invalid DECRYPT option. Use COMPARE [hash/password].`, '#ff0000');
+                    showPrompt();
+                }
+            } else {
+                writeOutput(`ERROR: Invalid DECRYPT state. Try LOGOUT to reset.`, '#ff0000');
+                showPrompt();
+            }
+        }
+        
+        // --- SCAN ---
+        function runScan(passwordSuccess = false) {
+            if (scanState === 0) {
+                writeOutput("\nINITIATING BIO-FEEDBACK SCAN MODULE (Level Gamma Clearance Required).", '#00ffff');
+                writeOutput("Enter SCAN Password:", '#ffff00');
+                scanState = 1;
+                actualPasswordAttempt = '';
+                currentPasswordDisplay = '';
+                showPrompt();
+            } else if (scanState === 1) {
+                // Password check handled by handleScanPassword
+            } else if (scanState === 2) {
+                // TRACE challenge is active
+                writeOutput("\nERROR: TRACE CHALLENGE ACTIVE. Enter the code shown above.", '#ff0000');
+                showPrompt();
+            } else if (scanState === 3) {
+                // Scan is starting
+                isBusy = true;
+                writeOutput("\n--- BIO-FEEDBACK SCAN IN PROGRESS ---", '#00ff41');
+                
+                const panel = document.createElement('div');
+                panel.id = 'lie-detector-panel';
+                panel.innerHTML = `
+                    <div id="video-feed">[[ Simulating Live Video Feed... ]]</div>
+                    <div class="scan-data">
+                        <span class="data-label">PULSE:</span> <span class="data-value" id="pulse-data">--</span> bpm<br>
+                        <span class="data-label">GSR:</span> <span class="data-value" id="gsr-data">--</span> kOhm<br>
+                        <span class="data-label">RESP:</span> <span class="data-value" id="resp-data">--</span> br/min
+                    </div>
+                    <div id="lie-status">ANALYZING...</div>
+                `;
+                outputArea.appendChild(panel);
+
+                scanActive = true;
+                scanInterval = setInterval(updateLieDetection, 1000);
+            }
+        }
+
+        function handleScanPassword(attempt) {
+            writeOutput(`> ${'*'.repeat(attempt.length)}`, '#ff00ff');
+            if (attempt === SCAN_PASSWORD) {
+                writeOutput(`\n>> ACCESS GRANTED. WELCOME, ${SCAN_PASSWORD.toUpperCase()}.`, '#00ff41');
+                scanState = 3;
+                actualPasswordAttempt = '';
+                currentPasswordDisplay = '';
+                runScan(true);
+            } else {
+                writeOutput(`\n>> ACCESS DENIED. INCORRECT PASSWORD.`, '#ff0000');
+                scanState = 0;
+                actualPasswordAttempt = '';
+                currentPasswordDisplay = '';
+                showPrompt();
+            }
+        }
+
+        function updateLieDetection() {
+            if (!scanActive) return;
+
+            const pulse = Math.floor(Math.random() * (120 - 60 + 1) + 60);
+            const gsr = (Math.random() * (15 - 5) + 5).toFixed(2);
+            const resp = Math.floor(Math.random() * (25 - 12 + 1) + 12);
+            
+            document.getElementById('pulse-data').textContent = pulse;
+            document.getElementById('gsr-data').textContent = gsr;
+            document.getElementById('resp-data').textContent = resp;
+            
+            const lieChance = Math.random();
+            const lieStatusElement = document.getElementById('lie-status');
+            
+            if (lieChance < 0.1) {
+                lieStatusElement.textContent = "LIE DETECTED! (High Deviation)";
+                lieStatusElement.style.color = '#ff0000';
+            } else if (lieChance < 0.4) {
+                lieStatusElement.textContent = "STRESS PEAK (Anxiety)";
+                lieStatusElement.style.color = '#ffff00';
+            } else {
+                lieStatusElement.textContent = "BASELINE CONFIRMED (Nominal)";
+                lieStatusElement.style.color = '#00ff41';
+            }
+        }
+
+        function endLieDetection() {
+            if (scanInterval) clearInterval(scanInterval);
+            scanActive = false;
+            scanState = 0;
+            const panel = document.getElementById('lie-detector-panel');
+            if (panel) panel.remove();
+            writeOutput("\nBIO-FEEDBACK SCAN TERMINATED.", '#00ff41');
+            isBusy = false;
+            showPrompt();
+        }
+
+        // --- TRACE ---
+        function generateTraceCode() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 4; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        function runTrace(target) {
+            if (scanState === 2) {
+                writeOutput("ERROR: TRACE CHALLENGE ALREADY ACTIVE.", '#ff0000');
+                return;
+            }
+
+            if (target.toUpperCase() === 'CANCEL') {
+                endTrace();
+                return;
+            }
+
+            isBusy = true;
+            traceTarget = target.trim() || 'GLOBAL_NETWORK';
+            traceCode = generateTraceCode();
+            scanState = 2; // TRACE challenge mode
+
+            const traceContainer = document.createElement('div');
+            traceContainer.id = 'trace-challenge-container';
+            traceContainer.innerHTML = `
+                !! TRACE PROTOCOL ACTIVATED !!<br>
+                TARGET: ${traceTarget}<br>
+                ENTRY CODE: <span id="trace-code">${traceCode}</span><br>
+                TIME REMAINING: <span id="trace-timer">${TRACE_TIME_SECONDS.toFixed(1)}s</span>
+            `;
+            outputArea.appendChild(traceContainer);
+
+            let timeLeft = TRACE_TIME_SECONDS;
+            const timerDisplay = document.getElementById('trace-timer');
+
+            traceTimer = setInterval(() => {
+                timeLeft -= 0.1;
+                timerDisplay.textContent = timeLeft.toFixed(1) + 's';
+
+                if (timeLeft <= 0) {
+                    clearInterval(traceTimer);
+                    endTrace(false); // Failure
+                }
+            }, 100);
+
+            // Re-show prompt to get input into passwordInput field
+            showPrompt();
+            passwordInput.type = 'text'; // Ensure it's not password type
+        }
+
+        function handleTraceInput(input) {
+            const traceContainer = document.getElementById('trace-challenge-container');
+            if (!traceContainer) return; // Not in TRACE mode
+
+            writeOutput(`> ${input}`, '#ff00ff');
+
+            if (input.toUpperCase().trim() === traceCode) {
+                endTrace(true); // Success
+            } else {
+                // No immediate failure, let the timer run down
+                writeOutput("!! INCORRECT CODE. RE-ENTER BEFORE TIMEOUT.", '#ff0000');
+            }
+        }
+
+        function endTrace(success = false) {
+            clearInterval(traceTimer);
+            const traceContainer = document.getElementById('trace-challenge-container');
+            if (traceContainer) traceContainer.remove();
+            
+            if (success) {
+                writeOutput(`\n>> TRACE SUCCESSFUL for ${traceTarget}!`, '#00ff41');
+                writeOutput(">> ATTACK VECTOR ACQUIRED. (Data Omitted for Security)", '#ff00ff');
+            } else {
+                writeOutput(`\n!! TRACE FAILURE !! PROTOCOL ABORTED.`, '#ff0000');
+            }
+            
+            scanState = 0;
+            isBusy = false;
+            showPrompt();
+        }
+
+        // --- OVERRIDE ---
+        function runOverride(forcedDeactivation = false) {
+            if (forcedDeactivation) {
+                overrideEnabled = false;
+                statusBar.classList.remove('override-active');
+                overrideIndicator.style.display = 'none';
+                writeOutput("\n>> LEVEL ALPHA OVERRIDE DEACTIVATED BY SECURITY TIMEOUT.", '#00ff41');
+                isBusy = false;
+                showPrompt();
+                return;
+            }
+
+            if (overrideEnabled) {
+                writeOutput("ERROR: LEVEL ALPHA OVERRIDE ALREADY ACTIVE. Run OVERRIDE DEACTIVATE.", '#ff0000');
+                return;
+            }
+
+            writeOutput("\n!! EXECUTING LEVEL ALPHA OVERRIDE PROTOCOL !!", '#ff0000');
+            isBusy = true;
+
+            setTimeout(() => {
+                overrideEnabled = true;
+                statusBar.classList.add('override-active');
+                overrideIndicator.style.display = 'inline';
+                writeOutput(">> LEVEL ALPHA OVERRIDE ACTIVATED. SECURITY CHECK BYPASSED.", '#ffff00');
+                writeOutput(">> WARNING: Security timeout initiated (5 minutes).", '#ff0000');
+                
+                // Set a timeout for automatic deactivation (5 minutes)
+                securityTimeout = setTimeout(() => {
+                    runOverride(true);
+                }, 300000); // 300,000 milliseconds = 5 minutes
+
+                isBusy = false;
+                showPrompt();
+            }, 1500);
+        }
+
+        // --- HUNT (The new/updated module) ---
         function runHunt(selection) {
             if (huntState === 0) {
                 isBusy = true;
@@ -361,8 +708,8 @@
                 writeOutput(`TRIGGER COMMAND: ${egg.trigger_cmd}`, '#fff');
                 writeOutput(`DESCRIPTION: ${egg.info}`, '#fff');
                 writeOutput(`\nACTION OPTIONS:`, '#ffff00');
-                writeOutput(`  > SEND ${egg.id}   - Execute the trigger command to see the effect on your screen.`, '#00ff41');
-                writeOutput(`  > IMAGE ${egg.id}  - Open a direct image link for visual confirmation.`, '#00ff41');
+                writeOutput(`  > SEND ${egg.id}    - Execute the trigger command to see the effect on your screen.`, '#00ff41');
+                writeOutput(`  > IMAGE ${egg.id}   - Open a direct image link for visual confirmation.`, '#00ff41');
 
                 writeOutput(`\nType another NUMBER (1-3) or an ACTION (SEND/IMAGE), or **LOGOUT** to return to the main console.`, '#ffff00');
             }
@@ -398,59 +745,21 @@
             window.open(egg.action_url, '_self'); 
         }
 
-        
-        // --- ALL OTHER FUNCTIONS (runSearch, runTrace, runDecrypt, runScan, etc.) ARE OMITTED FOR BREVITY ---
-        // (They are unchanged from the previous working version)
-
-        function runSearch(query) {
-             // (Unchanged: Placeholder for generic search response)
-             isBusy = true;
-             writeOutput(`INITIATING PUBLIC WEB SCAN FOR: "${query}"...`, '#ffff00');
-             new Promise(resolve => setTimeout(resolve, 1500)).then(() => {
-                writeOutput(">> DATA RETRIEVAL SUCCESSFUL:", '#00ffff');
-                const normalizedQuery = query.toLowerCase();
-                 if (normalizedQuery.includes("eiffel") || normalizedQuery.includes("paris")) {
-                    writeOutput("[Source 1] Title: Eiffel Tower - Official Site", '#fff');
-                    writeOutput("[Source 2] Status: HIGH TOURIST ALERT, heavy crowd movement.", '#ffff00');
-                } else if (normalizedQuery.includes("ethan") || normalizedQuery.includes("ioannou")) {
-                    writeOutput(">> TARGET: ETHAN IOANNOU. DATA RETRIEVAL BLOCKED BY LEVEL DELTA OVERRIDE.", '#ff0000');
-                } else {
-                     writeOutput(">> NO SIGNIFICANT PUBLIC DATA FOUND. QUERY TOO VAGUE.", '#ff0000');
-                }
-                isBusy = false;
-                showPrompt();
-             });
-        }
-        
-        function runTrace(target) {
-            // (Unchanged: TRACE logic)
-        }
-        
-        function runDecrypt(input) {
-            // (Unchanged: DECRYPT logic)
-        }
-        
-        function runScan(passwordSuccess = false) {
-            // (Unchanged: SCAN logic)
-        }
-        
-        function runOverride(forcedDeactivation = false) {
-            // (Unchanged: OVERRIDE logic)
-        }
-
-
-        // --- MAIN COMMAND PROCESSOR ---
+        // =========================================================================
+        // --- Main Command Processor ---
+        // =========================================================================
         
         function processCommand(command) {
             const parts = command.trim().split(/\s+/);
             const cmd = parts[0].toUpperCase();
             const args = command.trim().substring(cmd.length).trim();
 
-            if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE' && cmd !== 'TRACE') {
+            if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE' && cmd !== 'TRACE' && cmd !== 'STOP') {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
             }
             
+            // --- Special Exit/Stop Commands ---
             if (cmd === 'STOP' && args.toUpperCase() === 'SCAN' && scanActive) {
                 writeOutput(`> ${command}`, '#ff00ff');
                 endLieDetection(); 
@@ -469,12 +778,15 @@
                 
                 writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
                 if (scanActive) endLieDetection();
+                if (securityTimeout) clearTimeout(securityTimeout);
+                
                 setTimeout(() => {
                     window.location.href = 'https://ethanunlocked690.github.io'; 
                 }, 1000);
                 return;
             }
             
+            // --- Trace Command (Special Priority) ---
             if (cmd === 'TRACE') {
                  writeOutput(`> ${command}`, '#ff00ff');
                  runTrace(args);
@@ -502,29 +814,34 @@
             }
             // --- END HUNT MODE SPECIFIC COMMANDS ---
 
+            // --- DECRYPT State-Specific Commands ---
             if (decryptState === 1.5) {
+                // Security question answer
                 handleSecurityAnswer(command);
                 commandInput.value = '';
                 return;
             }
             
             if (decryptState === 3) {
+                // COMPARE or DECRYPT (while in COMPARE state)
                 if (cmd === 'DECRYPT' || cmd === 'COMPARE') {
                     writeOutput(`> ${command}`, '#ff00ff');
                     runDecrypt(command);
                     return;
                 }
-                writeOutput("ERROR: Invalid command in DECRYPT menu. Use DECRYPT PASSWORD or COMPARE [password].", '#ff0000');
+                writeOutput("ERROR: Invalid command in DECRYPT menu. Use COMPARE [password] or LOGOUT.", '#ff0000');
                 showPrompt();
                 return;
             }
 
             if (decryptState === 1 && command.trim().includes('@')) {
+                // Email input for DECRYPT
                  writeOutput(`> ${command}`, '#ff00ff');
                  runDecrypt(command);
                  commandInput.value = '';
                  return;
             }
+            // --- End DECRYPT State-Specific Commands ---
 
             writeOutput(`> ${command}`, '#ff00ff'); 
             
@@ -533,10 +850,10 @@
                     writeOutput("--- AVAILABLE COMMANDS (6 Core Features) ---", '#ffff00');
                     writeOutput("1. SEARCH [query] : Fetch public data (e.g., NASA, Eiffel).", '#00ff41');
                     writeOutput("2. DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
-                    writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
+                    writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password). Use STOP SCAN to end.", '#00ff41');
                     writeOutput("4. HUNT           : Scan for global web Easter Eggs. 🐇", '#00ff41');
                     writeOutput("5. LOGOUT         : Terminate session.", '#00ff41');
-                    writeOutput("6. [HIDDEN]       : A powerful, unlisted command for system control.", '#ff00ff');
+                    writeOutput("6. OVERRIDE       : A powerful, unlisted command for system control.", '#ff00ff');
                     break;
                 case 'SEARCH':
                     if (args.length > 2) {
@@ -568,8 +885,10 @@
             showPrompt();
         }
 
-        // --- MUSIC CONTROL FUNCTIONS (omitted for brevity) ---
-        
+        // =========================================================================
+        // --- Music and Theme Initialization ---
+        // =========================================================================
+
         function stopAllMusic() {
             mainMusic.pause();
             if (currentHolidayAudio) {
@@ -583,8 +902,9 @@
             stopAllMusic();
             if (!bodyElement.classList.contains('holiday-theme-active')) {
                 mainMusic.volume = 1.0;
+                mainMusic.currentTime = 0;
                 mainMusic.play().catch(error => {
-                    console.log("Main music start attempted.");
+                    console.log("Main music start attempted (Requires user gesture).");
                 });
             }
         }
@@ -604,7 +924,7 @@
             currentHolidayAudio = audio; 
             
             audio.play().catch(error => {
-                console.log(`Holiday music (${theme.name}) start attempted.`);
+                console.log(`Holiday music (${theme.name}) start attempted (Requires user gesture).`);
             });
         }
         
@@ -652,12 +972,15 @@
             document.removeEventListener('mousedown', handleUserInteraction);
         }
 
+        // =========================================================================
         // --- Event Listeners ---
+        // =========================================================================
         
         document.addEventListener('keypress', function(e) {
             handleUserInteraction(); // Check for music start
             
             if (scanState === 2) {
+                // TRACE mode: handles input via the hidden passwordInput field
                 if (e.key === 'Enter') {
                     e.preventDefault(); 
                     handleTraceInput(passwordInput.value);
@@ -680,6 +1003,7 @@
             clearTimeout(passwordTimeout);
             
             if (scanState === 2) {
+                // TRACE challenge mode, standard input handling
                 return;
             }
 
@@ -689,6 +1013,7 @@
                 return;
             }
             
+            // Custom password masking logic for SCAN module (scanState === 1)
             if (e.key === 'Backspace' || e.key === 'Delete') {
                 actualPasswordAttempt = actualPasswordAttempt.slice(0, -1);
                 currentPasswordDisplay = currentPasswordDisplay.slice(0, -1);
@@ -703,11 +1028,14 @@
                 const char = e.key;
                 actualPasswordAttempt += char;
                 
+                // Add the character to the displayed string
                 currentPasswordDisplay += char;
                 passwordInput.value = currentPasswordDisplay;
 
+                // Set a timeout to replace the last character with '*'
                 passwordTimeout = setTimeout(() => {
                     if (currentPasswordDisplay.length > 0) {
+                        // Only mask if it hasn't been masked yet
                         if (currentPasswordDisplay.slice(-1) !== '*') {
                             currentPasswordDisplay = currentPasswordDisplay.slice(0, -1) + '*';
                             passwordInput.value = currentPasswordDisplay;
