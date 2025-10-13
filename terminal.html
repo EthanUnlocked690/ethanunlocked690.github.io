@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v4.0 (HIGH-LEVEL ACCESS)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v4.1 (HIGH-LEVEL ACCESS)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -124,9 +124,37 @@
             color: #00ffff;
         }
 
-        /* SCAN Panel Styles (omitted for brevity but kept in original) */
-        #lie-detector-panel { /* ... styles ... */ }
-        /* ... other SCAN styles ... */
+        /* SCAN Panel Styles */
+        #lie-detector-panel {
+            border: 1px solid #00ffff;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: rgba(0, 0, 0, 0.8);
+        }
+        #video-feed {
+            width: 100%;
+            max-height: 200px;
+            background-color: #001a0a;
+            border: 1px solid #00ff41;
+            display: block;
+        }
+        .scan-data {
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+        .data-label {
+            color: #00ffff;
+        }
+        .data-value {
+            color: #ff00ff;
+        }
+        #lie-status {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
     </style>
 </head>
 <body class="p-4">
@@ -135,7 +163,7 @@
         
         <div id="status-bar">
             <span id="override-indicator" style="color: #ff0000; float: left; display: none;">[ALPHA OVERRIDE ACTIVE]</span>
-            ATLAS CONSOLE v4.0 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
+            ATLAS CONSOLE v4.1 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
         </div>
 
         <div id="output-area">
@@ -163,9 +191,9 @@
 
         let isBusy = false; 
         let scanActive = false;
-        // States: 0: Ready, 1: Email Input, 1.5: Security Question, 2: Decrypt Animation, 3: Post-Decrypt Menu
         let decryptState = 0; 
         let scanState = 0; // 0: Ready, 1: Password Input, 2: TRACE Challenge
+        let huntState = 0; // 0: Ready, 1: Selection Phase
         let targetEmail = ''; 
         let scanInterval; 
         let securityTimeout; 
@@ -193,7 +221,7 @@
         // --- OVERRIDE STATUS ---
         let overrideEnabled = false;
 
-        // Security Questions (Key is the question, Value is the expected answer string)
+        // Security Questions 
         const SECURITY_QUESTIONS = {
             "What is EthanUnlocked's birth date?": "25 January 2013",
             "How many pets does EthanUnlocked have?": "3",
@@ -203,6 +231,32 @@
             "What is EthanUnlocked's favourite drink?": "Pepsi"
         };
         let currentSecurityQuestion = null;
+
+        // --- HUNT EASTER EGG DATA ---
+        const BROWSER_EASTER_EGGS = [
+            {
+                name: "The T-Rex Dinosaur Game",
+                trigger: "Disconnect your Wi-Fi, open a new Chrome tab, and press the **Spacebar**. OR, simply type **chrome://dino** into the address bar to play it while online.",
+                info: "An endless runner game built by Google's Chrome UX team. It appears when the browser detects you have **no internet connection**. The game was designed to last for about 17 million years, which is how long the T-Rex existed on Earth!",
+                image: "https://www.google.com/search?tbm=isch&q=chrome+t+rex+game+pixel", 
+                browser: "Chrome"
+            },
+            {
+                name: "The Book of Mozilla",
+                trigger: "In the address bar of a Firefox browser, type **about:mozilla** and hit Enter.",
+                info: "One of the oldest browser secrets, dating back to Netscape. It displays a mysterious, quasi-religious verse from the fictional 'Book of Mozilla,' often referencing the battle between Mozilla and its competitors as if they were mythical beasts.",
+                image: "https://www.google.com/search?tbm=isch&q=firefox+about:mozilla+easter+egg",
+                browser: "Firefox"
+            },
+            {
+                name: "The Surf Game",
+                trigger: "Type **edge://surf** into the address bar of Microsoft Edge and hit Enter. It also appears when your internet is disconnected.",
+                info: "A modern tribute to the classic Windows game **SkiFree**. You control a surfer, trying to avoid obstacles like a kraken and buoys. It includes multiple game modes like Endless, Time Trial, and Zigzag.",
+                image: "https://www.google.com/search?tbm=isch&q=microsoft+edge+surf+game+kraken",
+                browser: "Microsoft Edge"
+            }
+        ];
+
 
         /** Utility functions */
         function writeOutput(text, color = '#00ff41') {
@@ -218,12 +272,13 @@
             if (!isBusy) {
                 writeOutput("", '#00ff41');
             }
-            // Use passwordInput for both password and TRACE challenge
+            
+            // If in a special state, redirect input focus
             if (scanState === 1 || scanState === 2) {
                 commandInput.style.display = 'none';
                 passwordInput.style.display = 'block';
                 passwordInput.focus();
-                // If in password mode, show the asterisked input
+                // If in password mode, set type to password
                 if (scanState === 1) {
                     passwordInput.type = 'password';
                     passwordInput.value = currentPasswordDisplay;
@@ -332,6 +387,8 @@
                     writeOutput("\n!! TRACE TIMEOUT !!", '#ff0000');
                     writeOutput("SYSTEM WARNING: Trace attempt detected. Alpha Override terminated.", '#ff0000');
                     runOverride(true); // Deactivates the override
+                    scanState = 0; // Back to normal
+                    showPrompt();
                 }
             }, 100);
         }
@@ -361,64 +418,98 @@
                 scanState = 0; // Back to normal
                 showPrompt();
             }
-            // Do NOT echo the failing attempts in TRACE mode for suspense
+            // If failed, just let the timer run out
+        }
+
+        // --- HUNT EASTER EGG FINDER ---
+
+        function runHunt(selection) {
+            // If in the initial HUNT state (0)
+            if (huntState === 0) {
+                isBusy = true;
+                writeOutput("\n--- INITIATING HIGH-LEVEL BEHAVIORAL SCAN ---", '#00ffff');
+                writeOutput("!! System is analyzing local browser configuration for known *Universal Easter Eggs*...", '#ffff00');
+
+                // Simulate a small delay
+                setTimeout(() => {
+                    writeOutput("\n>> SCAN COMPLETE. 3 Easter Eggs detected in modern browser data sets:", '#00ff41');
+                    
+                    BROWSER_EASTER_EGGS.forEach((egg, index) => {
+                        writeOutput(`  [${index + 1}] ${egg.name} (${egg.browser})`, '#fff');
+                    });
+
+                    writeOutput("\nType the **NUMBER** of the Easter Egg you want to know more about, or **LOGOUT** to exit HUNT mode.", '#ffff00');
+                    huntState = 1;
+                    isBusy = false;
+                    showPrompt();
+                }, 1500);
+                
+            } 
+            // If in the selection state (1)
+            else if (huntState === 1) {
+                const index = parseInt(selection) - 1;
+
+                if (isNaN(index) || index < 0 || index >= BROWSER_EASTER_EGGS.length) {
+                    writeOutput("ERROR: Invalid selection. Please type a number from 1 to 3, or LOGOUT.", '#ff0000');
+                    return;
+                }
+
+                const egg = BROWSER_EASTER_EGGS[index];
+                writeOutput(`\n--- EASTER EGG REPORT: ${egg.name.toUpperCase()} ---`, '#00ffff');
+                writeOutput(`BROWSER: ${egg.browser}`, '#fff');
+                writeOutput(`DESCRIPTION: ${egg.info}`, '#fff');
+                writeOutput(`\nTO FIND IT: ${egg.trigger}`, '#00ff41');
+                writeOutput(`\nVISUAL CONFIRMATION: Opening image search...`, '#ffff00');
+                
+                // Open the image search in a new tab
+                window.open(egg.image, '_blank');
+
+                writeOutput(`\nType another NUMBER (1-3) to search another Easter Egg, or **LOGOUT** to return to the main console.`, '#ffff00');
+            }
         }
 
 
-        /**
-         * COMMAND: DECRYPT (Multi-Stage Logic with Security Question)
-         * (The DECRYPT and SCAN functions below are retained from the previous step)
-         */
+        /** COMMAND: DECRYPT (Multi-Stage Logic with Security Question) */
         async function runDecrypt(input) {
             const cmd = input.trim().split(/\s+/)[0].toUpperCase();
 
             if (decryptState === 0) {
-                // State 0: Initial prompt -> Move to security question state (1.5)
                 writeOutput("ENCRYPTION MODULE ONLINE. Verifying Operator Clearance...", '#ffff00');
                 
                 if (overrideEnabled) {
-                    // OVERRIDE BYPASS: Skip security question directly to email input
                     writeOutput("!! OVERRIDE ACTIVE: Security question bypass approved. Initiating direct input.", '#ff0000');
                     writeOutput("\nEnter Target Email (e.g., secret@gmail.com or nopass@corp.net):", '#ffff00');
                     decryptState = 1;
                     showPrompt();
                 } else {
-                    // Standard Path: Start security question
                     writeOutput("Verifying Operator Clearance via Personal Query...", '#ffff00');
                     startSecurityQuestion();
                 }
                 
             } else if (decryptState === 1.5) {
-                // State 1.5: Security Question Answer Check
                 handleSecurityAnswer(input.trim());
                 
             } else if (decryptState === 1) {
-                // State 1: Email Input - Handles the actual decryption trigger
-                isBusy = true; // Lock the input during the simulation
+                isBusy = true; 
                 const emailGuess = input.toLowerCase().trim();
 
                 writeOutput(`Verifying email existence for ${emailGuess}...`, '#ffff00');
-                writeOutput(`Querying global DNS records and high-priority registers...`, '#00ffff');
-                
-                await new Promise(resolve => setTimeout(resolve, 2500)); // 2.5 second "Google" search delay
+                await new Promise(resolve => setTimeout(resolve, 1500)); 
 
-                // Corrected logic to recognize the two secret emails
                 if (emailGuess === SECRET_EMAIL || emailGuess === PASSWORD_DISABLED_EMAIL) {
                     targetEmail = emailGuess; 
                     writeOutput(`>> VERIFICATION SUCCESSFUL. Target exists in high-priority register.`, '#00ff41');
                     writeOutput(`Initiating Level-4 Decryption...`, '#00ffff');
-                    decryptState = 2; // Move to Decrypting state
+                    decryptState = 2; 
                     animateDecryption();
                 } else {
-                    // Non-secret/non-real email error
                     writeOutput(`>> VERIFICATION FAILED: Target email ${emailGuess} not found in global DNS/registers.`, '#ff0000');
-                    writeOutput(`Sorry, this email is not real! Try correcting your spelling and puncuation.`, '#ff0000');
-                    decryptState = 0; // Reset to the start of the DECRYPT process
+                    writeOutput(`Try correcting your spelling and punctuation.`, '#ff0000');
+                    decryptState = 0; 
                     isBusy = false;
                     showPrompt();
                 }
             } else if (decryptState === 3) {
-                // State 3: Post-Decryption Menu
                 const parts = input.trim().split(/\s+/);
                 const args = input.trim().substring(cmd.length).trim();
                 
@@ -429,10 +520,11 @@
                 } else {
                     writeOutput("ERROR: Invalid option. Use DECRYPT PASSWORD or COMPARE [password].", '#ff0000');
                 }
+                showPrompt();
             }
         }
 
-        function startSecurityQuestion() { /* (Omitted for brevity) */
+        function startSecurityQuestion() {
             const questions = Object.keys(SECURITY_QUESTIONS);
             const randomIndex = Math.floor(Math.random() * questions.length);
             currentSecurityQuestion = questions[randomIndex];
@@ -451,12 +543,10 @@
             }, 10000);
         }
 
-        function handleSecurityAnswer(answer) { /* (Omitted for brevity) */
+        function handleSecurityAnswer(answer) { 
             clearTimeout(securityTimeout); 
 
-            if (decryptState !== 1.5) {
-                return; 
-            }
+            if (decryptState !== 1.5) return;
             
             if (answer.trim() === '') {
                 writeOutput("!! TIMEOUT: Security challenge failed.", '#ff0000');
@@ -483,7 +573,7 @@
         }
 
 
-        function animateDecryption() { /* (Omitted for brevity) */
+        function animateDecryption() { 
             const passwordContainer = document.createElement('span');
             passwordContainer.id = 'decrypted-pass';
             writeOutput("PASSWORD HASH: ", '#fff');
@@ -538,7 +628,7 @@
             }, 500);
         }
 
-        function handleDecryptPassword() { /* (Omitted for brevity) */
+        function handleDecryptPassword() { 
              if (targetEmail === PASSWORD_DISABLED_EMAIL) {
                 writeOutput("!! AUTHENTICATION POLICY: PASSWORD DISABLED (Key Fob/Biometric Only)", '#ff0000');
             } else {
@@ -547,7 +637,7 @@
             }
         }
 
-        function handleComparePassword(inputPassword) { /* (Omitted for brevity) */
+        function handleComparePassword(inputPassword) { 
             const correctPassword = SIMULATED_PASSWORD;
             let accuracy = 0;
             let suggestion = "Password strength is HIGH.";
@@ -577,37 +667,33 @@
         }
 
 
-        // --- SCAN PASSWORD PROTECTION HANDLERS ---
+        // --- SCAN LOGIC ---
 
-        function handleScanPassword(password) { /* (Omitted for brevity) */
-            writeOutput(`> ${currentPasswordDisplay}`, '#ff00ff'); // Echo the *'d password attempt
+        function handleScanPassword(password) { 
+            writeOutput(`> ${currentPasswordDisplay}`, '#ff00ff'); 
             
             if (password === SCAN_PASSWORD) {
                 writeOutput("SCAN MODULE: ACCESS GRANTED. Initializing Polygraph...", '#00ff41');
-                scanState = 0; // Reset state before running
-                runScan(true); // Run the actual scan setup
+                scanState = 0; 
+                runScan(true); 
             } else {
                 writeOutput("ERROR: Invalid SCAN password. Access denied.", '#ff0000');
-                scanState = 0; // Reset state
+                scanState = 0; 
             }
-            // Clear inputs for next command
             actualPasswordAttempt = '';
             currentPasswordDisplay = '';
             showPrompt();
         }
 
-        function startScanPasswordInput() { /* (Omitted for brevity) */
+        function startScanPasswordInput() { 
             writeOutput("SCAN MODULE: Authentication required.", '#ffff00');
             writeOutput("PASSWORD:", '#ffff00');
             scanState = 1;
             showPrompt();
         }
         
-        // --- SCAN LOGIC (Full functions for this were in previous steps, omitted here for focus) ---
-
-        function runScan(passwordSuccess = false) { /* (Full function omitted for brevity) */
+        function runScan(passwordSuccess = false) { 
             
-            // OVERRIDE BYPASS: Skip password if override is active
             if (overrideEnabled) {
                  writeOutput("!! OVERRIDE ACTIVE: Scan password bypass approved. Initializing Polygraph...", '#ff0000');
                  passwordSuccess = true;
@@ -621,22 +707,86 @@
             if (!scanActive) {
                 writeOutput("ATLAS POLYGRAPH INITIATED. Requires Camera/Mic access for bio-feedback scan.", '#ffff00');
                 
-                // ... (Panel creation code omitted) ... 
-                // The full logic for scan is still in your previous version.
+                // 1. Create the panel
+                const panel = document.createElement('div');
+                panel.id = 'lie-detector-panel';
+                panel.innerHTML = `
+                    <video id="video-feed" autoplay playsinline muted></video>
+                    <div class="scan-data">
+                        <span class="data-label">Heart Rate:</span> <span id="hr-data" class="data-value">-- bpm</span><br>
+                        <span class="data-label">Skin Conductivity:</span> <span id="sc-data" class="data-value">-- μS</span><br>
+                        <div id="lie-status">ANALYZING...</div>
+                    </div>
+                `;
+                outputArea.appendChild(panel);
+                outputArea.scrollTop = outputArea.scrollHeight;
+                
+                // 2. Start Video Feed
+                navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                    .then(stream => {
+                        const videoFeed = document.getElementById('video-feed');
+                        videoFeed.srcObject = stream;
+                    })
+                    .catch(err => {
+                        writeOutput("WARNING: Camera access denied. Bio-feedback will use simulated data only.", '#ffff00');
+                    });
+                
+                // 3. Start data simulation
+                let heartRate = 70;
+                let conductivity = 1.0;
+                const hrData = document.getElementById('hr-data');
+                const scData = document.getElementById('sc-data');
+                const lieStatus = document.getElementById('lie-status');
+                
+                scanInterval = setInterval(() => {
+                    // Slight variation
+                    heartRate = Math.round(70 + (Math.random() * 10) * (Math.random() > 0.5 ? 1 : -1));
+                    conductivity = (1.0 + (Math.random() * 0.2) * (Math.random() > 0.5 ? 1 : -1)).toFixed(2);
+                    
+                    hrData.textContent = `${heartRate} bpm`;
+                    scData.textContent = `${conductivity} μS`;
+                    
+                    // Lie/Stress detection logic
+                    let stressLevel = (heartRate - 65) + (conductivity - 1.0) * 100;
+                    
+                    if (stressLevel > 10) {
+                        lieStatus.textContent = "STRESS DETECTED! (High) 🔴";
+                        lieStatus.style.color = '#ff0000';
+                    } else if (stressLevel > 5) {
+                        lieStatus.textContent = "ELEVATED CONDUCTIVITY (Medium) 🟠";
+                        lieStatus.style.color = '#ffa500';
+                    } else {
+                        lieStatus.textContent = "BASELINE CONFIRMED (Low) 🟢";
+                        lieStatus.style.color = '#00ff41';
+                    }
+                    
+                }, 500); 
 
-                // Simplified placeholder for function body to keep file small
-                writeOutput("Functionality available. Type 'STOP SCAN' to terminate.", '#ff00ff');
                 scanActive = true;
+                writeOutput("POLYGRAPH ACTIVE. Type 'STOP SCAN' to terminate.", '#00ff41');
+
             } else {
                 writeOutput("POLYGRAPH ALREADY ACTIVE. Type 'STOP SCAN' to terminate.", '#ff0000');
-                showPrompt();
             }
+            showPrompt();
         }
 
-        function endLieDetection(targetName) { /* (Full function omitted for brevity) */
+        function endLieDetection() { 
             clearInterval(scanInterval); 
-            // ... (Cleanup code omitted) ...
             scanActive = false;
+            
+            // Stop the video feed
+            const videoFeed = document.getElementById('video-feed');
+            if (videoFeed && videoFeed.srcObject) {
+                videoFeed.srcObject.getTracks().forEach(track => track.stop());
+            }
+
+            // Remove the panel
+            const panel = document.getElementById('lie-detector-panel');
+            if (panel) {
+                outputArea.removeChild(panel);
+            }
+
             writeOutput(`SCAN TERMINATED.`, '#ffff00');
             showPrompt();
         }
@@ -645,7 +795,6 @@
         function runOverride(forcedDeactivation = false) {
             if (overrideEnabled || forcedDeactivation) {
                 overrideEnabled = false;
-                // Deactivate visual effects and status bar indicator
                 statusBar.classList.remove('override-active');
                 overrideIndicator.style.display = 'none';
 
@@ -653,7 +802,6 @@
                 writeOutput("!! STATUS: Security checks are now MANDATORY. TRACE command is disabled.", '#00ff41');
                 scanState = 0; // Ensure trace state is reset
                 
-                // If forced, clear the input state
                 if (forcedDeactivation) {
                     passwordInput.value = '';
                     commandInput.value = '';
@@ -661,7 +809,6 @@
 
             } else {
                 overrideEnabled = true;
-                // Activate visual effects and status bar indicator
                 statusBar.classList.add('override-active');
                 overrideIndicator.style.display = 'inline';
 
@@ -669,7 +816,6 @@
                 writeOutput("!! SECURITY WARNING: ALL USER LOGGING IS TEMPORARILY SUSPENDED.", '#ff0000');
                 writeOutput("!! STATUS: OPERATIONAL MODE SET TO 'UNTRACED'.", '#ff0000');
                 writeOutput("!! UTILITY GRANTED: You can now use the high-risk command 'TRACE [Target Name]'.", '#ffff00');
-                
             }
         }
 
@@ -681,6 +827,7 @@
             const cmd = parts[0].toUpperCase();
             const args = command.trim().substring(cmd.length).trim();
 
+            // Check for busy state in standard operations
             if (isBusy && cmd !== 'LOGOUT' && cmd !== 'OVERRIDE' && cmd !== 'TRACE') {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
@@ -688,15 +835,29 @@
             
             // Check for STOP SCAN regardless of current state
             if (cmd === 'STOP' && args.toUpperCase() === 'SCAN' && scanActive) {
-                endLieDetection("Unknown Subject"); 
+                writeOutput(`> ${command}`, '#ff00ff');
+                endLieDetection(); 
                 return;
             }
             
-            // Check for SECRET COMMANDS
-            if (cmd === 'OVERRIDE') {
+            // Handle LOGOUT command regardless of state
+            if (cmd === 'LOGOUT') {
                 writeOutput(`> ${command}`, '#ff00ff');
-                runOverride();
-                showPrompt();
+                if (huntState === 1) {
+                    // If in HUNT mode, LOGOUT resets HUNT state
+                    writeOutput("HUNT MODE TERMINATED. Returning to main console.", '#00ff41');
+                    huntState = 0;
+                    isBusy = false;
+                    showPrompt();
+                    return;
+                }
+                
+                // Final console logout
+                writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
+                if (scanActive) endLieDetection();
+                setTimeout(() => {
+                    window.location.href = 'https://ethanunlocked690.github.io';
+                }, 1000);
                 return;
             }
             
@@ -704,11 +865,17 @@
             if (cmd === 'TRACE') {
                  writeOutput(`> ${command}`, '#ff00ff');
                  runTrace(args);
-                 showPrompt();
                  return;
             }
+
+            // Handle HUNT state selection
+            if (huntState === 1 && !isNaN(parseInt(command.trim()))) {
+                writeOutput(`> ${command}`, '#ff00ff');
+                runHunt(command.trim());
+                return;
+            }
             
-            // SECURITY QUESTION State (1.5) - Only happens if OVERRIDE is OFF
+            // SECURITY QUESTION State (1.5) 
             if (decryptState === 1.5) {
                 handleSecurityAnswer(command);
                 commandInput.value = '';
@@ -716,11 +883,10 @@
             }
             
             // DECRYPT MENU State (3)
-            if (decryptState === 3 && cmd !== 'LOGOUT') {
+            if (decryptState === 3) {
                 if (cmd === 'DECRYPT' || cmd === 'COMPARE') {
                     writeOutput(`> ${command}`, '#ff00ff');
                     runDecrypt(command);
-                    showPrompt();
                     return;
                 }
                 writeOutput("ERROR: Invalid command in DECRYPT menu. Use DECRYPT PASSWORD or COMPARE [password].", '#ff0000');
@@ -729,7 +895,7 @@
             }
 
             // EMAIL INPUT State (1)
-            if (decryptState === 1 && cmd !== 'LOGOUT' && cmd !== 'HELP' && command.trim().includes('@')) {
+            if (decryptState === 1 && command.trim().includes('@')) {
                  writeOutput(`> ${command}`, '#ff00ff');
                  runDecrypt(command);
                  commandInput.value = '';
@@ -741,12 +907,13 @@
             
             switch (cmd) {
                 case 'HELP':
-                    writeOutput("--- AVAILABLE COMMANDS (5 Core Features) ---", '#ffff00');
+                    writeOutput("--- AVAILABLE COMMANDS (6 Core Features) ---", '#ffff00');
                     writeOutput("1. SEARCH [query] : Fetch public data (e.g., NASA, Eiffel).", '#00ff41');
                     writeOutput("2. DECRYPT        : Start email password extraction module (Requires Security Check).", '#00ff41');
                     writeOutput("3. SCAN           : Start bio-feedback analysis (Requires Password).", '#00ff41');
-                    writeOutput("4. LOGOUT         : Terminate session.", '#00ff41');
-                    writeOutput("5. [HIDDEN]       : A powerful, unlisted command for system control. Please type in the hidden name to access!", '#ff00ff');
+                    writeOutput("4. HUNT           : Scan your current browser for embedded Easter Eggs. 🐇", '#00ff41');
+                    writeOutput("5. LOGOUT         : Terminate session.", '#00ff41');
+                    writeOutput("6. [HIDDEN]       : A powerful, unlisted command for system control.", '#ff00ff');
                     break;
                 case 'SEARCH':
                     if (args.length > 2) {
@@ -761,21 +928,16 @@
                     runDecrypt(args);
                     break;
                 case 'SCAN':
-                    scanState = 0; // Ensure scan state is reset before running
+                    scanState = 0; 
                     runScan();
                     break;
-                case 'LOGOUT':
-                    writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
-                    if (scanActive) {
-                        const videoFeed = document.getElementById('video-feed');
-                        if (videoFeed && videoFeed.srcObject) {
-                            videoFeed.srcObject.getTracks().forEach(track => track.stop());
-                        }
-                    }
-                    setTimeout(() => {
-                        window.location.href = 'https://ethanunlocked690.github.io';
-                    }, 1000);
-                    return;
+                case 'OVERRIDE':
+                    runOverride();
+                    break;
+                case 'HUNT':
+                    huntState = 0; 
+                    runHunt(args);
+                    break;
                 default:
                     writeOutput(`ERROR: Command '${cmd}' not recognized. Try HELP.`, '#ff0000');
                     break;
@@ -792,11 +954,9 @@
             if (scanState === 2) {
                 if (e.key === 'Enter') {
                     e.preventDefault(); 
-                    // Use passwordInput value (which acts as text input in this mode)
                     handleTraceInput(passwordInput.value);
                     passwordInput.value = '';
                 }
-                // Allow the passwordInput element to handle the characters being typed
                 return;
             }
 
@@ -814,7 +974,6 @@
             
             // If in TRACE mode (scanState === 2), let it behave as a normal text field, but intercept Enter
             if (scanState === 2) {
-                // The keypress listener handles 'Enter' for submitting the TRACE code
                 return;
             }
 
@@ -835,7 +994,7 @@
             }
 
             // Only allow single characters
-            if (e.key.length === 1) {
+            if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
                 e.preventDefault(); 
                 
                 const char = e.key;
@@ -848,8 +1007,11 @@
                 // Set a timeout to replace the last character with '*'
                 passwordTimeout = setTimeout(() => {
                     if (currentPasswordDisplay.length > 0) {
-                        currentPasswordDisplay = currentPasswordDisplay.slice(0, -1) + '*';
-                        passwordInput.value = currentPasswordDisplay;
+                        // Replace the last character with '*' if it isn't already '*'
+                        if (currentPasswordDisplay.slice(-1) !== '*') {
+                            currentPasswordDisplay = currentPasswordDisplay.slice(0, -1) + '*';
+                            passwordInput.value = currentPasswordDisplay;
+                        }
                     }
                 }, 2000); 
             }
