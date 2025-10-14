@@ -192,7 +192,8 @@
         const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
         const LOCKOUT_STORAGE_KEY = 'terminalLockoutTime';
         const USERNAME_COOKIE_KEY = 'username'; 
-        const ADMIN_USERNAME = "EthanUnlocked"; // The only admin who can bypass/disable
+        const VISITOR_LOG_KEY = 'atlasVisitorLog'; // New key for the ACTIVE command
+        const ADMIN_USERNAME = "EthanUnlocked"; 
         
         // --- THEME DATA (Simplified) ---
         const THEMES = {
@@ -225,7 +226,6 @@
         }
 
         function getCookie(cname) {
-            // Function to retrieve the value of the username cookie
             let name = cname + "=";
             let decodedCookie = decodeURIComponent(document.cookie);
             let ca = decodedCookie.split(';');
@@ -248,6 +248,26 @@
         function isAdmin() {
             return getUsername().toLowerCase() === ADMIN_USERNAME.toLowerCase();
         }
+        
+        // New: Track and log the current user
+        function logCurrentUser() {
+            const username = getUsername();
+            if (!username) return; 
+
+            let log = JSON.parse(localStorage.getItem(VISITOR_LOG_KEY) || '[]');
+            const userIndex = log.findIndex(u => u.name.toLowerCase() === username.toLowerCase());
+            
+            const timestamp = new Date().toLocaleString();
+
+            if (userIndex === -1) {
+                log.push({ name: username, firstVisit: timestamp, lastActive: timestamp });
+            } else {
+                log[userIndex].lastActive = timestamp;
+            }
+
+            localStorage.setItem(VISITOR_LOG_KEY, JSON.stringify(log));
+        }
+
 
         // =========================================================================
         // --- LOCKDOWN Logic ---
@@ -260,25 +280,20 @@
             if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
                 isLockedDown = true;
                 
-                // If lockdown is active, apply visual theme
                 bodyElement.classList.add('lockdown-active');
                 lockdownIndicator.style.display = 'inline';
                 commandInput.disabled = true;
 
-                // --- Admin vs. Non-Admin Logic ---
                 if (isAdmin()) {
-                    // Admin Access: Allow input and display warning
                     commandInput.disabled = false;
                     writeOutput("\n!! WARNING: SYSTEM IS IN GLOBAL LOCKDOWN MODE (30 MIN) !!", '#ffff00');
                     writeOutput(`!! ACCESS GRANTED TO ADMIN: ${ADMIN_USERNAME.toUpperCase()} !!`, '#ff00ff');
                     writeOutput("!! TYPE '?DISABLE' TO END LOCKDOWN !!", '#ff00ff');
                 } else {
-                    // Non-Admin Access: Kick immediately upon loading the page
                     kickUserDueToLockdown(false); 
                     return; 
                 }
             } else if (lockoutEndTime) {
-                // Time expired: Clean up storage
                 localStorage.removeItem(LOCKOUT_STORAGE_KEY);
             }
         }
@@ -294,12 +309,9 @@
 
             writeOutput("\n>>> INITIATING LOCKDOWN! <<<", '#ff0000');
             
-            // 1. Kick the non-admin user (if applicable)
             if (!isAdmin()) {
-                 // Kick the non-admin user after the message
                  setTimeout(() => kickUserDueToLockdown(true), 1500);
             } else {
-                 // 2. Admin lockdown entry 
                  setTimeout(() => {
                     bodyElement.classList.add('lockdown-active');
                     lockdownIndicator.style.display = 'inline';
@@ -324,13 +336,11 @@
                 writeOutput("!!! SYSTEM IS IN GLOBAL LOCKDOWN (30 MIN) !!!", '#ff0000');
             }
             
-            // Play siren (optional)
             if (sirenAudio) {
                 sirenAudio.loop = true;
                 sirenAudio.play().catch(e => console.log("Siren failed to auto-play:", e));
             }
             
-            // Redirect after a short delay
             setTimeout(() => {
                 window.location.href = 'index.html'; 
             }, 3000); 
@@ -352,6 +362,41 @@
             writeOutput(">> ATLAS CONSOLE RESTORED TO NORMAL OPERATION.", '#00ff41');
             isBusy = false;
             showPrompt();
+        }
+
+        // =========================================================================
+        // --- Feature Commands ---
+        // =========================================================================
+
+        function runActiveCommand() {
+            const log = JSON.parse(localStorage.getItem(VISITOR_LOG_KEY) || '[]');
+            
+            if (log.length === 0) {
+                writeOutput("LOG: No historical visitor data found for ethanunlocked690.github.io.", '#ffff00');
+                return;
+            }
+
+            writeOutput(`\n--- ACTIVE SESSION LOG: ${log.length} TOTAL VISITOR(S) LOGGED ---`, '#00ff41');
+            
+            // Current User is assumed "active"
+            const activeUsers = log.filter(u => u.name.toLowerCase() === getUsername().toLowerCase());
+            
+            if (activeUsers.length > 0) {
+                 writeOutput(`\n[01] >>> CURRENT OPERATOR: ${activeUsers[0].name.toUpperCase()} (LAST CHECK: ${activeUsers[0].lastActive})`, '#ff00ff');
+            }
+            
+            // List other logged users (historical visitors)
+            writeOutput("\n-- HISTORICAL VISITORS (NAME / LAST ACTIVE) --", '#ffff00');
+            log.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive)); // Sort by most recent
+            
+            log.forEach((user, index) => {
+                // Skip the current operator for the historical list (already at the top)
+                if (user.name.toLowerCase() !== getUsername().toLowerCase()) {
+                    const statusColor = (new Date().getTime() - new Date(user.lastActive).getTime() < 3600000) ? '#00ffff' : '#ffaa00'; // Active within 1 hour = Cyan
+                    writeOutput(`[${String(index + 1).padStart(2, '0')}] ${user.name} (Last Active: ${user.lastActive})`, statusColor);
+                }
+            });
+            writeOutput("--------------------------------------------", '#00ff41');
         }
 
         // =========================================================================
@@ -391,29 +436,60 @@
             
             switch (cmd) {
                 case 'HELP':
-                    writeOutput("--- AVAILABLE COMMANDS ---", '#ffff00');
-                    writeOutput("SEARCH, DECRYPT, SCAN, HUNT, TRACE, DEFACE, ENCRYPT, FAKE NEWS, PINGFLOOD, SPOOF, CLEANUP, REBOOT, THEME", '#00ff41');
-                    writeOutput("LOGOUT: Terminates session and redirects.", '#ff0000');
-                    writeOutput("?LOCKDOWN: Initiates the 30-minute system lockdown.", '#ff0000');
-                    writeOutput("SUDO: (Hidden Command) Alpha Override.", '#ff00ff'); 
+                    writeOutput("--- AVAILABLE ATLAS CONSOLE FEATURES (v5.2) ---", '#ffff00');
+                    writeOutput("1. SEARCH [target] : Query the deep web data stream.", '#00ff41');
+                    writeOutput("2. DECRYPT [file] : Attempt to break 256-bit encryption.", '#00ff41');
+                    writeOutput("3. SCAN [ip/domain] : Perform port analysis and vulnerability scan.", '#00ff41');
+                    writeOutput("4. HUNT [target] : Initiate autonomous data package retrieval.", '#00ff41');
+                    writeOutput("5. TRACE [ip] : Initiate geographical location trace.", '#00ff41');
+                    writeOutput("6. DEFACE [url] : Execute front-end injection protocol.", '#ff00ff');
+                    writeOutput("7. ENCRYPT [file] : Apply high-level security to files.", '#ff00ff');
+                    writeOutput("8. FAKE NEWS [topic] : Fabricate and deploy disinformation packets.", '#ff00ff');
+                    writeOutput("9. PINGFLOOD [ip] : Execute Denial-of-Service test payload.", '#ff00ff');
+                    writeOutput("10. SPOOF [target] : Mask identity and reroute origin point.", '#ff00ff');
+                    writeOutput("11. CLEANUP : Purge local console logs and session cache.", '#00ffff');
+                    writeOutput("12. REBOOT : Soft reboot the console OS.", '#00ffff');
+                    writeOutput("13. THEME [color] : Change console display color (BLUE/RED/DEFAULT).", '#00ffff');
+                    writeOutput("14. **ACTIVE** : See the log of unique visitors on the site (New!)", '#00ffff');
+                    writeOutput("15. LOGOUT: Terminates session and redirects to main page.", '#ff0000');
+                    writeOutput("16. **?LOCKDOWN**: Initiates the 30-minute global security lockdown.", '#ff0000');
+                    writeOutput("17. SUDO: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00'); 
                     break;
+                
+                case 'ACTIVE':
+                    runActiveCommand();
+                    break;
+
                 case 'LOGOUT':
-                    writeOutput("SESSION TERMINATED. Redirecting...", '#ff0000');
+                    writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
                     setTimeout(() => { window.location.href = 'https://ethanunlocked690.github.io'; }, 1000);
                     return;
                 case 'SUDO':
                     writeOutput(">> LEVEL ALPHA OVERRIDE ACTIVATED. Welcome, Admin.", '#ffff00');
                     break;
-                // --- Placeholder for other commands (Add your complex logic here) ---
+                // --- Placeholder for other commands ---
                 case 'REBOOT':
                 case 'CLEANUP':
                 case 'THEME':
                 case 'SEARCH':
                 case 'DECRYPT':
+                case 'SCAN':
+                case 'HUNT':
+                case 'TRACE':
+                case 'DEFACE':
+                case 'ENCRYPT':
+                case 'FAKE': // Catch FAKE NEWS short form
+                case 'PINGFLOOD':
+                case 'SPOOF':
                     writeOutput(`Running Command: ${cmd}... [PLACEHOLDER EXECUTION]`, '#00ff41');
                     break;
+                case 'NEWS': // Catch FAKE NEWS part 2
+                    if (parts.length > 1 && parts[0].toUpperCase() === 'FAKE') {
+                         writeOutput(`Running Command: FAKE NEWS... [PLACEHOLDER EXECUTION]`, '#00ff41');
+                         break;
+                    }
                 default:
-                    writeOutput(`ERROR: Command '${cmd}' not recognized.`, '#ff0000');
+                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
                     break;
             }
             
@@ -432,8 +508,13 @@
         });
         
         window.onload = function() {
-            // Check lockdown status and apply security protocols immediately
+            // 1. Log the current user's visit
+            logCurrentUser();
+            
+            // 2. Check lockdown status
             checkInitialLockdown(); 
+            
+            // 3. Focus input
             commandInput.focus();
         };
     </script>
