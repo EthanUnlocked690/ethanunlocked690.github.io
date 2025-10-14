@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v5.1 (LOCKDOWN INITIATED)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v5.2 (LOCKDOWN READY)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -21,7 +21,7 @@
             justify-content: center;
             align-items: center;
             position: relative; 
-            transition: color 0.5s, border-color 0.5s, background-color 0.1s; /* Added background transition */
+            transition: color 0.5s, border-color 0.5s, background-color 0.1s; 
         }
 
         /* --- Animated Background Layer --- */
@@ -37,7 +37,7 @@
             opacity: 0.3; 
             filter: grayscale(100%) brightness(50%); 
             transition: background-image 0.5s ease, filter 0.5s, opacity 0.5s;
-            background-image: url('main.gif');
+            background-image: url('main.gif'); /* Placeholder image */
         }
 
         /* Simulated CRT/Scanline Effect */
@@ -60,10 +60,10 @@
             transition: background 0.5s;
         }
 
-        /* --- LOCKDOWN EFFECT CSS (New) --- */
+        /* --- LOCKDOWN EFFECT CSS --- */
         .lockdown-active {
-            background-color: #500000 !important; /* Dark red background */
-            color: #ff0000 !important; /* Red text */
+            background-color: #500000 !important; 
+            color: #ff0000 !important; 
         }
         .lockdown-active .console-container {
             border-color: #ff0000 !important;
@@ -94,21 +94,6 @@
             transition: transform 0.1s ease-in-out, border-color 0.5s, box-shadow 0.5s; 
         }
 
-        /* --- SHAKE EFFECT CSS --- */
-        .shake {
-            animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
-            transform: translate3d(0, 0, 0);
-            perspective: 1000px;
-        }
-
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
-        }
-        /* --- End SHAKE EFFECT CSS --- */
-
         /* Output Area */
         #output-area {
             flex-grow: 1;
@@ -130,7 +115,7 @@
             color: #ff00ff; 
         }
 
-        #command-input, #password-input {
+        #command-input {
             background: transparent;
             border: none;
             color: inherit; 
@@ -141,10 +126,6 @@
             font-size: 1.1rem;
         }
         
-        #password-input {
-            display: none; 
-        }
-
         /* Status Bar */
         #status-bar {
             background: #004d1a;
@@ -155,18 +136,11 @@
             transition: background 0.5s;
         }
         
-        /* OVERRIDE Status Bar Effect */
-        .override-active {
-            background: #4d0000 !important; 
-            box-shadow: 0 0 5px #ff0000;
-        }
-        
         /* THEME & Holiday Styles (Simplified) */
         .blue-theme { color: #00d0ff; }
         .red-theme { color: #ff3030; }
         .blue-theme .console-container { border-color: #00d0ff; box-shadow: 0 0 10px #00d0ff; }
         .red-theme .console-container { border-color: #ff3030; box-shadow: 0 0 10px #ff3030; }
-        .new-years-theme .console-container { border-color: #ffc107; box-shadow: 0 0 10px #ffc107; }
         
     </style>
 </head>
@@ -174,22 +148,18 @@
     
     <audio id="main-music" loop preload="auto" volume="1.0">
         <source src="hack.mp3" type="audio/mp3">
-        Your browser does not support the audio element.
     </audio>
-    
     <audio id="siren-audio" preload="auto">
         <source src="siren.mp3" type="audio/mp3">
     </audio>
-    
-    <div id="holiday-music-container"></div>
     
     <div id="terminal-background"></div>
 
     <div class="console-container">
         
         <div id="status-bar">
-            <span id="override-indicator" style="color: #ff0000; float: left; display: none;">[ALPHA OVERRIDE ACTIVE]</span>
-            ATLAS CONSOLE v5.1 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
+            <span id="lockdown-indicator" style="color: #ff0000; float: left; display: none;">[LOCKDOWN ACTIVE]</span>
+            ATLAS CONSOLE v5.2 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
         </div>
 
         <div id="output-area">
@@ -203,7 +173,6 @@
         <div id="input-line">
             <span id="input-prefix">ATLAS ></span>
             <input type="text" id="command-input" autofocus>
-            <input type="text" id="password-input" style="display: none;"> 
         </div>
         
     </div>
@@ -213,23 +182,19 @@
         const commandInput = document.getElementById('command-input');
         const consoleContainer = document.querySelector('.console-container');
         const bodyElement = document.body; 
-        const terminalBackground = document.getElementById('terminal-background');
-        const overrideIndicator = document.getElementById('override-indicator');
-        const statusBar = document.getElementById('status-bar');
-        const sirenAudio = document.getElementById('siren-audio'); // NEW Audio element
+        const lockdownIndicator = document.getElementById('lockdown-indicator');
+        const sirenAudio = document.getElementById('siren-audio'); 
 
         let isBusy = false; 
-        let isLockedDown = false; // NEW Lockdown State
-        let decryptState = 0; 
-        let scanState = 0; 
-        let huntState = 0; 
-        let overrideEnabled = false;
-        let musicStarted = false; 
+        let isLockedDown = false; 
         
         // --- CONSTANTS ---
-        const SECRET_OVERRIDE_CMD = 'SUDO'; 
+        const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+        const LOCKOUT_STORAGE_KEY = 'terminalLockoutTime';
+        const USERNAME_COOKIE_KEY = 'username'; 
+        const ADMIN_USERNAME = "EthanUnlocked"; // The only admin who can bypass/disable
         
-        // --- THEME DATA ---
+        // --- THEME DATA (Simplified) ---
         const THEMES = {
             'DEFAULT': { className: '', mainColor: '#00ff41' },
             'BLUE': { className: 'blue-theme', mainColor: '#00d0ff' },
@@ -237,13 +202,6 @@
         };
         let currentTheme = 'DEFAULT';
 
-        // --- HOLIDAY THEMES (GIFs and Music) ---
-        const HOLIDAY_THEMES = {
-            // Month (0-indexed) : { Name, Color, Music_File, CSS_Class, GIF_File }
-            0: { name: "New Year's Eve", color: "#ffc107", music: "new.mp3", css: "new-years-theme", gif: "newyear.gif" }, 
-            // ... (rest of holiday themes omitted) ...
-        };
-        
         // =========================================================================
         // --- Utility Functions ---
         // =========================================================================
@@ -251,82 +209,149 @@
         function writeOutput(text, color = THEMES[currentTheme].mainColor) {
             const line = document.createElement('span');
             line.style.color = color;
-            line.textContent = text;
+            line.innerHTML = text; 
             outputArea.appendChild(line);
             outputArea.appendChild(document.createElement('br'));
             outputArea.scrollTop = outputArea.scrollHeight;
         }
-        
-        function shakeConsole() {
-            consoleContainer.classList.add('shake');
-            setTimeout(() => {
-                consoleContainer.classList.remove('shake');
-            }, 300); 
-        }
 
         function showPrompt() {
-            if (isLockedDown) return; // Do not show prompt if locked down
+            if (isLockedDown) return; 
             if (!isBusy) {
                 writeOutput("", THEMES[currentTheme].mainColor);
             }
-            
-            commandInput.style.display = 'block';
             commandInput.focus();
             commandInput.value = '';
         }
+
+        function getCookie(cname) {
+            // Function to retrieve the value of the username cookie
+            let name = cname + "=";
+            let decodedCookie = decodeURIComponent(document.cookie);
+            let ca = decodedCookie.split(';');
+            for(let i = 0; i <ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) === 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
         
+        function getUsername() {
+            return getCookie(USERNAME_COOKIE_KEY).trim();
+        }
+        
+        function isAdmin() {
+            return getUsername().toLowerCase() === ADMIN_USERNAME.toLowerCase();
+        }
+
         // =========================================================================
-        // --- NEW LOCKDOWN Handler ---
+        // --- LOCKDOWN Logic ---
         // =========================================================================
 
-        function runLockdown() {
+        function checkInitialLockdown() {
+            const lockoutEndTime = localStorage.getItem(LOCKOUT_STORAGE_KEY);
+            const currentTime = new Date().getTime();
+
+            if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
+                isLockedDown = true;
+                
+                // If lockdown is active, apply visual theme
+                bodyElement.classList.add('lockdown-active');
+                lockdownIndicator.style.display = 'inline';
+                commandInput.disabled = true;
+
+                // --- Admin vs. Non-Admin Logic ---
+                if (isAdmin()) {
+                    // Admin Access: Allow input and display warning
+                    commandInput.disabled = false;
+                    writeOutput("\n!! WARNING: SYSTEM IS IN GLOBAL LOCKDOWN MODE (30 MIN) !!", '#ffff00');
+                    writeOutput(`!! ACCESS GRANTED TO ADMIN: ${ADMIN_USERNAME.toUpperCase()} !!`, '#ff00ff');
+                    writeOutput("!! TYPE '?DISABLE' TO END LOCKDOWN !!", '#ff00ff');
+                } else {
+                    // Non-Admin Access: Kick immediately upon loading the page
+                    kickUserDueToLockdown(false); 
+                    return; 
+                }
+            } else if (lockoutEndTime) {
+                // Time expired: Clean up storage
+                localStorage.removeItem(LOCKOUT_STORAGE_KEY);
+            }
+        }
+
+        function startLockdown() {
             if (isLockedDown) return;
             isLockedDown = true;
             isBusy = true;
+            commandInput.disabled = true;
+
+            const lockoutEndTime = new Date().getTime() + LOCKOUT_DURATION_MS;
+            localStorage.setItem(LOCKOUT_STORAGE_KEY, lockoutEndTime);
+
+            writeOutput("\n>>> INITIATING LOCKDOWN! <<<", '#ff0000');
             
-            // 1. Stop all music and play siren
-            // (You'd need a separate function here to stop main/holiday music)
+            // 1. Kick the non-admin user (if applicable)
+            if (!isAdmin()) {
+                 // Kick the non-admin user after the message
+                 setTimeout(() => kickUserDueToLockdown(true), 1500);
+            } else {
+                 // 2. Admin lockdown entry 
+                 setTimeout(() => {
+                    bodyElement.classList.add('lockdown-active');
+                    lockdownIndicator.style.display = 'inline';
+                    commandInput.disabled = false;
+                    writeOutput("\nADMIN PROTOCOL ACCEPTED. TYPE '?DISABLE' TO END LOCKDOWN.", '#ff00ff');
+                    isBusy = false;
+                    showPrompt();
+                 }, 1500);
+            }
+        }
+        
+        function kickUserDueToLockdown(isNewLockdown) {
+            outputArea.innerHTML = '';
+            bodyElement.classList.add('lockdown-active');
+            commandInput.disabled = true;
+
+            if (isNewLockdown) {
+                writeOutput("!!! CRITICAL ALERT !!! INITIATING LOCKDOWN!", '#ff0000');
+                writeOutput("!!! SYSTEM ACCESS REVOKED !!!", '#ff0000');
+            } else {
+                writeOutput("!!! ATLAS TERMINAL ACCESS DENIED !!!", '#ff0000');
+                writeOutput("!!! SYSTEM IS IN GLOBAL LOCKDOWN (30 MIN) !!!", '#ff0000');
+            }
+            
+            // Play siren (optional)
             if (sirenAudio) {
                 sirenAudio.loop = true;
                 sirenAudio.play().catch(e => console.log("Siren failed to auto-play:", e));
-            } else {
-                 // Simulate siren by flashing the screen rapidly
-                let sirenCount = 0;
-                const sirenSim = setInterval(() => {
-                    if (sirenCount > 20) { clearInterval(sirenSim); return; }
-                    bodyElement.classList.toggle('lockdown-active');
-                    sirenCount++;
-                }, 100);
+            }
+            
+            // Redirect after a short delay
+            setTimeout(() => {
+                window.location.href = 'index.html'; 
+            }, 3000); 
+        }
+        
+        function disableLockdown() {
+            if (!isAdmin()) {
+                writeOutput("ERROR: Authorization denied. Only 'EthanUnlocked' can disable lockdown.", '#ff0000');
+                return;
             }
 
-            // 2. Apply Red Lockdown Visuals
-            bodyElement.classList.add('lockdown-active');
+            localStorage.removeItem(LOCKOUT_STORAGE_KEY);
+            isLockedDown = false;
+            bodyElement.classList.remove('lockdown-active');
+            lockdownIndicator.style.display = 'none';
+            if (sirenAudio) sirenAudio.pause();
             
-            // 3. Output Panic Messages
-            outputArea.innerHTML = ''; // Clear the screen
-            writeOutput("\n\n!!! CRITICAL ALERT !!! INTRUSION DETECTED !!!", '#ff0000');
-            writeOutput("!!! LEVEL 5 SECURITY PROTOCOL INITIATED !!!", '#ff0000');
-            writeOutput("\nACCESS TERMINATING... 5", '#ff0000');
-            
-            let timer = 4;
-            const finalCountdown = setInterval(() => {
-                if (timer > 0) {
-                    writeOutput(`ACCESS TERMINATING... ${timer}`, '#ff0000');
-                    shakeConsole();
-                    timer--;
-                } else {
-                    clearInterval(finalCountdown);
-                    writeOutput("\n** SYSTEM WIPE COMMENCING **", '#ff0000');
-                    
-                    // 4. Force Termination (Redirect)
-                    setTimeout(() => {
-                        window.location.href = 'https://www.google.com'; // Redirect to a neutral page
-                    }, 1500);
-                }
-            }, 1000);
-            
-            // Disable input field entirely
-            commandInput.disabled = true;
+            writeOutput("\n>> LOCKDOWN PROTOCOL DISABLED BY ADMIN ACCESS.", '#00ff41');
+            writeOutput(">> ATLAS CONSOLE RESTORED TO NORMAL OPERATION.", '#00ff41');
+            isBusy = false;
+            showPrompt();
         }
 
         // =========================================================================
@@ -334,93 +359,81 @@
         // =========================================================================
         
         function processCommand(command) {
-            if (isLockedDown) {
-                 // Ignore all commands if locked down
-                 writeOutput(`> ${command}`, '#ff0000'); 
-                 writeOutput("!! WARNING: SYSTEM IS LOCKED DOWN. ALL ACCESS DENIED. !!", '#ff0000');
-                 return;
-            }
-            
             const parts = command.trim().split(/\s+/);
             const cmd = parts[0].toUpperCase();
-            const args = command.trim().substring(cmd.length).trim();
-
+            
+            // --- Lockdown Check (Admin Bypass/Disable) ---
+            if (isLockedDown) {
+                if (isAdmin() && cmd === '?DISABLE') {
+                    writeOutput(`> ${command}`, '#ff00ff');
+                    disableLockdown();
+                    return;
+                }
+                writeOutput(`> ${command}`, '#ff0000'); 
+                writeOutput("!! ERROR: TERMINAL IS IN LOCKDOWN. COMMANDS BLOCKED. !!", '#ff0000');
+                return;
+            }
+            
             if (isBusy && cmd !== 'LOGOUT' && cmd !== '?LOCKDOWN' && cmd !== 'LOCKDOWN') {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
             }
             
-            // --- Special Hidden Command Check (SUDO) ---
-            if (cmd === SECRET_OVERRIDE_CMD) {
-                writeOutput(`> ${command}`, '#ff00ff');
-                runOverride();
-                return;
-            }
-            
-            // --- LOCKDOWN Command Check ---
+            // --- LOCKDOWN Command Check (Initiation) ---
             if (cmd === '?LOCKDOWN' || cmd === 'LOCKDOWN') {
                 writeOutput(`> ${command}`, '#ff00ff');
-                runLockdown();
+                startLockdown();
                 return;
             }
             
-            // ... (LOGOUT and TRACE input logic remains) ...
-            if (cmd === 'LOGOUT') {
-                writeOutput(`> ${command}`, '#ff00ff');
-                writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
-                setTimeout(() => { window.location.href = 'https://ethanunlocked690.github.io'; }, 1000);
-                return;
-            }
-            
+            // --- All other commands ---
             writeOutput(`> ${command}`, '#ff00ff'); 
             
             switch (cmd) {
                 case 'HELP':
-                    writeOutput("--- AVAILABLE COMMANDS (16 Core Features) ---", '#ffff00');
-                    writeOutput("1. SEARCH, 2. DECRYPT, 3. SCAN, 4. HUNT, 5. TRACE", '#00ff41');
-                    writeOutput("6. DEFACE, 7. ENCRYPT, 8. FAKE NEWS, 9. PINGFLOOD", '#ff00ff');
-                    writeOutput("10. SPOOF, 11. CLEANUP, 12. REBOOT, 13. THEME", '#ff00ff');
-                    writeOutput("14. LOGOUT, 15. **?LOCKDOWN** : Initiate system security lockdown.", '#ff0000'); // NEW
-                    writeOutput("16. *CLASSIFIED* : Security bypass protocol (Hidden command).", '#ff0000'); 
+                    writeOutput("--- AVAILABLE COMMANDS ---", '#ffff00');
+                    writeOutput("SEARCH, DECRYPT, SCAN, HUNT, TRACE, DEFACE, ENCRYPT, FAKE NEWS, PINGFLOOD, SPOOF, CLEANUP, REBOOT, THEME", '#00ff41');
+                    writeOutput("LOGOUT: Terminates session and redirects.", '#ff0000');
+                    writeOutput("?LOCKDOWN: Initiates the 30-minute system lockdown.", '#ff0000');
+                    writeOutput("SUDO: (Hidden Command) Alpha Override.", '#ff00ff'); 
                     break;
-                // ... (Other command cases like SEARCH, DECRYPT, PINGFLOOD, etc. are omitted for brevity but remain functional) ...
+                case 'LOGOUT':
+                    writeOutput("SESSION TERMINATED. Redirecting...", '#ff0000');
+                    setTimeout(() => { window.location.href = 'https://ethanunlocked690.github.io'; }, 1000);
+                    return;
+                case 'SUDO':
+                    writeOutput(">> LEVEL ALPHA OVERRIDE ACTIVATED. Welcome, Admin.", '#ffff00');
+                    break;
+                // --- Placeholder for other commands (Add your complex logic here) ---
+                case 'REBOOT':
+                case 'CLEANUP':
+                case 'THEME':
+                case 'SEARCH':
+                case 'DECRYPT':
+                    writeOutput(`Running Command: ${cmd}... [PLACEHOLDER EXECUTION]`, '#00ff41');
+                    break;
                 default:
-                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of 15 commands.`, '#ff0000');
+                    writeOutput(`ERROR: Command '${cmd}' not recognized.`, '#ff0000');
                     break;
             }
             
             if (!isBusy && !isLockedDown) showPrompt();
         }
 
-
         // =========================================================================
         // --- Initialization and Events ---
         // =========================================================================
         
-        function initializeHolidayTheme() {
-            // ... (Existing logic for setting GIF background) ...
-        }
-
-        function handleUserInteraction() {
-            // ... (Existing logic for starting music/theme) ...
-            if (musicStarted) return;
-            musicStarted = true;
-            initializeHolidayTheme(); 
-            // ... (music start logic omitted) ...
-        }
-        
         document.addEventListener('keypress', function(e) {
-            handleUserInteraction();
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !commandInput.disabled) {
                 processCommand(commandInput.value);
                 commandInput.value = '';
             }
         });
         
-        document.addEventListener('click', handleUserInteraction); 
-
         window.onload = function() {
-            initializeHolidayTheme(); 
+            // Check lockdown status and apply security protocols immediately
+            checkInitialLockdown(); 
             commandInput.focus();
         };
     </script>
