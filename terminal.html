@@ -159,6 +159,7 @@
         
         <div id="status-bar">
             <span id="lockdown-indicator" style="color: #ff0000; float: left; display: none;">[LOCKDOWN ACTIVE]</span>
+            <span id="override-indicator" style="color: #ffff00; float: left; display: none; margin-right: 20px;">[ALPHA OVERRIDE]</span>
             ATLAS CONSOLE v5.2 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
         </div>
 
@@ -183,16 +184,19 @@
         const consoleContainer = document.querySelector('.console-container');
         const bodyElement = document.body; 
         const lockdownIndicator = document.getElementById('lockdown-indicator');
+        const overrideIndicator = document.getElementById('override-indicator'); // New DOM element
         const sirenAudio = document.getElementById('siren-audio'); 
+        const inputPrefix = document.getElementById('input-prefix');
 
         let isBusy = false; 
         let isLockedDown = false; 
+        let overrideActive = false; // NEW STATE VARIABLE
         
         // --- CONSTANTS ---
         const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
         const LOCKOUT_STORAGE_KEY = 'terminalLockoutTime';
         const USERNAME_COOKIE_KEY = 'username'; 
-        const VISITOR_LOG_KEY = 'atlasVisitorLog'; // New key for the ACTIVE command
+        const VISITOR_LOG_KEY = 'atlasVisitorLog'; 
         const ADMIN_USERNAME = "EthanUnlocked"; 
         
         // --- THEME DATA (Simplified) ---
@@ -200,6 +204,7 @@
             'DEFAULT': { className: '', mainColor: '#00ff41' },
             'BLUE': { className: 'blue-theme', mainColor: '#00d0ff' },
             'RED': { className: 'red-theme', mainColor: '#ff3030' },
+            'OVERRIDE': { className: 'override-theme', mainColor: '#ffff00' } // Placeholder for override theme
         };
         let currentTheme = 'DEFAULT';
 
@@ -249,7 +254,6 @@
             return getUsername().toLowerCase() === ADMIN_USERNAME.toLowerCase();
         }
         
-        // New: Track and log the current user
         function logCurrentUser() {
             const username = getUsername();
             if (!username) return; 
@@ -266,6 +270,24 @@
             }
 
             localStorage.setItem(VISITOR_LOG_KEY, JSON.stringify(log));
+        }
+        
+        // New function to handle the permanent override theme
+        function applyOverrideTheme() {
+            // Apply yellow theme and heavy box shadow
+            bodyElement.style.color = '#ffff00'; // Bright Yellow text
+            consoleContainer.style.borderColor = '#ffff00';
+            consoleContainer.style.boxShadow = '0 0 15px #ffff00, 0 0 30px rgba(255, 255, 0, 0.5)';
+            inputPrefix.style.color = '#ff00ff'; // Keep prefix magenta
+            
+            // Status bar change
+            document.getElementById('status-bar').style.backgroundColor = '#4d4d00'; // Dark yellow status bar
+            overrideIndicator.style.display = 'inline'; // Show indicator
+            
+            // Set state variables
+            overrideActive = true;
+            currentTheme = 'OVERRIDE';
+            isBusy = false; // Ensure admin is never stuck
         }
 
 
@@ -378,23 +400,24 @@
 
             writeOutput(`\n--- ACTIVE SESSION LOG: ${log.length} TOTAL VISITOR(S) LOGGED ---`, '#00ff41');
             
-            // Current User is assumed "active"
-            const activeUsers = log.filter(u => u.name.toLowerCase() === getUsername().toLowerCase());
+            const currentUser = getUsername();
             
-            if (activeUsers.length > 0) {
-                 writeOutput(`\n[01] >>> CURRENT OPERATOR: ${activeUsers[0].name.toUpperCase()} (LAST CHECK: ${activeUsers[0].lastActive})`, '#ff00ff');
-            }
+            // Sort log by most recent activity
+            log.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive)); 
             
-            // List other logged users (historical visitors)
-            writeOutput("\n-- HISTORICAL VISITORS (NAME / LAST ACTIVE) --", '#ffff00');
-            log.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive)); // Sort by most recent
-            
+            // List all logged users
             log.forEach((user, index) => {
-                // Skip the current operator for the historical list (already at the top)
-                if (user.name.toLowerCase() !== getUsername().toLowerCase()) {
-                    const statusColor = (new Date().getTime() - new Date(user.lastActive).getTime() < 3600000) ? '#00ffff' : '#ffaa00'; // Active within 1 hour = Cyan
-                    writeOutput(`[${String(index + 1).padStart(2, '0')}] ${user.name} (Last Active: ${user.lastActive})`, statusColor);
+                const statusColor = (user.name.toLowerCase() === currentUser.toLowerCase()) ? '#ff00ff' : 
+                                    (new Date().getTime() - new Date(user.lastActive).getTime() < 3600000) ? '#00ffff' : '#ffaa00'; // Active within 1 hour = Cyan
+                
+                let line = `[${String(index + 1).padStart(2, '0')}] ${user.name}`;
+                if (user.name.toLowerCase() === currentUser.toLowerCase()) {
+                    line += " (CURRENT OPERATOR)";
+                } else {
+                    line += ` (Last Active: ${user.lastActive})`;
                 }
+                
+                writeOutput(line, statusColor);
             });
             writeOutput("--------------------------------------------", '#00ff41');
         }
@@ -419,7 +442,8 @@
                 return;
             }
             
-            if (isBusy && cmd !== 'LOGOUT' && cmd !== '?LOCKDOWN' && cmd !== 'LOCKDOWN') {
+            // Check if system is busy (Bypassed if Alpha Override is active)
+            if (isBusy && cmd !== 'LOGOUT' && cmd !== '?LOCKDOWN' && cmd !== 'LOCKDOWN' && !overrideActive) {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
             }
@@ -432,7 +456,7 @@
             }
             
             // --- All other commands ---
-            writeOutput(`> ${command}`, '#ff00ff'); 
+            writeOutput(`> ${command}`, (overrideActive ? '#ffcc00' : '#ff00ff')); 
             
             switch (cmd) {
                 case 'HELP':
@@ -450,27 +474,58 @@
                     writeOutput("11. CLEANUP : Purge local console logs and session cache.", '#00ffff');
                     writeOutput("12. REBOOT : Soft reboot the console OS.", '#00ffff');
                     writeOutput("13. THEME [color] : Change console display color (BLUE/RED/DEFAULT).", '#00ffff');
-                    writeOutput("14. **ACTIVE** : See the log of unique visitors on the site (New!)", '#00ffff');
+                    writeOutput("14. **ACTIVE** : See the log of unique visitors on the site.", '#00ffff');
                     writeOutput("15. LOGOUT: Terminates session and redirects to main page.", '#ff0000');
                     writeOutput("16. **?LOCKDOWN**: Initiates the 30-minute global security lockdown.", '#ff0000');
-                    writeOutput("17. **Hidden Command** Admin Alpha Override Protocol.", '#ffff00'); 
+                    writeOutput("17. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00'); 
                     break;
                 
                 case 'ACTIVE':
                     runActiveCommand();
                     break;
+                
+                // --- SUDO: ALPHA OVERRIDE ACTIVATION ---
+                case 'SUDO':
+                    if (!isAdmin()) {
+                         writeOutput("ACCESS DENIED: SUDO privileges require LEVEL EXTREME clearance.", '#ff0000');
+                         break;
+                    }
+                    if (overrideActive) {
+                         writeOutput("ALPHA OVERRIDE is already active. No action needed.", '#ffff00');
+                         break;
+                    }
+                    
+                    applyOverrideTheme();
+                    writeOutput("\n*****************************************************", '#ff00ff');
+                    writeOutput(">> LEVEL ALPHA OVERRIDE ACTIVATED. Welcome, Admin.", '#ffff00');
+                    writeOutput(">> ALL LIMITERS REMOVED. BUSY STATE BYPASSED.", '#ffff00');
+                    writeOutput("*****************************************************", '#ff00ff');
+                    break;
+
 
                 case 'LOGOUT':
                     writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
                     setTimeout(() => { window.location.href = 'https://ethanunlocked690.github.io'; }, 1000);
                     return;
-                case 'SUDO':
-                    writeOutput(">> LEVEL ALPHA OVERRIDE ACTIVATED. Welcome, Admin.", '#ffff00');
+                
+                case 'THEME':
+                    if (overrideActive) {
+                        writeOutput("ERROR: Theme change blocked. System is running under ALPHA OVERRIDE.", '#ff0000');
+                        break;
+                    }
+                    // Simple placeholder for theme
+                    const newTheme = parts[1] ? parts[1].toUpperCase() : 'DEFAULT';
+                    if (THEMES[newTheme]) {
+                        // In a real implementation, you would apply the theme classes/styles here
+                        writeOutput(`Theme set to ${newTheme}. (Placeholder)`, THEMES[newTheme].mainColor);
+                    } else {
+                        writeOutput(`ERROR: Theme '${newTheme}' not found.`, '#ff0000');
+                    }
                     break;
+
                 // --- Placeholder for other commands ---
                 case 'REBOOT':
                 case 'CLEANUP':
-                case 'THEME':
                 case 'SEARCH':
                 case 'DECRYPT':
                 case 'SCAN':
@@ -478,7 +533,6 @@
                 case 'TRACE':
                 case 'DEFACE':
                 case 'ENCRYPT':
-                case 'FAKE': // Catch FAKE NEWS short form
                 case 'PINGFLOOD':
                 case 'SPOOF':
                     writeOutput(`Running Command: ${cmd}... [PLACEHOLDER EXECUTION]`, '#00ff41');
