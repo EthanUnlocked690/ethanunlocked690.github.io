@@ -184,13 +184,13 @@
         const consoleContainer = document.querySelector('.console-container');
         const bodyElement = document.body; 
         const lockdownIndicator = document.getElementById('lockdown-indicator');
-        const overrideIndicator = document.getElementById('override-indicator'); // New DOM element
+        const overrideIndicator = document.getElementById('override-indicator');
         const sirenAudio = document.getElementById('siren-audio'); 
         const inputPrefix = document.getElementById('input-prefix');
 
         let isBusy = false; 
         let isLockedDown = false; 
-        let overrideActive = false; // NEW STATE VARIABLE
+        let overrideActive = false; // Alpha Override State
         
         // --- CONSTANTS ---
         const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
@@ -204,7 +204,7 @@
             'DEFAULT': { className: '', mainColor: '#00ff41' },
             'BLUE': { className: 'blue-theme', mainColor: '#00d0ff' },
             'RED': { className: 'red-theme', mainColor: '#ff3030' },
-            'OVERRIDE': { className: 'override-theme', mainColor: '#ffff00' } // Placeholder for override theme
+            'OVERRIDE': { className: 'override-theme', mainColor: '#ffff00' }
         };
         let currentTheme = 'DEFAULT';
 
@@ -272,22 +272,19 @@
             localStorage.setItem(VISITOR_LOG_KEY, JSON.stringify(log));
         }
         
-        // New function to handle the permanent override theme
+        // Function to handle the permanent override theme (SUDO)
         function applyOverrideTheme() {
-            // Apply yellow theme and heavy box shadow
-            bodyElement.style.color = '#ffff00'; // Bright Yellow text
+            bodyElement.style.color = '#ffff00'; 
             consoleContainer.style.borderColor = '#ffff00';
             consoleContainer.style.boxShadow = '0 0 15px #ffff00, 0 0 30px rgba(255, 255, 0, 0.5)';
-            inputPrefix.style.color = '#ff00ff'; // Keep prefix magenta
+            inputPrefix.style.color = '#ff00ff'; 
             
-            // Status bar change
-            document.getElementById('status-bar').style.backgroundColor = '#4d4d00'; // Dark yellow status bar
-            overrideIndicator.style.display = 'inline'; // Show indicator
+            document.getElementById('status-bar').style.backgroundColor = '#4d4d00'; 
+            overrideIndicator.style.display = 'inline'; 
             
-            // Set state variables
             overrideActive = true;
             currentTheme = 'OVERRIDE';
-            isBusy = false; // Ensure admin is never stuck
+            isBusy = false; 
         }
 
 
@@ -402,13 +399,11 @@
             
             const currentUser = getUsername();
             
-            // Sort log by most recent activity
             log.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive)); 
             
-            // List all logged users
             log.forEach((user, index) => {
                 const statusColor = (user.name.toLowerCase() === currentUser.toLowerCase()) ? '#ff00ff' : 
-                                    (new Date().getTime() - new Date(user.lastActive).getTime() < 3600000) ? '#00ffff' : '#ffaa00'; // Active within 1 hour = Cyan
+                                    (new Date().getTime() - new Date(user.lastActive).getTime() < 3600000) ? '#00ffff' : '#ffaa00'; 
                 
                 let line = `[${String(index + 1).padStart(2, '0')}] ${user.name}`;
                 if (user.name.toLowerCase() === currentUser.toLowerCase()) {
@@ -468,7 +463,7 @@
                     writeOutput("5. TRACE [ip] : Initiate geographical location trace.", '#00ff41');
                     writeOutput("6. DEFACE [url] : Execute front-end injection protocol.", '#ff00ff');
                     writeOutput("7. ENCRYPT [file] : Apply high-level security to files.", '#ff00ff');
-                    writeOutput("8. FAKE NEWS [topic] : Fabricate and deploy disinformation packets.", '#ff00ff');
+                    writeOutput("8. **FAKE** [topic] : Fabricate and deploy disinformation packets.", '#ff00ff'); 
                     writeOutput("9. PINGFLOOD [ip] : Execute Denial-of-Service test payload.", '#ff00ff');
                     writeOutput("10. SPOOF [target] : Mask identity and reroute origin point.", '#ff00ff');
                     writeOutput("11. CLEANUP : Purge local console logs and session cache.", '#00ffff');
@@ -516,14 +511,13 @@
                     // Simple placeholder for theme
                     const newTheme = parts[1] ? parts[1].toUpperCase() : 'DEFAULT';
                     if (THEMES[newTheme]) {
-                        // In a real implementation, you would apply the theme classes/styles here
                         writeOutput(`Theme set to ${newTheme}. (Placeholder)`, THEMES[newTheme].mainColor);
                     } else {
                         writeOutput(`ERROR: Theme '${newTheme}' not found.`, '#ff0000');
                     }
                     break;
 
-                // --- Placeholder for other commands ---
+                // --- Placeholder for other commands (Now including FAKE) ---
                 case 'REBOOT':
                 case 'CLEANUP':
                 case 'SEARCH':
@@ -535,13 +529,10 @@
                 case 'ENCRYPT':
                 case 'PINGFLOOD':
                 case 'SPOOF':
+                case 'FAKE': 
                     writeOutput(`Running Command: ${cmd}... [PLACEHOLDER EXECUTION]`, '#00ff41');
                     break;
-                case 'NEWS': // Catch FAKE NEWS part 2
-                    if (parts.length > 1 && parts[0].toUpperCase() === 'FAKE') {
-                         writeOutput(`Running Command: FAKE NEWS... [PLACEHOLDER EXECUTION]`, '#00ff41');
-                         break;
-                    }
+                
                 default:
                     writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
                     break;
