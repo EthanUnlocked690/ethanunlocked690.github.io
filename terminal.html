@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v5.2</title>
+    <title>ATLAS: DATA FLOW CONSOLE v5.2 (LOCKDOWN READY)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -106,7 +106,7 @@
         /* Input Area */
         #input-line {
             padding: 1rem;
-            border-top: 1px solid #00ff41;
+            border-top: 1px solid; /* Handled by theme color */
             display: flex;
             transition: border-top 0.5s;
         }
@@ -152,12 +152,15 @@
     <audio id="siren-audio" preload="auto">
         <source src="siren.mp3" type="audio/mp3">
     </audio>
+    <audio id="sfx-audio" preload="auto"></audio>
     
     <div id="terminal-background"></div>
 
     <div class="console-container">
         
         <div id="status-bar">
+            <span id="sound-status" style="color: #ffaa00; float: left; margin-right: 20px;">[Sounds loading...]</span>
+            
             <span id="lockdown-indicator" style="color: #ff0000; float: left; display: none;">[LOCKDOWN ACTIVE]</span>
             <span id="override-indicator" style="color: #ffff00; float: left; display: none; margin-right: 20px;">[ALPHA OVERRIDE]</span>
             ATLAS CONSOLE v5.2 | OPERATOR: E.I. | STATUS: ONLINE | DATABASE: STANDALONE
@@ -187,19 +190,24 @@
         const overrideIndicator = document.getElementById('override-indicator');
         const sirenAudio = document.getElementById('siren-audio'); 
         const inputPrefix = document.getElementById('input-prefix');
+        const sfxAudio = document.getElementById('sfx-audio'); 
+        const soundStatus = document.getElementById('sound-status'); 
 
         let isBusy = false; 
         let isLockedDown = false; 
-        let overrideActive = false; // Alpha Override State
+        let overrideActive = false; 
+        let soundsReady = false; 
         
         // --- CONSTANTS ---
-        const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
+        const LOCKOUT_DURATION_MS = 30 * 60 * 1000; 
         const LOCKOUT_STORAGE_KEY = 'terminalLockoutTime';
         const USERNAME_COOKIE_KEY = 'username'; 
         const VISITOR_LOG_KEY = 'atlasVisitorLog'; 
         const ADMIN_USERNAME = "EthanUnlocked"; 
+        const SOUND_LOAD_DELAY_MS = 10000; 
+
         
-        // --- THEME DATA (Simplified) ---
+        // --- THEME DATA ---
         const THEMES = {
             'DEFAULT': { className: '', mainColor: '#00ff41' },
             'BLUE': { className: 'blue-theme', mainColor: '#00d0ff' },
@@ -207,6 +215,19 @@
             'OVERRIDE': { className: 'override-theme', mainColor: '#ffff00' }
         };
         let currentTheme = 'DEFAULT';
+
+        // --- SOUND EFFECT LIBRARY ---
+        // These are the files you MUST place in the same directory as this HTML file.
+        const SOUND_EFFECTS = {
+            'GET OUT': 'get_out_meme.mp3', 
+            'BRAINROT': 'brainrot_sfx.mp3', 
+            'MEME': 'meme_sfx.mp3', 
+            'WEIRD': 'weird_sfx.mp3',
+            'FUNNY': 'funny_sfx.mp3',
+            'ALERT': 'alert.mp3', 
+            'CONFIRM': 'confirm.mp3', 
+        };
+
 
         // =========================================================================
         // --- Utility Functions ---
@@ -272,7 +293,6 @@
             localStorage.setItem(VISITOR_LOG_KEY, JSON.stringify(log));
         }
         
-        // Function to handle the permanent override theme (SUDO)
         function applyOverrideTheme() {
             bodyElement.style.color = '#ffff00'; 
             consoleContainer.style.borderColor = '#ffff00';
@@ -287,6 +307,60 @@
             isBusy = false; 
         }
 
+        // =========================================================================
+        // --- Theme & Holiday Logic --- 
+        // =========================================================================
+
+        function applyHolidayTheme() {
+            if (overrideActive || isLockedDown) return; 
+
+            const today = new Date();
+            const month = today.getMonth(); 
+            
+            let holidayTheme = null;
+
+            // --- Halloween (Entire Month of October: Month Index 9) ---
+            if (month === 9) { 
+                holidayTheme = 'RED'; 
+                writeOutput(">> HALLOWEEN THEME: Detected October. Activating RED Protocol.", '#ff3030');
+            }
+            
+            // --- Christmas (Entire Month of December: Month Index 11) ---
+            else if (month === 11) {
+                holidayTheme = 'BLUE'; 
+                writeOutput(">> CHRISTMAS THEME: Detected December. Activating BLUE Protocol.", '#00d0ff');
+            }
+            
+            if (holidayTheme) {
+                 bodyElement.classList.remove(THEMES['DEFAULT'].className, THEMES['BLUE'].className, THEMES['RED'].className);
+                 bodyElement.classList.add(THEMES[holidayTheme].className);
+                 currentTheme = holidayTheme;
+                
+                 consoleContainer.style.borderColor = THEMES[holidayTheme].mainColor;
+                 consoleContainer.style.boxShadow = `0 0 10px ${THEMES[holidayTheme].mainColor}`;
+            }
+        }
+        
+        // =========================================================================
+        // --- Sound Database Loading Simulation ---
+        // =========================================================================
+
+        function loadSoundDatabase() {
+            isBusy = true; 
+            writeOutput(`\nSOUND PROTOCOL: Initiating Global SFX Index... Target: Deep Web Mirror (MyInstants.com).`, '#ffaa00');
+            writeOutput(`ESTIMATED INDEX TIME: ${SOUND_LOAD_DELAY_MS / 1000} SECONDS. Please stand by...`, '#ffaa00');
+
+            setTimeout(() => {
+                soundsReady = true;
+                isBusy = false; 
+                
+                soundStatus.innerText = '[Sounds ready!]';
+                soundStatus.style.color = '#00ff41'; 
+                writeOutput(`\nSOUND PROTOCOL: Global SFX Index Complete. ${Object.keys(SOUND_EFFECTS).length} base sounds ready. System is now ONLINE for all known SFX.`, '#00ff41');
+                
+                if (!isLockedDown) showPrompt();
+            }, SOUND_LOAD_DELAY_MS);
+        }
 
         // =========================================================================
         // --- LOCKDOWN Logic ---
@@ -388,7 +462,7 @@
         // =========================================================================
 
         function runActiveCommand() {
-            const log = JSON.parse(localStorage.getItem(VISITOR_LOG_KEY) || '[]');
+             const log = JSON.parse(localStorage.getItem(VISITOR_LOG_KEY) || '[]');
             
             if (log.length === 0) {
                 writeOutput("LOG: No historical visitor data found for ethanunlocked690.github.io.", '#ffff00');
@@ -416,6 +490,67 @@
             });
             writeOutput("--------------------------------------------", '#00ff41');
         }
+
+        function runPlayCommand(keyword) {
+            if (!soundsReady) {
+                writeOutput("ERROR: SFX Database is still loading! Please wait for 'Sounds ready!' status.", '#ff0000');
+                return;
+            }
+            
+            const key = keyword.toUpperCase();
+
+            // 1. Initiate search and busy state regardless of sound status
+            isBusy = true;
+            commandInput.disabled = true;
+
+            writeOutput(`\nSearching Global SFX Index & Mirror: **${key}**...`, '#00ffff');
+            writeOutput(`Target: https://www.myinstants.com/en/index/au/ (via Deep Web Mirror)...`, '#00ffff');
+
+            // --- SIMULATED SEARCH/DOWNLOAD DELAY (3 seconds) ---
+            setTimeout(() => {
+                
+                // 2. Check if the sound was "found" (i.e., exists in our local library)
+                if (SOUND_EFFECTS[key]) {
+                    const filename = SOUND_EFFECTS[key];
+                    
+                    writeOutput(`>> Deep Web Search Successful! File located. Initiating buffer: ${filename}`, '#00ff41');
+
+                    const playingMessage = `Playing: **${key}**... (Source: EXTERNAL MIRROR)`;
+                    writeOutput(playingMessage, '#ffff00');
+                    
+                    // 3. Play the audio
+                    sfxAudio.src = filename;
+                    sfxAudio.play()
+                        .then(() => {
+                            // Audio started successfully, now wait for it to finish
+                            sfxAudio.onended = () => {
+                                writeOutput(`**${key}** finished.`, '#00ff41');
+                                sfxAudio.onended = null; 
+                                isBusy = false;
+                                commandInput.disabled = false;
+                                showPrompt();
+                            };
+                        })
+                        .catch(error => {
+                            // Browser prevented autoplay
+                            writeOutput(`ERROR: Failed to play sound '${key}'. (Autoplay block: Console requires user interaction for audio).`, '#ff0000');
+                            isBusy = false;
+                            commandInput.disabled = false;
+                            showPrompt();
+                        });
+
+                } else {
+                    // 4. Search FAILED (Sound is NOT in our local library)
+                    writeOutput(`!! SEARCH FAILED: Network Timeout or Keyword **${key}** not found on MyInstants mirror.`, '#ff0000');
+                    writeOutput(`SFX DATABASE: Keyword **${key}** registered for future indexing.`, '#ffaa00');
+                    isBusy = false;
+                    commandInput.disabled = false;
+                    showPrompt();
+                }
+
+            }, 3000); 
+        }
+
 
         // =========================================================================
         // --- Main Command Processor ---
@@ -466,19 +601,35 @@
                     writeOutput("8. **FAKE** [topic] : Fabricate and deploy disinformation packets.", '#ff00ff'); 
                     writeOutput("9. PINGFLOOD [ip] : Execute Denial-of-Service test payload.", '#ff00ff');
                     writeOutput("10. SPOOF [target] : Mask identity and reroute origin point.", '#ff00ff');
-                    writeOutput("11. CLEANUP : Purge local console logs and session cache.", '#00ffff');
-                    writeOutput("12. REBOOT : Soft reboot the console OS.", '#00ffff');
-                    writeOutput("13. THEME [color] : Change console display color (BLUE/RED/DEFAULT).", '#00ffff');
-                    writeOutput("14. **ACTIVE** : See the log of unique visitors on the site.", '#00ffff');
-                    writeOutput("15. LOGOUT: Terminates session and redirects to main page.", '#ff0000');
-                    writeOutput("16. **?LOCKDOWN**: Initiates the 30-minute global security lockdown.", '#ff0000');
-                    writeOutput("17. [Hidden Command] Admin Alpha Override Protocol.", '#ffff00'); 
+                    writeOutput("11. **PLAY** [sfx_key] : Initiate sound effect from global library (e.g., PLAY MEME).", '#ff00ff');
+                    writeOutput("12. CLEANUP : Purge local console logs and session cache.", '#00ffff');
+                    writeOutput("13. REBOOT : Soft reboot the console OS.", '#00ffff');
+                    writeOutput("14. THEME [color] : Change console display color (BLUE/RED/DEFAULT).", '#00ffff');
+                    writeOutput("15. **ACTIVE** : See the log of unique visitors on the site.", '#00ffff');
+                    writeOutput("16. LOGOUT: Terminates session and redirects to main page.", '#ff0000');
+                    
+                    // --- CONDITIONAL LOCKDOWN OPTION for Admin Only ---
+                    if (isAdmin()) {
+                        writeOutput("17. **?LOCKDOWN**: [ADMIN ONLY] Initiates the 30-minute global security lockdown.", '#ff0000');
+                        writeOutput("18. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
+                    } else {
+                        writeOutput("17. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
+                    }
+                    // --- END CONDITIONAL CHECK ---
                     break;
                 
                 case 'ACTIVE':
                     runActiveCommand();
                     break;
                 
+                case 'PLAY': 
+                    if (parts.length < 2) {
+                        writeOutput("ERROR: PLAY requires a keyword. Usage: PLAY [sfx_key]", '#ff0000');
+                    } else {
+                        runPlayCommand(parts.slice(1).join(' ')); 
+                    }
+                    break;
+
                 // --- SUDO: ALPHA OVERRIDE ACTIVATION ---
                 case 'SUDO':
                     if (!isAdmin()) {
@@ -508,16 +659,22 @@
                         writeOutput("ERROR: Theme change blocked. System is running under ALPHA OVERRIDE.", '#ff0000');
                         break;
                     }
-                    // Simple placeholder for theme
+                    
                     const newTheme = parts[1] ? parts[1].toUpperCase() : 'DEFAULT';
                     if (THEMES[newTheme]) {
+                        bodyElement.classList.remove(THEMES[currentTheme].className);
+                        bodyElement.classList.add(THEMES[newTheme].className);
+                        currentTheme = newTheme;
+                        consoleContainer.style.borderColor = THEMES[newTheme].mainColor;
+                        consoleContainer.style.boxShadow = `0 0 10px ${THEMES[newTheme].mainColor}`;
+                        
                         writeOutput(`Theme set to ${newTheme}. (Placeholder)`, THEMES[newTheme].mainColor);
                     } else {
                         writeOutput(`ERROR: Theme '${newTheme}' not found.`, '#ff0000');
                     }
                     break;
 
-                // --- Placeholder for other commands (Now including FAKE) ---
+                // --- Placeholder for other commands ---
                 case 'REBOOT':
                 case 'CLEANUP':
                 case 'SEARCH':
@@ -558,9 +715,16 @@
             
             // 2. Check lockdown status
             checkInitialLockdown(); 
+
+            // 3. Apply Holiday Theme (if not in lockdown)
+            if (!isLockedDown) applyHolidayTheme(); 
             
-            // 3. Focus input
+            // 4. Initiate the fake sound loading process
+            loadSoundDatabase(); 
+
+            // 5. Focus input and show the initial prompt
             commandInput.focus();
+            showPrompt(); 
         };
     </script>
 </body>
