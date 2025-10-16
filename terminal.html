@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v5.2 (LOCKDOWN READY)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v5.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -468,7 +468,7 @@
 
         function runPlayCommand(keyword) {
             
-            // --- NEW: Check for empty keyword (PLAY without arguments) ---
+            // --- CHECK FOR EMPTY KEYWORD ---
             if (!keyword || keyword.trim() === "") {
                 writeOutput("--- AVAILABLE SFX KEYWORDS (Case/Space/Hyphen Sensitive) ---", '#ffff00');
                 
@@ -480,7 +480,7 @@
                 if (!isBusy) showPrompt();
                 return;
             }
-            // --- END NEW CHECK ---
+            // --- END CHECK ---
             
             const key = keyword.toUpperCase();
 
@@ -543,7 +543,8 @@
         // =========================================================================
         
         function processCommand(command) {
-            const parts = command.trim().split(/\s+/);
+            const trimmedCommand = command.trim();
+            const parts = trimmedCommand.split(/\s+/);
             const cmd = parts[0].toUpperCase();
             
             // --- Lockdown Check (Admin Bypass/Disable) ---
@@ -597,9 +598,9 @@
                     // --- CONDITIONAL LOCKDOWN OPTION for Admin Only ---
                     if (isAdmin()) {
                         writeOutput("17. **?LOCKDOWN**: [ADMIN ONLY] Initiates the 30-minute global security lockdown.", '#ff0000');
-                        writeOutput("18. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
+                        writeOutput("18. **Hidden Command**: [ADMIN ONLY] Admin Alpha Override Protocol.", '#ffff00');
                     } else {
-                        writeOutput("17. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
+                        writeOutput("17. **Hidden Command**: [ADMIN ONLY] Admin Alpha Override Protocol.", '#ffff00');
                     }
                     // --- END CONDITIONAL CHECK ---
                     break;
@@ -609,8 +610,9 @@
                     break;
                 
                 case 'PLAY': 
-                    // Pass the full command tail (or empty string if nothing followed PLAY)
-                    runPlayCommand(parts.slice(1).join(' ')); 
+                    // FIX: Pass all words after the first, or an empty string if nothing follows.
+                    const keyword = trimmedCommand.substring(cmd.length).trim();
+                    runPlayCommand(keyword); 
                     break;
 
                 // --- SUDO: ALPHA OVERRIDE ACTIVATION ---
