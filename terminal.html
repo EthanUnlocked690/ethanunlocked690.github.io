@@ -159,7 +159,7 @@
     <div class="console-container">
         
         <div id="status-bar">
-            <span id="sound-status" style="color: #ffaa00; float: left; margin-right: 20px;">[Sounds loading...]</span>
+            <span id="sound-status" style="color: #00ff41; float: left; margin-right: 20px;">[SFX DATABASE ONLINE]</span>
             
             <span id="lockdown-indicator" style="color: #ff0000; float: left; display: none;">[LOCKDOWN ACTIVE]</span>
             <span id="override-indicator" style="color: #ffff00; float: left; display: none; margin-right: 20px;">[ALPHA OVERRIDE]</span>
@@ -196,7 +196,7 @@
         let isBusy = false; 
         let isLockedDown = false; 
         let overrideActive = false; 
-        let soundsReady = false; 
+        let soundsReady = true; // Set to true immediately!
         
         // --- CONSTANTS ---
         const LOCKOUT_DURATION_MS = 30 * 60 * 1000; 
@@ -204,7 +204,7 @@
         const USERNAME_COOKIE_KEY = 'username'; 
         const VISITOR_LOG_KEY = 'atlasVisitorLog'; 
         const ADMIN_USERNAME = "EthanUnlocked"; 
-        const SOUND_LOAD_DELAY_MS = 10000; // 10 seconds for initial database load
+        // Removed SOUND_LOAD_DELAY_MS
         const SFX_SEARCH_TIME_MS = 3000; // 3 seconds for simulated individual sound search
 
         
@@ -339,25 +339,13 @@
         }
         
         // =========================================================================
-        // --- Sound Database Loading Simulation ---
+        // --- Sound Database Loading Simulation (REMOVED) ---
         // =========================================================================
-
+        /*
         function loadSoundDatabase() {
-            isBusy = true; 
-            writeOutput(`\nSOUND PROTOCOL: Initiating Global SFX Index... Target: Deep Web Mirror (MyInstants.com).`, '#ffaa00');
-            writeOutput(`ESTIMATED INDEX TIME: ${SOUND_LOAD_DELAY_MS / 1000} SECONDS. Please stand by...`, '#ffaa00');
-
-            setTimeout(() => {
-                soundsReady = true;
-                isBusy = false; 
-                
-                soundStatus.innerText = '[Sounds ready!]';
-                soundStatus.style.color = '#00ff41'; 
-                writeOutput(`\nSOUND PROTOCOL: Global SFX Index Complete. ${Object.keys(SOUND_EFFECTS).length} base sounds ready. System is now ONLINE for all known SFX.`, '#00ff41');
-                
-                if (!isLockedDown) showPrompt();
-            }, SOUND_LOAD_DELAY_MS);
+            // This function is removed as soundsReady is now true immediately
         }
+        */
 
         // =========================================================================
         // --- LOCKDOWN Logic ---
@@ -489,12 +477,8 @@
         }
 
         function runPlayCommand(keyword) {
-            if (!soundsReady) {
-                writeOutput("ERROR: SFX Database is still loading! Please wait for 'Sounds ready!' status.", '#ff0000');
-                return;
-            }
+            // No longer checking `soundsReady` because it is always true
             
-            // The key is converted to uppercase to match the keys in SOUND_EFFECTS
             const key = keyword.toUpperCase();
 
             // 1. Initiate search and busy state
@@ -718,12 +702,12 @@
             // 3. Apply Holiday Theme (if not in lockdown)
             if (!isLockedDown) applyHolidayTheme(); 
             
-            // 4. Initiate the fake sound loading process
-            loadSoundDatabase(); 
-
-            // 5. Focus input and show the initial prompt
+            // 4. Focus input and show the initial prompt
             commandInput.focus();
             showPrompt(); 
+            
+            // The console status is now automatically "ONLINE"
+            writeOutput(`\nSFX DATABASE: Local repository initialized with ${Object.keys(SOUND_EFFECTS).length} assets. All systems nominal.`, '#00ff41');
         };
     </script>
 </body>
