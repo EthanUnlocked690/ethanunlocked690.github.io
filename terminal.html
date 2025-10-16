@@ -204,7 +204,8 @@
         const USERNAME_COOKIE_KEY = 'username'; 
         const VISITOR_LOG_KEY = 'atlasVisitorLog'; 
         const ADMIN_USERNAME = "EthanUnlocked"; 
-        const SOUND_LOAD_DELAY_MS = 10000; 
+        const SOUND_LOAD_DELAY_MS = 10000; // 10 seconds for initial database load
+        const SFX_SEARCH_TIME_MS = 3000; // 3 seconds for simulated individual sound search
 
         
         // --- THEME DATA ---
@@ -216,14 +217,10 @@
         };
         let currentTheme = 'DEFAULT';
 
-        // --- SOUND EFFECT LIBRARY ---
-        // These are the files you MUST place in the same directory as this HTML file.
+        // --- SOUND EFFECT LIBRARY (FINALIZED) ---
         const SOUND_EFFECTS = {
             'GET OUT': 'get_out_meme.mp3', 
-            'BRAINROT': 'brainrot_sfx.mp3', 
-            'MEME': 'meme_sfx.mp3', 
-            'WEIRD': 'weird_sfx.mp3',
-            'FUNNY': 'funny_sfx.mp3',
+            'VINE-BOOM': 'vine-boom.mp3', 
             'ALERT': 'alert.mp3', 
             'CONFIRM': 'confirm.mp3', 
         };
@@ -497,15 +494,17 @@
                 return;
             }
             
+            // The key is converted to uppercase to match the keys in SOUND_EFFECTS
             const key = keyword.toUpperCase();
 
-            // 1. Initiate search and busy state regardless of sound status
+            // 1. Initiate search and busy state
             isBusy = true;
             commandInput.disabled = true;
 
             writeOutput(`\nSearching Global SFX Index & Mirror: **${key}**...`, '#00ffff');
             writeOutput(`Target: https://www.myinstants.com/en/index/au/ (via Deep Web Mirror)...`, '#00ffff');
-
+            writeOutput(`**ESTIMATED SEARCH TIME: ${SFX_SEARCH_TIME_MS / 1000} SECONDS**`, '#ffff00'); 
+            
             // --- SIMULATED SEARCH/DOWNLOAD DELAY (3 seconds) ---
             setTimeout(() => {
                 
@@ -548,7 +547,7 @@
                     showPrompt();
                 }
 
-            }, 3000); 
+            }, SFX_SEARCH_TIME_MS); 
         }
 
 
@@ -601,7 +600,7 @@
                     writeOutput("8. **FAKE** [topic] : Fabricate and deploy disinformation packets.", '#ff00ff'); 
                     writeOutput("9. PINGFLOOD [ip] : Execute Denial-of-Service test payload.", '#ff00ff');
                     writeOutput("10. SPOOF [target] : Mask identity and reroute origin point.", '#ff00ff');
-                    writeOutput("11. **PLAY** [sfx_key] : Initiate sound effect from global library (e.g., PLAY MEME).", '#ff00ff');
+                    writeOutput("11. **PLAY** [sfx_key] : Initiate sound effect from global library (e.g., PLAY VINE-BOOM).", '#ff00ff');
                     writeOutput("12. CLEANUP : Purge local console logs and session cache.", '#00ffff');
                     writeOutput("13. REBOOT : Soft reboot the console OS.", '#00ffff');
                     writeOutput("14. THEME [color] : Change console display color (BLUE/RED/DEFAULT).", '#00ffff');
@@ -624,7 +623,7 @@
                 
                 case 'PLAY': 
                     if (parts.length < 2) {
-                        writeOutput("ERROR: PLAY requires a keyword. Usage: PLAY [sfx_key]", '#ff0000');
+                        writeOutput("ERROR: PLAY requires a keyword. Usage: PLAY [sfx_key] (e.g., PLAY VINE-BOOM)", '#ff0000');
                     } else {
                         runPlayCommand(parts.slice(1).join(' ')); 
                     }
