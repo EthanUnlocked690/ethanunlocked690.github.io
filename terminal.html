@@ -204,7 +204,6 @@
         const USERNAME_COOKIE_KEY = 'username'; 
         const VISITOR_LOG_KEY = 'atlasVisitorLog'; 
         const ADMIN_USERNAME = "EthanUnlocked"; 
-        // Removed SOUND_LOAD_DELAY_MS
         const SFX_SEARCH_TIME_MS = 3000; // 3 seconds for simulated individual sound search
 
         
@@ -339,15 +338,6 @@
         }
         
         // =========================================================================
-        // --- Sound Database Loading Simulation (REMOVED) ---
-        // =========================================================================
-        /*
-        function loadSoundDatabase() {
-            // This function is removed as soundsReady is now true immediately
-        }
-        */
-
-        // =========================================================================
         // --- LOCKDOWN Logic ---
         // =========================================================================
 
@@ -477,7 +467,20 @@
         }
 
         function runPlayCommand(keyword) {
-            // No longer checking `soundsReady` because it is always true
+            
+            // --- NEW: Check for empty keyword (PLAY without arguments) ---
+            if (!keyword || keyword.trim() === "") {
+                writeOutput("--- AVAILABLE SFX KEYWORDS (Case/Space/Hyphen Sensitive) ---", '#ffff00');
+                
+                Object.keys(SOUND_EFFECTS).forEach(key => {
+                    writeOutput(`[READY] : **${key}**`, '#00ff41');
+                });
+                
+                writeOutput("\nUSAGE: PLAY [KEYWORD] (e.g., PLAY VINE-BOOM)", '#00ffff');
+                if (!isBusy) showPrompt();
+                return;
+            }
+            // --- END NEW CHECK ---
             
             const key = keyword.toUpperCase();
 
@@ -584,7 +587,7 @@
                     writeOutput("8. **FAKE** [topic] : Fabricate and deploy disinformation packets.", '#ff00ff'); 
                     writeOutput("9. PINGFLOOD [ip] : Execute Denial-of-Service test payload.", '#ff00ff');
                     writeOutput("10. SPOOF [target] : Mask identity and reroute origin point.", '#ff00ff');
-                    writeOutput("11. **PLAY** [sfx_key] : Initiate sound effect from global library (e.g., PLAY VINE-BOOM).", '#ff00ff');
+                    writeOutput("11. **PLAY** [sfx_key] : Initiate sound effect from global library (e.g., PLAY VINE-BOOM). **Type PLAY alone for list.**", '#ff00ff');
                     writeOutput("12. CLEANUP : Purge local console logs and session cache.", '#00ffff');
                     writeOutput("13. REBOOT : Soft reboot the console OS.", '#00ffff');
                     writeOutput("14. THEME [color] : Change console display color (BLUE/RED/DEFAULT).", '#00ffff');
@@ -606,11 +609,8 @@
                     break;
                 
                 case 'PLAY': 
-                    if (parts.length < 2) {
-                        writeOutput("ERROR: PLAY requires a keyword. Usage: PLAY [sfx_key] (e.g., PLAY VINE-BOOM)", '#ff0000');
-                    } else {
-                        runPlayCommand(parts.slice(1).join(' ')); 
-                    }
+                    // Pass the full command tail (or empty string if nothing followed PLAY)
+                    runPlayCommand(parts.slice(1).join(' ')); 
                     break;
 
                 // --- SUDO: ALPHA OVERRIDE ACTIVATION ---
