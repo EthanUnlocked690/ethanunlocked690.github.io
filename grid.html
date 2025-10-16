@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Big Brain Grid Defense</title>
+    
+    <style>
+        :root {
+            --tile-size: 50px;
+            --grid-width: 12;
+            --grid-height: 8;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #2c3e50; /* Dark blue background */
+            color: #ecf0f1;
+        }
+
+        #game-container {
+            text-align: center;
+            padding: 20px;
+            background-color: #34495e;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+
+        h1 {
+            color: #f1c40f;
+        }
+
+        #info-panel {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        /* --- Game Board and Grid Layout --- */
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-width), var(--tile-size));
+            grid-template-rows: repeat(var(--grid-height), var(--tile-size));
+            width: calc(var(--grid-width) * var(--tile-size));
+            height: calc(var(--grid-height) * var(--tile-size));
+            border: 3px solid #2980b9;
+            background-color: #7f8c8d; /* Default gray map */
+            position: relative;
+        }
+
+        /* --- Tile Styles --- */
+        .tile {
+            width: var(--tile-size);
+            height: var(--tile-size);
+            box-sizing: border-box;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .path {
+            background-color: #95a5a6; /* Light gray path */
+        }
+
+        .buildable {
+            background-color: #2ecc71; /* Green build area */
+            cursor: pointer;
+        }
+
+        .buildable:hover {
+            filter: brightness(1.2);
+        }
+
+        /* --- Entity Styles (Enemies and Towers) --- */
+        .tower, .enemy {
+            position: absolute;
+            width: var(--tile-size);
+            height: var(--tile-size);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+            transition: left 0.1s linear, top 0.1s linear; /* Smooth movement */
+            z-index: 10;
+        }
+
+        .enemy {
+            background-color: #e74c3c; /* Red enemies */
+            border-radius: 50%;
+            transform: scale(0.7);
+        }
+
+        .tower {
+            background-color: #f39c12; /* Orange towers */
+            border-radius: 5px;
+            border: 2px solid #e67e22;
+            z-index: 20;
+        }
+
+        /* --- UI and Controls --- */
+        #controls {
+            margin-top: 15px;
+        }
+
+        #controls button {
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+
+        #controls button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+
+        #status-message {
+            margin-top: 10px;
+            font-style: italic;
+            color: #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Grid Defense: Tower Challenge 🧠</h1>
+        <div id="info-panel">
+            <span id="score">Score: 0</span> | 
+            <span id="health">Base Health: 10</span> |
+            <span id="gold">Gold: 200</span>
+        </div>
+
+        <div id="game-board">
+            </div>
+
+        <div id="controls">
+            <button id="start-wave-btn">Start Next Wave</button>
+            <button id="place-tower-btn" data-cost="100" data-type="cannon">Place Cannon (100G)</button>
+        </div>
+        
+        <div id="status-message">Ready to deploy! Click a green tile to place a tower.</div>
+    </div>
+
+    <script>
+        // --- Game Configuration ---
+        const CONFIG = {
+            TILE_SIZE: 50,
+            GRID_WIDTH: 12,
+            GRID_HEIGHT: 8,
+            // The fixed path for enemies (row, col coordinates)
+            PATH: [
+                { r: 4, c: 0 }, { r: 4, c: 1 }, { r: 4, c: 2 }, { r: 4, c: 3 },
+                { r: 3, c: 3 }, { r: 2, c: 3 }, { r: 2, c: 4 }, { r: 2, c: 5 },
+                { r: 2, c: 6 }, { r: 3, c: 6 }, { r: 4, c: 6 }, { r: 5, c: 6 },
+                { r: 5, c: 7 }, { r: 5, c: 8 }, { r: 5, c: 9 }, { r: 5, c: 10 },
+                { r: 5, c: 11 } // Base/Exit
+            ],
+            ENEMY_SPEED: 0.5, // Pixels per frame
+            TOWER_RANGE: 150, // Pixels
+            TOWER_DAMAGE: 10,
+            TOWER_FIRE_RATE: 500, // Milliseconds between shots
+        };
+
+        // --- Game State Variables ---
+        let gameActive = false;
+        let isPlacingTower = false;
+        let currentGold = 200;
+        let baseHealth = 10;
+        let score = 0;
+        let waveNumber = 0;
+        let enemies = []; // Array to hold active enemy objects
+        let towers = []; // Array to hold active tower objects
+
+        // --- DOM Elements ---
+        const boardElement = document.getElementById('game-board');
+        const healthDisplay = document.getElementById('health');
+        const goldDisplay = document.getElementById('gold');
+        const scoreDisplay = document.getElementById('score');
+        const startWaveBtn = document.getElementById('start-wave-btn');
+        const placeTowerBtn = document.getElementById('place-tower-btn');
+        const statusMessage = document.getElementById('status-message');
+
+        // --- Classes for Game Objects ---
+
+        class Enemy {
+            constructor(id) {
+                this.id = id;
+                this.health = 30;
+                this.pathIndex = 0;
+                this.pixelPos = { x: CONFIG.PATH[0].c * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: CONFIG.PATH[0].r * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const div = document.createElement('div');
+                div.classList.add('enemy');
+                div.textContent = this.health;
+                div.style.left = `${this.pixelPos.x - CONFIG.TILE_SIZE / 2}px`;
+                div.style.top = `${this.pixelPos.y - CONFIG.TILE_SIZE / 2}px`;
+                return div;
+            }
+
+            update() {
+                if (this.pathIndex < CONFIG.PATH.length - 1) {
+                    const nextTile = CONFIG.PATH[this.pathIndex + 1];
+                    
+                    const targetX = nextTile.c * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+                    const targetY = nextTile.r * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+                    
+                    // Calculate movement vector
+                    const dx = targetX - this.pixelPos.x;
+                    const dy = targetY - this.pixelPos.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < CONFIG.ENEMY_SPEED) {
+                        this.pixelPos.x = targetX;
+                        this.pixelPos.y = targetY;
+                        this.pathIndex++;
+                    } else {
+                        this.pixelPos.x += (dx / distance) * CONFIG.ENEMY_SPEED;
+                        this.pixelPos.y += (dy / distance) * CONFIG.ENEMY_SPEED;
+                    }
+
+                    // Update DOM position
+                    this.element.style.left = `${this.pixelPos.x - CONFIG.TILE_SIZE / 2}px`;
+                    this.element.style.top = `${this.pixelPos.y - CONFIG.TILE_SIZE / 2}px`;
+                    this.element.textContent = this.health;
+                    
+                    return 'moving';
+                    
+                } else {
+                    return 'finished';
+                }
+            }
+        }
+
+        class Tower {
+            constructor(r, c) {
+                this.r = r;
+                this.c = c;
+                this.pixelPos = { x: c * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: r * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
+                this.lastFired = 0;
+                this.element = this.createElement();
+            }
+
+            createElement() {
+                const div = document.createElement('div');
+                div.classList.add('tower');
+                div.textContent = '🛡️';
+                div.style.left = `${this.c * CONFIG.TILE_SIZE}px`;
+                div.style.top = `${this.r * CONFIG.TILE_SIZE}px`;
+                return div;
+            }
+
+            update(currentTime) {
+                if (currentTime - this.lastFired >= CONFIG.TOWER_FIRE_RATE) {
+                    
+                    // Find a target (the first enemy in range)
+                    const target = enemies.find(enemy => {
+                        const dist = distance(this.pixelPos, enemy.pixelPos);
+                        return dist <= CONFIG.TOWER_RANGE;
+                    });
+
+                    if (target) {
+                        this.attack(target);
+                        this.lastFired = currentTime;
+                    }
+                }
+            }
+            
+            attack(enemy) {
+                enemy.health -= CONFIG.TOWER_DAMAGE;
+                // Simple visual feedback on the tower
+                this.element.style.backgroundColor = '#e74c3c';
+                setTimeout(() => {
+                    this.element.style.backgroundColor = '#f39c12';
+                }, 100);
+            }
+        }
+
+        // --- Utility Functions ---
+
+        function distance(pos1, pos2) {
+            const dx = pos1.x - pos2.x;
+            const dy = pos1.y - pos2.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function updateInfoPanel() {
+            goldDisplay.textContent = `Gold: ${currentGold}`;
+            healthDisplay.textContent = `Base Health: ${baseHealth}`;
+            scoreDisplay.textContent = `Score: ${score}`;
+            
+            placeTowerBtn.disabled = currentGold < parseInt(placeTowerBtn.dataset.cost);
+        }
+
+        function renderMap() {
+            boardElement.innerHTML = '';
+            
+            const pathCoords = CONFIG.PATH.map(p => `${p.r},${p.c}`).join('|');
+
+            for (let r = 0; r < CONFIG.GRID_HEIGHT; r++) {
+                for (let c = 0; c < CONFIG.GRID_WIDTH; c++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    tile.dataset.r = r;
+                    tile.dataset.c = c;
+                    
+                    if (pathCoords.includes(`${r},${c}`)) {
+                        tile.classList.add('path');
+                    } else {
+                        tile.classList.add('buildable');
+                        tile.addEventListener('click', handleTileClick);
+                    }
+                    
+                    boardElement.appendChild(tile);
+                }
+            }
+        }
+
+        // --- Event Handlers ---
+
+        function handleTileClick(event) {
+            if (!gameActive || !isPlacingTower) {
+                statusMessage.textContent = "Click 'Place Cannon' first, then click a green tile.";
+                return;
+            }
+            
+            const tile = event.currentTarget;
+            const r = parseInt(tile.dataset.r);
+            const c = parseInt(tile.dataset.c);
+            const cost = parseInt(placeTowerBtn.dataset.cost);
+            
+            if (towers.some(t => t.r === r && t.c === c)) {
+                statusMessage.textContent = "A tower is already placed here!";
+                return;
+            }
+
+            currentGold -= cost;
+            isPlacingTower = false;
+            
+            const newTower = new Tower(r, c);
+            towers.push(newTower);
+            boardElement.appendChild(newTower.element);
+            
+            statusMessage.textContent = "Tower placed! Resume the wave or place another.";
+            updateInfoPanel();
+        }
+
+        function startWave() {
+            if (!gameActive) {
+                startGame();
+            }
+            
+            waveNumber++;
+            statusMessage.textContent = `Wave ${waveNumber} incoming!`;
+            startWaveBtn.disabled = true;
+
+            // Simple wave spawn: spawn 5 enemies, one every 1.5 seconds
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const enemyId = Date.now() + i;
+                    const newEnemy = new Enemy(enemyId);
+                    enemies.push(newEnemy);
+                    boardElement.appendChild(newEnemy.element);
+                    
+                    if (i === 4) {
+                        setTimeout(() => {
+                            startWaveBtn.disabled = false;
+                            startWaveBtn.textContent = `Start Wave ${waveNumber + 1}`;
+                        }, 2000); 
+                    }
+                }, i * 1500);
+            }
+        }
+
+        placeTowerBtn.addEventListener('click', () => {
+            isPlacingTower = true;
+            statusMessage.textContent = "Placing mode active. Click a green tile on the map!";
+        });
+
+        startWaveBtn.addEventListener('click', startWave);
+
+        // --- Main Game Loop ---
+
+        function gameLoop(currentTime) {
+            if (!gameActive) return;
+
+            // 1. Update Enemies
+            enemies = enemies.filter(enemy => {
+                const result = enemy.update();
+                
+                if (enemy.health <= 0) {
+                    boardElement.removeChild(enemy.element);
+                    currentGold += 50;
+                    score += 10;
+                    updateInfoPanel();
+                    return false;
+                }
+                
+                if (result === 'finished') {
+                    boardElement.removeChild(enemy.element);
+                    baseHealth -= 1;
+                    updateInfoPanel();
+                    
+                    if (baseHealth <= 0) {
+                        gameActive = false;
+                        statusMessage.textContent = `GAME OVER! Base destroyed. Final Score: ${score}`;
+                        startWaveBtn.disabled = true;
+                        return false;
+                    }
+                    return false;
+                }
+                return true;
+            });
+            
+            // 2. Update Towers
+            towers.forEach(tower => tower.update(currentTime));
+            
+            // 3. Continue loop
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Initialization ---
+
+        function startGame() {
+            if (!gameActive) {
+                gameActive = true;
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Initial setup when the document is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMap();
+            updateInfoPanel();
+            statusMessage.textContent = "Welcome! Place your towers and click 'Start Next Wave'.";
+        });
+    </script>
+</body>
+</html>
