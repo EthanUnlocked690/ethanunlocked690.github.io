@@ -205,7 +205,8 @@
         let isBusy = false; 
         let isLockedDown = false; 
         let overrideActive = false; 
-        
+        let isFirebaseEnabled = false; // NEW FLAG: tracks if Firebase is initialized
+
         const ADMIN_USERNAME = "EthanUnlocked"; 
         const SFX_SEARCH_TIME_MS = 3000; 
 
@@ -318,13 +319,26 @@
         // --- FIREBASE / AUTH Initialization ---
         // =========================================================================
         async function initializeFirebase() {
+            authStatus.textContent = 'AUTHENTICATING...';
+            
+            // NEW CHECK: Validate Firebase configuration
+            if (!firebaseConfig || !firebaseConfig.projectId || firebaseConfig.projectId.length < 5) {
+                authStatus.textContent = 'STATUS: DB DISABLED';
+                writeOutput(`\n!!! CRITICAL FIREBASE ERROR: Missing 'projectId' in configuration. Database access is disabled.`, '#ff0000');
+                writeOutput(`!!! LOCKDOWN command requires a functional Firebase connection.`, '#ff0000');
+                isFirebaseEnabled = false;
+                isAuthReady = true;
+                showPrompt(); 
+                return; // Exit initialization
+            }
+
+            isFirebaseEnabled = true; // Firebase configuration seems valid
+
             try {
                 // setLogLevel('debug'); // Use this for debugging Firebase issues
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                
-                authStatus.textContent = 'AUTHENTICATING...';
 
                 // Sign in with custom token if available, otherwise anonymously
                 if (initialAuthToken) { 
@@ -354,6 +368,7 @@
                 console.error("Firebase initialization failed:", error);
                 authStatus.textContent = 'STATUS: ERROR';
                 writeOutput(`\n!!! CRITICAL FIREBASE ERROR: ${error.message} !!!`, '#ff0000');
+                isFirebaseEnabled = false; // Disable on runtime failure too
             }
         }
         
@@ -400,7 +415,7 @@
         }
 
         async function listenForLockdown() {
-            if (!db) return;
+            if (!isFirebaseEnabled || !db) return; // Guard clause
 
             const lockdownRef = doc(db, LOCKDOWN_DOC_PATH);
 
@@ -441,7 +456,11 @@
         }
         
         async function startLockdown() {
-            if (!db || !isAdmin()) {
+            if (!isFirebaseEnabled) {
+                writeOutput("ERROR: Database connection failed. Lockdown command disabled.", '#ff0000');
+                return;
+            }
+            if (!isAdmin()) {
                 writeOutput("ERROR: Authorization denied or database not ready.", '#ff0000');
                 return;
             }
@@ -470,7 +489,11 @@
         }
         
         async function disableLockdown() {
-            if (!db || !isAdmin()) {
+            if (!isFirebaseEnabled) {
+                 writeOutput("ERROR: Database connection failed. Cannot disable non-existent lockdown.", '#ff0000');
+                 return;
+            }
+            if (!isAdmin()) {
                 writeOutput("ERROR: Authorization denied or database not ready.", '#ff0000');
                 return;
             }
@@ -604,7 +627,11 @@
                     writeOutput("16. LOGOUT: Terminates session and redirects to main page.", '#ff0000');
                     
                     if (isAdmin()) {
-                        writeOutput("17. **?LOCKDOWN**: [ADMIN/FIRESTORE] Initiates global security lockdown.", '#ff0000');
+                        if (isFirebaseEnabled) {
+                            writeOutput("17. **?LOCKDOWN**: [ADMIN/FIRESTORE] Initiates global security lockdown.", '#ff0000');
+                        } else {
+                            writeOutput("17. **?LOCKDOWN**: [DISABLED] Database not connected.", '#ffaa00');
+                        }
                         writeOutput("18. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
                     } else {
                         writeOutput("17. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
@@ -704,10 +731,7 @@
             // 1. Initialize Firebase
             initializeFirebase(); 
 
-            // 2. Apply Holiday Theme (if not in lockdown)
-            // (Holiday theme logic omitted for brevity in this complex update, but easily re-addable)
-            
-            // 3. Focus input
+            // 2. Focus input
             commandInput.focus();
             
             writeOutput(`\nSFX DATABASE: Local repository initialized with ${Object.keys(SOUND_EFFECTS).length} assets. All systems nominal.`, '#00ff41');
