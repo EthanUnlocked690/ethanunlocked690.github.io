@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v5.3 (REAL-TIME LOCKDOWN)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v5.4 (LOCAL LOCKDOWN)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -37,7 +37,8 @@
             opacity: 0.3; 
             filter: grayscale(100%) brightness(50%); 
             transition: background-image 0.5s ease, filter 0.5s, opacity 0.5s;
-            background-image: url('main.gif'); /* Placeholder image */
+            /* Placeholder background image, replace with a real one if needed */
+            background-image: url('https://placehold.co/1920x1080/000/00ff41?text=ATLAS+GRID');
         }
 
         /* Simulated CRT/Scanline Effect */
@@ -136,45 +137,81 @@
             transition: background 0.5s;
         }
         
-        /* THEME & Holiday Styles (Simplified) */
+        /* THEME & Game Styles */
         .blue-theme { color: #00d0ff; }
         .red-theme { color: #ff3030; }
         .blue-theme .console-container { border-color: #00d0ff; box-shadow: 0 0 10px #00d0ff; }
         .red-theme .console-container { border-color: #ff3030; box-shadow: 0 0 10px #ff3030; }
+
+        /* Game Container Styles */
+        #game-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.95);
+        }
+
+        #t-rex-canvas {
+            border: 2px solid #00ff41;
+            box-shadow: 0 0 10px #00ff41;
+            max-width: 100%;
+            height: auto;
+            background: black; 
+        }
+        
+        #game-status-box {
+            color: #ffff00;
+            background: #004d1a;
+            padding: 0.5rem 1rem;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #00ff41;
+        }
         
     </style>
 </head>
 <body>
     
     <!-- Audio Placeholder (You need to provide hack.mp3, siren.mp3, and SFX files) -->
-    <audio id="main-music" loop preload="auto" volume="1.0">
-        <source src="hack.mp3" type="audio/mp3">
-    </audio>
     <audio id="siren-audio" preload="auto">
-        <source src="siren.mp3" type="audio/mp3">
+        <!-- Using a generic placeholder URL for siren audio -->
+        <source src="https://tonejs.github.io/examples/audio/siren.mp3" type="audio/mp3"> 
     </audio>
-    <!-- New Reusable Audio Player for Sound Effects -->
     <audio id="sfx-audio" preload="auto"></audio>
+    <audio id="game-sfx" preload="auto"></audio>
     
     <div id="terminal-background"></div>
 
     <div class="console-container">
         
         <div id="status-bar">
-            <!-- UPDATED: Instant Status -->
             <span id="sound-status" style="color: #00ff41; float: left; margin-right: 20px;">[SFX DATABASE ONLINE]</span>
             
             <span id="lockdown-indicator" style="color: #ff0000; float: left; display: none;">[LOCKDOWN ACTIVE]</span>
             <span id="override-indicator" style="color: #ffff00; float: left; display: none; margin-right: 20px;">[ALPHA OVERRIDE]</span>
-            ATLAS CONSOLE v5.3 | OPERATOR: E.I. | <span id="auth-status">INITIATING AUTH...</span> | DATABASE: FIRESTORE
+            ATLAS CONSOLE v5.4 | OPERATOR: E.I. | <span id="auth-status">STATUS: LOCAL</span> | SYSTEM: STANDALONE
         </div>
 
+        <!-- CONSOLE OUTPUT AREA (Active when game is NOT running) -->
         <div id="output-area">
             [[INITIATING ACCESS. . .]]<br>
             [[WELCOME, OPERATOR. LEVEL EXTREME CLEARANCE CONFIRMED.]]<br>
             <br>
             Type **HELP** for available commands.
             <br>
+        </div>
+
+        <!-- GAME CONTAINER (Active when game IS running) -->
+        <div id="game-container" style="display:none;">
+            <canvas id="t-rex-canvas"></canvas>
+            <div id="game-status-box" class="flex justify-between w-full max-w-lg">
+                 <span>Game: <span id="game-name">T-REX RUNNER</span></span>
+                 <span>Score: <span id="game-score">0</span></span>
+                 <span id="game-message">Press SPACE to Start</span>
+            </div>
         </div>
 
         <div id="input-line">
@@ -184,14 +221,10 @@
         
     </div>
 
-    <script type="module">
-        // --- FIREBASE IMPORTS ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, getDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- GLOBAL VARIABLES & CONSTANTS ---
+    <script>
+        // --- GLOBAL ELEMENTS & STATE ---
         const outputArea = document.getElementById('output-area');
+        const gameContainer = document.getElementById('game-container');
         const commandInput = document.getElementById('command-input');
         const consoleContainer = document.querySelector('.console-container');
         const bodyElement = document.body; 
@@ -203,25 +236,20 @@
         const authStatus = document.getElementById('auth-status'); 
 
         let isBusy = false; 
-        let isLockedDown = false; 
+        let isLockedDown = false; // Now purely local state
         let overrideActive = false; 
-        let isFirebaseEnabled = false; // NEW FLAG: tracks if Firebase is initialized
+        let isGameActive = false; 
 
+        // Hardcoded admin credential for local lockdown bypass
         const ADMIN_USERNAME = "EthanUnlocked"; 
         const SFX_SEARCH_TIME_MS = 3000; 
-
-        // --- FIREBASE INITIALIZATION ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let app, db, auth;
-        let userId = 'initializing';
-        let isAuthReady = false; 
         
-        // Firestore Path for the global state (Public data)
-        const LOCKDOWN_DOC_PATH = `/artifacts/${appId}/public/data/console-state/lockdown-status`;
-
+        // --- GAME DEFINITIONS ---
+        const GAMES = {
+            'T-REX': { name: 'T-REX RUNNER', engine: initializeTRexGame, aliases: ['DINOSAUR', 'DINO'] },
+            // Add other games here
+        };
+        
         // --- THEME DATA ---
         const THEMES = {
             'DEFAULT': { className: '', mainColor: '#00ff41' },
@@ -233,10 +261,11 @@
 
         // --- SOUND EFFECT LIBRARY ---
         const SOUND_EFFECTS = {
-            'GET OUT': 'get_out_meme.mp3', 
-            'VINE-BOOM': 'vine-boom.mp3', 
-            'ALERT': 'alert.mp3', 
-            'CONFIRM': 'confirm.mp3', 
+            // Using generic placeholders since no external files can be guaranteed
+            'GET OUT': 'https://tonejs.github.io/examples/audio/bloop.mp3', 
+            'VINE-BOOM': 'https://tonejs.github.io/examples/audio/ping.mp3', 
+            'ALERT': 'https://tonejs.github.io/examples/audio/error.mp3', 
+            'CONFIRM': 'https://tonejs.github.io/examples/audio/click.mp3', 
         };
 
         // =========================================================================
@@ -253,7 +282,7 @@
         }
 
         function showPrompt() {
-            if (isLockedDown && !isAdmin()) return; 
+            if (isLockedDown && !isAdmin() || isGameActive) return; 
             if (!isBusy) {
                 writeOutput("", THEMES[currentTheme].mainColor);
             }
@@ -278,6 +307,7 @@
         }
         
         function getUsername() {
+            // Using a simple check to see if the username cookie is set
             return getCookie('username').trim();
         }
         
@@ -305,7 +335,7 @@
             if (audioContextUnlocked) return;
             sfxAudio.muted = true;
             sfxAudio.play().catch(e => {
-                console.log("Initial audio unlock attempt failed (expected on first load):", e);
+                // Ignore expected initial failure
             }).finally(() => {
                 sfxAudio.pause();
                 sfxAudio.muted = false;
@@ -316,66 +346,285 @@
         }
 
         // =========================================================================
-        // --- FIREBASE / AUTH Initialization ---
+        // --- GAME ENGINE LOGIC ---
         // =========================================================================
-        async function initializeFirebase() {
-            authStatus.textContent = 'AUTHENTICATING...';
-            
-            // NEW CHECK: Validate Firebase configuration
-            if (!firebaseConfig || !firebaseConfig.projectId || firebaseConfig.projectId.length < 5) {
-                authStatus.textContent = 'STATUS: DB DISABLED';
-                writeOutput(`\n!!! CRITICAL FIREBASE ERROR: Missing 'projectId' in configuration. Database access is disabled.`, '#ff0000');
-                writeOutput(`!!! LOCKDOWN command requires a functional Firebase connection.`, '#ff0000');
-                isFirebaseEnabled = false;
-                isAuthReady = true;
-                showPrompt(); 
-                return; // Exit initialization
+
+        let tRexGame = null;
+        let gameLoop = null;
+        const gameSfxAudio = document.getElementById('game-sfx');
+
+        function startGame(gameKey) {
+            const gameDef = GAMES[gameKey];
+            if (!gameDef) {
+                writeOutput(`ERROR: Game '${gameKey}' not found.`, '#ff0000');
+                return;
             }
 
-            isFirebaseEnabled = true; // Firebase configuration seems valid
+            // 1. Switch View
+            isGameActive = true;
+            outputArea.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            document.getElementById('game-name').textContent = gameDef.name;
+            commandInput.disabled = true;
 
-            try {
-                // setLogLevel('debug'); // Use this for debugging Firebase issues
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
+            // 2. Write console message
+            writeOutput(`\n>>> INITIATING GAME: **${gameDef.name.toUpperCase()}**. Type **EXIT** to return. <<<`, '#00ffff');
+            
+            // 3. Start Game Engine
+            gameDef.engine();
 
-                // Sign in with custom token if available, otherwise anonymously
-                if (initialAuthToken) { 
-                    await signInWithCustomToken(auth, initialAuthToken); 
-                } else { 
-                    await signInAnonymously(auth); 
-                }
+            // 4. Capture keyboard events for game only
+            document.addEventListener('keydown', handleGameInput);
+            document.addEventListener('keyup', handleGameInput);
+        }
 
-                // Listen for Auth State Changes
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        isAuthReady = true;
-                        authStatus.textContent = `UID: ${userId.substring(0, 8)}...`;
-                        writeOutput(`\nFIREBASE: Authenticated successfully. User ID: ${userId.substring(0, 12)}...`, '#00ffff');
-                        listenForLockdown();
-                        if (!isLockedDown) showPrompt(); // Show prompt only if not in lockdown and auth is ready
-                    } else {
-                        userId = 'anonymous';
-                        authStatus.textContent = 'STATUS: ANON';
-                        isAuthReady = true;
-                        listenForLockdown();
-                        if (!isLockedDown) showPrompt();
-                    }
-                });
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                authStatus.textContent = 'STATUS: ERROR';
-                writeOutput(`\n!!! CRITICAL FIREBASE ERROR: ${error.message} !!!`, '#ff0000');
-                isFirebaseEnabled = false; // Disable on runtime failure too
+        function endGame() {
+            if (!isGameActive) return;
+
+            // 1. Stop Game Engine
+            if (tRexGame && tRexGame.stop) tRexGame.stop();
+            cancelAnimationFrame(gameLoop);
+            
+            // 2. Switch View
+            isGameActive = false;
+            gameContainer.style.display = 'none';
+            outputArea.style.display = 'block';
+            commandInput.disabled = isLockedDown && !isAdmin();
+            
+            // 3. Clean up events
+            document.removeEventListener('keydown', handleGameInput);
+            document.removeEventListener('keyup', handleGameInput);
+
+            writeOutput("\n>>> GAME SESSION TERMINATED. Console restored. <<<", '#00ff41');
+            showPrompt();
+        }
+
+        function handleGameInput(e) {
+            if (tRexGame && tRexGame.handleInput) {
+                tRexGame.handleInput(e);
             }
         }
         
-        // =========================================================================
-        // --- LOCKDOWN Logic (Real-Time) ---
-        // =========================================================================
+        // --- T-Rex Runner Game Implementation ---
+        function initializeTRexGame() {
+            const canvas = document.getElementById('t-rex-canvas');
+            const ctx = canvas.getContext('2d');
+            const scoreElement = document.getElementById('game-score');
+            const messageElement = document.getElementById('game-message');
 
+            // Responsive Canvas Sizing (Scale to fit within container)
+            const parentWidth = gameContainer.clientWidth - 40; 
+            const targetWidth = Math.min(800, parentWidth);
+            const targetHeight = targetWidth / 2; 
+
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+
+            // Game Constants
+            const GROUND_Y = canvas.height - 40;
+            const JUMP_VELOCITY = -15;
+            const GRAVITY = 1.2;
+            let GAME_SPEED = 5;
+            const DINO_SIZE = 30;
+            const CACTUS_WIDTH = 20;
+            const CACTUS_HEIGHT = 40;
+            const MAX_CACTUS_SPAWN_INTERVAL = 180;
+            const MIN_CACTUS_SPAWN_INTERVAL = 90;
+
+            // Game State
+            let dino = { x: 50, y: GROUND_Y - DINO_SIZE, dy: 0, isJumping: false };
+            let obstacles = [];
+            let score = 0;
+            let frameCount = 0;
+            let nextCactusFrame = 150;
+            let isRunning = false;
+            let isGameOver = false;
+
+            // --- Drawing Functions ---
+            const drawGround = () => {
+                ctx.strokeStyle = '#00ff41';
+                ctx.beginPath();
+                ctx.moveTo(0, GROUND_Y);
+                ctx.lineTo(canvas.width, GROUND_Y);
+                ctx.stroke();
+            };
+
+            const drawDino = () => {
+                ctx.fillStyle = '#00ff41';
+                ctx.fillRect(dino.x, dino.y, DINO_SIZE, DINO_SIZE);
+            };
+
+            const drawCactus = (obs) => {
+                ctx.fillStyle = '#ff00ff'; 
+                ctx.fillRect(obs.x, GROUND_Y - obs.height, obs.width, obs.height);
+            };
+
+            const drawScore = () => {
+                scoreElement.textContent = Math.floor(score);
+            };
+
+            // --- Game Logic ---
+            const updateDino = () => {
+                if (dino.isJumping) {
+                    dino.y += dino.dy;
+                    dino.dy += GRAVITY;
+
+                    if (dino.y >= GROUND_Y - DINO_SIZE) {
+                        dino.y = GROUND_Y - DINO_SIZE;
+                        dino.isJumping = false;
+                        dino.dy = 0;
+                    }
+                }
+            };
+
+            const updateObstacles = () => {
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    obstacles[i].x -= GAME_SPEED;
+                    if (obstacles[i].x + obstacles[i].width < 0) {
+                        obstacles.splice(i, 1);
+                    }
+                }
+
+                if (frameCount > nextCactusFrame) {
+                    const cactusHeight = Math.random() > 0.5 ? 40 : 60;
+                    obstacles.push({ x: canvas.width, width: CACTUS_WIDTH, height: cactusHeight });
+                    
+                    const interval = Math.random() * (MAX_CACTUS_SPAWN_INTERVAL - MIN_CACTUS_SPAWN_INTERVAL) + MIN_CACTUS_SPAWN_INTERVAL;
+                    nextCactusFrame = frameCount + interval / (1 + score * 0.005); 
+                    
+                    GAME_SPEED += 0.005;
+                }
+            };
+
+            const checkCollision = () => {
+                const dinoBox = {
+                    x1: dino.x,
+                    y1: dino.y,
+                    x2: dino.x + DINO_SIZE,
+                    y2: dino.y + DINO_SIZE
+                };
+
+                for (const obs of obstacles) {
+                    const obsBox = {
+                        x1: obs.x,
+                        y1: GROUND_Y - obs.height,
+                        x2: obs.x + obs.width,
+                        y2: GROUND_Y
+                    };
+
+                    if (dinoBox.x1 < obsBox.x2 && dinoBox.x2 > obsBox.x1 &&
+                        dinoBox.y1 < obsBox.y2 && dinoBox.y2 > obsBox.y1) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            // --- Main Loop ---
+            const loop = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (isRunning) {
+                    frameCount++;
+                    score += 0.1;
+
+                    updateDino();
+                    updateObstacles();
+
+                    if (checkCollision()) {
+                        gameOver();
+                        return;
+                    }
+                }
+                
+                // Draw everything
+                drawGround();
+                drawDino();
+                obstacles.forEach(drawCactus);
+                drawScore();
+                
+                if (isRunning) {
+                    gameLoop = requestAnimationFrame(loop);
+                }
+            };
+            
+            // --- Game States ---
+            const resetGame = () => {
+                dino = { x: 50, y: GROUND_Y - DINO_SIZE, dy: 0, isJumping: false };
+                obstacles = [];
+                score = 0;
+                frameCount = 0;
+                GAME_SPEED = 5;
+                isGameOver = false;
+                isRunning = false;
+                messageElement.textContent = 'Press SPACE to Start';
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawGround();
+                drawDino();
+                drawScore();
+                
+                gameLoop = requestAnimationFrame(loop); 
+            };
+
+            const startRunning = () => {
+                if (!isRunning) {
+                    isRunning = true;
+                    isGameOver = false;
+                    messageElement.textContent = 'RUNNING... Type EXIT to stop';
+                    gameLoop = requestAnimationFrame(loop);
+                }
+            };
+
+            const gameOver = () => {
+                isGameOver = true;
+                isRunning = false;
+                messageElement.textContent = `GAME OVER! Score: ${Math.floor(score)}. Press SPACE to Restart.`;
+                cancelAnimationFrame(gameLoop);
+                
+                // Final screen flash
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                gameSfxAudio.src = SOUND_EFFECTS.ALERT; 
+                gameSfxAudio.play().catch(e => console.log("Game over sound failed:", e));
+            };
+            
+            const dinoJump = () => {
+                if (!dino.isJumping) {
+                    dino.isJumping = true;
+                    dino.dy = JUMP_VELOCITY;
+                    gameSfxAudio.src = SOUND_EFFECTS.CONFIRM;
+                    gameSfxAudio.play().catch(e => console.log("Jump sound failed:", e));
+                }
+            };
+
+            // --- Input Handler for Game ---
+            const handleGameInput = (e) => {
+                if (e.type === 'keydown' && (e.key === ' ' || e.key === 'ArrowUp')) {
+                    e.preventDefault();
+                    if (isGameOver) {
+                        resetGame();
+                        startRunning();
+                    } else if (!isRunning) {
+                        startRunning();
+                    } else if (isRunning) {
+                        dinoJump();
+                    }
+                }
+            };
+            
+            // Expose control methods to the global game object
+            tRexGame = { 
+                stop: () => { isRunning = false; cancelAnimationFrame(gameLoop); tRexGame = null; },
+                handleInput: handleGameInput
+            };
+
+            resetGame(); // Start the game in its initial state
+        }
+        
+        // =========================================================================
+        // --- LOCAL LOCKDOWN LOGIC (Simplified) ---
+        // =========================================================================
+        
         function applyLockdownVisuals() {
             if (isLockedDown) return;
             isLockedDown = true;
@@ -402,118 +651,45 @@
             showPrompt();
         }
 
-        function kickUserDueToLockdown() {
-            applyLockdownVisuals();
-            outputArea.innerHTML = '';
-            writeOutput("!!! CRITICAL ALERT !!! GLOBAL LOCKDOWN INITIATED!", '#ff0000');
-            writeOutput("!!! NON-ADMIN ACCESS REVOKED !!!", '#ff0000');
-            
-            // Redirect non-admin users
-            setTimeout(() => {
-                window.location.href = 'https://ethanunlocked690.github.io'; 
-            }, 3000); 
-        }
-
-        async function listenForLockdown() {
-            if (!isFirebaseEnabled || !db) return; // Guard clause
-
-            const lockdownRef = doc(db, LOCKDOWN_DOC_PATH);
-
-            onSnapshot(lockdownRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const newLockdownState = data.isLockedDown === true;
-
-                    if (newLockdownState && !isLockedDown) {
-                        // Lockdown activated by an admin
-                        if (isAdmin()) {
-                            applyLockdownVisuals();
-                            commandInput.disabled = false; // Admin remains active
-                            writeOutput("\n!! WARNING: SYSTEM IS IN GLOBAL LOCKDOWN MODE !!", '#ffff00');
-                            writeOutput(`!! ACCESS GRANTED TO ADMIN: ${ADMIN_USERNAME.toUpperCase()} !!`, '#ff00ff');
-                            writeOutput("!! TYPE '?DISABLE' TO END LOCKDOWN !!", '#ff00ff');
-                        } else {
-                            kickUserDueToLockdown();
-                        }
-                    } else if (!newLockdownState && isLockedDown) {
-                        // Lockdown disabled by an admin
-                        removeLockdownVisuals();
-                    }
-                } else if (isLockedDown) {
-                    // Document doesn't exist but we think we're locked down (reset client state)
-                    removeLockdownVisuals();
-                }
-            }, (error) => {
-                console.error("Error listening to lockdown state:", error);
-                writeOutput("!! REAL-TIME ERROR: Cannot monitor global status. !!", '#ff0000');
-            });
-            
-            // Initial check in case the listener takes time to fire
-            const initialDoc = await getDoc(lockdownRef);
-            if (initialDoc.exists() && initialDoc.data().isLockedDown === true && !isAdmin()) {
-                 kickUserDueToLockdown();
-            }
-        }
-        
-        async function startLockdown() {
-            if (!isFirebaseEnabled) {
-                writeOutput("ERROR: Database connection failed. Lockdown command disabled.", '#ff0000');
-                return;
-            }
-            if (!isAdmin()) {
-                writeOutput("ERROR: Authorization denied or database not ready.", '#ff0000');
-                return;
-            }
-            if (isLockedDown) {
-                writeOutput("System is already in lockdown.", '#ffaa00');
+        function startLockdown() {
+            if (!isAdmin() || isLockedDown) {
+                writeOutput(isLockedDown ? "System is already in lockdown." : "ERROR: Authorization denied (Admin Only).", '#ff0000');
                 return;
             }
             
             isBusy = true;
-            writeOutput("\n>>> INITIATING LOCKDOWN SEQUENCE... <<<", '#ff0000');
-
-            try {
-                await setDoc(doc(db, LOCKDOWN_DOC_PATH), { 
-                    isLockedDown: true, 
-                    initiatedBy: userId, 
-                    timestamp: new Date().toISOString() 
-                }, { merge: true });
-                
-                // The 'onSnapshot' listener will handle applying visuals for the admin
-                writeOutput(">>> GLOBAL LOCKDOWN SIGNAL BROADCAST. <<<", '#ff00ff');
-            } catch (e) {
-                writeOutput(`!!! DB WRITE FAILED: Could not initiate lockdown. Error: ${e.message}`, '#ff0000');
+            writeOutput("\n>>> INITIATING LOCAL LOCKDOWN SEQUENCE... <<<", '#ff0000');
+            
+            // Simulate processing delay
+            setTimeout(() => {
+                applyLockdownVisuals();
+                writeOutput(">>> LOCAL LOCKDOWN SIGNAL INITIATED. Input blocked.", '#ff00ff');
+                writeOutput("!! ACCESS GRANTED TO ADMIN: " + ADMIN_USERNAME.toUpperCase() + " !!", '#ff00ff');
+                writeOutput("!! TYPE '?DISABLE' TO END LOCKDOWN !!", '#ff00ff');
                 isBusy = false;
+                commandInput.disabled = false; // Admin can still type to disable
                 showPrompt();
-            }
+            }, 1000);
         }
         
-        async function disableLockdown() {
-            if (!isFirebaseEnabled) {
-                 writeOutput("ERROR: Database connection failed. Cannot disable non-existent lockdown.", '#ff0000');
-                 return;
-            }
+        function disableLockdown() {
             if (!isAdmin()) {
-                writeOutput("ERROR: Authorization denied or database not ready.", '#ff0000');
+                writeOutput("ERROR: Authorization denied (Admin Only).", '#ff0000');
                 return;
             }
             
+            if (!isLockedDown) {
+                writeOutput("System is not currently in lockdown.", '#00ff41');
+                return;
+            }
+
             isBusy = true;
             writeOutput("\n>> ATTEMPTING LOCKDOWN PROTOCOL DISENGAGEMENT...", '#00ff41');
 
-            try {
-                await setDoc(doc(db, LOCKDOWN_DOC_PATH), { 
-                    isLockedDown: false,
-                    disabledBy: userId,
-                    timestamp: new Date().toISOString() 
-                }, { merge: true });
-                
-                writeOutput(">> GLOBAL LOCKDOWN SIGNAL CLEARED. Waiting for clients to reset...", '#00ffff');
-            } catch (e) {
-                writeOutput(`!!! DB WRITE FAILED: Could not disable lockdown. Error: ${e.message}`, '#ff0000');
-                isBusy = false;
-                showPrompt();
-            }
+            // Simulate processing delay
+            setTimeout(() => {
+                removeLockdownVisuals();
+            }, 1000);
         }
 
         // =========================================================================
@@ -521,62 +697,58 @@
         // =========================================================================
 
         function runPlayCommand(keyword) {
-            
+            const key = keyword.toUpperCase();
+
+            // 1. Check for Game Command
+            const gameKeys = Object.keys(GAMES).filter(k => k === key || GAMES[k].aliases.includes(key));
+            if (gameKeys.length > 0) {
+                startGame(gameKeys[0]);
+                return;
+            }
+
+            // 2. Check for SFX Command
             if (!keyword || keyword.trim() === "") {
-                writeOutput("--- AVAILABLE SFX KEYWORDS (Case/Space/Hyphen Sensitive) ---", '#ffff00');
-                
+                writeOutput("--- AVAILABLE ATLAS FEATURES ---", '#ffff00');
+                writeOutput("[GAME] : T-REX (DINOSAUR/DINO)", '#00ffff');
+                writeOutput("--- AVAILABLE SFX KEYWORDS ---", '#ffff00');
                 Object.keys(SOUND_EFFECTS).forEach(key => {
                     writeOutput(`[READY] : **${key}**`, '#00ff41');
                 });
-                
-                writeOutput("\nUSAGE: PLAY [KEYWORD] (e.g., PLAY VINE-BOOM)", '#00ffff');
+                writeOutput("\nUSAGE: PLAY [KEYWORD/GAME] (e.g., PLAY T-REX)", '#00ffff');
                 if (!isBusy) showPrompt();
                 return;
             }
+
+            // SFX Logic
             
-            const key = keyword.toUpperCase();
-
-            // 1. Initiate search and busy state
-            isBusy = true;
-            commandInput.disabled = true;
-
-            writeOutput(`\nSearching Global SFX Index & Mirror: **${key}**...`, '#00ffff');
-            writeOutput(`**ESTIMATED SEARCH TIME: ${SFX_SEARCH_TIME_MS / 1000} SECONDS**`, '#ffff00'); 
-            
-            // --- SIMULATED SEARCH/DOWNLOAD DELAY (3 seconds) ---
-            setTimeout(() => {
-                
-                if (SOUND_EFFECTS[key]) {
-                    const filename = SOUND_EFFECTS[key];
-                    
-                    writeOutput(`>> Deep Web Search Successful! File located. Initiating buffer: ${filename}`, '#00ff41');
-
-                    // 3. Play the audio
+            if (SOUND_EFFECTS[key]) {
+                const filename = SOUND_EFFECTS[key];
+                isBusy = true;
+                commandInput.disabled = true;
+                writeOutput(`\nSearching Local SFX Index: **${key}**...`, '#00ffff');
+                setTimeout(() => {
+                    writeOutput(`>> Local Repository Successful! Initiating buffer: ${filename}`, '#00ff41');
                     sfxAudio.src = filename;
                     sfxAudio.play()
                         .then(() => {
                             sfxAudio.onended = () => {
                                 sfxAudio.onended = null; 
                                 isBusy = false;
-                                commandInput.disabled = !isLockedDown || isAdmin();
+                                commandInput.disabled = isLockedDown && !isAdmin();
                                 showPrompt();
                             };
                         })
                         .catch(error => {
-                            writeOutput(`ERROR: Failed to play sound '${key}'. (Autoplay block: Console requires user interaction for audio).`, '#ff0000');
+                            writeOutput(`ERROR: Failed to play sound '${key}'. (Autoplay block).`, '#ff0000');
                             isBusy = false;
-                            commandInput.disabled = !isLockedDown || isAdmin();
+                            commandInput.disabled = isLockedDown && !isAdmin();
                             showPrompt();
                         });
-
-                } else {
-                    writeOutput(`!! SEARCH FAILED: Keyword **${key}** not found on MyInstants mirror.`, '#ff0000');
-                    isBusy = false;
-                    commandInput.disabled = !isLockedDown || isAdmin();
-                    showPrompt();
-                }
-
-            }, SFX_SEARCH_TIME_MS); 
+                }, SFX_SEARCH_TIME_MS);
+            } else {
+                writeOutput(`!! SEARCH FAILED: Keyword/Game **${key}** not found.`, '#ff0000');
+                if (!isBusy) showPrompt();
+            }
         }
 
         // =========================================================================
@@ -587,6 +759,17 @@
             const trimmedCommand = command.trim();
             const parts = trimmedCommand.split(/\s+/);
             const cmd = parts[0].toUpperCase();
+
+            // --- Game Active Check ---
+            if (isGameActive) {
+                writeOutput(`> ${command}`, '#ff00ff');
+                if (cmd === 'EXIT') {
+                    endGame();
+                } else {
+                    writeOutput("!! CONSOLE BLOCKED: Game is active. Type **EXIT** to return to terminal.", '#ff0000');
+                }
+                return;
+            }
             
             // --- Lockdown Check (Admin Bypass/Disable) ---
             if (isLockedDown) {
@@ -594,14 +777,19 @@
                     writeOutput(`> ${command}`, '#ff00ff');
                     disableLockdown();
                     return;
+                } else if (isAdmin() && cmd === '?LOCKDOWN') {
+                     // Allow admin to re-issue lockdown command
+                     writeOutput(`> ${command}`, '#ff00ff');
+                     writeOutput("System is already in lockdown. Type '?DISABLE' to end.", '#ffff00');
+                     return;
                 }
                 writeOutput(`> ${command}`, '#ff0000'); 
                 writeOutput("!! ERROR: TERMINAL IS IN LOCKDOWN. COMMANDS BLOCKED. !!", '#ff0000');
                 return;
             }
             
-            // Check if system is busy (Bypassed if Alpha Override is active)
-            if (isBusy && cmd !== 'LOGOUT' && cmd !== '?LOCKDOWN' && cmd !== 'LOCKDOWN' && !overrideActive) {
+            // Check if system is busy 
+            if (isBusy && !['LOGOUT'].includes(cmd) && !overrideActive) {
                 writeOutput("!! System Busy. Please wait for current sequence to finish.", '#ff0000');
                 return;
             }
@@ -618,30 +806,19 @@
             
             switch (cmd) {
                 case 'HELP':
-                    writeOutput("--- AVAILABLE ATLAS CONSOLE FEATURES (v5.3) ---", '#ffff00');
-                    writeOutput("11. **PLAY** [sfx_key] : Initiate sound effect. **Type PLAY alone for list.**", '#ff00ff');
+                    writeOutput("--- AVAILABLE ATLAS CONSOLE FEATURES (v5.4) ---", '#ffff00');
+                    writeOutput("11. **PLAY** [sfx/game] : Initiate sound effect or game. **Type PLAY alone for list.**", '#ff00ff');
                     writeOutput("12. CLEANUP : Purge local console logs and session cache.", '#00ffff');
                     writeOutput("13. REBOOT : Soft reboot the console OS.", '#00ffff');
                     writeOutput("14. THEME [color] : Change console display color (BLUE/RED/DEFAULT).", '#00ffff');
-                    writeOutput("15. **ACTIVE** : See the log of unique visitors on the site.", '#00ffff');
-                    writeOutput("16. LOGOUT: Terminates session and redirects to main page.", '#ff0000');
+                    writeOutput("15. LOGOUT: Terminates session and redirects to main page.", '#ff0000');
                     
                     if (isAdmin()) {
-                        if (isFirebaseEnabled) {
-                            writeOutput("17. **?LOCKDOWN**: [ADMIN/FIRESTORE] Initiates global security lockdown.", '#ff0000');
-                        } else {
-                            writeOutput("17. **?LOCKDOWN**: [DISABLED] Database not connected.", '#ffaa00');
-                        }
-                        writeOutput("18. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
+                        writeOutput("16. **?LOCKDOWN**: [LOCAL] Initiates local security lockdown (Admin Only).", '#ff0000');
+                        writeOutput("17. **SUDO**: Admin Alpha Override Protocol.", '#ffff00');
                     } else {
-                        writeOutput("17. **SUDO**: (Hidden Command) Admin Alpha Override Protocol.", '#ffff00');
+                        writeOutput("16. **SUDO**: Admin Alpha Override Protocol.", '#ffff00');
                     }
-                    break;
-                
-                case 'ACTIVE':
-                    // Note: 'ACTIVE' log functionality is local and requires the VISITOR_LOG_KEY implementation 
-                    // which was removed to prioritize Firebase lockdown. Placeholder only.
-                    writeOutput("!! ACTIVE COMMAND DISABLED: Functionality migrated to Firebase/private storage.", '#ffaa00');
                     break;
                 
                 case 'PLAY': 
@@ -664,10 +841,10 @@
                     writeOutput("*****************************************************", '#ff00ff');
                     break;
 
-
                 case 'LOGOUT':
                     writeOutput("SESSION TERMINATED. Redirecting to source...", '#ff0000');
-                    setTimeout(() => { window.location.href = 'https://ethanunlocked690.github.io'; }, 1000);
+                    // Changed default logout target to a non-Firebase URL since we removed Firebase
+                    setTimeout(() => { window.location.href = 'https://google.com'; }, 1000); 
                     return;
                 
                 case 'THEME':
@@ -682,26 +859,19 @@
                         currentTheme = newTheme;
                         consoleContainer.style.borderColor = THEMES[newTheme].mainColor;
                         consoleContainer.style.boxShadow = `0 0 10px ${THEMES[newTheme].mainColor}`;
-                        writeOutput(`Theme set to ${newTheme}. (Placeholder)`, THEMES[newTheme].mainColor);
+                        writeOutput(`Theme set to ${newTheme}.`, THEMES[newTheme].mainColor);
                     } else {
                         writeOutput(`ERROR: Theme '${newTheme}' not found.`, '#ff0000');
                     }
                     break;
 
-                // --- Placeholder for other commands ---
                 case 'REBOOT':
                 case 'CLEANUP':
-                case 'SEARCH':
-                case 'DECRYPT':
-                case 'SCAN':
-                case 'HUNT':
-                case 'TRACE':
-                case 'DEFACE':
-                case 'ENCRYPT':
-                case 'PINGFLOOD':
-                case 'SPOOF':
-                case 'FAKE': 
-                    writeOutput(`Running Command: ${cmd}... [PLACEHOLDER EXECUTION]`, '#00ff41');
+                    writeOutput(`Running Command: ${cmd}... [EXECUTION]`, '#00ff41');
+                    break;
+                
+                case 'ACTIVE':
+                    writeOutput("!! ACTIVE COMMAND DISABLED: Placeholder feature removed. !!", '#ffaa00');
                     break;
                 
                 default:
@@ -724,17 +894,12 @@
         });
         
         window.onload = function() {
-            // Attach the unlock function to the first click/keypress on the entire page
             document.body.addEventListener('click', unlockAudioContext, { once: true });
             document.body.addEventListener('keydown', unlockAudioContext, { once: true });
-            
-            // 1. Initialize Firebase
-            initializeFirebase(); 
 
-            // 2. Focus input
             commandInput.focus();
             
-            writeOutput(`\nSFX DATABASE: Local repository initialized with ${Object.keys(SOUND_EFFECTS).length} assets. All systems nominal.`, '#00ff41');
+            writeOutput(`\nSFX/GAME DATABASE: Local repository initialized with ${Object.keys(SOUND_EFFECTS).length} assets and ${Object.keys(GAMES).length} game engines. All systems nominal.`, '#00ff41');
         };
     </script>
 </body>
