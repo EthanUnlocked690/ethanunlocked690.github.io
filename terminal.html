@@ -385,7 +385,8 @@
         // Define the custom display order and names for SFX commands
         const SFX_DISPLAY_ORDER = [
             { command: 'BOOM', display: 'VINE BOOM', file: 'vine-boom.mp3', help_desc: 'Triggers the Vine Boom sound effect.' },
-            { command: 'RIZZ', display: 'RIZZ', file: 'rizz.mp3', help_desc: 'Triggers the "Rizz" sound effect.' },
+            { command: 'RIZZ', display: 'RIZZ', file: 'rizz.mp3', help_desc: "Triggers the 'Rizz' sound effect." },
+            { command: 'IDOL', display: 'YOUR IDOL', file: 'idol.mp3', help_desc: 'Triggers the Your Idol sound effect.' }, // NEW ENTRY
             { command: 'EXPEL', display: 'GET OUT', file: 'get-out-meme.mp3', help_desc: "Triggers the 'Get Out' denial sound." },
             { command: 'ALERT_HIGH', display: 'ALARM', file: 'alert.mp3', help_desc: 'Triggers a general alarm sound.' },
             { command: 'CONFIRM', display: 'CONFIRM', file: 'confirm.mp3', help_desc: 'Triggers a successful operation sound.' },
@@ -400,6 +401,7 @@
             'EXPEL': { id: 'get-out-meme.mp3', message: 'ACCESS DENIED: User has been expelled (GET OUT MEME)', color: '#ffff00' },
             'BOOM': { id: 'vine-boom.mp3', message: 'FOCUS SHIFT: Data Interruption (VINE BOOM)', color: '#00ffff' },
             'RIZZ': { id: 'rizz.mp3', message: 'SYSTEM MESSAGE: Rizz-mometer Activated. Connection established.', color: '#ffc0cb' }, 
+            'IDOL': { id: 'idol.mp3', message: 'PROTOCOL MESSAGE: Your Idol has been located and confirmed. (IDOL)', color: '#ff00ff' }, // NEW ASSET
         };
         
         // Player object to hold all loaded audio buffers
@@ -651,6 +653,7 @@
                     case 'BOOM': success = playAssetSound('BOOM'); break;
                     case 'EXPEL': success = playAssetSound('EXPEL'); break;
                     case 'RIZZ': success = playAssetSound('RIZZ'); break;
+                    case 'IDOL': success = playAssetSound('IDOL'); break; // NEW COMMAND
 
                     default:
                         writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
