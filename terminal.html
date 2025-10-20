@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.5 (SECURE BIOMETRIC LOGIN)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v7.0 (CONTEXT-AWARE SECURITY)</title>
     <!-- Using reliable CDN for Tone.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <!-- Font for console theme -->
@@ -142,7 +142,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.95);
-            display: flex;
+            display: none; /* Hidden by default, shown by JS if not local copy */
             justify-content: center;
             align-items: center;
             z-index: 100;
@@ -156,7 +156,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.95);
-            display: none; /* Hidden by default */
+            display: none; /* Hidden by default, shown by JS if local copy */
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -322,11 +322,11 @@
     <div id="face-id-overlay">
         <div id="face-id-card">
             <h2 style="color: #00ffff; margin-top: 0; margin-bottom: 5px;">BIOMETRIC COMPARISON PROTOCOL</h2>
-            <p style="color: #ff0000; font-size: 1rem;">STATUS: Unauthorized Context Detected. OWNER BIOMETRICS REQUIRED.</p>
+            <p style="color: #ff0000; font-size: 1rem;">STATUS: Unauthorized Context Detected. OWNER BIOMETRICS REQUIRED (EthanUnlocked).</p>
             
             <div id="face-id-scan-area">
                 <div>
-                    <h4 style="color: #00ff41; margin-top: 0; font-size: 0.9rem;">[TARGET: ETHANUNLOCKED (yes.png)]</h4>
+                    <h4 style="color: #00ff41; margin-top: 0; font-size: 0.9rem;">[TARGET: OWNER PROFILE (yes.png)]</h4>
                     <!-- Placeholder representing the yes.png comparison image -->
                     <img id="comparison-image" src="https://placehold.co/200x200/00ff41/000?text=OWNER+PROFILE%0A%28yes.png%29" alt="Owner comparison profile" />
                 </div>
@@ -343,7 +343,7 @@
     <!-- END FACE ID MODAL -->
 
     <div id="console-container">
-        <div id="terminal-title">ATLAS: DATA FLOW CONSOLE v6.5 (SECURE BIOMETRIC LOGIN)</div>
+        <div id="terminal-title">ATLAS: DATA FLOW CONSOLE v7.0 (CONTEXT-AWARE SECURITY)</div>
         <div id="time-display">--:--:--</div> 
         <div id="output"></div>
         <div id="input-area">
@@ -525,7 +525,7 @@
             consoleContainer.style.pointerEvents = 'auto';
             
             // Initialize console output
-            writeOutput(`\nATLAS CONSOLE v6.5\n------------------`, '#00ff41');
+            writeOutput(`\nATLAS CONSOLE v7.0\n------------------`, '#00ff41');
             writeOutput(`>>> Authenticated as ${CONSOLE_USER} [LEVEL 5 ACCESS]`, '#00ffff');
             
             if (isLocalCopy) {
@@ -683,7 +683,7 @@
         });
         
         window.onload = function() {
-            // 1. Check for local copy environment (absence of canvas-provided globals)
+            // 1. CRITICAL CONTEXT CHECK: If __app_id is undefined, we assume the code was copied outside the secure environment.
             isLocalCopy = (typeof __app_id === 'undefined');
             
             // 2. Start the clock
@@ -702,12 +702,13 @@
                 }
             });
 
-            // 5. Determine initial security flow
+            // 5. Determine initial security flow based on context
             if (isLocalCopy) {
-                // Scenario 2: Copied from code, require Biometric Comparison
+                // SCENARIO A: Copied from code -> Force Biometric Scan for OWNER
                 initFaceIDLogin();
             } else {
-                // Scenario 1: Running in secure context, require standard login
+                // SCENARIO B: Running in secure Canvas context -> Standard Login
+                loginOverlay.style.display = 'flex';
                 document.getElementById('username').focus();
             }
         };
