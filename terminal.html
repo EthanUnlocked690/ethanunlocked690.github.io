@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.3</title>
+    <title>ATLAS: DATA FLOW CONSOLE v6.4</title>
     <!-- Use a Google Font for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -93,6 +93,7 @@
             flex-wrap: nowrap;
         }
         
+        /* Spacing for header elements */
         #terminal-header span:nth-child(2) {
             margin-left: 10px; 
             margin-right: 10px;
@@ -119,35 +120,30 @@
         .prompt-line {
             display: flex;
             align-items: baseline;
+            /* Ensures prompt input line wraps correctly */
+            width: 100%; 
         }
 
         #prompt-symbol {
             color: var(--prompt-caret);
             margin-right: 5px;
+            flex-shrink: 0; /* Prevents the prompt symbol from shrinking */
         }
 
+        /* FIX: Ensure input takes all remaining space for native caret */
         #command-input {
             background: none;
             border: none;
             color: var(--terminal-color);
             font-family: 'VT323', monospace;
             font-size: 1.1rem;
-            flex-grow: 1;
+            flex-grow: 1; /* Key to making it take remaining space */
             padding: 0;
             outline: none;
-            caret-color: var(--prompt-caret);
+            caret-color: var(--prompt-caret); /* Use native blinking caret */
         }
 
-        /* Typing Indicator */
-        #typing-indicator {
-            display: inline-block;
-            animation: blink 1s step-end infinite;
-        }
-
-        @keyframes blink {
-            from, to { visibility: visible; }
-            50% { visibility: hidden; }
-        }
+        /* Removed #typing-indicator styles and @keyframes blink */
 
         /* --- LOGIN MODAL STYLES --- */
         #login-overlay {
@@ -256,7 +252,7 @@
         <div id="prompt-line" class="prompt-line" style="display: none;">
             <span id="prompt-symbol">ATLAS_CONSOLE ></span>
             <input type="text" id="command-input" autocomplete="off" autofocus>
-            <span id="typing-indicator">|</span>
+            <!-- REMOVED: <span id="typing-indicator">|</span> -->
         </div>
     </div>
 
@@ -290,7 +286,7 @@
         let audioBuffers = {};
         let timeInterval; 
         
-        // NEW: Location State
+        // Location State
         let systemLocation = 'RESOLVING LOCATION...'; 
 
         // =========================================================================
@@ -361,7 +357,6 @@
             terminalContainer.scrollTop = terminalContainer.scrollHeight;
         }
         
-        // NEW: Function to resolve location using Geolocation API
         function resolveLocation() {
             // 1. Get TimeZone first, as it's synchronous and reliable.
             const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -398,7 +393,6 @@
         }
 
 
-        // NEW: Function to format the date and time for the header
         function formatDateTimeHeader(includeVersion = true) {
             const now = new Date();
             // Use system-defined locale for automatic local time
@@ -410,12 +404,11 @@
             const timeSpan = `<span style="color:#00aaff;">D/T: ${localDateStr} ${localTimeStr}</span>`;
             
             if (includeVersion) {
-                return `<span style="color:#ffaa00;">ATLAS V6.3</span> | ${locationSpan} | ${timeSpan}`;
+                return `<span style="color:#ffaa00;">ATLAS V6.4</span> | ${locationSpan} | ${timeSpan}`;
             }
             return `${locationSpan} | ${timeSpan}`;
         }
 
-        // Function to update the fixed header every second
         function updateHeaderClock() {
             terminalHeader.innerHTML = formatDateTimeHeader();
         }
@@ -454,7 +447,7 @@
 
             writeOutput('----------------------------------------------------', '#00ff41');
             writeOutput('<span style="color:#ffaa00;">PRIMARY KEY VALIDATED. SYSTEM UNLOCK INITIATED.</span>', '#ffaa00');
-            writeOutput('ATLAS DATA FLOW CONSOLE V6.3: FULL ACCESS ENABLED.', '#ffaa00');
+            writeOutput('ATLAS DATA FLOW CONSOLE V6.4: FULL ACCESS ENABLED.', '#ffaa00');
             writeOutput('Core security lockdown terminated. ACCESS LEVEL 2.', '#ffaa00');
             writeOutput('----------------------------------------------------', '#00ff41');
             showPrompt();
@@ -488,7 +481,7 @@
         }
         
         // =========================================================================
-        // --- Command Processing (Updated for Full Access) ---
+        // --- Command Processing (Updated for SFX fix) ---
         // =========================================================================
 
         function processCommand(input) {
@@ -520,6 +513,8 @@
             let success = true;
 
             setTimeout(() => {
+                const sfxKey = cmd.toLowerCase().replace('-', '');
+
                 switch (cmd) {
                     case 'HELP':
                         writeOutput('----------------------------------------------------');
@@ -573,14 +568,11 @@
                             success = false;
                             break;
                         }
-                        const sfx = args[0].toLowerCase().replace('-', ''); 
-                        if (sfx === 'confirm') playSound('confirm');
-                        else if (sfx === 'alert') playSound('alert');
-                        else if (sfx === 'siren') playSound('siren');
-                        else if (sfx === 'getout') playSound('get-out');
-                        else if (sfx === 'vineboom') playSound('vine-boom');
-                        else {
-                            writeOutput(`ERROR: SFX '${args[0]}' not recognized.`, '#ff0000');
+                        const playSfx = args[0].toLowerCase().replace('-', ''); 
+                        if (SOUND_EFFECTS[playSfx] || (playSfx === 'getout' || playSfx === 'vineboom')) {
+                            playSound(playSfx);
+                        } else {
+                            writeOutput(`ERROR: SFX '${args[0]}' not recognized. Type PLAY for a list.`, '#ff0000');
                             success = false;
                         }
                         break;
@@ -599,7 +591,12 @@
                         break;
                     
                     default:
-                        writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
+                        // FIX: Check if the unrecognised command is actually a sound effect name
+                        if (SOUND_EFFECTS[sfxKey] || (sfxKey === 'getout' || sfxKey === 'vineboom')) {
+                             writeOutput(`SYNTAX ERROR: SFX must be run with the <span style="color:#00aaff;">PLAY</span> command. Use: <span style="color:#00aaff;">PLAY ${cmd}</span>`, '#ff0000');
+                        } else {
+                             writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
+                        }
                         success = false;
                         break;
                 }
