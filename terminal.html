@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.7</title>
+    <title>ATLAS: DATA FLOW CONSOLE v6.8</title>
     <!-- Use a Google Font for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -300,7 +300,7 @@
             'siren': 'siren.mp3', 
             'getout': 'get-out-meme.mp3', 
             'vineboom': 'vine-boom.mp3',
-            'rizz': 'rizz.mp3' // NEW: Added rizz.mp3
+            'rizz': 'rizz.mp3' 
         };
         
         /**
@@ -415,7 +415,7 @@
             const timeSpan = `<span style="color:#00aaff;">D/T: ${localDateStr} ${localTimeStr}</span>`;
             
             if (includeVersion) {
-                return `<span style="color:#ffaa00;">ATLAS V6.7</span> | ${locationSpan} | ${timeSpan}`;
+                return `<span style="color:#ffaa00;">ATLAS V6.8</span> | ${locationSpan} | ${timeSpan}`;
             }
             return `${locationSpan} | ${timeSpan}`;
         }
@@ -451,14 +451,13 @@
             document.documentElement.style.setProperty('--border-color', '#ffaa00');
             document.documentElement.style.setProperty('--prompt-caret', '#00ff41');
             
-            // 3. Start the clock, location resolution, and play the final activation sound
-            playSound('siren'); 
-            resolveLocation(); // Initial async call to get location
-            startHeaderClock(); // Start the persistent clock
+            // 3. Start the clock and location resolution (No sound here)
+            resolveLocation(); 
+            startHeaderClock(); 
 
             writeOutput('----------------------------------------------------', '#00ff41');
             writeOutput('<span style="color:#ffaa00;">PRIMARY KEY VALIDATED. SYSTEM UNLOCK INITIATED.</span>', '#ffaa00');
-            writeOutput('ATLAS DATA FLOW CONSOLE V6.7: FULL ACCESS ENABLED.', '#ffaa00');
+            writeOutput('ATLAS DATA FLOW CONSOLE V6.8: FULL ACCESS ENABLED.', '#ffaa00');
             writeOutput('Core security lockdown terminated. ACCESS LEVEL 2.', '#ffaa00');
             writeOutput('----------------------------------------------------', '#00ff41');
             showPrompt();
@@ -475,6 +474,7 @@
             if (inputUser === USERNAME && inputPass === PASSWORD_HASH && inputKey === ACCESS_KEY) {
                 loginErrorDiv.textContent = 'AUTHENTICATION SUCCESSFUL. INITIATING DATA FLOW...';
                 loginErrorDiv.style.color = '#00ff41';
+                playSound('confirm'); // Play success sound immediately
                 setTimeout(activateConsole, 1000); // Wait a moment before transition
             } else {
                 let errorMsg = 'ACCESS DENIED: Invalid Credentials.';
@@ -485,7 +485,7 @@
                 
                 loginErrorDiv.textContent = errorMsg;
                 loginErrorDiv.style.color = '#ff0000';
-                playSound('alert');
+                playSound('alert'); // Play failure sound
                 setTimeout(() => { loginErrorDiv.textContent = 'Awaiting Authentication...'; }, 3000);
             }
         }
