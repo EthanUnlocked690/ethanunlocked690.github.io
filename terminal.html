@@ -3,11 +3,9 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v7.0 (CONTEXT-AWARE SECURITY)</title>
-    <!-- Using reliable CDN for Tone.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-    <!-- Font for console theme -->
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <title>ATLAS: DATA FLOW CONSOLE v5.6</title>
+    <!-- Assuming VT323 is loaded via the link provided in the original file -->
+    <link href="./ATLAS_ DATA FLOW CONSOLE v5.5_files/css2" rel="stylesheet"> 
     <style>
         /* General Console Theme */
         body {
@@ -33,687 +31,445 @@
             left: 0;
             width: 100%;
             height: 100%;
+            opacity: 0.1; 
             background: 
-                radial-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
-                radial-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px);
-            background-size: 100px 100px;
-            background-position: 0 0, 50px 50px;
-            z-index: 0;
-            opacity: 0.1;
+                linear-gradient(rgba(0, 255, 65, 0), rgba(0, 255, 65, 0.4)),
+                repeating-linear-gradient(0deg, #000, #000 1px, #00ff41 1px, #00ff41 2px); 
+            background-size: 100% 100%;
+            pointer-events: none; 
+            animation: scanline-fade 10s infinite alternate;
         }
 
-        /* --- Main Console Area --- */
-        #console-container {
-            position: relative;
-            width: 90%;
+        @keyframes scanline-fade {
+            0% { opacity: 0.05; }
+            100% { opacity: 0.15; }
+        }
+
+        /* --- Console Window --- */
+        #terminal-container {
+            width: 95%;
             max-width: 800px;
-            height: 90%;
-            background-color: rgba(0, 0, 0, 0.85); 
-            border: 2px solid #00ff41; 
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5); 
-            padding: 10px;
+            height: 90vh;
+            border: 2px solid #00ff41;
+            padding: 20px;
             box-sizing: border-box;
-            z-index: 1;
+            box-shadow: 0 0 10px #00ff41, inset 0 0 10px #00ff41;
+            overflow: hidden; /* Only the output scrolls */
             display: flex;
             flex-direction: column;
-            opacity: 0; /* Hidden until logged in */
-            pointer-events: none; /* Disabled until logged in */
-            transition: opacity 1s;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10;
         }
 
-        /* Time Display */
-        #time-display {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            color: #ffaa00; /* Amber for time */
-            font-size: 1.2rem;
-            z-index: 2;
-        }
-
-
-        /* Console Output Area */
+        /* --- Output Area --- */
         #output {
             flex-grow: 1;
-            overflow-y: scroll;
+            overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
-            padding-right: 10px; 
-            scrollbar-width: none; 
-            margin-top: 20px; /* Push content down to accommodate title/time */
-        }
-        #output::-webkit-scrollbar {
-            display: none; 
+            margin-bottom: 10px;
+            scroll-behavior: smooth;
         }
 
-        /* Input Area */
+        #output::-webkit-scrollbar {
+            width: 8px;
+        }
+        #output::-webkit-scrollbar-thumb {
+            background-color: #008822; 
+            border-radius: 4px;
+        }
+        #output::-webkit-scrollbar-track {
+            background-color: #000;
+        }
+
+        /* --- Input Area --- */
         #input-area {
             display: flex;
-            margin-top: 10px;
+            align-items: center;
         }
 
-        #prompt {
+        #prompt-prefix {
             color: #00ff41;
             margin-right: 5px;
-            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         #command-input {
-            background-color: transparent;
+            background: none;
             border: none;
-            outline: none;
             color: #00ff41;
             font-family: 'VT323', monospace;
             font-size: 1.1rem;
             flex-grow: 1;
+            outline: none;
             caret-color: #00ff41;
             padding: 0;
             margin: 0;
+            line-height: 1.4;
+            transition: color 0.3s; 
         }
 
-        /* Glitch Effect for the title */
-        #terminal-title {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #fff;
-            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
-            animation: flicker 1s infinite alternate;
-            user-select: none;
-            font-size: 1.2rem;
-            pointer-events: none;
-            z-index: 2;
+        #command-input:focus {
+            color: #ffff00; /* Highlight input on focus */
         }
-
-        @keyframes flicker {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; text-shadow: 0 0 3px #00ff41; }
-            52% { opacity: 1; }
-            55% { opacity: 0.9; }
-            95% { opacity: 0.95; }
-        }
-
-        /* --- LOGIN MODAL STYLES (Standard Password) --- */
-        #login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            display: none; /* Hidden by default, shown by JS if not local copy */
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        /* --- FACE ID MODAL STYLES (Local Copy) --- */
-        #face-id-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            display: none; /* Hidden by default, shown by JS if local copy */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        #face-id-card {
-            border: 3px solid #00ffff; /* Cyan for Biometric */
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
-            padding: 30px;
-            background-color: #111;
-            text-align: center;
-            max-width: 700px; /* Increased max-width for dual view */
-            width: 90%;
-        }
-        
-        #face-id-scan-area {
-            display: flex;
-            justify-content: space-around; 
-            margin: 15px 0;
-            gap: 20px;
-        }
-        
-        #face-id-scan-area > div {
-            flex: 1;
-            max-width: 50%;
-            min-width: 200px;
-        }
-
-        #comparison-image, #face-video {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: contain; /* Ensure image/video fits */
-        }
-        
-        #comparison-image {
-            border: 2px solid #00ff41;
-        }
-
-        #face-video {
-            border: 2px solid #ffaa00;
-            background-color: #000;
-            transform: scaleX(-1); /* Mirror the video like a selfie camera */
-        }
-        
-        #face-id-status {
-            color: #ffaa00;
-            margin-bottom: 20px;
-            height: 1.5rem;
-        }
-        
-        #biometric-button {
-            background-color: #00ffff;
-            color: #000;
-            border: 2px solid #00ffff;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-            transition: background-color 0.2s, box-shadow 0.2s;
-            width: 100%;
-            margin-top: 10px;
-        }
-        
-        #biometric-button:hover {
-            background-color: #00dddd;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
-        }
-
-        /* Reusing Login Card for standard password */
-        #login-card {
-            border: 3px solid #ff0000; 
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
-            padding: 30px;
-            background-color: #111;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .login-field {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .login-field label {
-            display: block;
-            margin-bottom: 5px;
-            color: #ffaa00; 
-        }
-
-        .login-field input {
-            width: 100%;
-            padding: 10px;
-            background-color: #000;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            font-family: 'VT323', monospace;
-            font-size: 1.1rem;
-            box-sizing: border-box;
-            text-shadow: none; 
-            outline: none;
-        }
-
-        #login-button {
-            background-color: #ff0000;
-            color: #fff;
-            border: 2px solid #ff0000;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-            transition: background-color 0.2s, box-shadow 0.2s;
-            width: 100%;
-        }
-
-        #login-button:hover {
-            background-color: #cc0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-        }
-
-        #login-error {
-            color: #ff0000;
-            margin-top: 15px;
-            height: 1.5rem; /* Reserve space */
-            font-size: 1rem;
-        }
-        
     </style>
 </head>
 <body>
-    <div id="terminal-background"></div>
-    
-    <!-- STANDARD LOGIN MODAL STRUCTURE -->
-    <div id="login-overlay">
-        <div id="login-card">
-            <h2 style="color: #00ff41; margin-top: 0; margin-bottom: 20px;">ATLAS ACCESS PROTOCOL</h2>
-            <p style="color: #ffaa00; font-size: 1rem;">STATUS: Secure Context (Canvas) Required.</p>
-            <form id="login-form">
-                <div class="login-field">
-                    <label for="username">USERNAME:</label>
-                    <input type="text" id="username" required>
-                </div>
-                <div class="login-field">
-                    <label for="password">PASSWORD:</label>
-                    <input type="password" id="password" required>
-                </div>
-                <div class="login-field">
-                    <label for="key">ACCESS KEY:</label>
-                    <input type="text" id="key" required>
-                </div>
-                <button type="submit" id="login-button">INITIATE CONNECTION</button>
-            </form>
-            <div id="login-error">Awaiting Authentication...</div>
-        </div>
-    </div>
-    <!-- END STANDARD LOGIN MODAL -->
-    
-    <!-- FACE ID MODAL STRUCTURE (For Local Copy Scenario) -->
-    <div id="face-id-overlay">
-        <div id="face-id-card">
-            <h2 style="color: #00ffff; margin-top: 0; margin-bottom: 5px;">BIOMETRIC COMPARISON PROTOCOL</h2>
-            <p style="color: #ff0000; font-size: 1rem;">STATUS: Unauthorized Context Detected. OWNER BIOMETRICS REQUIRED (EthanUnlocked).</p>
-            
-            <div id="face-id-scan-area">
-                <div>
-                    <h4 style="color: #00ff41; margin-top: 0; font-size: 0.9rem;">[TARGET: OWNER PROFILE (yes.png)]</h4>
-                    <!-- Placeholder representing the yes.png comparison image -->
-                    <img id="comparison-image" src="https://placehold.co/200x200/00ff41/000?text=OWNER+PROFILE%0A%28yes.png%29" alt="Owner comparison profile" />
-                </div>
-                <div>
-                    <h4 style="color: #ffaa00; margin-top: 0; font-size: 0.9rem;">[LIVE FEED]</h4>
-                    <video id="face-video" autoplay></video>
-                </div>
-            </div>
-            
-            <div id="face-id-status">...Awaiting Biometric Data Stream...</div>
-            <button type="button" id="biometric-button">START BIOMETRIC SCAN</button>
-        </div>
-    </div>
-    <!-- END FACE ID MODAL -->
 
-    <div id="console-container">
-        <div id="terminal-title">ATLAS: DATA FLOW CONSOLE v7.0 (CONTEXT-AWARE SECURITY)</div>
-        <div id="time-display">--:--:--</div> 
+    <div id="terminal-background"></div>
+
+    <div id="terminal-container">
         <div id="output"></div>
         <div id="input-area">
-            <span id="prompt">[ATLAS_ADMIN@ATLAS] ></span>
-            <input type="text" id="command-input" autocomplete="off" autofocus>
+            <span id="prompt-prefix">ATLAS&gt;</span>
+            <input type="text" id="command-input" disabled="">
         </div>
     </div>
 
     <script>
-        // --- AUTHENTICATION CONSTANTS (Obfuscated) ---
-        // '3BrAWlSTArsPokeMOnTCGppOkEmoNgOMInECRaFtRoBloxfORtnITe2$4' stored as ASCII character codes
-        const CORRECT_PASSWORD_CODES = [51, 66, 114, 65, 87, 108, 83, 84, 65, 114, 115, 80, 111, 107, 101, 77, 79, 110, 84, 67, 71, 112, 112, 79, 107, 69, 109, 111, 78, 103, 79, 77, 73, 110, 69, 67, 82, 97, 70, 116, 82, 111, 66, 108, 111, 120, 102, 79, 82, 116, 110, 73, 84, 101, 50, 36, 52];
-        
-        const CORRECT_USERNAME = 'ETHANUNLOCKED';
-        const CORRECT_KEY = '1957';
-        
-        // --- Global Variables and Constants ---
+        // =========================================================================
+        // --- Core Variables and State ---
+        // =========================================================================
+
         const outputDiv = document.getElementById('output');
-        const consoleContainer = document.getElementById('console-container');
         const commandInput = document.getElementById('command-input');
-        const promptSpan = document.getElementById('prompt');
-        const loginOverlay = document.getElementById('login-overlay');
-        const faceIdOverlay = document.getElementById('face-id-overlay');
-        const faceIdStatus = document.getElementById('face-id-status');
-        const faceVideo = document.getElementById('face-video');
-        const biometricButton = document.getElementById('biometric-button');
-        const loginForm = document.getElementById('login-form');
-        const loginErrorDiv = document.getElementById('login-error');
-        const timeDisplay = document.getElementById('time-display');
-        const CONSOLE_USER = 'ATLAS_ADMIN';
-        
-        let isBusy = false; 
-        let isLockedDown = true; // Start in locked state
-        let areAssetsLoaded = false;
-        let isLocalCopy = false; // Determined on window load
+        const promptPrefix = document.getElementById('prompt-prefix');
+        let commandHistory = [];
+        let historyIndex = -1;
+        let isBusy = false;
+        let isLockedDown = false;
+        let audioContext = null;
+        let audioUnlocked = false;
 
-        // --- TONE.JS SOUND ASSET MAPPING AND LOADER ---
-        
-        // Define the custom display order and names for SFX commands
-        const SFX_DISPLAY_ORDER = [
-            { command: 'BOOM', display: 'VINE BOOM', file: 'vine-boom.mp3', help_desc: 'Triggers the Vine Boom sound effect.' },
-            { command: 'RIZZ', display: 'RIZZ', file: 'rizz.mp3', help_desc: "Triggers the 'Rizz' sound effect." },
-            { command: 'IDOL', display: 'YOUR IDOL', file: 'idol.mp3', help_desc: 'Triggers the Your Idol sound effect.' }, // NEW ENTRY
-            { command: 'EXPEL', display: 'GET OUT', file: 'get-out-meme.mp3', help_desc: "Triggers the 'Get Out' denial sound." },
-            { command: 'ALERT_HIGH', display: 'ALARM', file: 'alert.mp3', help_desc: 'Triggers a general alarm sound.' },
-            { command: 'CONFIRM', display: 'CONFIRM', file: 'confirm.mp3', help_desc: 'Triggers a successful operation sound.' },
-            { command: 'BREACH', display: 'SIREN', file: 'siren.mp3', help_desc: 'Triggers the high-priority siren alarm.' },
-        ];
-        
-        // Map asset keys to the direct filenames and console messages
-        const UPLOADED_ASSETS = {
-            'BREACH': { id: 'siren.mp3', message: 'CRITICAL WARNING: LEVEL 5 SYSTEM BREACH IN PROGRESS (SIREN)', color: '#ff0000' },
-            'CONFIRM': { id: 'confirm.mp3', message: 'CONFIRMATION: Transaction Complete (CONFIRM)', color: '#00ff41' },
-            'ALERT_HIGH': { id: 'alert.mp3', message: 'ALERT: Unspecified Anomaly Detected (ALARM)', color: '#ffaa00' },
-            'EXPEL': { id: 'get-out-meme.mp3', message: 'ACCESS DENIED: User has been expelled (GET OUT MEME)', color: '#ffff00' },
-            'BOOM': { id: 'vine-boom.mp3', message: 'FOCUS SHIFT: Data Interruption (VINE BOOM)', color: '#00ffff' },
-            'RIZZ': { id: 'rizz.mp3', message: 'SYSTEM MESSAGE: Rizz-mometer Activated. Connection established.', color: '#ffc0cb' }, 
-            'IDOL': { id: 'idol.mp3', message: 'PROTOCOL MESSAGE: Your Idol has been located and confirmed. (IDOL)', color: '#ff00ff' }, // NEW ASSET
-        };
-        
-        // Player object to hold all loaded audio buffers
-        let AssetPlayers = {};
+        // --- Console Utilities ---
 
-        // System synth for low-level console feedback 
-        const NOISE_FILTER = new Tone.AutoFilter({
-            frequency: 0.2, depth: 1, baseFrequency: 200, range: 2000, octaves: 2
-        }).toDestination();
-        NOISE_FILTER.start();
-        
-        const SYSTEM_SYNTHS = {
-            'COMMAND': new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 10, envelope: { attack: 0.001, decay: 0.1, sustain: 0.005, release: 0.05 }, volume: -10 }).toDestination(),
-            'ERROR': new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0.01, release: 0.1 }, volume: -8 }).toDestination(),
-            'TYPING': new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.001, decay: 0.01, sustain: 0, release: 0.01 }, volume: -18 }).connect(NOISE_FILTER),
-        };
-        
-        // Mock game data
-        const GAMES = {
-            'TRON': 'Tron Light Cycles Simulation (V2.1)',
-            'SNAKE': 'Classic ASCII Snake (V1.0)'
-        };
-
-        // --- CORE AUDIO & UTILITY FUNCTIONS ---
-
-        function unlockAudioContext() {
-            if (Tone.context.state !== 'running') {
-                Tone.context.resume().then(() => {
-                    console.log('Audio Context Initialized and Resumed.');
-                });
-            }
-        }
-
-        function loadAudioAssets(callback) {
-            const assetMap = {};
-            for (const key in UPLOADED_ASSETS) {
-                assetMap[key] = UPLOADED_ASSETS[key].id;
-            }
-            AssetPlayers = new Tone.Players(assetMap, () => {
-                AssetPlayers.toDestination();
-                AssetPlayers.volume.value = -5;
-                areAssetsLoaded = true;
-                callback();
-            });
-            AssetPlayers.onerror = (e) => {
-                console.error("Audio asset loading failed:", e);
-                writeOutput(`WARNING: One or more custom audio assets failed to load. Sound may be interrupted.`, '#ffaa00');
-            };
-        }
-
-        function playAssetSound(key) {
-            if (Tone.context.state !== 'running') return false;
-            const player = AssetPlayers.get(key);
-            const assetInfo = UPLOADED_ASSETS[key];
-            if (!player || !assetInfo) {
-                writeOutput(`ERROR: Asset ${key} not loaded or missing definition.`, '#ff0000');
-                return false;
-            }
-            if (player.loaded) {
-                player.stop();
-                player.start();
-                writeOutput(assetInfo.message, assetInfo.color);
-                return true;
-            } else {
-                writeOutput(`ERROR: Audio asset ${key} not yet buffered. Try again.`, '#ff0000');
-                return false;
-            }
-        }
-
-        function playSystemSound(type) {
-            if (Tone.context.state !== 'running') return;
-            const synth = SYSTEM_SYNTHS[type];
-            if (!synth) return;
-            switch (type) {
-                case 'COMMAND': synth.triggerAttackRelease("G4", "8n"); break;
-                case 'ERROR': synth.triggerAttackRelease("C3", "16n", Tone.now()); synth.set({ frequency: "C#2" }); break;
-                case 'TYPING': synth.triggerAttackRelease(0.01); break;
-            }
-        }
-        
-        function decodePassword(codes) {
-            // Converts the array of ASCII codes back into a string
-            return String.fromCharCode(...codes);
-        }
-
-        function writeOutput(text, color = 'inherit') {
-            const line = document.createElement('div');
+        /**
+         * Writes a line of output to the terminal window.
+         * @param {string} text The text to output.
+         * @param {string} color The CSS color for the text (e.g., '#00ff41').
+         * @param {boolean} [isHtml=false] True if the text contains HTML.
+         */
+        function writeOutput(text, color = '#00ff41', isHtml = false) {
+            const line = document.createElement('span');
             line.style.color = color;
-            line.textContent = text;
+            if (isHtml) {
+                line.innerHTML = text;
+            } else {
+                line.textContent = text;
+            }
             outputDiv.appendChild(line);
+            outputDiv.appendChild(document.createElement('br'));
             outputDiv.scrollTop = outputDiv.scrollHeight;
         }
 
+        /** Shows the command prompt and enables input. */
         function showPrompt() {
-            promptSpan.textContent = `[${CONSOLE_USER}@ATLAS] >`;
+            promptPrefix.style.color = '#00ff41';
             commandInput.disabled = false;
             commandInput.focus();
         }
 
-        function updateTime() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            timeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
-        }
-        
-        // --- Core Console Activation ---
-        function activateConsole() {
-            if(areAssetsLoaded) playAssetSound('CONFIRM'); 
-            
-            // Hide all modals
-            loginOverlay.style.display = 'none';
-            faceIdOverlay.style.display = 'none';
-
-            // Stop any running camera stream
-            if (faceVideo.srcObject) {
-                faceVideo.srcObject.getTracks().forEach(track => track.stop());
-            }
-
-            isLockedDown = false;
-            consoleContainer.style.opacity = 1;
-            consoleContainer.style.pointerEvents = 'auto';
-            
-            // Initialize console output
-            writeOutput(`\nATLAS CONSOLE v7.0\n------------------`, '#00ff41');
-            writeOutput(`>>> Authenticated as ${CONSOLE_USER} [LEVEL 5 ACCESS]`, '#00ffff');
-            
-            if (isLocalCopy) {
-                writeOutput(`WARNING: Detected unauthorized context (Local Copy). Biometric Access granted to OWNER: ${CORRECT_USERNAME}.`, '#00ffff');
-            }
-            
-            if (areAssetsLoaded) {
-                writeOutput(`SFX/GAME DATABASE: ${SFX_DISPLAY_ORDER.length} user SFX loaded and ${Object.keys(GAMES).length} game engines initialized. All systems nominal.`, '#00ff41');
-            } else {
-                writeOutput(`SFX/GAME DATABASE: Awaiting audio asset load...`, '#ffaa00');
-            }
-            
-            showPrompt();
+        /** Hides the command prompt and disables input. */
+        function hidePrompt() {
+            commandInput.disabled = true;
         }
 
-        // --- Standard Login Logic (Used in secure context) ---
-        function handleLogin(event) {
-            event.preventDefault(); 
+        // =========================================================================
+        // --- Audio System (Updated for Buffering) ---
+        // =========================================================================
 
-            if (isLocalCopy) return; // Should not run in this mode
-            
-            const username = document.getElementById('username').value.trim().toUpperCase();
-            const password = document.getElementById('password').value.trim(); 
-            const key = document.getElementById('key').value.trim();
-            const decodedPassword = decodePassword(CORRECT_PASSWORD_CODES);
+        const SOUND_EFFECTS = {
+            // Audio assets mapped to their files. 'buffer' will be filled on successful load.
+            'ALERT': { filename: 'alert.mp3', buffer: null, status: 'PENDING' },
+            'CONFIRM': { filename: 'confirm.mp3', buffer: null, status: 'PENDING' },
+            'SIREN': { filename: 'siren.mp3', buffer: null, status: 'PENDING' },
+            'BOOM': { filename: 'vine-boom.mp3', buffer: null, status: 'PENDING' },
+            'RIZZ': { filename: 'get-out-meme.mp3', buffer: null, status: 'PENDING' }, // Mapped RIZZ to a provided file
+            'ERROR': { filename: 'alert.mp3', buffer: null, status: 'PENDING' }
+        };
 
-            if (username === CORRECT_USERNAME && password === decodedPassword && key === CORRECT_KEY) {
-                loginErrorDiv.textContent = 'AUTHENTICATION SUCCESSFUL. INITIALIZING CONSOLE...';
-                loginOverlay.style.opacity = 0;
-                setTimeout(activateConsole, 500);
-
-            } else {
-                playSystemSound('ERROR');
-                playSystemSound('ERROR');
-                
-                let errorMsg = 'ACCESS DENIED. Invalid Credentials.';
-                if (username !== CORRECT_USERNAME) errorMsg = 'ACCESS DENIED: Invalid Username.';
-                else if (password !== decodedPassword) errorMsg = 'ACCESS DENIED: Invalid Password (Case Sensitive).';
-                else if (key !== CORRECT_KEY) errorMsg = 'ACCESS DENIED: Invalid Access Key.';
-                
-                loginErrorDiv.textContent = errorMsg;
-                setTimeout(() => { loginErrorDiv.textContent = 'Awaiting Authentication...'; }, 3000);
+        /**
+         * Unlocks the AudioContext by calling resume() on a user gesture.
+         */
+        function unlockAudioContext() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    audioUnlocked = true;
+                    writeOutput('AUDIO CONTEXT: Resumed after user interaction.', '#00ffff');
+                }).catch(err => {
+                    writeOutput('AUDIO CONTEXT ERROR: Failed to resume. ' + err.message, '#ff0000');
+                });
+            } else if (audioContext && audioContext.state === 'running') {
+                audioUnlocked = true;
             }
         }
-        
-        // --- Face ID Logic (Used in local copy context) ---
-        async function startFaceID() {
-            faceIdStatus.textContent = 'INITIATING CAMERA FEED...';
-            biometricButton.disabled = true;
+
+        /**
+         * Fetches and decodes an audio file into an AudioBuffer.
+         * @param {string} key The key in SOUND_EFFECTS.
+         */
+        async function bufferAudio(key) {
+            const asset = SOUND_EFFECTS[key];
+            if (!asset || !audioContext) return;
 
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                faceVideo.srcObject = stream;
-                faceVideo.onloadedmetadata = () => {
-                    faceVideo.play();
-                    faceIdStatus.style.color = '#00ff41';
-                    faceIdStatus.textContent = 'BIOMETRIC DATA STREAMING. CONFIRM ACCESS.';
-                    biometricButton.textContent = 'ACCESS GRANTED (Owner Override)';
-                    biometricButton.disabled = false;
-                };
-            } catch (err) {
-                // Fallback for camera access denied
-                faceIdStatus.style.color = '#ff0000';
-                faceIdStatus.textContent = `CAMERA ACCESS DENIED: Proceeding with Owner Override.`;
-                biometricButton.textContent = 'FORCE ACCESS (Owner Override)';
-                biometricButton.disabled = false;
-                console.error("Camera access failed (Biometric Simulation):", err);
+                const response = await fetch(asset.filename);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                asset.buffer = await audioContext.decodeAudioData(arrayBuffer);
+                asset.status = 'BUFFERED';
+                writeOutput(`LOAD: Audio asset ${key} buffered successfully.`, '#00ff41');
+            } catch (error) {
+                asset.status = 'FAILED';
+                writeOutput(`ERROR: Failed to buffer audio asset ${key} (${asset.filename}). ${error.message}`, '#ff0000');
+                asset.buffer = null; // Ensure buffer is null on failure
             }
         }
-        
-        function initFaceIDLogin() {
-            loginOverlay.style.display = 'none';
-            faceIdOverlay.style.display = 'flex';
-            startFaceID();
+
+        /**
+         * Plays a sound effect from the buffered data.
+         * @param {string} key The key of the sound effect to play.
+         */
+        function playSound(key) {
+            const asset = SOUND_EFFECTS[key];
+
+            if (!audioUnlocked) {
+                writeOutput(`WARN: Audio context not yet active. Click anywhere to activate sound.`, '#ffff00');
+                return;
+            }
+            
+            if (!asset) {
+                writeOutput(`ERROR: Audio asset ${key} does not exist in database.`, '#ff0000');
+                return;
+            }
+
+            if (asset.status !== 'BUFFERED' || !asset.buffer) {
+                // This is the check that fixes the RIZZ error!
+                writeOutput(`ERROR: Audio asset ${key} not yet buffered (Status: ${asset.status}). Try again.`, '#ff0000');
+                return;
+            }
+
+            try {
+                const source = audioContext.createBufferSource();
+                source.buffer = asset.buffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+                // Optionally log success
+                // writeOutput(`SFX: Playing ${key}...`, '#00ffff');
+            } catch (e) {
+                writeOutput(`CRITICAL AUDIO ERROR: Could not play ${key}. ${e.message}`, '#ff0000');
+            }
         }
 
-        // --- Command Processing (Unchanged) ---
+        // =========================================================================
+        // --- Game Engine Logic (Simplified for console) ---
+        // =========================================================================
+
+        const GAMES = {
+            'NULL': { name: 'NULL-TEST-ENGINE', run: () => writeOutput('ENGINE NULL-TEST-ENGINE loaded. No functionality implemented.', '#00ffff') },
+        };
+        
+        // =========================================================================
+        // --- Command Processing ---
+        // =========================================================================
+
         function processCommand(input) {
-            if (isLockedDown) return; 
             if (isBusy) return;
-            if (input.trim() === '') { showPrompt(); return; }
-            
-            writeOutput(`>[${CONSOLE_USER}@ATLAS] ${input}`);
-            
-            isBusy = true;
-            commandInput.disabled = true; 
-            
-            const parts = input.trim().toUpperCase().split(/\s+/);
+
+            const fullCommand = input.trim();
+            if (!fullCommand) return showPrompt();
+
+            commandHistory.push(fullCommand);
+            historyIndex = -1; // Reset history index
+
+            writeOutput(`ATLAS> ${fullCommand}`);
+
+            const parts = fullCommand.toUpperCase().split(/\s+/);
             const cmd = parts[0];
-            let success = true;
+            const args = parts.slice(1);
 
+            hidePrompt();
+            isBusy = true;
+            
+            // Simulate a brief processing delay
             setTimeout(() => {
-                switch (cmd) {
-                    case 'CLEAR': outputDiv.innerHTML = ''; break;
-                    case 'HELP':
-                        writeOutput("--- ATLAS CONSOLE COMMANDS ---", '#00ffff');
-                        writeOutput("CLEAR      : Clears the console screen.");
-                        writeOutput("HELP       : Displays this command list.");
-                        writeOutput("STATUS     : Displays the current system status and time.");
-                        writeOutput("GAMES/PLAY : Lists available games and SFX (Sound Effects).", '#ffaa00');
-                        writeOutput("EXECUTE    : Placeholder command for execution.");
-                        writeOutput("--- SFX COMMANDS (Test Alerts) ---", '#00ffff');
-                        SFX_DISPLAY_ORDER.forEach(sfx => {
-                            const asset = UPLOADED_ASSETS[sfx.command];
-                            writeOutput(`${sfx.command.padEnd(11)}: ${sfx.help_desc}`, asset.color);
-                        });
-                        break;
-                    case 'STATUS':
-                        writeOutput("STATUS: All core data pipelines are flowing at optimal capacity.", '#00ff41');
-                        writeOutput(`SYSTEM TIME: ${timeDisplay.textContent}`, '#00ff41');
-                        break;
-                    case 'GAMES':
-                    case 'PLAY': 
-                        writeOutput("AVAILABLE GAMES/SIMULATIONS:", '#ffaa00');
-                        Object.keys(GAMES).forEach(key => { writeOutput(`  - ${key}: ${GAMES[key]}`); });
-                        writeOutput("\nAVAILABLE SFX (Sound Effects):", '#00ffff');
-                        SFX_DISPLAY_ORDER.forEach(sfx => { writeOutput(`  - ${sfx.command.padEnd(11)} (Alias: ${sfx.display.padEnd(10)}) File: ${sfx.file}`); });
-                        break;
-                    case 'EXECUTE': writeOutput(`EXECUTING DATA FLOW SEQUENCE [SOLUTION]`, '#00ff41'); break;
-                    case 'BREACH': success = playAssetSound('BREACH'); break;
-                    case 'ALERT_HIGH': success = playAssetSound('ALERT_HIGH'); break;
-                    case 'CONFIRM': success = playAssetSound('CONFIRM'); break;
-                    case 'BOOM': success = playAssetSound('BOOM'); break;
-                    case 'EXPEL': success = playAssetSound('EXPEL'); break;
-                    case 'RIZZ': success = playAssetSound('RIZZ'); break;
-                    case 'IDOL': success = playAssetSound('IDOL'); break; // NEW COMMAND
-
-                    default:
-                        writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
-                        success = false;
-                        break;
-                }
-
-                playSystemSound(success ? 'COMMAND' : 'ERROR');
+                executeCommand(cmd, args);
                 isBusy = false;
                 if (!isLockedDown) showPrompt();
+            }, 50); 
+        }
 
-            }, 200); 
+        function executeCommand(cmd, args) {
+            switch (cmd) {
+                case 'HELP':
+                    writeOutput("--- ATLAS CONSOLE COMMANDS ---", '#ffff00');
+                    writeOutput("HELP          - Display this list of commands.", '#00ff41');
+                    writeOutput("CLEAR         - Clears the console output.", '#00ff41');
+                    writeOutput("STATUS        - Displays current system status and variables.", '#00ff41');
+                    writeOutput("LOCKDOWN      - Initiates system lockdown (disables input).", '#ff0000');
+                    writeOutput("UNLOCK [CODE] - Releases lockdown using the override code.", '#ff0000');
+                    writeOutput("GAME [NAME]   - Loads and runs a game engine (e.g., GAME NULL).", '#00ffff');
+                    writeOutput("SOUND [KEY]   - Plays a specific sound effect (e.g., SOUND RIZZ).", '#00ffff');
+                    writeOutput("--- AVAILABLE SOUNDS ---", '#ffff00');
+                    writeOutput(Object.keys(SOUND_EFFECTS).join(', '), '#00ffff');
+                    break;
+                
+                case 'CLEAR':
+                    outputDiv.innerHTML = '';
+                    break;
+
+                case 'STATUS':
+                    writeOutput("--- SYSTEM STATUS REPORT ---", '#ffff00');
+                    writeOutput(`AUTH_USER: J.ATLAS (ADMIN_LEVEL 5)`, '#00ff41');
+                    writeOutput(`SYSTEM_LOAD: 1.2% (Nominal)`, '#00ff41');
+                    writeOutput(`NETWORK_PING: 4ms (Stable)`, '#00ff41');
+                    writeOutput(`AUDIO_CONTEXT: ${audioContext ? audioContext.state.toUpperCase() : 'UNINITIALIZED'}`, '#00ffff');
+                    writeOutput(`AUDIO_UNLOCKED: ${audioUnlocked ? 'TRUE' : 'FALSE (Click/Key required)'}`, '#00ffff');
+                    writeOutput(`LOCKDOWN_STATE: ${isLockedDown ? 'ACTIVE' : 'INACTIVE'}`, isLockedDown ? '#ff0000' : '#00ff41');
+                    writeOutput(`BUSY_STATE: ${isBusy ? 'TRUE' : 'FALSE'}`, isBusy ? '#ffff00' : '#00ff41');
+                    break;
+
+                case 'GAME':
+                    const gameName = args[0] || 'NULL';
+                    const game = GAMES[gameName];
+                    if (game) {
+                        writeOutput(`LOADING: Game Engine ${game.name}...`, '#00ffff');
+                        setTimeout(() => game.run(), 200);
+                    } else {
+                        writeOutput(`ERROR: Game Engine '${gameName}' not found.`, '#ff0000');
+                    }
+                    break;
+                
+                case 'SOUND':
+                    const soundKey = args[0];
+                    if (soundKey) {
+                        playSound(soundKey);
+                    } else {
+                        writeOutput("USAGE: SOUND [KEY]. Type HELP for available keys.", '#ffff00');
+                    }
+                    break;
+
+                case 'LOCKDOWN':
+                    isLockedDown = true;
+                    hidePrompt();
+                    playSound('SIREN');
+                    promptPrefix.style.color = '#ff0000';
+                    writeOutput("!!! WARNING !!! SYSTEM LOCKDOWN INITIATED. INPUT DISABLED. OVERRIDE REQUIRED.", '#ff0000');
+                    break;
+
+                case 'UNLOCK':
+                    const code = args[0];
+                    const overrideCode = '1701'; // The secret code
+                    if (isLockedDown) {
+                        if (code === overrideCode) {
+                            isLockedDown = false;
+                            playSound('CONFIRM');
+                            writeOutput("OVERRIDE ACCEPTED. SYSTEM UNLOCKING...", '#00ff41');
+                            writeOutput("LOCKDOWN RELEASED. Resuming normal operations.", '#00ff41');
+                        } else {
+                            playSound('ERROR');
+                            writeOutput("ACCESS DENIED. INCORRECT OVERRIDE CODE. RETAINING LOCKDOWN.", '#ff0000');
+                        }
+                    } else {
+                        writeOutput("STATUS: System is not in lockdown.", '#00ff41');
+                    }
+                    break;
+                
+                default:
+                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
+                    playSound('ERROR');
+                    break;
+            }
+            
+            if (!isBusy && !isLockedDown) showPrompt();
         }
 
         // =========================================================================
         // --- Initialization and Events ---
         // =========================================================================
         
-        loginForm.addEventListener('submit', handleLogin);
-        biometricButton.addEventListener('click', activateConsole);
-        
         document.addEventListener('keypress', function(e) {
-            if (!isLockedDown && e.target === commandInput && !commandInput.disabled) {
-                playSystemSound('TYPING');
-            }
-            if (!isLockedDown && e.key === 'Enter' && !commandInput.disabled) {
+            if (e.key === 'Enter' && !commandInput.disabled) {
                 processCommand(commandInput.value);
                 commandInput.value = '';
             }
         });
+
+        document.addEventListener('keydown', function(e) {
+            if (commandInput.disabled) return;
+
+            const historyKeys = Object.keys(SOUND_EFFECTS);
+            
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                historyIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+                if (historyIndex >= 0) {
+                    commandInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                historyIndex = Math.max(historyIndex - 1, -1);
+                if (historyIndex === -1) {
+                    commandInput.value = '';
+                } else {
+                    commandInput.value = commandHistory[commandHistory.length - 1 - historyIndex];
+                }
+            } else if (e.key === 'Tab') {
+                e.preventDefault();
+                // Basic sound key autocompletion for demonstration
+                const partial = commandInput.value.toUpperCase().trim();
+                if (partial.startsWith('SOUND ')) {
+                    const soundPartial = partial.substring(6);
+                    const match = historyKeys.find(key => key.startsWith(soundPartial));
+                    if (match) {
+                        commandInput.value = `SOUND ${match}`;
+                    }
+                }
+            }
+        });
         
         window.onload = function() {
-            // 1. CRITICAL CONTEXT CHECK: If __app_id is undefined, we assume the code was copied outside the secure environment.
-            isLocalCopy = (typeof __app_id === 'undefined');
+            // 1. Initialize Audio Context
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                writeOutput('CRITICAL ERROR: Web Audio API not supported in this browser.', '#ff0000');
+                return;
+            }
             
-            // 2. Start the clock
-            updateTime();
-            setInterval(updateTime, 1000);
-
-            // 3. Attach unlock handlers to user interaction
+            // 2. Set up Audio Unlock (for browsers requiring user interaction)
             document.body.addEventListener('click', unlockAudioContext, { once: true });
             document.body.addEventListener('keydown', unlockAudioContext, { once: true });
+
+            // 3. Buffer all sound effects asynchronously
+            const soundKeys = Object.keys(SOUND_EFFECTS);
+            let bufferedCount = 0;
+            const totalCount = soundKeys.length;
+
+            writeOutput('SFX/GAME DATABASE: Initializing...', '#00ffff');
             
-            // 4. Load the audio files
-            loadAudioAssets(() => {
-                console.log('All audio assets loaded via direct filenames.');
-                if (!isLockedDown) {
-                    writeOutput('>>> AUDIO ASSETS STATUS: All user-provided SFX loaded and buffered.', '#00ff41');
-                }
+            soundKeys.forEach(key => {
+                bufferAudio(key).then(() => {
+                    bufferedCount++;
+                    if (bufferedCount === totalCount) {
+                        writeOutput(`SFX/GAME DATABASE: Local repository initialized with ${totalCount} assets and ${Object.keys(GAMES).length} game engines. All systems nominal.`, '#00ff41');
+                        commandInput.focus();
+                        showPrompt();
+                    }
+                });
             });
 
-            // 5. Determine initial security flow based on context
-            if (isLocalCopy) {
-                // SCENARIO A: Copied from code -> Force Biometric Scan for OWNER
-                initFaceIDLogin();
-            } else {
-                // SCENARIO B: Running in secure Canvas context -> Standard Login
-                loginOverlay.style.display = 'flex';
-                document.getElementById('username').focus();
-            }
+            // If buffering fails fast or is very slow, ensure the prompt shows up anyway
+            setTimeout(() => {
+                if (commandInput.disabled) {
+                     writeOutput('INFO: Buffering check timeout. Enabling command line.', '#ffff00');
+                     commandInput.focus();
+                     showPrompt();
+                }
+            }, 3000); // 3-second timeout
+
         };
     </script>
 
