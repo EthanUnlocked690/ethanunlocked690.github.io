@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.4</title>
+    <title>ATLAS: DATA FLOW CONSOLE v6.6</title>
     <!-- Use a Google Font for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -130,7 +130,7 @@
             flex-shrink: 0; /* Prevents the prompt symbol from shrinking */
         }
 
-        /* FIX: Ensure input takes all remaining space for native caret */
+        /* Ensure input takes all remaining space for native caret */
         #command-input {
             background: none;
             border: none;
@@ -142,8 +142,6 @@
             outline: none;
             caret-color: var(--prompt-caret); /* Use native blinking caret */
         }
-
-        /* Removed #typing-indicator styles and @keyframes blink */
 
         /* --- LOGIN MODAL STYLES --- */
         #login-overlay {
@@ -252,7 +250,6 @@
         <div id="prompt-line" class="prompt-line" style="display: none;">
             <span id="prompt-symbol">ATLAS_CONSOLE ></span>
             <input type="text" id="command-input" autocomplete="off" autofocus>
-            <!-- REMOVED: <span id="typing-indicator">|</span> -->
         </div>
     </div>
 
@@ -293,13 +290,26 @@
         // --- Audio/SFX Engine ---
         // =========================================================================
         
+        /**
+         * The primary SFX map, using normalized, lowercase, alpha-only keys 
+         * for internal lookup, mapped to the correct filename.
+         */
         const SOUND_EFFECTS = {
             'confirm': 'confirm.mp3',
-            'alert': 'alert.mp3',
-            'siren': 'siren.mp3',
-            'get-out': 'get-out-meme.mp3',
-            'vine-boom': 'vine-boom.mp3'
+            'alert': 'alert.mp3', // ALERT should be alert.mp3 (distinct from siren.mp3)
+            'siren': 'siren.mp3', 
+            'getout': 'get-out-meme.mp3', // Normalized key for GET_OUT/GET-OUT
+            'vineboom': 'vine-boom.mp3' // Normalized key for VINE_BOOM/VINE-BOOM
         };
+        
+        /**
+         * Helper function to normalize user input (command or argument) into the 
+         * internal lookup key format (lowercase, no hyphens, no underscores).
+         */
+        function normalizeSFXInput(input) {
+            return input.toLowerCase().replace(/[-_ ]/g, '');
+        }
+
 
         function unlockAudioContext() {
             try {
@@ -318,12 +328,12 @@
              audioBuffers[name] = new Audio(filename);
         }
 
-        function playSound(name) {
-             if (audioBuffers[name]) {
-                audioBuffers[name].currentTime = 0;
-                audioBuffers[name].play().catch(e => console.warn(`Error playing ${name}:`, e));
+        function playSound(normalizedName) {
+             if (audioBuffers[normalizedName]) {
+                audioBuffers[normalizedName].currentTime = 0;
+                audioBuffers[normalizedName].play().catch(e => console.warn(`Error playing ${normalizedName}:`, e));
              } else {
-                console.log(`[SFX] Playing sound: ${name} (No audio element found)`);
+                console.log(`[SFX] Playing sound: ${normalizedName} (No audio element found)`);
              }
         }
 
@@ -404,7 +414,7 @@
             const timeSpan = `<span style="color:#00aaff;">D/T: ${localDateStr} ${localTimeStr}</span>`;
             
             if (includeVersion) {
-                return `<span style="color:#ffaa00;">ATLAS V6.4</span> | ${locationSpan} | ${timeSpan}`;
+                return `<span style="color:#ffaa00;">ATLAS V6.6</span> | ${locationSpan} | ${timeSpan}`;
             }
             return `${locationSpan} | ${timeSpan}`;
         }
@@ -440,14 +450,14 @@
             document.documentElement.style.setProperty('--border-color', '#ffaa00');
             document.documentElement.style.setProperty('--prompt-caret', '#00ff41');
             
-            // 3. Start the clock and location resolution
+            // 3. Start the clock, location resolution, and play the final activation sound
             playSound('siren'); 
             resolveLocation(); // Initial async call to get location
             startHeaderClock(); // Start the persistent clock
 
             writeOutput('----------------------------------------------------', '#00ff41');
             writeOutput('<span style="color:#ffaa00;">PRIMARY KEY VALIDATED. SYSTEM UNLOCK INITIATED.</span>', '#ffaa00');
-            writeOutput('ATLAS DATA FLOW CONSOLE V6.4: FULL ACCESS ENABLED.', '#ffaa00');
+            writeOutput('ATLAS DATA FLOW CONSOLE V6.6: FULL ACCESS ENABLED.', '#ffaa00');
             writeOutput('Core security lockdown terminated. ACCESS LEVEL 2.', '#ffaa00');
             writeOutput('----------------------------------------------------', '#00ff41');
             showPrompt();
@@ -465,7 +475,6 @@
                 loginErrorDiv.textContent = 'AUTHENTICATION SUCCESSFUL. INITIATING DATA FLOW...';
                 loginErrorDiv.style.color = '#00ff41';
                 setTimeout(activateConsole, 1000); // Wait a moment before transition
-                playSound('confirm');
             } else {
                 let errorMsg = 'ACCESS DENIED: Invalid Credentials.';
                 
@@ -513,7 +522,17 @@
             let success = true;
 
             setTimeout(() => {
-                const sfxKey = cmd.toLowerCase().replace('-', '');
+                const normalizedCmd = normalizeSFXInput(cmd);
+                const knownSFXKeys = Object.keys(SOUND_EFFECTS);
+                
+                // Check if the command itself is a known SFX
+                let foundSfxKey = null;
+                for (const key of knownSFXKeys) {
+                    if (key === normalizedCmd) {
+                        foundSfxKey = key;
+                        break;
+                    }
+                }
 
                 switch (cmd) {
                     case 'HELP':
@@ -563,14 +582,26 @@
                         if (args.length === 0) {
                             writeOutput('SYNTAX ERROR: PLAY requires an SFX name. Available SFX:', '#ff0000');
                             Object.keys(SOUND_EFFECTS).forEach(sfxKey => {
-                                writeOutput(`  - <span style="color:var(--terminal-color);">${sfxKey.toUpperCase().replace('-', '_')}</span>`); 
+                                // Display formatted names (CONFIRM, ALERT, SIREN, GET_OUT, VINE_BOOM)
+                                let displayName = sfxKey.toUpperCase().replace('GETOUT', 'GET_OUT').replace('VINEBOOM', 'VINE_BOOM');
+                                writeOutput(`  - <span style="color:var(--terminal-color);">${displayName}</span>`); 
                             });
                             success = false;
                             break;
                         }
-                        const playSfx = args[0].toLowerCase().replace('-', ''); 
-                        if (SOUND_EFFECTS[playSfx] || (playSfx === 'getout' || playSfx === 'vineboom')) {
-                            playSound(playSfx);
+                        
+                        const playSfxInputName = normalizeSFXInput(args[0]); 
+                        let sfxToPlay = null;
+
+                        for (const key of knownSFXKeys) {
+                            if (key === playSfxInputName) {
+                                sfxToPlay = key; 
+                                break;
+                            }
+                        }
+
+                        if (sfxToPlay) {
+                            playSound(sfxToPlay);
                         } else {
                             writeOutput(`ERROR: SFX '${args[0]}' not recognized. Type PLAY for a list.`, '#ff0000');
                             success = false;
@@ -591,11 +622,11 @@
                         break;
                     
                     default:
-                        // FIX: Check if the unrecognised command is actually a sound effect name
-                        if (SOUND_EFFECTS[sfxKey] || (sfxKey === 'getout' || sfxKey === 'vineboom')) {
-                             writeOutput(`SYNTAX ERROR: SFX must be run with the <span style="color:#00aaff;">PLAY</span> command. Use: <span style="color:#00aaff;">PLAY ${cmd}</span>`, '#ff0000');
+                        // Check if the unrecognized command is a known SFX
+                        if (foundSfxKey) {
+                            writeOutput(`SYNTAX ERROR: SFX must be run with the <span style="color:#00aaff;">PLAY</span> command. Use: <span style="color:#00aaff;">PLAY ${cmd}</span>`, '#ff0000');
                         } else {
-                             writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
+                            writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
                         }
                         success = false;
                         break;
