@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.1</title>
+    <title>ATLAS: DATA FLOW CONSOLE v6.3</title>
     <!-- Use a Google Font for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -63,7 +63,8 @@
             height: 80vh;
             max-height: 600px;
             border: 3px solid var(--border-color);
-            padding: 15px;
+            padding: 15px; 
+            padding-top: 40px; /* Space for the fixed header */
             box-shadow: 0 0 20px var(--border-color);
             background-color: rgba(0, 0, 0, 0.85); 
             overflow-y: auto;
@@ -72,6 +73,29 @@
             
             /* Hidden by default, shown on successful login */
             display: none; 
+        }
+
+        /* --- Fixed Header Style --- */
+        #terminal-header {
+            position: absolute; 
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 15px;
+            background-color: rgba(0, 0, 0, 0.95); 
+            border-bottom: 1px solid var(--border-color);
+            z-index: 2; 
+            font-size: 1rem;
+            display: flex; 
+            justify-content: space-between;
+            height: 30px; 
+            line-height: 1.5;
+            flex-wrap: nowrap;
+        }
+        
+        #terminal-header span:nth-child(2) {
+            margin-left: 10px; 
+            margin-right: 10px;
         }
 
         /* Scrollbar styles (for Webkit browsers) */
@@ -227,6 +251,7 @@
     <!-- END LOGIN MODAL -->
 
     <div id="terminal-container">
+        <div id="terminal-header"></div> <!-- FIXED HEADER FOR DATE/TIME/LOCATION -->
         <div id="output-area"></div>
         <div id="prompt-line" class="prompt-line" style="display: none;">
             <span id="prompt-symbol">ATLAS_CONSOLE ></span>
@@ -243,6 +268,7 @@
         const commandInput = document.getElementById('command-input');
         const promptLine = document.getElementById('prompt-line');
         const terminalContainer = document.getElementById('terminal-container');
+        const terminalHeader = document.getElementById('terminal-header'); 
         
         // MODAL ELEMENTS
         const loginOverlay = document.getElementById('login-overlay');
@@ -262,12 +288,15 @@
         let historyIndex = -1;
         let audioContext;
         let audioBuffers = {};
+        let timeInterval; 
+        
+        // NEW: Location State
+        let systemLocation = 'RESOLVING LOCATION...'; 
 
         // =========================================================================
         // --- Audio/SFX Engine ---
         // =========================================================================
-
-        // Map keys to the filename for playback
+        
         const SOUND_EFFECTS = {
             'confirm': 'confirm.mp3',
             'alert': 'alert.mp3',
@@ -332,16 +361,69 @@
             terminalContainer.scrollTop = terminalContainer.scrollHeight;
         }
         
-        // NEW: Function to display formatted date and time
-        function displayDateTime() {
-            const now = new Date();
-            // Format: MM/DD/YYYY HH:MM:SS (24-hour)
-            const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        // NEW: Function to resolve location using Geolocation API
+        function resolveLocation() {
+            // 1. Get TimeZone first, as it's synchronous and reliable.
             const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            systemLocation = timeZone; // Default to TimeZone string
+
+            // 2. Attempt Geolocation (async)
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude.toFixed(2);
+                        const lon = position.coords.longitude.toFixed(2);
+                        
+                        // Display the zone name plus coordinates
+                        systemLocation = `${timeZone} (${lat}, ${lon})`;
+                        writeOutput(`[SYSTEM] Geolocation resolved. Coordinates: ${lat}, ${lon}`);
+                    },
+                    (error) => {
+                        // If permission is denied or error occurs, stick with the TimeZone string
+                        console.warn("Geolocation failed:", error.message);
+                        writeOutput(`[SYSTEM] Geolocation failed (Code ${error.code}). Using TimeZone fallback: ${timeZone}`, '#ffaa00');
+                        systemLocation = `${timeZone} (NO GEO DATA)`;
+                    },
+                    {
+                        enableHighAccuracy: false,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                // Geolocation not supported, stick with the TimeZone string
+                writeOutput(`[SYSTEM] Geolocation unsupported. Using TimeZone fallback: ${timeZone}`, '#ffaa00');
+                systemLocation = `${timeZone} (UNSUPPORTED)`;
+            }
+        }
+
+
+        // NEW: Function to format the date and time for the header
+        function formatDateTimeHeader(includeVersion = true) {
+            const now = new Date();
+            // Use system-defined locale for automatic local time
+            const localTimeStr = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const localDateStr = now.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
             
-            const line = `<span style="color:#00aaff;">[SYSTEM TIME] ${dateStr} ${timeStr} (${timeZone})</span>`;
-            writeOutput(line);
+            // Display the resolved location
+            const locationSpan = `<span style="color:var(--terminal-color);">LOC: ${systemLocation}</span>`;
+            const timeSpan = `<span style="color:#00aaff;">D/T: ${localDateStr} ${localTimeStr}</span>`;
+            
+            if (includeVersion) {
+                return `<span style="color:#ffaa00;">ATLAS V6.3</span> | ${locationSpan} | ${timeSpan}`;
+            }
+            return `${locationSpan} | ${timeSpan}`;
+        }
+
+        // Function to update the fixed header every second
+        function updateHeaderClock() {
+            terminalHeader.innerHTML = formatDateTimeHeader();
+        }
+
+        function startHeaderClock() {
+            updateHeaderClock(); // Update immediately
+            clearInterval(timeInterval); // Clear any old interval
+            timeInterval = setInterval(updateHeaderClock, 1000); // Update every second
         }
 
         function showPrompt() {
@@ -365,13 +447,14 @@
             document.documentElement.style.setProperty('--border-color', '#ffaa00');
             document.documentElement.style.setProperty('--prompt-caret', '#00ff41');
             
-            // 3. Play sound and output initial message
+            // 3. Start the clock and location resolution
             playSound('siren'); 
-            
-            displayDateTime(); // <--- NEW: Display time immediately on unlock
+            resolveLocation(); // Initial async call to get location
+            startHeaderClock(); // Start the persistent clock
+
             writeOutput('----------------------------------------------------', '#00ff41');
             writeOutput('<span style="color:#ffaa00;">PRIMARY KEY VALIDATED. SYSTEM UNLOCK INITIATED.</span>', '#ffaa00');
-            writeOutput('ATLAS DATA FLOW CONSOLE V6.1: FULL ACCESS ENABLED.', '#ffaa00');
+            writeOutput('ATLAS DATA FLOW CONSOLE V6.3: FULL ACCESS ENABLED.', '#ffaa00');
             writeOutput('Core security lockdown terminated. ACCESS LEVEL 2.', '#ffaa00');
             writeOutput('----------------------------------------------------', '#00ff41');
             showPrompt();
@@ -446,7 +529,7 @@
                         writeOutput(`  <span style="color:var(--terminal-color);">EXECUTE [OP]</span>     - Run a critical data operation.`);
                         writeOutput(`  <span style="color:var(--terminal-color);">CLEAR</span>            - Clears the console screen.`);
                         writeOutput(`  <span style="color:var(--terminal-color);">STATUS</span>           - Displays current system status and access level.`);
-                        writeOutput(`  <span style="color:var(--terminal-color);">TIME</span>             - Displays current system date and time.`); // <--- NEW HELP ENTRY
+                        writeOutput(`  <span style="color:var(--terminal-color);">TIME</span>             - Displays current system date and time/location.`); 
                         writeOutput('<span style="color:#ffaa00;">ENTERTAINMENT/SFX:</span>');
                         writeOutput(`  <span style="color:var(--terminal-color);">GAME [NAME]</span>      - Initiates a game engine (SNAKE, MAZE).`);
                         writeOutput(`  <span style="color:var(--terminal-color);">PLAY [SFX]</span>       - Trigger sound effects (Type PLAY for list).`);
@@ -454,8 +537,9 @@
                         writeOutput(`CURRENT LOCKDOWN STATUS: <span style="color:#00ff41;">UNLOCKED</span> (LEVEL 2 ACCESS)`);
                         break;
                     
-                    case 'TIME': // <--- NEW COMMAND
-                        displayDateTime();
+                    case 'TIME': 
+                        writeOutput(`Current system time and status:`);
+                        writeOutput(formatDateTimeHeader(false), '#00ff41'); 
                         break;
 
                     case 'STATUS':
@@ -482,16 +566,14 @@
 
                     case 'PLAY':
                         if (args.length === 0) {
-                            // <--- UPDATED: List available SFX when no argument is given
                             writeOutput('SYNTAX ERROR: PLAY requires an SFX name. Available SFX:', '#ff0000');
                             Object.keys(SOUND_EFFECTS).forEach(sfxKey => {
-                                // Display key in uppercase with underscores for clarity
                                 writeOutput(`  - <span style="color:var(--terminal-color);">${sfxKey.toUpperCase().replace('-', '_')}</span>`); 
                             });
                             success = false;
                             break;
                         }
-                        const sfx = args[0].toLowerCase().replace('-', ''); // normalize input
+                        const sfx = args[0].toLowerCase().replace('-', ''); 
                         if (sfx === 'confirm') playSound('confirm');
                         else if (sfx === 'alert') playSound('alert');
                         else if (sfx === 'siren') playSound('siren');
