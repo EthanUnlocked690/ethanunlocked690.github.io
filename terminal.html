@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.6</title>
+    <title>ATLAS: DATA FLOW CONSOLE v6.7</title>
     <!-- Use a Google Font for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
@@ -296,18 +296,19 @@
          */
         const SOUND_EFFECTS = {
             'confirm': 'confirm.mp3',
-            'alert': 'alert.mp3', // ALERT should be alert.mp3 (distinct from siren.mp3)
+            'alert': 'alert.mp3', 
             'siren': 'siren.mp3', 
-            'getout': 'get-out-meme.mp3', // Normalized key for GET_OUT/GET-OUT
-            'vineboom': 'vine-boom.mp3' // Normalized key for VINE_BOOM/VINE-BOOM
+            'getout': 'get-out-meme.mp3', 
+            'vineboom': 'vine-boom.mp3',
+            'rizz': 'rizz.mp3' // NEW: Added rizz.mp3
         };
         
         /**
          * Helper function to normalize user input (command or argument) into the 
-         * internal lookup key format (lowercase, no hyphens, no underscores).
+         * internal lookup key format (lowercase, no hyphens, no underscores, no file extensions).
          */
         function normalizeSFXInput(input) {
-            return input.toLowerCase().replace(/[-_ ]/g, '');
+            return input.toLowerCase().replace(/[-_ .]/g, '');
         }
 
 
@@ -414,7 +415,7 @@
             const timeSpan = `<span style="color:#00aaff;">D/T: ${localDateStr} ${localTimeStr}</span>`;
             
             if (includeVersion) {
-                return `<span style="color:#ffaa00;">ATLAS V6.6</span> | ${locationSpan} | ${timeSpan}`;
+                return `<span style="color:#ffaa00;">ATLAS V6.7</span> | ${locationSpan} | ${timeSpan}`;
             }
             return `${locationSpan} | ${timeSpan}`;
         }
@@ -457,7 +458,7 @@
 
             writeOutput('----------------------------------------------------', '#00ff41');
             writeOutput('<span style="color:#ffaa00;">PRIMARY KEY VALIDATED. SYSTEM UNLOCK INITIATED.</span>', '#ffaa00');
-            writeOutput('ATLAS DATA FLOW CONSOLE V6.6: FULL ACCESS ENABLED.', '#ffaa00');
+            writeOutput('ATLAS DATA FLOW CONSOLE V6.7: FULL ACCESS ENABLED.', '#ffaa00');
             writeOutput('Core security lockdown terminated. ACCESS LEVEL 2.', '#ffaa00');
             writeOutput('----------------------------------------------------', '#00ff41');
             showPrompt();
@@ -582,8 +583,10 @@
                         if (args.length === 0) {
                             writeOutput('SYNTAX ERROR: PLAY requires an SFX name. Available SFX:', '#ff0000');
                             Object.keys(SOUND_EFFECTS).forEach(sfxKey => {
-                                // Display formatted names (CONFIRM, ALERT, SIREN, GET_OUT, VINE_BOOM)
-                                let displayName = sfxKey.toUpperCase().replace('GETOUT', 'GET_OUT').replace('VINEBOOM', 'VINE_BOOM');
+                                // Display formatted names (CONFIRM, ALERT, SIREN, GET_OUT, VINE_BOOM, RIZZ)
+                                let displayName = sfxKey.toUpperCase()
+                                    .replace('GETOUT', 'GET_OUT')
+                                    .replace('VINEBOOM', 'VINE_BOOM');
                                 writeOutput(`  - <span style="color:var(--terminal-color);">${displayName}</span>`); 
                             });
                             success = false;
