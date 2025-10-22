@@ -2,17 +2,21 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.7</title>
-    <!-- Use a Google Font for the retro terminal look -->
+    <title>ATLAS: DATA FLOW CONSOLE v5.9</title>
+    <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <style>
-        /* Define a CSS variable for easy theme changing */
+        /* Define colors for easy theme changing */
         :root {
-            --terminal-color: #00ff41; /* Default Green */
+            --terminal-color: #00ff41; /* Green */
             --terminal-background-color: #000;
             --border-color: #00ff41;
-            --prompt-caret: #ffaa00;
+            --prompt-caret: #ffaa00; /* Amber */
+            --error-color: #ff0000; /* Red */
+            --highlight-color: #00aaff; /* Blue */
         }
 
         /* General Console Theme */
@@ -29,7 +33,6 @@
             justify-content: center;
             align-items: center;
             position: relative; 
-            transition: color 0.5s, border-color 0.5s, background-color 0.1s; 
         }
 
         /* --- Animated Background Layer --- */
@@ -39,111 +42,98 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg, 
+                    var(--terminal-color)33, 
+                    var(--terminal-color)33 1px, 
+                    #000 1px, 
+                    #000 3px
+                );
             pointer-events: none;
             z-index: 0;
-            opacity: 0.1;
-            /* Simple scanline effect for retro feel */
-            background-image: linear-gradient(rgba(0, 0, 0, 0.75) 1px, transparent 1px);
-            background-size: 100% 2px;
-            animation: flicker 0.15s infinite alternate;
+            opacity: 0.15;
+            animation: flicker 10s infinite alternate;
         }
 
         @keyframes flicker {
-            0% { opacity: 0.05; }
+            0% { opacity: 0.15; }
             50% { opacity: 0.1; }
-            100% { opacity: 0.15; }
+            100% { opacity: 0.2; }
         }
 
-        /* --- Main Terminal Window --- */
-        #terminal-container {
-            position: relative;
+        /* --- Main Console Container --- */
+        #console-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            background-color: #080808;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px var(--terminal-color);
+            padding: 20px;
+            overflow: hidden;
             z-index: 1;
-            width: 95%;
-            max-width: 800px;
-            height: 80vh;
-            max-height: 600px;
-            border: 3px solid var(--border-color);
-            padding: 15px; 
-            padding-top: 40px; /* Space for the fixed header */
-            box-shadow: 0 0 20px var(--border-color);
-            background-color: rgba(0, 0, 0, 0.85); 
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--terminal-color) #111;
-            
-            /* Hidden by default, shown on successful login */
+            display: flex;
+            flex-direction: column; /* Use column layout */
+            border-radius: 8px;
+            /* Initially hidden, shown after login */
             display: none; 
         }
-
-        /* --- Fixed Header Style --- */
-        #terminal-header {
-            position: absolute; 
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 8px 15px;
-            background-color: rgba(0, 0, 0, 0.95); 
-            border-bottom: 1px solid var(--border-color);
-            z-index: 2; 
-            font-size: 1rem;
-            display: flex; 
-            justify-content: space-between;
-            height: 30px; 
-            line-height: 1.5;
-            flex-wrap: nowrap;
-        }
         
-        /* Spacing for header elements */
-        #terminal-header span:nth-child(2) {
-            margin-left: 10px; 
-            margin-right: 10px;
+        /* --- NEW: Pinned Header Style --- */
+        #console-header {
+            flex-shrink: 0; /* Prevents it from shrinking */
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--highlight-color); /* Separation line */
+            font-size: 1.2rem;
+            color: var(--highlight-color);
+            white-space: pre; /* Ensures content stays on one line if possible */
         }
 
-        /* Scrollbar styles (for Webkit browsers) */
-        #terminal-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        #terminal-container::-webkit-scrollbar-thumb {
-            background-color: var(--terminal-color);
-        }
-        #terminal-container::-webkit-scrollbar-track {
-            background-color: #111;
-        }
 
-        /* --- Output and Prompt --- */
-        #output-area {
+        /* --- Terminal Output Area --- */
+        #terminal-output {
+            flex-grow: 1; /* Allows it to take up remaining space */
+            overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
-            margin-bottom: 5px;
+            padding-bottom: 10px;
+            scrollbar-width: none; /* Firefox */
         }
-
-        .prompt-line {
+        #terminal-output::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+        
+        /* --- Command Input Area --- */
+        #command-line {
             display: flex;
-            align-items: baseline;
-            /* Ensures prompt input line wraps correctly */
-            width: 100%; 
+            align-items: center;
+            flex-shrink: 0; /* Prevents it from shrinking */
+            margin-top: 10px;
         }
 
-        #prompt-symbol {
-            color: var(--prompt-caret);
+        #prompt {
+            color: var(--prompt-caret); 
             margin-right: 5px;
-            flex-shrink: 0; /* Prevents the prompt symbol from shrinking */
+            white-space: nowrap;
         }
 
-        /* Ensure input takes all remaining space for native caret */
         #command-input {
-            background: none;
+            flex-grow: 1;
+            background: transparent;
             border: none;
             color: var(--terminal-color);
             font-family: 'VT323', monospace;
             font-size: 1.1rem;
-            flex-grow: 1; /* Key to making it take remaining space */
-            padding: 0;
             outline: none;
-            caret-color: var(--prompt-caret); /* Use native blinking caret */
+            caret-color: var(--terminal-color); 
+            padding: 0;
         }
 
-        /* --- LOGIN MODAL STYLES --- */
+        /* =========================================================================
+           --- LOGIN MODAL STYLES ---
+           ========================================================================= */
         #login-overlay {
             position: fixed;
             top: 0;
@@ -158,7 +148,7 @@
         }
 
         #login-card {
-            border: 3px solid #ff0000; /* Red for locked status */
+            border: 3px solid var(--error-color); 
             box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
             padding: 30px;
             background-color: #111;
@@ -175,25 +165,29 @@
         .login-field label {
             display: block;
             margin-bottom: 5px;
-            color: #ffaa00; /* Amber text for labels */
+            color: var(--prompt-caret); 
         }
 
         .login-field input {
             width: 100%;
             padding: 10px;
             background-color: #000;
-            border: 1px solid #ff0000;
-            color: #ffaa00;
+            border: 1px solid var(--error-color);
+            color: var(--prompt-caret);
             font-family: 'VT323', monospace;
             font-size: 1.1rem;
             box-sizing: border-box;
             outline: none;
         }
+        /* Passkey field narrower */
+        #passkey {
+            max-width: 50%;
+        }
 
         #login-button {
-            background-color: #ff0000;
+            background-color: var(--error-color);
             color: #fff;
-            border: 2px solid #ff0000;
+            border: 2px solid var(--error-color);
             padding: 10px 20px;
             cursor: pointer;
             font-family: 'VT323', monospace;
@@ -208,22 +202,53 @@
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
         }
 
-        #login-error {
-            color: #ff0000;
+        #login-status {
+            color: var(--prompt-caret);
             margin-top: 15px;
-            height: 1.5rem; /* Reserve space */
+            min-height: 1.5rem; 
+        }
+
+        /* Loading Screen Style */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.98);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 200;
+            color: var(--terminal-color);
+        }
+
+        #loading-logo {
+            font-size: 5rem;
+            color: var(--highlight-color);
+            animation: glitch 1.5s infinite alternate;
+            margin-bottom: 20px;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0 0 1px var(--error-color), 0 0 5px var(--highlight-color); transform: skew(0.5deg); }
+            50% { text-shadow: 0 0 1px var(--terminal-color), 0 0 5px var(--prompt-caret); transform: skew(-0.5deg); }
+            100% { text-shadow: 0 0 1px var(--highlight-color), 0 0 5px var(--error-color); transform: skew(0deg); }
         }
         
     </style>
 </head>
+
 <body>
+    <!-- Animated Scanline/Flicker Background -->
     <div id="terminal-background"></div>
-    
+
     <!-- LOGIN MODAL STRUCTURE -->
     <div id="login-overlay">
         <div id="login-card">
-            <h2 style="color: #ff0000; margin-top: 0; margin-bottom: 20px;">ATLAS ACCESS PROTOCOL</h2>
-            <p style="color: #ffaa00; font-size: 1rem;">STATUS: System Locked Down. Full Access Key Required.</p>
+            <h2 style="color: var(--error-color); margin-top: 0; margin-bottom: 20px;">ATLAS ACCESS PROTOCOL</h2>
+            <p style="color: var(--prompt-caret); font-size: 1rem;">STATUS: Two-Factor Authentication Required.</p>
             <form id="login-form">
                 <div class="login-field">
                     <label for="username">USERNAME:</label>
@@ -234,459 +259,431 @@
                     <input type="password" id="password" required>
                 </div>
                 <div class="login-field">
-                    <label for="key">ACCESS KEY:</label>
-                    <input type="text" id="key" required>
+                    <label for="passkey">PASSKEY (4 DIGITS):</label>
+                    <input type="text" id="passkey" required maxlength="4">
                 </div>
-                <button type="submit" id="login-button">INITIATE DATA FLOW UNLOCK</button>
+                <button type="submit" id="login-button">INITIATE ACCESS SEQUENCE</button>
             </form>
-            <div id="login-error">Awaiting Authentication...</div>
+            <div id="login-status">Awaiting Authentication...</div>
         </div>
     </div>
     <!-- END LOGIN MODAL -->
 
-    <div id="terminal-container">
-        <div id="terminal-header"></div> <!-- FIXED HEADER FOR DATE/TIME/LOCATION -->
-        <div id="output-area"></div>
-        <div id="prompt-line" class="prompt-line" style="display: none;">
-            <span id="prompt-symbol">ATLAS_CONSOLE ></span>
-            <input type="text" id="command-input" autocomplete="off" autofocus>
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div id="loading-logo">ATLAS_INIT</div>
+        <div id="loading-text" style="color:var(--highlight-color);">Processing Authentication Handshake...</div>
+    </div>
+    <!-- END LOADING SCREEN -->
+
+    <div id="console-container">
+        <!-- NEW: PINNED HEADER (Updates every second) -->
+        <div id="console-header">
+            ATLAS_SYSTEM_OFFLINE
+        </div>
+
+        <!-- Terminal Output (Scrollable area) -->
+        <div id="terminal-output">
+            <!-- Content written by JS -->
+        </div>
+
+        <!-- Command Input -->
+        <div id="command-line">
+            <span id="prompt"></span>
+            <input type="text" id="command-input" autocomplete="off" spellcheck="false" placeholder="Enter command...">
         </div>
     </div>
 
+    
     <script>
         // =========================================================================
-        // --- Core Console Variables and State ---
+        // --- Global Variables and Audio/Utility Setup ---
         // =========================================================================
-        const outputArea = document.getElementById('output-area');
+
+        const terminalOutput = document.getElementById('terminal-output');
+        const consoleHeader = document.getElementById('console-header'); // New element
         const commandInput = document.getElementById('command-input');
-        const promptLine = document.getElementById('prompt-line');
-        const terminalContainer = document.getElementById('terminal-container');
-        const terminalHeader = document.getElementById('terminal-header'); 
+        const promptSpan = document.getElementById('prompt');
+        const consoleContainer = document.getElementById('console-container');
         
-        // MODAL ELEMENTS
+        // Modal Elements
         const loginOverlay = document.getElementById('login-overlay');
         const loginForm = document.getElementById('login-form');
-        const loginErrorDiv = document.getElementById('login-error');
+        const loginStatus = document.getElementById('login-status');
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingText = document.getElementById('loading-text');
 
-        // Authentication & System State
-        const USERNAME = 'ETHANUNLOCKED'; 
-        const PASSWORD_HASH = 'h4cker';
-        const ACCESS_KEY = '1957';
-
-        let isLoggedIn = false;
-        let accessLevel = 0; 
         let isBusy = false;
-        let isLockedDown = true;
-        let history = [];
-        let historyIndex = -1;
-        let audioContext;
-        let audioBuffers = {};
-        let timeInterval; 
-        
-        // Location State
-        let systemLocation = 'RESOLVING LOCATION...'; 
+        let isLoggedIn = false; 
+        let failedAttempts = 0; 
+        let timeUpdateInterval = null; // Interval for refreshing the header
 
-        // =========================================================================
-        // --- Audio/SFX Engine ---
-        // =========================================================================
-        
-        /**
-         * The primary SFX map, using normalized, lowercase, alpha-only keys 
-         * for internal lookup, mapped to the correct filename.
-         */
+        // --- CORRECT CREDENTIALS ---
+        const CORRECT_USER = 'ETHANUNLOCKED'; 
+        const CORRECT_PASSWORD = 'h4cker';     
+        const CORRECT_PASSKEY = '1957';      
+        // ---------------------------
+
+        // --- LOCATION CONSTANT ---
+        const LOCATION = 'KOLLARNEY BAY SECURE NODE'; 
+
+        // Sound Mapping (using your provided files)
         const SOUND_EFFECTS = {
-            'confirm': 'confirm.mp3',
-            'alert': 'alert.mp3', 
-            'siren': 'siren.mp3', 
-            'getout': 'get-out-meme.mp3', 
-            'vineboom': 'vine-boom.mp3',
-            'rizz': 'rizz.mp3' 
+            'hm.mp3': 'siren.mp3',      // Loading/Suspense
+            'access.mp3': 'confirm.mp3', // Access Granted
+            'no.mp3': 'alert.mp3',     // Failed Attempt 1
+            '2.mp3': 'get-out-meme.mp3', // Failed Attempt 2
+            '3.mp3': 'vine-boom.mp3',  // Failed Attempt 3
         };
-        
-        /**
-         * Helper function to normalize user input (command or argument) into the 
-         * internal lookup key format (lowercase, no hyphens, no underscores, no file extensions).
-         */
-        function normalizeSFXInput(input) {
-            return input.toLowerCase().replace(/[-_ .]/g, '');
-        }
 
+        const AUDIO_BUFFER = {};
+        
+        // =========================================================================
+        // --- Audio Functions ---
+        // =========================================================================
 
         function unlockAudioContext() {
+            if (Tone.context.state !== 'running') {
+                Tone.context.resume();
+            }
+        }
+        
+        async function loadSound(name) {
+            const path = SOUND_EFFECTS[name] || name;
+            if (AUDIO_BUFFER[path]) {
+                return AUDIO_BUFFER[path];
+            }
             try {
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioContext.state === 'suspended') {
-                    audioContext.resume();
-                }
+                // ToneAudioBuffer loads and decodes the audio file
+                const buffer = new Tone.ToneAudioBuffer(path);
+                await buffer.loaded;
+                AUDIO_BUFFER[path] = buffer;
+                return buffer;
             } catch (e) {
-                console.error("Audio Context could not be initialized/unlocked:", e);
+                console.error(`Error loading sound: ${path}`, e);
+                return null;
             }
         }
 
-        async function loadSound(name, filename) {
-             audioBuffers[name] = new Audio(filename);
-        }
+        async function loadAndPlaySound(name, loop = false) {
+            const buffer = await loadSound(name);
+            if (!buffer) return;
 
-        function playSound(normalizedName) {
-             if (audioBuffers[normalizedName]) {
-                audioBuffers[normalizedName].currentTime = 0;
-                audioBuffers[normalizedName].play().catch(e => console.warn(`Error playing ${normalizedName}:`, e));
-             } else {
-                console.log(`[SFX] Playing sound: ${normalizedName} (No audio element found)`);
-             }
-        }
-
-        // =========================================================================
-        // --- Game Engine Placeholders ---
-        // =========================================================================
-        const GAMES = {
-            'SNAKE': {
-                description: 'Classic single-player logic matrix game.',
-                run: () => {
-                    writeOutput('LOADING GAME: SNAKE. (Engine not yet implemented).', '#ffaa00');
-                }
-            },
-            'MAZE': {
-                description: '3D Wireframe navigation simulation.',
-                run: () => {
-                    writeOutput('LOADING GAME: MAZE. (Engine not yet implemented).', '#ffaa00');
-                }
+            const player = new Tone.Player({
+                url: buffer,
+                autostart: true,
+                loop: loop,
+                volume: -10 
+            }).toDestination();
+            
+            // If not looping, dispose after playing
+            if (!loop) {
+                player.onstop = () => {
+                    player.dispose();
+                };
             }
-        };
+            return player;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         // =========================================================================
-        // --- Console Utility Functions ---
+        // --- Output & UI Functions ---
         // =========================================================================
+        
+        function getCurrentFormattedTime() {
+            const now = new Date();
+            const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+            const day = dayNames[now.getDay()];
+            const date = now.getDate().toString().padStart(2, '0');
+            const month = monthNames[now.getMonth()];
+            const year = now.getFullYear();
+            
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours.toString().padStart(2, '0') : '12'; 
+
+            return `${day}, ${date}-${month}-${year} | ${hours}:${minutes}:${seconds} ${ampm} | LOCATION: ${LOCATION}`;
+        }
+        
+        function updateHeaderDisplay() {
+            // Update the dedicated header element
+            consoleHeader.textContent = `[ ${getCurrentFormattedTime()} ]`;
+        }
+        
+        function stopTimeInterval() {
+            if (timeUpdateInterval) {
+                clearInterval(timeUpdateInterval);
+                timeUpdateInterval = null;
+                consoleHeader.textContent = 'ATLAS_SYSTEM_OFFLINE';
+            }
+        }
+        
+        function startTimeInterval() {
+            stopTimeInterval(); // Ensure only one is running
+            updateHeaderDisplay(); // Initial display
+            timeUpdateInterval = setInterval(updateHeaderDisplay, 1000);
+        }
+
+
+        function clearOutput() {
+            terminalOutput.innerHTML = '';
+        }
 
         function writeOutput(text, color = 'var(--terminal-color)') {
-            const line = document.createElement('div');
-            line.innerHTML = text.replace(/\n/g, '<br>'); 
-            line.style.color = color;
-            outputArea.appendChild(line);
-            terminalContainer.scrollTop = terminalContainer.scrollHeight;
+            const p = document.createElement('span');
+            p.style.color = color;
+            p.innerHTML = text + '<br>';
+            terminalOutput.appendChild(p);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
         }
         
-        function resolveLocation() {
-            // 1. Get TimeZone first, as it's synchronous and reliable.
-            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            systemLocation = timeZone; // Default to TimeZone string
-
-            // 2. Attempt Geolocation (async)
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude.toFixed(2);
-                        const lon = position.coords.longitude.toFixed(2);
-                        
-                        // Display the zone name plus coordinates
-                        systemLocation = `${timeZone} (${lat}, ${lon})`;
-                        writeOutput(`[SYSTEM] Geolocation resolved. Coordinates: ${lat}, ${lon}`);
-                    },
-                    (error) => {
-                        // If permission is denied or error occurs, stick with the TimeZone string
-                        console.warn("Geolocation failed:", error.message);
-                        writeOutput(`[SYSTEM] Geolocation failed (Code ${error.code}). Using TimeZone fallback: ${timeZone}`, '#ffaa00');
-                        systemLocation = `${timeZone} (NO GEO DATA)`;
-                    },
-                    {
-                        enableHighAccuracy: false,
-                        timeout: 5000,
-                        maximumAge: 0
-                    }
-                );
-            } else {
-                // Geolocation not supported, stick with the TimeZone string
-                writeOutput(`[SYSTEM] Geolocation unsupported. Using TimeZone fallback: ${timeZone}`, '#ffaa00');
-                systemLocation = `${timeZone} (UNSUPPORTED)`;
-            }
-        }
-
-
-        function formatDateTimeHeader(includeVersion = true) {
-            const now = new Date();
-            // Use system-defined locale for automatic local time
-            const localTimeStr = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-            const localDateStr = now.toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' });
-            
-            // Display the resolved location
-            const locationSpan = `<span style="color:var(--terminal-color);">LOC: ${systemLocation}</span>`;
-            const timeSpan = `<span style="color:#00aaff;">D/T: ${localDateStr} ${localTimeStr}</span>`;
-            
-            if (includeVersion) {
-                return `<span style="color:#ffaa00;">ATLAS V6.8</span> | ${locationSpan} | ${timeSpan}`;
-            }
-            return `${locationSpan} | ${timeSpan}`;
-        }
-
-        function updateHeaderClock() {
-            terminalHeader.innerHTML = formatDateTimeHeader();
-        }
-
-        function startHeaderClock() {
-            updateHeaderClock(); // Update immediately
-            clearInterval(timeInterval); // Clear any old interval
-            timeInterval = setInterval(updateHeaderClock, 1000); // Update every second
-        }
 
         function showPrompt() {
-            promptLine.style.display = 'flex';
-            commandInput.disabled = false;
-            commandInput.focus();
+            promptSpan.textContent = isLoggedIn ? 'ATLAS> ' : 'LOGIN> ';
+            // If in the login modal, focus the username field
+            if (!isLoggedIn) {
+                document.getElementById('username').focus();
+            } else {
+                commandInput.focus();
+            }
         }
-        
-        // --- Activation Function (Called after successful login) ---
-        function activateConsole() {
-            isLoggedIn = true;
-            accessLevel = 2;
-            isLockedDown = false;
-            
-            // 1. Hide the modal and show the console
-            loginOverlay.style.display = 'none';
-            terminalContainer.style.display = 'block';
-            
-            // 2. Change console theme to visually confirm unlock (Amber theme)
-            document.documentElement.style.setProperty('--terminal-color', '#ffaa00');
-            document.documentElement.style.setProperty('--border-color', '#ffaa00');
-            document.documentElement.style.setProperty('--prompt-caret', '#00ff41');
-            
-            // 3. Start the clock and location resolution (No sound here)
-            resolveLocation(); 
-            startHeaderClock(); 
 
-            writeOutput('----------------------------------------------------', '#00ff41');
-            writeOutput('<span style="color:#ffaa00;">PRIMARY KEY VALIDATED. SYSTEM UNLOCK INITIATED.</span>', '#ffaa00');
-            writeOutput('ATLAS DATA FLOW CONSOLE V6.8: FULL ACCESS ENABLED.', '#ffaa00');
-            writeOutput('Core security lockdown terminated. ACCESS LEVEL 2.', '#ffaa00');
-            writeOutput('----------------------------------------------------', '#00ff41');
+        function showLoginModal() {
+            loginOverlay.style.display = 'flex';
             showPrompt();
         }
 
-        // --- Handle Modal Login Submission ---
-        function handleLogin(event) {
-            event.preventDefault();
-            
-            const inputUser = document.getElementById('username').value.trim().toUpperCase();
-            const inputPass = document.getElementById('password').value.trim(); 
-            const inputKey = document.getElementById('key').value.trim();
-
-            if (inputUser === USERNAME && inputPass === PASSWORD_HASH && inputKey === ACCESS_KEY) {
-                loginErrorDiv.textContent = 'AUTHENTICATION SUCCESSFUL. INITIATING DATA FLOW...';
-                loginErrorDiv.style.color = '#00ff41';
-                playSound('confirm'); // Play success sound immediately
-                setTimeout(activateConsole, 1000); // Wait a moment before transition
-            } else {
-                let errorMsg = 'ACCESS DENIED: Invalid Credentials.';
-                
-                if (inputUser !== USERNAME) errorMsg = 'ACCESS DENIED: Invalid Username.';
-                else if (inputPass !== PASSWORD_HASH) errorMsg = 'ACCESS DENIED: Invalid Password.';
-                else if (inputKey !== ACCESS_KEY) errorMsg = 'ACCESS DENIED: Invalid Access Key.';
-                
-                loginErrorDiv.textContent = errorMsg;
-                loginErrorDiv.style.color = '#ff0000';
-                playSound('alert'); // Play failure sound
-                setTimeout(() => { loginErrorDiv.textContent = 'Awaiting Authentication...'; }, 3000);
-            }
+        function hideLoginModal() {
+            loginOverlay.style.display = 'none';
         }
         
+        function showLoading(show) {
+            loadingScreen.style.display = show ? 'flex' : 'none';
+        }
+
         // =========================================================================
-        // --- Command Processing (Updated for SFX fix) ---
+        // --- Login State Management (via Modal Submit) ---
         // =========================================================================
-
-        function processCommand(input) {
-            if (isLockedDown) return; 
-            
-            // Trim and sanitize input
-            const sanitizedInput = input.trim();
-            if (sanitizedInput === '') { showPrompt(); return; }
-
-            writeOutput(`<span style="color:var(--prompt-caret);">ATLAS_CONSOLE ></span> ${sanitizedInput}`, 'var(--terminal-color)');
-            
-            if (history.length === 0 || history[history.length - 1] !== sanitizedInput) {
-                history.push(sanitizedInput);
+        
+        // Helper to stop and dispose of any currently running loading sound
+        let currentLoadingSound = null;
+        function stopLoadingSound() {
+            if (currentLoadingSound) {
+                currentLoadingSound.stop();
+                currentLoadingSound.dispose();
+                currentLoadingSound = null;
             }
-            historyIndex = history.length;
+        }
 
-            if (isBusy) {
-                writeOutput('SYSTEM BUSY: Please wait for current operation to complete.', '#ffaa00');
-                showPrompt();
-                return;
-            }
-            
+        async function handleLoginAttempt(event) {
+            event.preventDefault();
+            if (isBusy) return;
+
+            const username = document.getElementById('username').value.trim().toUpperCase();
+            const password = document.getElementById('password').value.trim();
+            const passkey = document.getElementById('passkey').value.trim(); 
+
             isBusy = true;
-            commandInput.disabled = true;
+            document.getElementById('login-button').disabled = true;
+            loginStatus.style.color = 'var(--highlight-color)';
+            loginStatus.textContent = 'INITIATING HANDSHAKE...';
+            
+            // 1. Start Loading/Suspense (hm.mp3 - siren.mp3)
+            showLoading(true);
+            loadingText.textContent = 'Processing Authentication Handshake...';
+            currentLoadingSound = await loadAndPlaySound('hm.mp3', true);
+            await sleep(2000); 
 
-            const commandParts = sanitizedInput.toUpperCase().split(/\s+/);
-            const cmd = commandParts[0];
-            const args = commandParts.slice(1);
-            let success = true;
+            // 2. Determine Outcome
+            const success = (username === CORRECT_USER) && 
+                            (password === CORRECT_PASSWORD) && 
+                            (passkey === CORRECT_PASSKEY);
 
-            setTimeout(() => {
-                const normalizedCmd = normalizeSFXInput(cmd);
-                const knownSFXKeys = Object.keys(SOUND_EFFECTS);
+            // 3. Stop Loading Sound
+            stopLoadingSound();
+            showLoading(false);
+
+            if (success) {
+                // SUCCESS (access.mp3 - confirm.mp3)
+                failedAttempts = 0;
+                isLoggedIn = true;
                 
-                // Check if the command itself is a known SFX
-                let foundSfxKey = null;
-                for (const key of knownSFXKeys) {
-                    if (key === normalizedCmd) {
-                        foundSfxKey = key;
-                        break;
+                await loadAndPlaySound('access.mp3');
+                
+                // Transition to console
+                hideLoginModal();
+                consoleContainer.style.display = 'flex';
+                
+                // Start the live time header update
+                startTimeInterval(); 
+                
+                // Initial console output
+                clearOutput();
+                writeOutput('-------------------------------------------', 'var(--terminal-color)');
+                writeOutput('>> ACCESS GRANTED. WELCOME, ETHANUNLOCKED.', 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V5.9: FULL ACCESS ENABLED.', 'var(--terminal-color)');
+                writeOutput('-------------------------------------------', 'var(--terminal-color)');
+                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
+
+            } else {
+                // FAILURE (no.mp3, 2.mp3, 3.mp3)
+                failedAttempts++;
+                let errorSoundKey;
+                let errorMessage;
+                let color;
+
+                if (failedAttempts === 1) {
+                    errorSoundKey = 'no.mp3';
+                    errorMessage = `ACCESS DENIED (Error Code 401.1). Attempt ${failedAttempts} of 3.`;
+                    color = 'var(--error-color)';
+                } else if (failedAttempts === 2) {
+                    errorSoundKey = '2.mp3';
+                    errorMessage = `WARNING! UNAUTHORIZED ATTEMPT DETECTED. Attempt ${failedAttempts} of 3.`;
+                    color = 'var(--prompt-caret)';
+                } else { // failedAttempts >= 3
+                    errorSoundKey = '3.mp3';
+                    errorMessage = `CRITICAL BREACH. SYSTEM LOCKDOWN INITIATED. All access terminated.`;
+                    color = 'var(--error-color)';
+                    failedAttempts = 0; // Reset after 3rd attempt
+                }
+                
+                await loadAndPlaySound(errorSoundKey);
+                
+                // Update Modal Status
+                loginStatus.textContent = errorMessage;
+                loginStatus.style.color = color;
+                
+                if (failedAttempts > 0) {
+                     loginStatus.textContent += ` | Remaining attempts: ${3 - failedAttempts}`;
+                } else {
+                     // Add delay for full lockdown message
+                     await sleep(1000);
+                     loginStatus.textContent = 'SECURITY PROTOCOLS RESETTING...';
+                     loginStatus.style.color = 'var(--highlight-color)';
+                }
+            }
+            
+            // Clear inputs for security, especially on failure
+            document.getElementById('password').value = '';
+            document.getElementById('passkey').value = ''; 
+            
+            isBusy = false;
+            document.getElementById('login-button').disabled = false;
+            showPrompt(); // Focus the next logical input field
+        }
+
+        // =========================================================================
+        // --- Command Processing (Logged-in only) ---
+        // =========================================================================
+
+        const GAMES = {
+            'ASTEROIDS': () => writeOutput('Launching ASTEROIDS... (Game not implemented)', 'var(--highlight-color)'),
+            'SNAKE': () => writeOutput('Launching SNAKE... (Game not implemented)', 'var(--highlight-color)')
+        };
+        
+        function processCommand(input) {
+            const fullInput = input.trim();
+            if (isBusy || !isLoggedIn) return; 
+
+            writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
+            
+            const parts = fullInput.toUpperCase().split(' ');
+            const cmd = parts[0];
+            const args = parts.slice(1);
+
+            switch (cmd) {
+                case 'HELP':
+                    writeOutput(`\n--- ATLAS CONSOLE COMMANDS ---`, 'var(--highlight-color)');
+                    writeOutput(`HELP: Display this list.`, 'var(--highlight-color)');
+                    writeOutput(`CLEAR: Clear the console output.`, 'var(--highlight-color)');
+                    writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
+                    writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
+                    writeOutput(`RUN [GAME_NAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
+                    writeOutput(`LOGOUT: Return to the login screen.`, 'var(--highlight-color)');
+                    writeOutput(`------------------------------\n`, 'var(--highlight-color)');
+                    break;
+                
+                case 'CLEAR':
+                    clearOutput();
+                    break;
+                
+                case 'STATUS':
+                    writeOutput(`SYSTEM STATUS: ONLINE`, 'var(--terminal-color)');
+                    writeOutput(`Uptime: 74 days, 12 hours, 34 minutes`, 'var(--terminal-color)');
+                    writeOutput(`CPU Load: 1.2%`, 'var(--terminal-color)');
+                    writeOutput(`Memory Usage: 3.4GB / 32GB`, 'var(--terminal-color)');
+                    writeOutput(`Security Level: [MAX EXECUTION]`, 'var(--terminal-color)');
+                    break;
+                
+                case 'LIVE': 
+                    updateHeaderDisplay(); // Force an immediate update of the pinned header
+                    writeOutput(`\nLIVE DATA SYNCHRONIZED. Pinned header refreshed.`, 'var(--terminal-color)');
+                    writeOutput(`----------------------\n`, 'var(--highlight-color)');
+                    break;
+                
+                case 'RUN':
+                    const game = args[0];
+                    if (game && GAMES[game]) {
+                        GAMES[game]();
+                    } else {
+                        writeOutput(`ERROR: Game/Program '${game || 'none'}' not found. Available: ${Object.keys(GAMES).join(', ')}.`, 'var(--error-color)');
                     }
-                }
+                    break;
 
-                switch (cmd) {
-                    case 'HELP':
-                        writeOutput('----------------------------------------------------');
-                        writeOutput('ATLAS CONSOLE COMMAND LIST:');
-                        writeOutput('----------------------------------------------------');
-                        writeOutput('<span style="color:#ffaa00;">CORE OPERATIONS:</span>');
-                        writeOutput(`  <span style="color:var(--terminal-color);">EXECUTE [OP]</span>     - Run a critical data operation.`);
-                        writeOutput(`  <span style="color:var(--terminal-color);">CLEAR</span>            - Clears the console screen.`);
-                        writeOutput(`  <span style="color:var(--terminal-color);">STATUS</span>           - Displays current system status and access level.`);
-                        writeOutput(`  <span style="color:var(--terminal-color);">TIME</span>             - Displays current system date and time/location.`); 
-                        writeOutput('<span style="color:#ffaa00;">ENTERTAINMENT/SFX:</span>');
-                        writeOutput(`  <span style="color:var(--terminal-color);">GAME [NAME]</span>      - Initiates a game engine (SNAKE, MAZE).`);
-                        writeOutput(`  <span style="color:var(--terminal-color);">PLAY [SFX]</span>       - Trigger sound effects (Type PLAY for list).`);
-                        writeOutput('----------------------------------------------------');
-                        writeOutput(`CURRENT LOCKDOWN STATUS: <span style="color:#00ff41;">UNLOCKED</span> (LEVEL 2 ACCESS)`);
-                        break;
+                case 'LOGOUT':
+                    isLoggedIn = false;
+                    failedAttempts = 0;
                     
-                    case 'TIME': 
-                        writeOutput(`Current system time and status:`);
-                        writeOutput(formatDateTimeHeader(false), '#00ff41'); 
-                        break;
-
-                    case 'STATUS':
-                        writeOutput('----------------------------------------------------');
-                        writeOutput('SYSTEM STATUS: <span style="color:#00ff41;">OPERATIONAL</span>');
-                        writeOutput(`AUTH LEVEL: 2 (FULL ACCESS - ${USERNAME})`);
-                        writeOutput('----------------------------------------------------');
-                        break;
-                        
-                    case 'GAME':
-                        if (args.length === 0) {
-                            writeOutput('SYNTAX ERROR: GAME requires a name. Available games:', '#ff0000');
-                            Object.keys(GAMES).forEach(game => writeOutput(`  - ${game}: ${GAMES[game].description}`));
-                            break;
-                        }
-                        const gameName = args[0];
-                        if (GAMES[gameName]) {
-                            GAMES[gameName].run();
-                        } else {
-                            writeOutput(`ERROR: Game '${gameName}' not found. Type GAME for a list.`, '#ff0000');
-                            success = false;
-                        }
-                        break;
-
-                    case 'PLAY':
-                        if (args.length === 0) {
-                            writeOutput('SYNTAX ERROR: PLAY requires an SFX name. Available SFX:', '#ff0000');
-                            Object.keys(SOUND_EFFECTS).forEach(sfxKey => {
-                                // Display formatted names (CONFIRM, ALERT, SIREN, GET_OUT, VINE_BOOM, RIZZ)
-                                let displayName = sfxKey.toUpperCase()
-                                    .replace('GETOUT', 'GET_OUT')
-                                    .replace('VINEBOOM', 'VINE_BOOM');
-                                writeOutput(`  - <span style="color:var(--terminal-color);">${displayName}</span>`); 
-                            });
-                            success = false;
-                            break;
-                        }
-                        
-                        const playSfxInputName = normalizeSFXInput(args[0]); 
-                        let sfxToPlay = null;
-
-                        for (const key of knownSFXKeys) {
-                            if (key === playSfxInputName) {
-                                sfxToPlay = key; 
-                                break;
-                            }
-                        }
-
-                        if (sfxToPlay) {
-                            playSound(sfxToPlay);
-                        } else {
-                            writeOutput(`ERROR: SFX '${args[0]}' not recognized. Type PLAY for a list.`, '#ff0000');
-                            success = false;
-                        }
-                        break;
-
-                    case 'EXECUTE':
-                        if (args.length === 0) {
-                            writeOutput('SYNTAX ERROR: EXECUTE requires an operation. Type HELP for available commands.', '#ff0000');
-                            success = false;
-                            break;
-                        }
-                        writeOutput(`EXECUTING CRITICAL OPERATION: [${args.join(' ')}]`, '#00ff41');
-                        break;
-
-                    case 'CLEAR':
-                        outputArea.innerHTML = '';
-                        break;
+                    // Stop the time updates
+                    stopTimeInterval(); 
                     
-                    default:
-                        // Check if the unrecognized command is a known SFX
-                        if (foundSfxKey) {
-                            writeOutput(`SYNTAX ERROR: SFX must be run with the <span style="color:#00aaff;">PLAY</span> command. Use: <span style="color:#00aaff;">PLAY ${cmd}</span>`, '#ff0000');
-                        } else {
-                            writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, '#ff0000');
-                        }
-                        success = false;
-                        break;
-                }
+                    // Hide console and show modal
+                    consoleContainer.style.display = 'none';
+                    showLoginModal();
+                    
+                    loginStatus.textContent = 'System Secured. Please re-authenticate.';
+                    loginStatus.style.color = 'var(--prompt-caret)';
+                    break;
                 
-                isBusy = false;
-                if (!isLockedDown) showPrompt();
-            }, 200); 
+                default:
+                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, 'var(--error-color)');
+                    break;
+            }
+            
+            showPrompt();
         }
 
         // =========================================================================
         // --- Initialization and Events ---
         // =========================================================================
         
-        // Modal Form Submission Handler
-        loginForm.addEventListener('submit', handleLogin);
+        loginForm.addEventListener('submit', handleLoginAttempt);
         
-        // Terminal Input Handlers
         document.addEventListener('keypress', function(e) {
-            if (!isLockedDown && e.key === 'Enter' && !commandInput.disabled) {
+            if (isLoggedIn && e.key === 'Enter' && !commandInput.disabled) {
                 processCommand(commandInput.value);
                 commandInput.value = '';
             }
         });
         
-        // Handle history navigation (Up/Down arrow keys)
-        document.addEventListener('keydown', function(e) {
-            if (commandInput.disabled || isLockedDown) return;
-
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                if (history.length > 0 && historyIndex > 0) {
-                    historyIndex--;
-                    commandInput.value = history[historyIndex];
-                }
-            } else if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                if (historyIndex < history.length - 1) {
-                    historyIndex++;
-                    commandInput.value = history[historyIndex];
-                } else {
-                    historyIndex = history.length;
-                    commandInput.value = '';
-                }
-            }
-        });
-
         window.onload = function() {
-            // Unlocking the Audio Context requires user interaction (click/key)
+            // Pre-load all sounds
+            Object.keys(SOUND_EFFECTS).forEach(key => loadSound(key));
+
+            // Unlock audio context on first user interaction
             document.body.addEventListener('click', unlockAudioContext, { once: true });
             document.body.addEventListener('keydown', unlockAudioContext, { once: true });
-            
-            // Load audio assets in the background
-            Object.keys(SOUND_EFFECTS).forEach(name => loadSound(name, SOUND_EFFECTS[name]));
 
-            // Ensure the input field in the modal is focused on load
-            document.getElementById('username').focus();
+            // Start by showing the login modal
+            showLoginModal();
         };
     </script>
 
