@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v7.3 (New SFX: CENSOR, Repetition)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v7.4 (Repetition Fix)</title>
     <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
@@ -348,7 +348,7 @@
             'SUI': 'sui.mp3',               
             'JOHN CENA': 'cena.mp3',        
             'PUMPKIN': 'kin.mp3',           
-            'CENSOR': '__SYNTH_CENSOR__',   // <-- NEW SYNTHESIZED CENSOR BEEP
+            'CENSOR': '__SYNTH_CENSOR__',   // Synthesized
         };
 
         const AUDIO_BUFFER = {};
@@ -376,9 +376,9 @@
         // --- CENSOR BEEP GENERATION ---
         function createCensorBeepBuffer() {
             const context = Tone.context;
-            // Set parameters
-            const frequency = 1200; // High pitch, clear tone
-            const duration = 0.5;   // 0.5 seconds
+            // Set parameters for a high-pitch, short beep
+            const frequency = 2000; 
+            const duration = 0.3;   
             const sampleRate = context.sampleRate;
             const numSamples = Math.floor(sampleRate * duration);
             
@@ -388,7 +388,8 @@
             // Generate a sine wave
             for (let i = 0; i < numSamples; i++) {
                 const time = i / sampleRate;
-                channel[i] = Math.sin(2 * Math.PI * frequency * time) * 0.5; // 0.5 amplitude
+                // Simple sine wave, 0.5 amplitude
+                channel[i] = Math.sin(2 * Math.PI * frequency * time) * 0.5; 
             }
             
             // Convert to ToneAudioBuffer for use with Tone.Player
@@ -417,7 +418,8 @@
 
             try {
                 const buffer = new Tone.ToneAudioBuffer(path);
-                await buffer.loaded;
+                // Wait for the buffer to be loaded before returning
+                await buffer.loaded; 
                 AUDIO_BUFFER[path] = buffer;
                 return buffer;
             } catch (e) {
@@ -451,11 +453,10 @@
 
             // --- Repetition Logic ---
             let finalPlayer = null;
-            let sequenceRunning = false;
+            const sequenceRunning = (times > 1);
             
-            if (times > 1) {
-                writeOutput(`WARNING: Multi-play sequences cannot be interrupted by PAUSE/PLAY/QUIT commands.`, 'var(--prompt-caret)');
-                sequenceRunning = true;
+            if (sequenceRunning) {
+                writeOutput(`NOTE: Multi-play sequences are non-interruptible.`, 'var(--prompt-caret)');
             }
             
             for (let i = 0; i < times; i++) {
@@ -468,15 +469,22 @@
                 
                 player.start(0);
                 
-                // This is necessary for a multi-play sequence (times > 1) to dispose individual players
                 if (sequenceRunning) {
+                    // Set up disposal for each player in the sequence
                     player.onstop = () => {
                         player.dispose();
                     };
-                    // Wait between plays (duration of the sound + a small gap)
+                    
                     if (i < times - 1) {
-                        // Use buffer.duration to calculate the wait time in milliseconds
-                        await sleep(buffer.duration * 1000 + 100); 
+                        // Calculate wait time: duration of sound + 100ms gap
+                        let delay = buffer.duration * 1000 + 100;
+                        
+                        // Guard against zero/near-zero duration buffers (e.g., if synth fails or is too short)
+                        if (delay < 200) { 
+                            delay = 200; // Enforce minimum delay for sequence stability
+                        }
+                        
+                        await sleep(delay); 
                     }
                 }
                 finalPlayer = player;
@@ -487,7 +495,7 @@
                 if (loop) {
                     currentLoadingSound = finalPlayer;
                 } else {
-                    // Store reference for user control (PAUSE/PLAY/QUIT)
+                    // Store reference for user control (PAUSE, PLAY, QUIT)
                     currentPlaybackPlayer = finalPlayer; 
                     
                     // Set disposal listener for single shot
@@ -496,7 +504,6 @@
                         if (currentPlaybackPlayer === finalPlayer) {
                             finalPlayer.dispose();
                             currentPlaybackPlayer = null;
-                            writeOutput(`Playback finished. Asset released.`, 'var(--terminal-color)');
                         }
                     };
                 }
@@ -644,7 +651,7 @@
                 clearOutput();
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('>> ACCESS GRANTED. WELCOME, ETHANUNLOCKED.', 'var(--terminal-color)');
-                writeOutput('>> ATLAS CONSOLE V7.3: FULL ACCESS ENABLED.', 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V7.4: FULL ACCESS ENABLED.', 'var(--terminal-color)');
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
 
@@ -703,7 +710,7 @@
         
         function processCommand(input) {
             const fullInput = input.trim();
-            if (isBusy || !isLoggedIn) return; 
+            if (isBusy || !isLoggedIn || fullInput.length === 0) return; 
 
             writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
             
@@ -765,13 +772,16 @@
                     const MAX_REPETITIONS = 10;
                     
                     // Regex to find repetition pattern (e.g., ' 3x')
-                    const repeatMatch = assetArg.match(/(\s)(\d+)x$/i);
+                    // It must match a space, followed by 1 or more digits, followed by 'x', at the end of the string
+                    const repeatMatch = assetArg.match(/\s(\d+)X$/i); 
 
                     if (repeatMatch) {
-                        // Extract number and asset name
-                        times = parseInt(repeatMatch[2], 10);
-                        // Trim the ' 3X' part from the asset name
-                        assetName = assetArg.substring(0, assetArg.length - repeatMatch[0].length).trim();
+                        // Extract number (group 1) and calculate the length of the matched repetition suffix (group 0)
+                        times = parseInt(repeatMatch[1], 10);
+                        
+                        // Trim the repetition suffix part from the asset name
+                        const suffixLength = repeatMatch[0].length;
+                        assetName = assetArg.substring(0, assetArg.length - suffixLength).trim();
                         
                         if (times > MAX_REPETITIONS) {
                             writeOutput(`WARNING: Maximum repetition count is ${MAX_REPETITIONS}. Playing ${MAX_REPETITIONS} times.`, 'var(--prompt-caret)');
@@ -814,7 +824,7 @@
                     } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
                          writeOutput(`Playback is already running.`, 'var(--prompt-caret)');
                     } else {
-                        writeOutput(`ERROR: No paused single sound asset to play.`, 'var(--error-color)');
+                        writeOutput(`ERROR: No paused single sound asset to play.`, 'var(--error-error)');
                     }
                     break;
                     
