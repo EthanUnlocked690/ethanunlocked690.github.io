@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v7.4 (Repetition Fix)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v7.6 (Case-Insensitive Multiplier Fix)</title>
     <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
@@ -352,7 +352,6 @@
         };
 
         const AUDIO_BUFFER = {};
-        // Use the internal, friendly keys for commands
         const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
         
         // --- Audio Player Tracking ---
@@ -362,10 +361,31 @@
         // =========================================================================
         // --- Audio Functions ---
         // =========================================================================
+        
+        /**
+         * Checks the current state of the Tone.js AudioContext and resumes it if suspended.
+         */
+        async function checkAudioContext() {
+            const context = Tone.context;
+            let status = context.state.toUpperCase();
+            
+            writeOutput(`\n[AUDIO_CONTEXT_CHECK] Status: ${status}`, 'var(--terminal-color)');
 
-        function unlockAudioContext() {
-            if (Tone.context.state !== 'running') {
-                Tone.context.resume();
+            if (status !== 'RUNNING') {
+                try {
+                    // Try to resume the context. This requires a user gesture (which happened via login/command).
+                    await context.resume();
+                    status = context.state.toUpperCase();
+                    if (status === 'RUNNING') {
+                        writeOutput(`[INIT AUDIO SUCCESS] Web Audio Context is now RUNNING.`, 'var(--highlight-color)');
+                    } else {
+                         writeOutput(`[INIT AUDIO WARNING] Context status is ${status}. Playback may be restricted.`, 'var(--prompt-caret)');
+                    }
+                } catch (e) {
+                     writeOutput(`[INIT AUDIO ERROR] Failed to resume audio context: ${e.message}`, 'var(--error-color)');
+                }
+            } else {
+                 writeOutput(`[INIT AUDIO SUCCESS] Web Audio Context is RUNNING.`, 'var(--highlight-color)');
             }
         }
         
@@ -373,10 +393,11 @@
             return SOUND_EFFECTS[name] || name;
         }
 
-        // --- CENSOR BEEP GENERATION ---
+        /**
+         * Creates the Censor Beep ToneAudioBuffer.
+         */
         function createCensorBeepBuffer() {
             const context = Tone.context;
-            // Set parameters for a high-pitch, short beep
             const frequency = 2000; 
             const duration = 0.3;   
             const sampleRate = context.sampleRate;
@@ -385,14 +406,11 @@
             const audioBuffer = context.createBuffer(1, numSamples, sampleRate);
             const channel = audioBuffer.getChannelData(0);
 
-            // Generate a sine wave
             for (let i = 0; i < numSamples; i++) {
                 const time = i / sampleRate;
-                // Simple sine wave, 0.5 amplitude
                 channel[i] = Math.sin(2 * Math.PI * frequency * time) * 0.5; 
             }
             
-            // Convert to ToneAudioBuffer for use with Tone.Player
             return new Tone.ToneAudioBuffer(audioBuffer);
         }
 
@@ -402,29 +420,30 @@
                 return AUDIO_BUFFER[path];
             }
             
-            // --- CENSOR BEEP SYNTHESIS LOGIC ---
             if (path === '__SYNTH_CENSOR__') {
                 try {
                     const buffer = createCensorBeepBuffer();
                     AUDIO_BUFFER[path] = buffer;
+                    // Synthesized sound is instantly loaded
+                    writeOutput(`[LOAD] Asset CENSOR synthesized.`, 'var(--terminal-color)');
                     return buffer;
                 } catch (e) {
-                    console.error(`Error synthesizing CENSOR buffer: ${e.message}`, e);
-                    writeOutput(`[AUDIO ERROR]: Failed to create CENSOR synth buffer: ${e.message}`, 'var(--error-color)');
+                    writeOutput(`[LOAD ERROR] Failed to synthesize CENSOR: ${e.message}`, 'var(--error-color)');
                     return null;
                 }
             }
-            // ------------------------------------
-
+            
+            // External file loading
+            writeOutput(`[LOAD] Requesting asset: ${name}...`, 'var(--prompt-caret)');
             try {
                 const buffer = new Tone.ToneAudioBuffer(path);
-                // Wait for the buffer to be loaded before returning
+                // CRITICAL: Await the loading promise
                 await buffer.loaded; 
                 AUDIO_BUFFER[path] = buffer;
+                writeOutput(`[LOAD SUCCESS] Asset ${name} loaded. Duration: ${buffer.duration.toFixed(2)}s.`, 'var(--terminal-color)');
                 return buffer;
             } catch (e) {
-                console.error(`Error loading sound: ${path}`, e);
-                writeOutput(`[AUDIO ERROR]: Failed to load asset file: ${path}`, 'var(--error-color)');
+                writeOutput(`[LOAD ERROR] Failed to load external asset: ${path}`, 'var(--error-color)');
                 return null;
             }
         }
@@ -438,78 +457,78 @@
         }
 
         async function loadAndPlaySound(name, loop = false, times = 1) {
+            if (Tone.context.state !== 'running') {
+                writeOutput(`[PLAY ERROR] Audio Context is not running. Run: INIT AUDIO`, 'var(--error-color)');
+                return;
+            }
+
             const buffer = await loadSound(name);
             if (!buffer) return;
 
-            // CRITICAL: Stop any existing single/multi playback before starting a new one
             if (!loop) { 
                 disposePlaybackPlayer(); 
             }
-
-            // Stop any currently playing looping sound if we're starting a new one-shot
             if (!loop && currentLoadingSound) {
                  stopLoadingSound(); 
             } 
 
-            // --- Repetition Logic ---
-            let finalPlayer = null;
             const sequenceRunning = (times > 1);
-            
             if (sequenceRunning) {
-                writeOutput(`NOTE: Multi-play sequences are non-interruptible.`, 'var(--prompt-caret)');
+                writeOutput(`[SEQUENCE START] Playing ${name} ${times} times.`, 'var(--highlight-color)');
             }
             
-            for (let i = 0; i < times; i++) {
+            let finalPlayer = null;
+            
+            // Use Tone.js Transport for accurate scheduling in sequence mode
+            if (sequenceRunning) {
+                const totalDuration = buffer.duration;
+                // Create a sequence of events scheduled by Tone.Transport
+                // The gap between sounds is set to 0.1 seconds (100ms)
+                const sequence = new Tone.Sequence((time, index) => {
+                    const player = new Tone.Player({
+                        url: buffer,
+                        volume: -10 
+                    }).toDestination();
+                    
+                    player.start(time); 
+                    
+                    // Dispose immediately after play to free memory
+                    player.onstop = () => player.dispose();
+
+                    // If it's the last one, log completion
+                    if (index === times - 1) {
+                         setTimeout(() => {
+                            writeOutput(`[SEQUENCE END] Playback of ${name} completed.`, 'var(--highlight-color)');
+                         }, (totalDuration * 1000) + 50); // Small delay for final message
+                    }
+                }, Array.from({ length: times }, (_, i) => i * (totalDuration + 0.1)), "1").start(0); 
+
+                Tone.Transport.start(); 
+
+                // We don't track a single player reference for sequences
+                finalPlayer = sequence; 
+            } else {
+                // Single Playback (User controlled) or Loop (System controlled)
                 const player = new Tone.Player({
                     url: buffer, 
-                    // Only loop if it's a single play and loop=true
-                    loop: (times === 1 && loop), 
+                    loop: loop, 
                     volume: -10 
                 }).toDestination();
                 
                 player.start(0);
-                
-                if (sequenceRunning) {
-                    // Set up disposal for each player in the sequence
-                    player.onstop = () => {
-                        player.dispose();
-                    };
-                    
-                    if (i < times - 1) {
-                        // Calculate wait time: duration of sound + 100ms gap
-                        let delay = buffer.duration * 1000 + 100;
-                        
-                        // Guard against zero/near-zero duration buffers (e.g., if synth fails or is too short)
-                        if (delay < 200) { 
-                            delay = 200; // Enforce minimum delay for sequence stability
-                        }
-                        
-                        await sleep(delay); 
-                    }
-                }
-                finalPlayer = player;
-            }
 
-            // --- Single/Loop Playback Tracking ---
-            if (times === 1) {
                 if (loop) {
-                    currentLoadingSound = finalPlayer;
+                    currentLoadingSound = player;
                 } else {
-                    // Store reference for user control (PAUSE, PLAY, QUIT)
-                    currentPlaybackPlayer = finalPlayer; 
-                    
-                    // Set disposal listener for single shot
-                    finalPlayer.onstop = () => {
-                        // Only clear the reference if it's still the player we started
-                        if (currentPlaybackPlayer === finalPlayer) {
-                            finalPlayer.dispose();
+                    currentPlaybackPlayer = player; 
+                    player.onstop = () => {
+                        if (currentPlaybackPlayer === player) {
+                            player.dispose();
                             currentPlaybackPlayer = null;
                         }
                     };
                 }
-            } else if (sequenceRunning) {
-                 // The sequence of players finished running
-                 writeOutput(`Sequence of ${times} plays completed.`, 'var(--highlight-color)');
+                finalPlayer = player;
             }
             
             return finalPlayer;
@@ -651,8 +670,10 @@
                 clearOutput();
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('>> ACCESS GRANTED. WELCOME, ETHANUNLOCKED.', 'var(--terminal-color)');
-                writeOutput('>> ATLAS CONSOLE V7.4: FULL ACCESS ENABLED.', 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V7.6: FULL ACCESS ENABLED.', 'var(--terminal-color)');
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
+                writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
+                writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
                 writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
 
             } else {
@@ -676,7 +697,13 @@
                     failedAttempts = 0; 
                 }
                 
-                await loadAndPlaySound(errorSoundKey);
+                // Try to play error sound even if context is suspended
+                // Note: This relies on browser's attempt to autostart the context on this interaction
+                try {
+                    await loadAndPlaySound(errorSoundKey); 
+                } catch(e) {
+                    console.warn("Could not play error sound. Audio context likely suspended.", e);
+                }
                 
                 // Update Modal Status
                 loginStatus.textContent = errorMessage;
@@ -714,11 +741,12 @@
 
             writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
             
-            const fullUpper = fullInput.toUpperCase();
-            const parts = fullUpper.split(' ');
-            const cmd = parts[0];
+            // --- UPDATED PARSING LOGIC FOR CASE-INSENSITIVE ARGUMENTS ---
+            const parts = fullInput.split(/\s+/);
+            const cmd = parts[0].toUpperCase();
             const args = parts.slice(1);
-            let assetArg = args.join(' '); 
+            let assetArg = args.join(' ').trim(); // e.g., "CENSOR 3x" or "censor 3X"
+            // -------------------------------------------------------------
 
             switch (cmd) {
                 case 'HELP':
@@ -727,7 +755,8 @@
                     writeOutput(`CLEAR: Clear the console output.`, 'var(--highlight-color)');
                     writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
                     writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
-                    writeOutput(`SOUND [ASSET] (OPTIONAL: [COUNT]X): Play an audio asset. Use '3X' to play 3 times. (Max 10x)`, 'var(--highlight-color)');
+                    writeOutput(`INIT AUDIO: Initialize the Web Audio Context (CRITICAL for sound playback).`, 'var(--error-color)');
+                    writeOutput(`SOUND [ASSET] (OPTIONAL: [COUNT]x): Play an audio asset. Use '3x' or '3X' to play 3 times. (Max 10x)`, 'var(--highlight-color)');
                     writeOutput(`PAUSE: Pause the currently playing single sound. (Does not affect sequences)`, 'var(--highlight-color)');
                     writeOutput(`PLAY: Resume the currently paused single sound. (Does not affect sequences)`, 'var(--highlight-color)');
                     writeOutput(`QUIT: Stop and release the active single sound asset. (Does not affect sequences)`, 'var(--highlight-color)');
@@ -742,6 +771,7 @@
                 
                 case 'STATUS':
                     writeOutput(`SYSTEM STATUS: ONLINE`, 'var(--terminal-color)');
+                    writeOutput(`Web Audio Context: ${Tone.context.state.toUpperCase()}`, 'var(--terminal-color)');
                     writeOutput(`Uptime: 74 days, 12 hours, 34 minutes`, 'var(--terminal-color)');
                     writeOutput(`CPU Load: 1.2%`, 'var(--terminal-color)');
                     writeOutput(`Memory Usage: 3.4GB / 32GB`, 'var(--terminal-color)');
@@ -753,11 +783,16 @@
                     writeOutput(`\nLIVE DATA SYNCHRONIZED. Pinned header refreshed.`, 'var(--terminal-color)');
                     writeOutput(`----------------------\n`, 'var(--highlight-color)');
                     break;
+                
+                case 'INIT':
+                case 'INIT AUDIO':
+                    checkAudioContext();
+                    break;
                     
                 case 'SOUND':
                     if (!assetArg) {
                         writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-color)');
-                        writeOutput(`Usage: SOUND [ASSET_NAME] [COUNT]X (e.g., SOUND CENSOR 3X)`, 'var(--prompt-caret)');
+                        writeOutput(`Usage: SOUND [ASSET_NAME] [COUNT]x (e.g., SOUND CENSOR 3x)`, 'var(--prompt-caret)');
                         
                         writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
                         SOUND_COMMAND_NAMES.forEach(name => {
@@ -771,16 +806,13 @@
                     let times = 1;
                     const MAX_REPETITIONS = 10;
                     
-                    // Regex to find repetition pattern (e.g., ' 3x')
-                    // It must match a space, followed by 1 or more digits, followed by 'x', at the end of the string
-                    const repeatMatch = assetArg.match(/\s(\d+)X$/i); 
+                    // FIXED REGEX: Matches a space, one or more digits, followed by 'x' or 'X' at the end of the string
+                    const repeatMatch = assetArg.match(/\s(\d+)[xX]$/); 
 
                     if (repeatMatch) {
-                        // Extract number (group 1) and calculate the length of the matched repetition suffix (group 0)
                         times = parseInt(repeatMatch[1], 10);
-                        
-                        // Trim the repetition suffix part from the asset name
                         const suffixLength = repeatMatch[0].length;
+                        // Strip the multiplier and spaces from the end to get the clean asset name
                         assetName = assetArg.substring(0, assetArg.length - suffixLength).trim();
                         
                         if (times > MAX_REPETITIONS) {
@@ -792,9 +824,12 @@
                         }
                     }
 
-                    if (SOUND_COMMAND_NAMES.includes(assetName)) {
-                        writeOutput(`Initiating playback of asset: ${assetName} (${times} time${times > 1 ? 's' : ''})...`, 'var(--terminal-color)');
-                        loadAndPlaySound(assetName, false, times); 
+                    // Look up asset using the capitalized version of the name
+                    const lookupName = assetName.toUpperCase();
+
+                    if (SOUND_COMMAND_NAMES.includes(lookupName)) {
+                        writeOutput(`Initiating playback of asset: ${lookupName} (${times} time${times > 1 ? 's' : ''})...`, 'var(--terminal-color)');
+                        loadAndPlaySound(lookupName, false, times); 
                     } else {
                         writeOutput(`\nERROR: Asset '${assetName}' not found in SFX database.`, 'var(--error-color)');
                         
@@ -852,6 +887,7 @@
                     
                     stopTimeInterval(); 
                     disposePlaybackPlayer(); // Also quit any user sound on logout
+                    Tone.Transport.stop(); // Stop any running sequences
                     
                     consoleContainer.style.display = 'none';
                     showLoginModal();
@@ -885,9 +921,9 @@
             // Pre-load all sound files and synthesize the CENSOR beep on load
             SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
 
-            // Unlock audio context on first user interaction (required for Tone.js)
-            document.body.addEventListener('click', unlockAudioContext, { once: true });
-            document.body.addEventListener('keydown', unlockAudioContext, { once: true });
+            // Setup a general listener to help resume the context on any interaction, just in case
+            document.body.addEventListener('click', () => { Tone.context.resume(); }, { once: true });
+            document.body.addEventListener('keydown', () => { Tone.context.resume(); }, { once: true });
 
             showLoginModal();
         };
