@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v8.2 (Security & Gaming)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v8.3 (Security & Gaming)</title>
     <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
@@ -377,14 +377,14 @@
         let authUsername = '';
         let activeSequence = null; // Used to track running sound sequences
 
-        // --- CREDENTIALS (UPDATED FOR V8.2) ---
+        // --- CREDENTIALS (UPDATED FOR V8.3) ---
         const ADMIN_USER = 'ETHANUNLOCKED'; 
         const ADMIN_PASSWORD = 'h4cker';     
         const STANDARD_USER = 'BEEF WELLINGTON';
         const STANDARD_PASSWORD = 'Eat_me';
         
         const ADMIN_PASSKEY = '1957';      // Admin passkey
-        const BEEF_PASSKEY = '2251';       // Standard user passkey (as requested)
+        const BEEF_PASSKEY = '2251';       // Standard user passkey
         // ---------------------------
 
         // --- LOCATION CONSTANT ---
@@ -407,7 +407,9 @@
             'SUI': 'sui.mp3',               
             'JOHN CENA': 'cena.mp3',        
             'PUMPKIN': 'kin.mp3',           
-            'CENSOR': '__SYNTH_CENSOR__',   // Synthesized
+            'CENSOR': '__SYNTH_CENSOR__',   
+            'B+F': 'b.mp3',                // <-- NEW: b+f sound
+            'BURP': 'burp.mp3'             // <-- NEW: burp sound
         };
 
         const AUDIO_BUFFER = {};
@@ -524,6 +526,7 @@
             
             writeOutput(`[LOAD] Requesting asset: ${name}...`, 'var(--prompt-caret)');
             try {
+                // NOTE: In a real environment, you must ensure 'b.mp3' and 'burp.mp3' are accessible at the root or correct path.
                 const buffer = new Tone.ToneAudioBuffer(path);
                 await buffer.loaded; 
                 AUDIO_BUFFER[path] = buffer;
@@ -550,7 +553,7 @@
          */
         async function loadAndPlaySound(name, times = 1) {
             if (Tone.context.state !== 'running') {
-                writeOutput(`[PLAY ERROR] Audio Context is not running. Run: INIT AUDIO`, 'var(--error-color)');
+                writeOutput(`[PLAY ERROR] Audio Context is not running. Run: INIT AUDIO`, 'var(--error-error)');
                 return;
             }
             
@@ -613,9 +616,11 @@
 
                 player.onstop = () => {
                     if (currentPlaybackPlayer === player) { 
-                        player.dispose();
-                        currentPlaybackPlayer = null;
-                        writeOutput(`[PLAYBACK STOP] Single playback of ${name} finished. Asset released.`, 'var(--prompt-caret)');
+                        // The player naturally stops when the sound is finished playing
+                        // We check the player state in the PAUSE/PLAY/QUIT commands, but for disposal 
+                        // when the sound naturally ends, we don't dispose here, allowing PLAY to restart it.
+                        // disposal only happens on QUIT command or logout.
+                        writeOutput(`[PLAYBACK FINISHED] Single playback of ${name} completed.`, 'var(--prompt-caret)');
                     }
                 };
 
@@ -754,10 +759,10 @@
                 clearOutput();
                 writeOutput('----------------------------------------------------', 'var(--terminal-color)');
                 writeOutput(`>> ACCESS GRANTED. WELCOME, ${authUsername} (${userType}).`, 'var(--terminal-color)');
-                writeOutput('>> ATLAS CONSOLE V8.2: FULL SECURITY PROTOCOLS ONLINE.', 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V8.3: FULL SECURITY PROTOCOLS ONLINE.', 'var(--terminal-color)');
                 writeOutput('----------------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
-                writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
+                writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-error)');
                 writeOutput('Type HELP for console commands.', 'var(--prompt-caret)'); // REQUIRED MESSAGE
 
             } else {
@@ -982,16 +987,16 @@
             const fullInput = input.trim();
             if (isBusy || !isLoggedIn || fullInput.length === 0) return; 
 
-            // --- SECURITY CHECK: TROLLING LOCKDOWN ---
+            // --- SECURITY CHECK: TROLLING LOCKDOWN (v8.3 FIX) ---
+            // Only trigger lockdown if a running SEQUENCE is active and user tries to terminate.
             const isSequenceRunning = Tone.Transport.state === 'started';
-            const isSinglePlaying = currentPlaybackPlayer && currentPlaybackPlayer.state === 'started';
             const attemptingTermination = fullInput.toUpperCase() === 'PAUSE' || fullInput.toUpperCase() === 'QUIT';
 
-            if ((isSequenceRunning || isSinglePlaying) && attemptingTermination) {
-                initiateLockdown(`SECURITY ALERT: Attempted unauthorized termination of active asset.`);
+            if (isSequenceRunning && attemptingTermination) {
+                initiateLockdown(`SECURITY ALERT: Attempted unauthorized termination of active sound sequence. System lock engaged.`);
                 return; 
             }
-            // -----------------------------------------
+            // --------------------------------------------------
 
             writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
             
@@ -1007,13 +1012,13 @@
                     writeOutput(`CLEAR: Clear the console output.`, 'var(--highlight-color)');
                     writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
                     writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
-                    writeOutput(`INIT AUDIO: Initialize the Web Audio Context (CRITICAL for sound playback).`, 'var(--error-color)');
+                    writeOutput(`INIT AUDIO: Initialize the Web Audio Context (CRITICAL for sound playback).`, 'var(--error-error)');
                     writeOutput(`SOUND [ASSET] [COUNT]x: Play an audio asset. Use 'RANDOM' for a surprise asset. Repetition works correctly now.`, 'var(--highlight-color)');
                     writeOutput(`PAUSE: Stops the currently playing single sound. (Lockdown triggered if sequence is active).`, 'var(--highlight-color)');
                     writeOutput(`PLAY: Restarts the currently stopped single sound from the beginning.`, 'var(--highlight-color)');
                     writeOutput(`QUIT: Terminates and releases the active single sound asset. (Lockdown triggered if sequence is active).`, 'var(--highlight-color)');
                     if (authUsername === ADMIN_USER) {
-                         writeOutput(`ACTIVE: (ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
+                         writeOutput(`ACTIVE: (ADMIN ONLY) Display simulated user login status.`, 'var(--error-error)');
                     }
                     writeOutput(`RUN [GAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
                     writeOutput(`LOGOUT: Return to the login screen.`, 'var(--highlight-color)');
@@ -1034,14 +1039,30 @@
                 
                 case 'ACTIVE':
                     if (authUsername !== ADMIN_USER) {
-                        writeOutput(`\nACCESS DENIED: Command ACTIVE requires ADMIN privileges. Current User: ${authUsername}.`, 'var(--error-color)');
+                        writeOutput(`\nACCESS DENIED: Command ACTIVE requires ADMIN privileges. Current User: ${authUsername}.`, 'var(--error-error)');
                         break;
                     }
                     
-                    writeOutput(`\n--- ACTIVE ATLAS USERS ---`, 'var(--highlight-color)');
+                    // --- LIVE SIMULATION LOGIC ---
+                    const rand = Math.random();
+                    let currentStatus;
+                    let statusColor;
+
+                    // Simulate different activity levels for BEEF WELLINGTON
+                    if (rand < 0.05) { // 5% chance of CRITICAL
+                        currentStatus = 'CRITICAL (BREACH)';
+                        statusColor = 'var(--error-color)';
+                    } else if (rand < 0.35) { // 30% chance of IDLE
+                        currentStatus = 'OFFLINE (IDLE)';
+                        statusColor = 'var(--prompt-caret)';
+                    } else { // 65% chance of ONLINE
+                        currentStatus = 'ONLINE (STANDARD)';
+                        statusColor = 'var(--terminal-color)';
+                    }
+
+                    writeOutput(`\n--- ACTIVE ATLAS USERS (${new Date().toLocaleTimeString('en-US')}) ---`, 'var(--highlight-color)');
                     writeOutput(`USER ID: ${ADMIN_USER} | STATUS: ONLINE (ADMIN)`, 'var(--terminal-color)');
-                    const wellingtonStatus = Math.random() < 0.5 ? 'ONLINE (STANDARD)' : 'OFFLINE (IDLE)'; 
-                    writeOutput(`USER ID: ${STANDARD_USER} | STATUS: ${wellingtonStatus}`, wellingtonStatus.includes('ONLINE') ? 'var(--terminal-color)' : 'var(--prompt-caret)');
+                    writeOutput(`USER ID: ${STANDARD_USER} | STATUS: ${currentStatus}`, statusColor);
                     writeOutput(`--------------------------\n`, 'var(--highlight-color)');
                     break;
 
@@ -1058,7 +1079,7 @@
                     
                 case 'SOUND':
                     if (!assetArg) {
-                        writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-color)');
+                        writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-error)');
                         writeOutput(`Usage: SOUND [ASSET_NAME|RANDOM] [COUNT]x (e.g., SOUND CENSOR 3x)`, 'var(--prompt-caret)');
                         
                         writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
@@ -1082,10 +1103,10 @@
                         assetName = assetArg.substring(0, assetArg.length - suffixLength).trim();
                         
                         if (times > MAX_REPETITIONS) {
-                            writeOutput(`WARNING: Engaging the maximum chaos setting. Requested ${times} repetitions. Limiting to ${MAX_REPETITIONS}.`, 'var(--error-color)');
+                            writeOutput(`WARNING: Engaging the maximum chaos setting. Requested ${times} repetitions. Limiting to ${MAX_REPETITIONS}.`, 'var(--error-error)');
                             times = MAX_REPETITIONS; 
                         } else if (times < 1) {
-                            writeOutput(`ERROR: Repetition count must be at least 1.`, 'var(--error-color)');
+                            writeOutput(`ERROR: Repetition count must be at least 1.`, 'var(--error-error)');
                             break;
                         }
                     }
@@ -1103,19 +1124,18 @@
                     if (SOUND_COMMAND_NAMES.includes(finalAssetName)) {
                         loadAndPlaySound(finalAssetName, times); 
                     } else {
-                        writeOutput(`\nERROR: Asset '${assetName}' not found in SFX database.`, 'var(--error-color)');
+                        writeOutput(`\nERROR: Asset '${assetName}' not found in SFX database.`, 'var(--error-error)');
                     }
                     break;
 
                 case 'PAUSE':
-                    // We know the security check passed, so this only handles a single, non-sequence sound
                     if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
                         currentPlaybackPlayer.stop(); 
                         writeOutput(`Single playback stopped. Type PLAY to restart from the beginning or QUIT to terminate.`, 'var(--highlight-color)');
                     } else if (currentPlaybackPlayer) {
-                        writeOutput(`Single playback is already stopped. Type PLAY to restart.`, 'var(--prompt-caret)');
+                        writeOutput(`Single playback is already stopped or finished. Type PLAY to restart.`, 'var(--prompt-caret)');
                     } else {
-                        writeOutput(`ERROR: No active single sound asset to pause.`, 'var(--error-color)');
+                        writeOutput(`ERROR: No active single sound asset to pause.`, 'var(--error-error)');
                     }
                     break;
 
@@ -1131,7 +1151,6 @@
                     break;
                     
                 case 'QUIT':
-                    // We know the security check passed, so this only handles a single, non-sequence sound
                     if (currentPlaybackPlayer) {
                         disposePlaybackPlayer(); 
                         writeOutput(`Single playback terminated. The asset has been released from memory.`, 'var(--highlight-color)');
@@ -1145,7 +1164,7 @@
                     if (game && GAMES[game]) {
                         GAMES[game]();
                     } else {
-                        writeOutput(`ERROR: Game/Program '${game || 'none'}' not found. Available: ${Object.keys(GAMES).join(', ')}.`, 'var(--error-color)');
+                        writeOutput(`ERROR: Game/Program '${game || 'none'}' not found. Available: ${Object.keys(GAMES).join(', ')}.`, 'var(--error-error)');
                         writeOutput(`(If a game says 'not yet available', it is not implemented).`, 'var(--prompt-caret)');
                     }
                     break;
@@ -1177,11 +1196,14 @@
         });
 
         // TROLLING SECURITY: LOCKDOWN ON TAB SWITCH/MINIMIZE
+        // NOTE: This feature was removed to allow the user to switch tabs without logging out.
+        /*
         document.addEventListener('visibilitychange', function() {
             if (document.hidden && isLoggedIn) {
                 initiateLockdown('SECURITY ALERT: Tab minimized or focus lost. Session locked.');
             }
         });
+        */
         
         // Game control listeners (Only active when isGameRunning is true)
         document.addEventListener('keydown', gameKeydown);
@@ -1200,3 +1222,4 @@
     </script>
 
 </body></html>
+
