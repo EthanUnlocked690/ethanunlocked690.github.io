@@ -4,10 +4,13 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v5.9</title>
+    <title>ATLAS: DATA FLOW CONSOLE v6.4 (Structured SFX List)</title>
     <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- TONE.JS RESTORED: Library for audio playback -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+
     <style>
         /* Define colors for easy theme changing */
         :root {
@@ -80,7 +83,7 @@
             display: none; 
         }
         
-        /* --- NEW: Pinned Header Style --- */
+        /* --- PINNED Header Style --- */
         #console-header {
             flex-shrink: 0; /* Prevents it from shrinking */
             padding-bottom: 10px;
@@ -248,7 +251,7 @@
     <div id="login-overlay">
         <div id="login-card">
             <h2 style="color: var(--error-color); margin-top: 0; margin-bottom: 20px;">ATLAS ACCESS PROTOCOL</h2>
-            <p style="color: var(--prompt-caret); font-size: 1rem;">STATUS: Two-Factor Authentication Required.</p>
+            <p style="color: var(--prompt-caret); font-size: 1rem;">STATUS: Three-Factor Authentication Required.</p>
             <form id="login-form">
                 <div class="login-field">
                     <label for="username">USERNAME:</label>
@@ -277,7 +280,7 @@
     <!-- END LOADING SCREEN -->
 
     <div id="console-container">
-        <!-- NEW: PINNED HEADER (Updates every second) -->
+        <!-- PINNED HEADER (Updates every second) -->
         <div id="console-header">
             ATLAS_SYSTEM_OFFLINE
         </div>
@@ -301,7 +304,7 @@
         // =========================================================================
 
         const terminalOutput = document.getElementById('terminal-output');
-        const consoleHeader = document.getElementById('console-header'); // New element
+        const consoleHeader = document.getElementById('console-header');
         const commandInput = document.getElementById('command-input');
         const promptSpan = document.getElementById('prompt');
         const consoleContainer = document.getElementById('console-container');
@@ -316,7 +319,7 @@
         let isBusy = false;
         let isLoggedIn = false; 
         let failedAttempts = 0; 
-        let timeUpdateInterval = null; // Interval for refreshing the header
+        let timeUpdateInterval = null;
 
         // --- CORRECT CREDENTIALS ---
         const CORRECT_USER = 'ETHANUNLOCKED'; 
@@ -327,16 +330,22 @@
         // --- LOCATION CONSTANT ---
         const LOCATION = 'KOLLARNEY BAY SECURE NODE'; 
 
-        // Sound Mapping (using your provided files)
+        // Sound Mapping: Keys are the conceptual command name (UPPERCASE), 
+        // Values are the actual uploaded file paths
         const SOUND_EFFECTS = {
-            'hm.mp3': 'siren.mp3',      // Loading/Suspense
-            'access.mp3': 'confirm.mp3', // Access Granted
-            'no.mp3': 'alert.mp3',     // Failed Attempt 1
-            '2.mp3': 'get-out-meme.mp3', // Failed Attempt 2
-            '3.mp3': 'vine-boom.mp3',  // Failed Attempt 3
+            'SIREN': 'siren.mp3',           // Used for loading (Handshake)
+            'CONFIRM': 'confirm.mp3',       // Used for success
+            'ALARM': 'alert.mp3',           // Used for Deny 1
+            'GET OUT': 'get-out-meme.mp3',  // Used for Deny 2
+            'VINE BOOM': 'vine-boom.mp3',   // Used for Lockdown
+            'RIZZ': 'rizz.mp3', 
+            'YOUR IDOL': 'idol.mp3', 
+            'FART': 'fart.mp3', 
         };
 
         const AUDIO_BUFFER = {};
+        // Use the internal, friendly keys for commands
+        const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
         
         // =========================================================================
         // --- Audio Functions ---
@@ -348,8 +357,14 @@
             }
         }
         
+        // Helper to get the file path from the conceptual name
+        function getSoundPath(name) {
+            // Converts the friendly name (e.g., 'CONFIRM') to its file path (e.g., 'confirm.mp3')
+            return SOUND_EFFECTS[name] || name;
+        }
+
         async function loadSound(name) {
-            const path = SOUND_EFFECTS[name] || name;
+            const path = getSoundPath(name);
             if (AUDIO_BUFFER[path]) {
                 return AUDIO_BUFFER[path];
             }
@@ -365,9 +380,20 @@
             }
         }
 
+        // Variable to hold the current looping sound (like the siren)
+        let currentLoadingSound = null;
+
         async function loadAndPlaySound(name, loop = false) {
             const buffer = await loadSound(name);
             if (!buffer) return;
+
+            // Stop any currently playing one-shot sound
+            if (!loop && currentLoadingSound && !currentLoadingSound.loop) {
+                 // Dispose of one-shot sounds if a new one is triggered
+                 currentLoadingSound.stop();
+                 currentLoadingSound.dispose();
+                 currentLoadingSound = null;
+            } 
 
             const player = new Tone.Player({
                 url: buffer,
@@ -382,7 +408,20 @@
                     player.dispose();
                 };
             }
+            
+            // If it's the looping sound, keep track of it
+            if (loop) {
+                currentLoadingSound = player;
+            }
             return player;
+        }
+
+        function stopLoadingSound() {
+            if (currentLoadingSound) {
+                currentLoadingSound.stop();
+                currentLoadingSound.dispose();
+                currentLoadingSound = null;
+            }
         }
 
         function sleep(ms) {
@@ -395,7 +434,7 @@
         
         function getCurrentFormattedTime() {
             const now = new Date();
-            const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+            const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
             const day = dayNames[now.getDay()];
@@ -473,16 +512,6 @@
         // --- Login State Management (via Modal Submit) ---
         // =========================================================================
         
-        // Helper to stop and dispose of any currently running loading sound
-        let currentLoadingSound = null;
-        function stopLoadingSound() {
-            if (currentLoadingSound) {
-                currentLoadingSound.stop();
-                currentLoadingSound.dispose();
-                currentLoadingSound = null;
-            }
-        }
-
         async function handleLoginAttempt(event) {
             event.preventDefault();
             if (isBusy) return;
@@ -496,10 +525,10 @@
             loginStatus.style.color = 'var(--highlight-color)';
             loginStatus.textContent = 'INITIATING HANDSHAKE...';
             
-            // 1. Start Loading/Suspense (hm.mp3 - siren.mp3)
+            // 1. Start Loading/Suspense sound (SIREN)
             showLoading(true);
             loadingText.textContent = 'Processing Authentication Handshake...';
-            currentLoadingSound = await loadAndPlaySound('hm.mp3', true);
+            currentLoadingSound = await loadAndPlaySound('SIREN', true); 
             await sleep(2000); 
 
             // 2. Determine Outcome
@@ -512,11 +541,11 @@
             showLoading(false);
 
             if (success) {
-                // SUCCESS (access.mp3 - confirm.mp3)
+                // SUCCESS (CONFIRM)
                 failedAttempts = 0;
                 isLoggedIn = true;
                 
-                await loadAndPlaySound('access.mp3');
+                await loadAndPlaySound('CONFIRM');
                 
                 // Transition to console
                 hideLoginModal();
@@ -529,27 +558,27 @@
                 clearOutput();
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('>> ACCESS GRANTED. WELCOME, ETHANUNLOCKED.', 'var(--terminal-color)');
-                writeOutput('>> ATLAS CONSOLE V5.9: FULL ACCESS ENABLED.', 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V6.4: FULL ACCESS ENABLED.', 'var(--terminal-color)');
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
 
             } else {
-                // FAILURE (no.mp3, 2.mp3, 3.mp3)
+                // FAILURE (ALARM, GET OUT, VINE BOOM)
                 failedAttempts++;
                 let errorSoundKey;
                 let errorMessage;
                 let color;
 
                 if (failedAttempts === 1) {
-                    errorSoundKey = 'no.mp3';
+                    errorSoundKey = 'ALARM';
                     errorMessage = `ACCESS DENIED (Error Code 401.1). Attempt ${failedAttempts} of 3.`;
                     color = 'var(--error-color)';
                 } else if (failedAttempts === 2) {
-                    errorSoundKey = '2.mp3';
+                    errorSoundKey = 'GET OUT';
                     errorMessage = `WARNING! UNAUTHORIZED ATTEMPT DETECTED. Attempt ${failedAttempts} of 3.`;
                     color = 'var(--prompt-caret)';
                 } else { // failedAttempts >= 3
-                    errorSoundKey = '3.mp3';
+                    errorSoundKey = 'VINE BOOM';
                     errorMessage = `CRITICAL BREACH. SYSTEM LOCKDOWN INITIATED. All access terminated.`;
                     color = 'var(--error-color)';
                     failedAttempts = 0; // Reset after 3rd attempt
@@ -595,9 +624,13 @@
 
             writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
             
+            // Convert input to uppercase for case-insensitive command parsing
             const parts = fullInput.toUpperCase().split(' ');
             const cmd = parts[0];
             const args = parts.slice(1);
+            
+            // Re-join arguments to handle multi-word sound names like 'VINE BOOM'
+            const assetArg = args.join(' '); 
 
             switch (cmd) {
                 case 'HELP':
@@ -606,6 +639,7 @@
                     writeOutput(`CLEAR: Clear the console output.`, 'var(--highlight-color)');
                     writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
                     writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
+                    writeOutput(`SOUND [ASSET_NAME]: Play a specific audio asset (e.g., SOUND RIZZ or SOUND VINE BOOM).`, 'var(--highlight-color)');
                     writeOutput(`RUN [GAME_NAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
                     writeOutput(`LOGOUT: Return to the login screen.`, 'var(--highlight-color)');
                     writeOutput(`------------------------------\n`, 'var(--highlight-color)');
@@ -627,6 +661,36 @@
                     updateHeaderDisplay(); // Force an immediate update of the pinned header
                     writeOutput(`\nLIVE DATA SYNCHRONIZED. Pinned header refreshed.`, 'var(--terminal-color)');
                     writeOutput(`----------------------\n`, 'var(--highlight-color)');
+                    break;
+                    
+                case 'SOUND':
+                    if (!assetArg) {
+                        writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-color)');
+                        writeOutput(`Usage: SOUND [ASSET_NAME]`, 'var(--prompt-caret)');
+                        
+                        // New structured list output
+                        writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
+                        SOUND_COMMAND_NAMES.forEach(name => {
+                            // Use &nbsp; for indentation and [+] for list marker
+                            writeOutput(`&nbsp;&nbsp;[+] ${name}`, 'var(--highlight-color)'); 
+                        });
+                        writeOutput(`----------------------------\n`, 'var(--highlight-color)');
+                        
+                        break;
+                    }
+                    
+                    if (SOUND_COMMAND_NAMES.includes(assetArg)) {
+                        writeOutput(`Initiating playback of asset: ${assetArg}...`, 'var(--terminal-color)');
+                        loadAndPlaySound(assetArg); 
+                    } else {
+                        writeOutput(`\nERROR: Asset '${assetArg}' not found in SFX database.`, 'var(--error-color)');
+                        // Fall back to showing the structured list again on error
+                        writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
+                        SOUND_COMMAND_NAMES.forEach(name => {
+                            writeOutput(`&nbsp;&nbsp;[+] ${name}`, 'var(--highlight-color)'); 
+                        });
+                        writeOutput(`----------------------------\n`, 'var(--highlight-color)');
+                    }
                     break;
                 
                 case 'RUN':
@@ -675,10 +739,10 @@
         });
         
         window.onload = function() {
-            // Pre-load all sounds
-            Object.keys(SOUND_EFFECTS).forEach(key => loadSound(key));
+            // Pre-load all sounds by their conceptual names
+            SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
 
-            // Unlock audio context on first user interaction
+            // Unlock audio context on first user interaction (required for Tone.js)
             document.body.addEventListener('click', unlockAudioContext, { once: true });
             document.body.addEventListener('keydown', unlockAudioContext, { once: true });
 
