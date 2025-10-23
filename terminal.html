@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v7.6 (Case-Insensitive Multiplier Fix)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v7.11 (Randomizer Added)</title>
     <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
@@ -333,11 +333,11 @@
         // Sound Mapping: Keys are the conceptual command name (UPPERCASE), 
         // Values are the actual uploaded file paths or special indicators
         const SOUND_EFFECTS = {
-            'SIREN': 'siren.mp3',           // Used for loading (Handshake)
-            'CONFIRM': 'confirm.mp3',       // Used for success
-            'ALARM': 'alert.mp3',           // Used for Deny 1
-            'GET OUT': 'get-out-meme.mp3',  // Used for Deny 2
-            'VINE BOOM': 'vine-boom.mp3',   // Used for Lockdown
+            'SIREN': 'siren.mp3',           
+            'CONFIRM': 'confirm.mp3',       
+            'ALARM': 'alert.mp3',           
+            'GET OUT': 'get-out-meme.mp3',  
+            'VINE BOOM': 'vine-boom.mp3',   
             'RIZZ': 'rizz.mp3', 
             'YOUR IDOL': 'idol.mp3', 
             'FART': 'fart.mp3', 
@@ -355,7 +355,7 @@
         const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
         
         // --- Audio Player Tracking ---
-        let currentLoadingSound = null;     // For the looping login siren
+        let currentLoadingSound = null;     
         let currentPlaybackPlayer = null;   // For user-triggered sounds (PAUSE/PLAY/QUIT)
         
         // =========================================================================
@@ -474,7 +474,7 @@
 
             const sequenceRunning = (times > 1);
             if (sequenceRunning) {
-                writeOutput(`[SEQUENCE START] Playing ${name} ${times} times.`, 'var(--highlight-color)');
+                writeOutput(`[SEQUENCE START] Scheduling ${name} for ${times} repetition${times > 1 ? 's' : ''}.`, 'var(--highlight-color)');
             }
             
             let finalPlayer = null;
@@ -482,9 +482,11 @@
             // Use Tone.js Transport for accurate scheduling in sequence mode
             if (sequenceRunning) {
                 const totalDuration = buffer.duration;
+                const totalCycleTime = totalDuration + 0.1; // Sound duration + 100ms gap
+                
                 // Create a sequence of events scheduled by Tone.Transport
-                // The gap between sounds is set to 0.1 seconds (100ms)
                 const sequence = new Tone.Sequence((time, index) => {
+                    // Create and start player for each cycle
                     const player = new Tone.Player({
                         url: buffer,
                         volume: -10 
@@ -493,16 +495,23 @@
                     player.start(time); 
                     
                     // Dispose immediately after play to free memory
-                    player.onstop = () => player.dispose();
+                    // Use scheduleOnce for clean disposal to avoid issues with large sequences
+                    Tone.Transport.scheduleOnce(() => {
+                        player.dispose();
+                    }, time + totalDuration);
 
-                    // If it's the last one, log completion
-                    if (index === times - 1) {
-                         setTimeout(() => {
-                            writeOutput(`[SEQUENCE END] Playback of ${name} completed.`, 'var(--highlight-color)');
-                         }, (totalDuration * 1000) + 50); // Small delay for final message
+
+                    // If it's the last one, schedule the Transport stop
+                    if (index === times - 1) { 
+                         // Schedule the transport to stop after the final sound finishes
+                         Tone.Transport.scheduleOnce(() => {
+                             Tone.Transport.stop(); 
+                             writeOutput(`[SEQUENCE END] Playback of ${name} completed. Transport stopped.`, 'var(--highlight-color)');
+                         }, time + totalDuration + 0.05); // Schedule stop slightly after sound ends
                     }
-                }, Array.from({ length: times }, (_, i) => i * (totalDuration + 0.1)), "1").start(0); 
-
+                }, Array.from({ length: times }, (_, i) => i * totalCycleTime), "1").start(0); 
+                // The array length directly limits the repetitions
+                
                 Tone.Transport.start(); 
 
                 // We don't track a single player reference for sequences
@@ -517,16 +526,20 @@
                 
                 player.start(0);
 
+                // Set player.onstop to handle automatic cleanup after a single, non-looping sound finishes
+                player.onstop = () => {
+                    // Only dispose if it's the single playback player (not the loading loop)
+                    if (currentPlaybackPlayer === player) { 
+                        player.dispose();
+                        currentPlaybackPlayer = null;
+                        writeOutput(`[PLAYBACK STOP] Single playback of ${name} finished. Asset released.`, 'var(--prompt-caret)');
+                    }
+                };
+
                 if (loop) {
                     currentLoadingSound = player;
                 } else {
                     currentPlaybackPlayer = player; 
-                    player.onstop = () => {
-                        if (currentPlaybackPlayer === player) {
-                            player.dispose();
-                            currentPlaybackPlayer = null;
-                        }
-                    };
                 }
                 finalPlayer = player;
             }
@@ -641,10 +654,9 @@
             loginStatus.style.color = 'var(--highlight-color)';
             loginStatus.textContent = 'INITIATING HANDSHAKE...';
             
-            // 1. Start Loading/Suspense sound (SIREN)
+            // 1. Start Loading/Suspense visual only (Audio removed)
             showLoading(true);
             loadingText.textContent = 'Processing Authentication Handshake...';
-            currentLoadingSound = await loadAndPlaySound('SIREN', true); 
             await sleep(2000); 
 
             // 2. Determine Outcome
@@ -652,15 +664,12 @@
                             (password === CORRECT_PASSWORD) && 
                             (passkey === CORRECT_PASSKEY);
 
-            // 3. Stop Loading Sound
-            stopLoadingSound();
+            // 3. Stop Loading Visual
             showLoading(false);
 
             if (success) {
                 failedAttempts = 0;
                 isLoggedIn = true;
-                
-                await loadAndPlaySound('CONFIRM');
                 
                 hideLoginModal();
                 consoleContainer.style.display = 'flex';
@@ -670,7 +679,7 @@
                 clearOutput();
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('>> ACCESS GRANTED. WELCOME, ETHANUNLOCKED.', 'var(--terminal-color)');
-                writeOutput('>> ATLAS CONSOLE V7.6: FULL ACCESS ENABLED.', 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V7.11: FULL ACCESS ENABLED.', 'var(--terminal-color)');
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
                 writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
@@ -678,31 +687,19 @@
 
             } else {
                 failedAttempts++;
-                let errorSoundKey;
                 let errorMessage;
                 let color;
 
                 if (failedAttempts === 1) {
-                    errorSoundKey = 'ALARM';
                     errorMessage = `ACCESS DENIED (Error Code 401.1). Attempt ${failedAttempts} of 3.`;
                     color = 'var(--error-color)';
                 } else if (failedAttempts === 2) {
-                    errorSoundKey = 'GET OUT';
                     errorMessage = `WARNING! UNAUTHORIZED ATTEMPT DETECTED. Attempt ${failedAttempts} of 3.`;
                     color = 'var(--prompt-caret)';
                 } else { 
-                    errorSoundKey = 'VINE BOOM';
                     errorMessage = `CRITICAL BREACH. SYSTEM LOCKDOWN INITIATED. All access terminated.`;
                     color = 'var(--error-color)';
                     failedAttempts = 0; 
-                }
-                
-                // Try to play error sound even if context is suspended
-                // Note: This relies on browser's attempt to autostart the context on this interaction
-                try {
-                    await loadAndPlaySound(errorSoundKey); 
-                } catch(e) {
-                    console.warn("Could not play error sound. Audio context likely suspended.", e);
                 }
                 
                 // Update Modal Status
@@ -745,7 +742,7 @@
             const parts = fullInput.split(/\s+/);
             const cmd = parts[0].toUpperCase();
             const args = parts.slice(1);
-            let assetArg = args.join(' ').trim(); // e.g., "CENSOR 3x" or "censor 3X"
+            let assetArg = args.join(' ').trim(); 
             // -------------------------------------------------------------
 
             switch (cmd) {
@@ -756,10 +753,10 @@
                     writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
                     writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
                     writeOutput(`INIT AUDIO: Initialize the Web Audio Context (CRITICAL for sound playback).`, 'var(--error-color)');
-                    writeOutput(`SOUND [ASSET] (OPTIONAL: [COUNT]x): Play an audio asset. Use '3x' or '3X' to play 3 times. (Max 10x)`, 'var(--highlight-color)');
-                    writeOutput(`PAUSE: Pause the currently playing single sound. (Does not affect sequences)`, 'var(--highlight-color)');
-                    writeOutput(`PLAY: Resume the currently paused single sound. (Does not affect sequences)`, 'var(--highlight-color)');
-                    writeOutput(`QUIT: Stop and release the active single sound asset. (Does not affect sequences)`, 'var(--highlight-color)');
+                    writeOutput(`SOUND [ASSET] (OPTIONAL: [COUNT]x): Play an audio asset. Use 'RANDOM' for a surprise asset. The repetition limit is 1,000,000x.`, 'var(--highlight-color)');
+                    writeOutput(`PAUSE: Stops the currently playing single sound. Track will restart from beginning on PLAY.`, 'var(--highlight-color)');
+                    writeOutput(`PLAY: Restarts the currently stopped single sound from the beginning.`, 'var(--highlight-color)');
+                    writeOutput(`QUIT: Terminates and releases the active single sound asset.`, 'var(--highlight-color)');
                     writeOutput(`RUN [GAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
                     writeOutput(`LOGOUT: Return to the login screen.`, 'var(--highlight-color)');
                     writeOutput(`------------------------------\n`, 'var(--highlight-color)');
@@ -792,9 +789,10 @@
                 case 'SOUND':
                     if (!assetArg) {
                         writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-color)');
-                        writeOutput(`Usage: SOUND [ASSET_NAME] [COUNT]x (e.g., SOUND CENSOR 3x)`, 'var(--prompt-caret)');
+                        writeOutput(`Usage: SOUND [ASSET_NAME|RANDOM] [COUNT]x (e.g., SOUND CENSOR 3x)`, 'var(--prompt-caret)');
                         
                         writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
+                        writeOutput(`&nbsp;&nbsp;[+] RANDOM (Selects one of the following)`, 'var(--highlight-color)');
                         SOUND_COMMAND_NAMES.forEach(name => {
                             writeOutput(`&nbsp;&nbsp;[+] ${name} ${name === 'CENSOR' ? '(Synthesized)' : ''}`, 'var(--highlight-color)'); 
                         });
@@ -804,20 +802,25 @@
                     
                     let assetName = assetArg;
                     let times = 1;
-                    const MAX_REPETITIONS = 10;
+                    // --- MAX REPETITION LIMIT (Trolling) ---
+                    const MAX_REPETITIONS = 1000000;
                     
                     // FIXED REGEX: Matches a space, one or more digits, followed by 'x' or 'X' at the end of the string
                     const repeatMatch = assetArg.match(/\s(\d+)[xX]$/); 
+                    
+                    let requestedTimes = 1;
 
                     if (repeatMatch) {
-                        times = parseInt(repeatMatch[1], 10);
+                        requestedTimes = parseInt(repeatMatch[1], 10);
+                        times = requestedTimes;
+                        
                         const suffixLength = repeatMatch[0].length;
                         // Strip the multiplier and spaces from the end to get the clean asset name
                         assetName = assetArg.substring(0, assetArg.length - suffixLength).trim();
                         
                         if (times > MAX_REPETITIONS) {
-                            writeOutput(`WARNING: Maximum repetition count is ${MAX_REPETITIONS}. Playing ${MAX_REPETITIONS} times.`, 'var(--prompt-caret)');
-                            times = MAX_REPETITIONS;
+                            writeOutput(`WARNING: Engaging the maximum chaos setting. You requested ${requestedTimes} repetitions.`, 'var(--error-color)');
+                            times = MAX_REPETITIONS; // LIMIT APPLIED
                         } else if (times < 1) {
                             writeOutput(`ERROR: Repetition count must be at least 1.`, 'var(--error-color)');
                             break;
@@ -826,14 +829,27 @@
 
                     // Look up asset using the capitalized version of the name
                     const lookupName = assetName.toUpperCase();
+                    let finalAssetName = lookupName;
 
-                    if (SOUND_COMMAND_NAMES.includes(lookupName)) {
-                        writeOutput(`Initiating playback of asset: ${lookupName} (${times} time${times > 1 ? 's' : ''})...`, 'var(--terminal-color)');
-                        loadAndPlaySound(lookupName, false, times); 
+                    if (lookupName === 'RANDOM') {
+                        // Select a random sound asset name
+                        const randomIndex = Math.floor(Math.random() * SOUND_COMMAND_NAMES.length);
+                        finalAssetName = SOUND_COMMAND_NAMES[randomIndex];
+                        
+                        writeOutput(`ASSET RESOLVED: Selecting random asset: ${finalAssetName}.`, 'var(--prompt-caret)');
+                    }
+
+
+                    if (SOUND_COMMAND_NAMES.includes(finalAssetName)) {
+                        // EXPLICITLY CONFIRM THE SCHEDULED COUNT
+                        const confirmedMessage = `Initiating playback of asset: ${finalAssetName}. Scheduled cycles: ${times} time${times > 1 ? 's' : ''}.`;
+                        writeOutput(confirmedMessage, 'var(--terminal-color)');
+                        loadAndPlaySound(finalAssetName, false, times); 
                     } else {
                         writeOutput(`\nERROR: Asset '${assetName}' not found in SFX database.`, 'var(--error-color)');
                         
                         writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
+                        writeOutput(`&nbsp;&nbsp;[+] RANDOM (Selects one of the following)`, 'var(--highlight-color)');
                         SOUND_COMMAND_NAMES.forEach(name => {
                             writeOutput(`&nbsp;&nbsp;[+] ${name} ${name === 'CENSOR' ? '(Synthesized)' : ''}`, 'var(--highlight-color)'); 
                         });
@@ -843,32 +859,39 @@
 
                 case 'PAUSE':
                     if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
-                        currentPlaybackPlayer.pause(0);
-                        writeOutput(`Playback paused. Type PLAY to resume or QUIT to terminate.`, 'var(--highlight-color)');
-                    } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'paused') {
-                        writeOutput(`Playback is already paused.`, 'var(--prompt-caret)');
+                        // Use stop() to halt immediately. Note: This resets playback position.
+                        currentPlaybackPlayer.stop(); 
+                        writeOutput(`Playback stopped. Type PLAY to restart from the beginning or QUIT to terminate.`, 'var(--highlight-color)');
+                    } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'stopped') {
+                        writeOutput(`Playback is already stopped. Type PLAY to restart.`, 'var(--prompt-caret)');
                     } else {
-                        writeOutput(`ERROR: No active single sound asset to pause.`, 'var(--error-color)');
+                        writeOutput(`ERROR: No active single sound asset to pause. (Note: PAUSE/PLAY/QUIT do not affect repeated sequences.)`, 'var(--error-color)');
                     }
                     break;
 
                 case 'PLAY':
-                    if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'paused') {
-                        currentPlaybackPlayer.start(0);
-                        writeOutput(`Playback resumed.`, 'var(--highlight-color)');
+                    if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'stopped') {
+                        // start(0) restarts the track from the beginning.
+                        currentPlaybackPlayer.start(0); 
+                        writeOutput(`Playback restarted.`, 'var(--highlight-color)');
                     } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
                          writeOutput(`Playback is already running.`, 'var(--prompt-caret)');
                     } else {
-                        writeOutput(`ERROR: No paused single sound asset to play.`, 'var(--error-error)');
+                        writeOutput(`ERROR: No stopped single sound asset to play. (Note: PAUSE/PLAY/QUIT do not affect repeated sequences.)`, 'var(--error-error)');
                     }
                     break;
                     
                 case 'QUIT':
                     if (currentPlaybackPlayer) {
-                        disposePlaybackPlayer();
+                        disposePlaybackPlayer(); // Calls stop() and dispose(), sets currentPlaybackPlayer = null
                         writeOutput(`Playback terminated. The asset has been released from memory.`, 'var(--highlight-color)');
                     } else {
                         writeOutput(`WARNING: No active single sound asset to quit.`, 'var(--prompt-caret)');
+                    }
+                    // If transport is running from a previous sequence, stop it here too
+                    if (Tone.Transport.state === 'started') {
+                         Tone.Transport.stop(); 
+                         writeOutput(`INFO: Tone.Transport stopped due to QUIT command.`, 'var(--prompt-caret)');
                     }
                     break;
                 
