@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v6.4</title>
+    <title>ATLAS: DATA FLOW CONSOLE v6.6 (Robust SFX Playback)</title>
     <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
@@ -376,6 +376,7 @@
                 return buffer;
             } catch (e) {
                 console.error(`Error loading sound: ${path}`, e);
+                writeOutput(`[AUDIO ERROR]: Failed to load asset file: ${path}`, 'var(--error-color)');
                 return null;
             }
         }
@@ -385,7 +386,10 @@
 
         async function loadAndPlaySound(name, loop = false) {
             const buffer = await loadSound(name);
-            if (!buffer) return;
+            if (!buffer) {
+                // loadSound already printed an error if it failed
+                return;
+            }
 
             // Stop any currently playing one-shot sound
             if (!loop && currentLoadingSound && !currentLoadingSound.loop) {
@@ -395,25 +399,35 @@
                  currentLoadingSound = null;
             } 
 
-            const player = new Tone.Player({
-                url: buffer,
-                autostart: true,
-                loop: loop,
-                volume: -10 
-            }).toDestination();
-            
-            // If not looping, dispose after playing
-            if (!loop) {
-                player.onstop = () => {
-                    player.dispose();
-                };
+            try {
+                const player = new Tone.Player({
+                    url: buffer, // Use the pre-loaded buffer
+                    loop: loop,
+                    volume: -10 
+                }).toDestination();
+                
+                // CRITICAL FIX: Explicitly start the player to ensure playback
+                player.start(0);
+
+                // If not looping, dispose after playing
+                if (!loop) {
+                    player.onstop = () => {
+                        player.dispose();
+                    };
+                }
+                
+                // If it's the looping sound, keep track of it
+                if (loop) {
+                    currentLoadingSound = player;
+                }
+                return player;
+                
+            } catch (e) {
+                // Catch any runtime errors during playback initialization
+                console.error(`Playback execution error for ${name}:`, e);
+                writeOutput(`[AUDIO EXECUTION ERROR]: Could not start player for ${name}. Error: ${e.message}`, 'var(--error-color)');
+                return null;
             }
-            
-            // If it's the looping sound, keep track of it
-            if (loop) {
-                currentLoadingSound = player;
-            }
-            return player;
         }
 
         function stopLoadingSound() {
@@ -558,7 +572,7 @@
                 clearOutput();
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('>> ACCESS GRANTED. WELCOME, ETHANUNLOCKED.', 'var(--terminal-color)');
-                writeOutput('>> ATLAS CONSOLE V6.4: FULL ACCESS ENABLED.', 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V6.6: FULL ACCESS ENABLED.', 'var(--terminal-color)');
                 writeOutput('-------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
 
@@ -665,10 +679,10 @@
                     
                 case 'SOUND':
                     if (!assetArg) {
+                        // 1. If no argument, print the structured list.
                         writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-color)');
                         writeOutput(`Usage: SOUND [ASSET_NAME]`, 'var(--prompt-caret)');
                         
-                        // New structured list output
                         writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
                         SOUND_COMMAND_NAMES.forEach(name => {
                             // Use &nbsp; for indentation and [+] for list marker
@@ -676,14 +690,14 @@
                         });
                         writeOutput(`----------------------------\n`, 'var(--highlight-color)');
                         
-                        break;
-                    }
-                    
-                    if (SOUND_COMMAND_NAMES.includes(assetArg)) {
+                    } else if (SOUND_COMMAND_NAMES.includes(assetArg)) {
+                        // 2. If valid argument, play the sound.
                         writeOutput(`Initiating playback of asset: ${assetArg}...`, 'var(--terminal-color)');
                         loadAndPlaySound(assetArg); 
                     } else {
+                        // 3. If invalid argument, show error and the list.
                         writeOutput(`\nERROR: Asset '${assetArg}' not found in SFX database.`, 'var(--error-color)');
+                        
                         // Fall back to showing the structured list again on error
                         writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
                         SOUND_COMMAND_NAMES.forEach(name => {
@@ -740,9 +754,11 @@
         
         window.onload = function() {
             // Pre-load all sounds by their conceptual names
+            // Note: Pre-loading ensures the sound buffer is ready before the user requests playback.
             SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
 
             // Unlock audio context on first user interaction (required for Tone.js)
+            // This is essential to prevent browsers from blocking audio playback.
             document.body.addEventListener('click', unlockAudioContext, { once: true });
             document.body.addEventListener('keydown', unlockAudioContext, { once: true });
 
@@ -752,3 +768,4 @@
     </script>
 
 </body></html>
+
