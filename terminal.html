@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v7.11 (Randomizer Added)</title>
+    <title>ATLAS: DATA FLOW CONSOLE v8.2 (Security & Gaming)</title>
     <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
-    <!-- TONE.JS RESTORED: Library for audio playback -->
+    <!-- TONE.JS Library for audio playback -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
     <style>
@@ -20,6 +19,7 @@
             --prompt-caret: #ffaa00; /* Amber */
             --error-color: #ff0000; /* Red */
             --highlight-color: #00aaff; /* Blue */
+            --game-color: #ffffff; /* White for game elements */
         }
 
         /* General Console Theme */
@@ -70,49 +70,48 @@
             width: 90%;
             max-width: 1200px;
             height: 90vh;
-            background-color: #080808;
+            background-color: #111;
             border: 2px solid var(--border-color);
             box-shadow: 0 0 20px var(--terminal-color);
             padding: 20px;
             overflow: hidden;
             z-index: 1;
             display: flex;
-            flex-direction: column; /* Use column layout */
+            flex-direction: column; 
             border-radius: 8px;
-            /* Initially hidden, shown after login */
-            display: none; 
+            display: none; /* Initially hidden */
         }
         
         /* --- PINNED Header Style --- */
         #console-header {
-            flex-shrink: 0; /* Prevents it from shrinking */
+            flex-shrink: 0; 
             padding-bottom: 10px;
             margin-bottom: 10px;
-            border-bottom: 1px dashed var(--highlight-color); /* Separation line */
+            border-bottom: 1px dashed var(--highlight-color); 
             font-size: 1.2rem;
             color: var(--highlight-color);
-            white-space: pre; /* Ensures content stays on one line if possible */
+            white-space: pre; 
         }
 
 
         /* --- Terminal Output Area --- */
         #terminal-output {
-            flex-grow: 1; /* Allows it to take up remaining space */
+            flex-grow: 1; 
             overflow-y: auto;
             white-space: pre-wrap;
             word-wrap: break-word;
             padding-bottom: 10px;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none; 
         }
         #terminal-output::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none; 
         }
         
         /* --- Command Input Area --- */
         #command-line {
             display: flex;
             align-items: center;
-            flex-shrink: 0; /* Prevents it from shrinking */
+            flex-shrink: 0; 
             margin-top: 10px;
         }
 
@@ -158,6 +157,7 @@
             text-align: center;
             max-width: 400px;
             width: 90%;
+            border-radius: 5px;
         }
 
         .login-field {
@@ -198,6 +198,7 @@
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
             transition: background-color 0.2s, box-shadow 0.2s;
             width: 100%;
+            border-radius: 4px;
         }
 
         #login-button:hover {
@@ -240,6 +241,46 @@
             100% { text-shadow: 0 0 1px var(--highlight-color), 0 0 5px var(--error-color); transform: skew(0deg); }
         }
         
+        /* =========================================================================
+           --- GAME CONTAINER STYLES ---
+           ========================================================================= */
+        #game-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            background-color: #000;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px var(--terminal-color);
+            z-index: 1;
+            display: none; /* Initially hidden */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+        }
+
+        #game-canvas {
+            background-color: #000;
+            display: block;
+            border: 1px dashed var(--game-color);
+            width: 800px; /* Base size for canvas */
+            height: 600px; /* Base size for canvas */
+            max-width: 100%;
+            max-height: 80%;
+        }
+
+        #quit-game-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: var(--error-color);
+            color: #fff;
+            border: 2px solid var(--error-color);
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
     </style>
 </head>
 
@@ -255,14 +296,17 @@
             <form id="login-form">
                 <div class="login-field">
                     <label for="username">USERNAME:</label>
+                    <!-- Inputs are intentionally left blank for security -->
                     <input type="text" id="username" required>
                 </div>
                 <div class="login-field">
                     <label for="password">PASSWORD:</label>
+                    <!-- Inputs are intentionally left blank for security -->
                     <input type="password" id="password" required>
                 </div>
                 <div class="login-field">
                     <label for="passkey">PASSKEY (4 DIGITS):</label>
+                    <!-- Inputs are intentionally left blank for security -->
                     <input type="text" id="passkey" required maxlength="4">
                 </div>
                 <button type="submit" id="login-button">INITIATE ACCESS SEQUENCE</button>
@@ -278,7 +322,14 @@
         <div id="loading-text" style="color:var(--highlight-color);">Processing Authentication Handshake...</div>
     </div>
     <!-- END LOADING SCREEN -->
+    
+    <!-- GAME CONTAINER (Hidden by default) -->
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <button id="quit-game-button">TERMINATE GAME SEQUENCE</button>
+    </div>
 
+    <!-- CONSOLE CONTAINER -->
     <div id="console-container">
         <!-- PINNED HEADER (Updates every second) -->
         <div id="console-header">
@@ -308,6 +359,7 @@
         const commandInput = document.getElementById('command-input');
         const promptSpan = document.getElementById('prompt');
         const consoleContainer = document.getElementById('console-container');
+        const gameContainer = document.getElementById('game-container');
         
         // Modal Elements
         const loginOverlay = document.getElementById('login-overlay');
@@ -315,23 +367,30 @@
         const loginStatus = document.getElementById('login-status');
         const loadingScreen = document.getElementById('loading-screen');
         const loadingText = document.getElementById('loading-text');
+        const quitGameButton = document.getElementById('quit-game-button');
 
         let isBusy = false;
         let isLoggedIn = false; 
+        let isGameRunning = false;
         let failedAttempts = 0; 
         let timeUpdateInterval = null;
+        let authUsername = '';
+        let activeSequence = null; // Used to track running sound sequences
 
-        // --- CORRECT CREDENTIALS ---
-        const CORRECT_USER = 'ETHANUNLOCKED'; 
-        const CORRECT_PASSWORD = 'h4cker';     
-        const CORRECT_PASSKEY = '1957';      
+        // --- CREDENTIALS (UPDATED FOR V8.2) ---
+        const ADMIN_USER = 'ETHANUNLOCKED'; 
+        const ADMIN_PASSWORD = 'h4cker';     
+        const STANDARD_USER = 'BEEF WELLINGTON';
+        const STANDARD_PASSWORD = 'Eat_me';
+        
+        const ADMIN_PASSKEY = '1957';      // Admin passkey
+        const BEEF_PASSKEY = '2251';       // Standard user passkey (as requested)
         // ---------------------------
 
         // --- LOCATION CONSTANT ---
         const LOCATION = 'KOLLARNEY BAY SECURE NODE'; 
 
-        // Sound Mapping: Keys are the conceptual command name (UPPERCASE), 
-        // Values are the actual uploaded file paths or special indicators
+        // Sound Mapping
         const SOUND_EFFECTS = {
             'SIREN': 'siren.mp3',           
             'CONFIRM': 'confirm.mp3',       
@@ -354,17 +413,53 @@
         const AUDIO_BUFFER = {};
         const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
         
-        // --- Audio Player Tracking ---
-        let currentLoadingSound = null;     
-        let currentPlaybackPlayer = null;   // For user-triggered sounds (PAUSE/PLAY/QUIT)
+        let currentPlaybackPlayer = null;   // For user-triggered single sounds (PAUSE/PLAY/QUIT)
         
+        // =========================================================================
+        // --- Security & Lockdown Functions ---
+        // =========================================================================
+
+        /**
+         * Forces a security lockdown and returns the user to the login screen.
+         * @param {string} reason The message to display on the login status.
+         */
+        function initiateLockdown(reason) {
+            if (!isLoggedIn) return; // Prevent loop if already logging out
+
+            // 1. Stop all execution
+            isLoggedIn = false;
+            stopTimeInterval();
+            disposePlaybackPlayer();
+            if (Tone.Transport.state === 'started') {
+                Tone.Transport.stop();
+                activeSequence?.dispose();
+                activeSequence = null;
+            }
+            if (isGameRunning) {
+                quitAsteroidsGame(); // Cleanly exit game
+            }
+            
+            // 2. Hide console, show login
+            consoleContainer.style.display = 'none';
+            gameContainer.style.display = 'none';
+            showLoginModal();
+            
+            // 3. Set failure message
+            loginStatus.textContent = reason;
+            loginStatus.style.color = 'var(--error-color)';
+            failedAttempts = 0; // Reset attempts for next login
+            authUsername = '';
+            
+            // Reset modal input values
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('passkey').value = '';
+        }
+
         // =========================================================================
         // --- Audio Functions ---
         // =========================================================================
         
-        /**
-         * Checks the current state of the Tone.js AudioContext and resumes it if suspended.
-         */
         async function checkAudioContext() {
             const context = Tone.context;
             let status = context.state.toUpperCase();
@@ -373,7 +468,6 @@
 
             if (status !== 'RUNNING') {
                 try {
-                    // Try to resume the context. This requires a user gesture (which happened via login/command).
                     await context.resume();
                     status = context.state.toUpperCase();
                     if (status === 'RUNNING') {
@@ -393,9 +487,6 @@
             return SOUND_EFFECTS[name] || name;
         }
 
-        /**
-         * Creates the Censor Beep ToneAudioBuffer.
-         */
         function createCensorBeepBuffer() {
             const context = Tone.context;
             const frequency = 2000; 
@@ -424,8 +515,6 @@
                 try {
                     const buffer = createCensorBeepBuffer();
                     AUDIO_BUFFER[path] = buffer;
-                    // Synthesized sound is instantly loaded
-                    writeOutput(`[LOAD] Asset CENSOR synthesized.`, 'var(--terminal-color)');
                     return buffer;
                 } catch (e) {
                     writeOutput(`[LOAD ERROR] Failed to synthesize CENSOR: ${e.message}`, 'var(--error-color)');
@@ -433,11 +522,9 @@
                 }
             }
             
-            // External file loading
             writeOutput(`[LOAD] Requesting asset: ${name}...`, 'var(--prompt-caret)');
             try {
                 const buffer = new Tone.ToneAudioBuffer(path);
-                // CRITICAL: Await the loading promise
                 await buffer.loaded; 
                 AUDIO_BUFFER[path] = buffer;
                 writeOutput(`[LOAD SUCCESS] Asset ${name} loaded. Duration: ${buffer.duration.toFixed(2)}s.`, 'var(--terminal-color)');
@@ -455,36 +542,38 @@
                 currentPlaybackPlayer = null;
             }
         }
-
-        async function loadAndPlaySound(name, loop = false, times = 1) {
+        
+        /**
+         * Loads and plays a sound asset, handling single playback or sequences.
+         * @param {string} name The sound asset name (key in SOUND_EFFECTS).
+         * @param {number} times The number of times to repeat.
+         */
+        async function loadAndPlaySound(name, times = 1) {
             if (Tone.context.state !== 'running') {
                 writeOutput(`[PLAY ERROR] Audio Context is not running. Run: INIT AUDIO`, 'var(--error-color)');
                 return;
             }
+            
+            // Pre-sequence check: Stop any running single player or sequence
+            if (currentPlaybackPlayer) { disposePlaybackPlayer(); }
+            if (Tone.Transport.state === 'started') {
+                Tone.Transport.stop(); 
+                activeSequence?.dispose();
+                activeSequence = null;
+                writeOutput(`[WARNING] Previous sequence terminated prematurely.`, 'var(--prompt-caret)');
+            }
+
 
             const buffer = await loadSound(name);
             if (!buffer) return;
-
-            if (!loop) { 
-                disposePlaybackPlayer(); 
-            }
-            if (!loop && currentLoadingSound) {
-                 stopLoadingSound(); 
-            } 
-
+            
             const sequenceRunning = (times > 1);
+            const totalDuration = buffer.duration;
+
             if (sequenceRunning) {
                 writeOutput(`[SEQUENCE START] Scheduling ${name} for ${times} repetition${times > 1 ? 's' : ''}.`, 'var(--highlight-color)');
-            }
-            
-            let finalPlayer = null;
-            
-            // Use Tone.js Transport for accurate scheduling in sequence mode
-            if (sequenceRunning) {
-                const totalDuration = buffer.duration;
                 const totalCycleTime = totalDuration + 0.1; // Sound duration + 100ms gap
                 
-                // Create a sequence of events scheduled by Tone.Transport
                 const sequence = new Tone.Sequence((time, index) => {
                     // Create and start player for each cycle
                     const player = new Tone.Player({
@@ -494,41 +583,35 @@
                     
                     player.start(time); 
                     
-                    // Dispose immediately after play to free memory
-                    // Use scheduleOnce for clean disposal to avoid issues with large sequences
+                    // Schedule disposal shortly after playback finishes
                     Tone.Transport.scheduleOnce(() => {
                         player.dispose();
                     }, time + totalDuration);
 
-
                     // If it's the last one, schedule the Transport stop
                     if (index === times - 1) { 
-                         // Schedule the transport to stop after the final sound finishes
                          Tone.Transport.scheduleOnce(() => {
                              Tone.Transport.stop(); 
-                             writeOutput(`[SEQUENCE END] Playback of ${name} completed. Transport stopped.`, 'var(--highlight-color)');
-                         }, time + totalDuration + 0.05); // Schedule stop slightly after sound ends
+                             sequence.dispose(); // Dispose the sequence itself
+                             activeSequence = null;
+                             writeOutput(`[SEQUENCE END] Playback of ${name} completed.`, 'var(--highlight-color)');
+                         }, time + totalDuration + 0.15); // Wait slightly longer for buffer disposal
                     }
                 }, Array.from({ length: times }, (_, i) => i * totalCycleTime), "1").start(0); 
-                // The array length directly limits the repetitions
                 
                 Tone.Transport.start(); 
-
-                // We don't track a single player reference for sequences
-                finalPlayer = sequence; 
+                activeSequence = sequence; // Track the running sequence
             } else {
-                // Single Playback (User controlled) or Loop (System controlled)
+                // Single Playback (User controlled)
                 const player = new Tone.Player({
                     url: buffer, 
-                    loop: loop, 
+                    loop: false, 
                     volume: -10 
                 }).toDestination();
                 
                 player.start(0);
 
-                // Set player.onstop to handle automatic cleanup after a single, non-looping sound finishes
                 player.onstop = () => {
-                    // Only dispose if it's the single playback player (not the loading loop)
                     if (currentPlaybackPlayer === player) { 
                         player.dispose();
                         currentPlaybackPlayer = null;
@@ -536,22 +619,7 @@
                     }
                 };
 
-                if (loop) {
-                    currentLoadingSound = player;
-                } else {
-                    currentPlaybackPlayer = player; 
-                }
-                finalPlayer = player;
-            }
-            
-            return finalPlayer;
-        }
-
-        function stopLoadingSound() {
-            if (currentLoadingSound) {
-                currentLoadingSound.stop();
-                currentLoadingSound.dispose();
-                currentLoadingSound = null;
+                currentPlaybackPlayer = player; 
             }
         }
 
@@ -584,7 +652,7 @@
         }
         
         function updateHeaderDisplay() {
-            consoleHeader.textContent = `[ ${getCurrentFormattedTime()} ]`;
+            consoleHeader.textContent = `[ ${getCurrentFormattedTime()} | USER: ${authUsername} ]`;
         }
         
         function stopTimeInterval() {
@@ -654,17 +722,24 @@
             loginStatus.style.color = 'var(--highlight-color)';
             loginStatus.textContent = 'INITIATING HANDSHAKE...';
             
-            // 1. Start Loading/Suspense visual only (Audio removed)
             showLoading(true);
             loadingText.textContent = 'Processing Authentication Handshake...';
-            await sleep(2000); 
+            await sleep(1500); 
 
-            // 2. Determine Outcome
-            const success = (username === CORRECT_USER) && 
-                            (password === CORRECT_PASSWORD) && 
-                            (passkey === CORRECT_PASSKEY);
+            let success = false;
+            let userType = '';
 
-            // 3. Stop Loading Visual
+            // --- AUTHENTICATION LOGIC (CHECKING AGAINST UPDATED PASSKEYS) ---
+            if (username === ADMIN_USER && password === ADMIN_PASSWORD && passkey === ADMIN_PASSKEY) {
+                success = true;
+                authUsername = ADMIN_USER;
+                userType = 'ADMIN';
+            } else if (username === STANDARD_USER && password === STANDARD_PASSWORD && passkey === BEEF_PASSKEY) {
+                success = true;
+                authUsername = STANDARD_USER;
+                userType = 'STANDARD';
+            }
+
             showLoading(false);
 
             if (success) {
@@ -677,32 +752,29 @@
                 startTimeInterval(); 
                 
                 clearOutput();
-                writeOutput('-------------------------------------------', 'var(--terminal-color)');
-                writeOutput('>> ACCESS GRANTED. WELCOME, ETHANUNLOCKED.', 'var(--terminal-color)');
-                writeOutput('>> ATLAS CONSOLE V7.11: FULL ACCESS ENABLED.', 'var(--terminal-color)');
-                writeOutput('-------------------------------------------', 'var(--terminal-color)');
+                writeOutput('----------------------------------------------------', 'var(--terminal-color)');
+                writeOutput(`>> ACCESS GRANTED. WELCOME, ${authUsername} (${userType}).`, 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V8.2: FULL SECURITY PROTOCOLS ONLINE.', 'var(--terminal-color)');
+                writeOutput('----------------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
                 writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
-                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
+                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)'); // REQUIRED MESSAGE
 
             } else {
                 failedAttempts++;
                 let errorMessage;
-                let color;
+                let color = 'var(--error-color)';
 
                 if (failedAttempts === 1) {
                     errorMessage = `ACCESS DENIED (Error Code 401.1). Attempt ${failedAttempts} of 3.`;
-                    color = 'var(--error-color)';
                 } else if (failedAttempts === 2) {
                     errorMessage = `WARNING! UNAUTHORIZED ATTEMPT DETECTED. Attempt ${failedAttempts} of 3.`;
                     color = 'var(--prompt-caret)';
                 } else { 
                     errorMessage = `CRITICAL BREACH. SYSTEM LOCKDOWN INITIATED. All access terminated.`;
-                    color = 'var(--error-color)';
                     failedAttempts = 0; 
                 }
                 
-                // Update Modal Status
                 loginStatus.textContent = errorMessage;
                 loginStatus.style.color = color;
                 
@@ -715,6 +787,8 @@
                 }
             }
             
+            // Clear inputs after attempt for security
+            document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             document.getElementById('passkey').value = ''; 
             
@@ -724,26 +798,207 @@
         }
 
         // =========================================================================
+        // --- Game Logic (ASTEROIDS) ---
+        // =========================================================================
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+
+        // Game State Variables
+        let ship = { x: canvas.width / 2, y: canvas.height / 2, r: 10, angle: 0, thrust: { x: 0, y: 0, power: 0.1 }, rotateSpeed: 0.05, friction: 0.99 };
+        let bullets = [];
+        let keys = {};
+        
+        function initAsteroidsGame() {
+            isGameRunning = true;
+            consoleContainer.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            commandInput.disabled = true;
+            
+            // Reset game state
+            ship = { x: canvas.width / 2, y: canvas.height / 2, r: 10, angle: 0, thrust: { x: 0, y: 0, power: 0.08 }, rotateSpeed: 0.05, friction: 0.99 };
+            bullets = [];
+            keys = {};
+
+            // Start the game loop
+            gameLoop(); 
+        }
+
+        function quitAsteroidsGame() {
+            isGameRunning = false;
+            commandInput.disabled = false;
+            gameContainer.style.display = 'none';
+            
+            // Stop game loop
+            cancelAnimationFrame(animationFrameId);
+            
+            // Clean up listeners
+            document.removeEventListener('keydown', gameKeydown);
+            document.removeEventListener('keyup', gameKeyup);
+
+            consoleContainer.style.display = 'flex';
+            clearOutput(); 
+            writeOutput(`\nSYSTEM MESSAGE: ASTEROIDS terminated.`, 'var(--highlight-color)');
+            commandInput.focus();
+        }
+
+        function drawShip() {
+            ctx.strokeStyle = var2css('game-color');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            // Nose of the ship
+            ctx.moveTo(
+                ship.x + 4/3 * ship.r * Math.cos(ship.angle),
+                ship.y - 4/3 * ship.r * Math.sin(ship.angle)
+            );
+            
+            // Rear left
+            ctx.lineTo(
+                ship.x - ship.r * (2/3 * Math.cos(ship.angle) + Math.sin(ship.angle)),
+                ship.y + ship.r * (2/3 * Math.sin(ship.angle) - Math.cos(ship.angle))
+            );
+            
+            // Rear right
+            ctx.lineTo(
+                ship.x - ship.r * (2/3 * Math.cos(ship.angle) - Math.sin(ship.angle)),
+                ship.y + ship.r * (2/3 * Math.sin(ship.angle) + Math.cos(ship.angle))
+            );
+            
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        function updateShip() {
+            if (keys['ArrowLeft']) { ship.angle += ship.rotateSpeed; }
+            if (keys['ArrowRight']) { ship.angle -= ship.rotateSpeed; }
+            
+            if (keys['ArrowUp']) {
+                ship.thrust.x += ship.thrust.power * Math.cos(ship.angle);
+                ship.thrust.y -= ship.thrust.power * Math.sin(ship.angle);
+            }
+
+            // Apply friction
+            ship.thrust.x *= ship.friction;
+            ship.thrust.y *= ship.friction;
+
+            // Update position
+            ship.x += ship.thrust.x;
+            ship.y += ship.thrust.y;
+
+            // Wrap around edges
+            if (ship.x < 0) ship.x = canvas.width;
+            if (ship.x > canvas.width) ship.x = 0;
+            if (ship.y < 0) ship.y = canvas.height;
+            if (ship.y > canvas.height) ship.y = 0;
+        }
+        
+        function drawBullets() {
+            ctx.fillStyle = var2css('game-color');
+            for (let i = 0; i < bullets.length; i++) {
+                const b = bullets[i];
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function updateBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Remove bullets that go off-screen
+                if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+
+        function fireBullet() {
+            const BULLET_SPEED = 7;
+            const bullet = {
+                x: ship.x + 4/3 * ship.r * Math.cos(ship.angle),
+                y: ship.y - 4/3 * ship.r * Math.sin(ship.angle),
+                vx: BULLET_SPEED * Math.cos(ship.angle),
+                vy: -BULLET_SPEED * Math.sin(ship.angle),
+                life: 60 // frames
+            };
+            bullets.push(bullet);
+        }
+
+        function var2css(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+        }
+
+        function gameLoop() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            updateShip();
+            updateBullets();
+            
+            drawShip();
+            drawBullets();
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+        
+        let lastFireTime = 0;
+        const FIRE_DELAY = 150; // Milliseconds
+
+        function gameKeydown(e) {
+            if (!isGameRunning) return;
+            keys[e.key] = true;
+
+            if (e.key === ' ') {
+                e.preventDefault(); // Prevent scrolling
+                const now = Date.now();
+                if (now - lastFireTime > FIRE_DELAY) {
+                    fireBullet();
+                    lastFireTime = now;
+                }
+            }
+        }
+
+        function gameKeyup(e) {
+            if (!isGameRunning) return;
+            keys[e.key] = false;
+        }
+
+        // =========================================================================
         // --- Command Processing (Logged-in only) ---
         // =========================================================================
 
         const GAMES = {
-            'ASTEROIDS': () => writeOutput('Launching ASTEROIDS... (Game not implemented)', 'var(--highlight-color)'),
-            'SNAKE': () => writeOutput('Launching SNAKE... (Game not implemented)', 'var(--highlight-color)')
+            'ASTEROIDS': initAsteroidsGame,
+            'SNAKE': () => writeOutput('Launching SNAKE... (Not yet available)', 'var(--highlight-color)')
         };
         
         function processCommand(input) {
             const fullInput = input.trim();
             if (isBusy || !isLoggedIn || fullInput.length === 0) return; 
 
+            // --- SECURITY CHECK: TROLLING LOCKDOWN ---
+            const isSequenceRunning = Tone.Transport.state === 'started';
+            const isSinglePlaying = currentPlaybackPlayer && currentPlaybackPlayer.state === 'started';
+            const attemptingTermination = fullInput.toUpperCase() === 'PAUSE' || fullInput.toUpperCase() === 'QUIT';
+
+            if ((isSequenceRunning || isSinglePlaying) && attemptingTermination) {
+                initiateLockdown(`SECURITY ALERT: Attempted unauthorized termination of active asset.`);
+                return; 
+            }
+            // -----------------------------------------
+
             writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
             
-            // --- UPDATED PARSING LOGIC FOR CASE-INSENSITIVE ARGUMENTS ---
             const parts = fullInput.split(/\s+/);
             const cmd = parts[0].toUpperCase();
             const args = parts.slice(1);
             let assetArg = args.join(' ').trim(); 
-            // -------------------------------------------------------------
 
             switch (cmd) {
                 case 'HELP':
@@ -753,10 +1008,13 @@
                     writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
                     writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
                     writeOutput(`INIT AUDIO: Initialize the Web Audio Context (CRITICAL for sound playback).`, 'var(--error-color)');
-                    writeOutput(`SOUND [ASSET] (OPTIONAL: [COUNT]x): Play an audio asset. Use 'RANDOM' for a surprise asset. The repetition limit is 1,000,000x.`, 'var(--highlight-color)');
-                    writeOutput(`PAUSE: Stops the currently playing single sound. Track will restart from beginning on PLAY.`, 'var(--highlight-color)');
+                    writeOutput(`SOUND [ASSET] [COUNT]x: Play an audio asset. Use 'RANDOM' for a surprise asset. Repetition works correctly now.`, 'var(--highlight-color)');
+                    writeOutput(`PAUSE: Stops the currently playing single sound. (Lockdown triggered if sequence is active).`, 'var(--highlight-color)');
                     writeOutput(`PLAY: Restarts the currently stopped single sound from the beginning.`, 'var(--highlight-color)');
-                    writeOutput(`QUIT: Terminates and releases the active single sound asset.`, 'var(--highlight-color)');
+                    writeOutput(`QUIT: Terminates and releases the active single sound asset. (Lockdown triggered if sequence is active).`, 'var(--highlight-color)');
+                    if (authUsername === ADMIN_USER) {
+                         writeOutput(`ACTIVE: (ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
+                    }
                     writeOutput(`RUN [GAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
                     writeOutput(`LOGOUT: Return to the login screen.`, 'var(--highlight-color)');
                     writeOutput(`------------------------------\n`, 'var(--highlight-color)');
@@ -769,12 +1027,24 @@
                 case 'STATUS':
                     writeOutput(`SYSTEM STATUS: ONLINE`, 'var(--terminal-color)');
                     writeOutput(`Web Audio Context: ${Tone.context.state.toUpperCase()}`, 'var(--terminal-color)');
+                    writeOutput(`Current User: ${authUsername}`, 'var(--terminal-color)');
                     writeOutput(`Uptime: 74 days, 12 hours, 34 minutes`, 'var(--terminal-color)');
-                    writeOutput(`CPU Load: 1.2%`, 'var(--terminal-color)');
-                    writeOutput(`Memory Usage: 3.4GB / 32GB`, 'var(--terminal-color)');
-                    writeOutput(`Security Level: [MAX EXECUTION]`, 'var(--terminal-color)');
+                    writeOutput(`Security Level: ${authUsername === ADMIN_USER ? '[ADMIN EXECUTION]' : '[STANDARD EXECUTION]'}`, 'var(--terminal-color)');
                     break;
                 
+                case 'ACTIVE':
+                    if (authUsername !== ADMIN_USER) {
+                        writeOutput(`\nACCESS DENIED: Command ACTIVE requires ADMIN privileges. Current User: ${authUsername}.`, 'var(--error-color)');
+                        break;
+                    }
+                    
+                    writeOutput(`\n--- ACTIVE ATLAS USERS ---`, 'var(--highlight-color)');
+                    writeOutput(`USER ID: ${ADMIN_USER} | STATUS: ONLINE (ADMIN)`, 'var(--terminal-color)');
+                    const wellingtonStatus = Math.random() < 0.5 ? 'ONLINE (STANDARD)' : 'OFFLINE (IDLE)'; 
+                    writeOutput(`USER ID: ${STANDARD_USER} | STATUS: ${wellingtonStatus}`, wellingtonStatus.includes('ONLINE') ? 'var(--terminal-color)' : 'var(--prompt-caret)');
+                    writeOutput(`--------------------------\n`, 'var(--highlight-color)');
+                    break;
+
                 case 'LIVE': 
                     updateHeaderDisplay(); 
                     writeOutput(`\nLIVE DATA SYNCHRONIZED. Pinned header refreshed.`, 'var(--terminal-color)');
@@ -794,133 +1064,98 @@
                         writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
                         writeOutput(`&nbsp;&nbsp;[+] RANDOM (Selects one of the following)`, 'var(--highlight-color)');
                         SOUND_COMMAND_NAMES.forEach(name => {
-                            writeOutput(`&nbsp;&nbsp;[+] ${name} ${name === 'CENSOR' ? '(Synthesized)' : ''}`, 'var(--highlight-color)'); 
+                            writeOutput(`&nbsp;&nbsp;[+] ${name}`, 'var(--highlight-color)'); 
                         });
                         writeOutput(`----------------------------\n`, 'var(--highlight-color)');
                         break;
                     } 
                     
                     let assetName = assetArg;
-                    let times = 1;
-                    // --- MAX REPETITION LIMIT (Trolling) ---
                     const MAX_REPETITIONS = 1000000;
-                    
-                    // FIXED REGEX: Matches a space, one or more digits, followed by 'x' or 'X' at the end of the string
+                    let times = 1;
+
                     const repeatMatch = assetArg.match(/\s(\d+)[xX]$/); 
                     
-                    let requestedTimes = 1;
-
                     if (repeatMatch) {
-                        requestedTimes = parseInt(repeatMatch[1], 10);
-                        times = requestedTimes;
-                        
+                        times = parseInt(repeatMatch[1], 10);
                         const suffixLength = repeatMatch[0].length;
-                        // Strip the multiplier and spaces from the end to get the clean asset name
                         assetName = assetArg.substring(0, assetArg.length - suffixLength).trim();
                         
                         if (times > MAX_REPETITIONS) {
-                            writeOutput(`WARNING: Engaging the maximum chaos setting. You requested ${requestedTimes} repetitions.`, 'var(--error-color)');
-                            times = MAX_REPETITIONS; // LIMIT APPLIED
+                            writeOutput(`WARNING: Engaging the maximum chaos setting. Requested ${times} repetitions. Limiting to ${MAX_REPETITIONS}.`, 'var(--error-color)');
+                            times = MAX_REPETITIONS; 
                         } else if (times < 1) {
                             writeOutput(`ERROR: Repetition count must be at least 1.`, 'var(--error-color)');
                             break;
                         }
                     }
 
-                    // Look up asset using the capitalized version of the name
                     const lookupName = assetName.toUpperCase();
                     let finalAssetName = lookupName;
 
                     if (lookupName === 'RANDOM') {
-                        // Select a random sound asset name
                         const randomIndex = Math.floor(Math.random() * SOUND_COMMAND_NAMES.length);
                         finalAssetName = SOUND_COMMAND_NAMES[randomIndex];
-                        
                         writeOutput(`ASSET RESOLVED: Selecting random asset: ${finalAssetName}.`, 'var(--prompt-caret)');
                     }
 
 
                     if (SOUND_COMMAND_NAMES.includes(finalAssetName)) {
-                        // EXPLICITLY CONFIRM THE SCHEDULED COUNT
-                        const confirmedMessage = `Initiating playback of asset: ${finalAssetName}. Scheduled cycles: ${times} time${times > 1 ? 's' : ''}.`;
-                        writeOutput(confirmedMessage, 'var(--terminal-color)');
-                        loadAndPlaySound(finalAssetName, false, times); 
+                        loadAndPlaySound(finalAssetName, times); 
                     } else {
                         writeOutput(`\nERROR: Asset '${assetName}' not found in SFX database.`, 'var(--error-color)');
-                        
-                        writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
-                        writeOutput(`&nbsp;&nbsp;[+] RANDOM (Selects one of the following)`, 'var(--highlight-color)');
-                        SOUND_COMMAND_NAMES.forEach(name => {
-                            writeOutput(`&nbsp;&nbsp;[+] ${name} ${name === 'CENSOR' ? '(Synthesized)' : ''}`, 'var(--highlight-color)'); 
-                        });
-                        writeOutput(`----------------------------\n`, 'var(--highlight-color)');
                     }
                     break;
 
                 case 'PAUSE':
+                    // We know the security check passed, so this only handles a single, non-sequence sound
                     if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
-                        // Use stop() to halt immediately. Note: This resets playback position.
                         currentPlaybackPlayer.stop(); 
-                        writeOutput(`Playback stopped. Type PLAY to restart from the beginning or QUIT to terminate.`, 'var(--highlight-color)');
-                    } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'stopped') {
-                        writeOutput(`Playback is already stopped. Type PLAY to restart.`, 'var(--prompt-caret)');
+                        writeOutput(`Single playback stopped. Type PLAY to restart from the beginning or QUIT to terminate.`, 'var(--highlight-color)');
+                    } else if (currentPlaybackPlayer) {
+                        writeOutput(`Single playback is already stopped. Type PLAY to restart.`, 'var(--prompt-caret)');
                     } else {
-                        writeOutput(`ERROR: No active single sound asset to pause. (Note: PAUSE/PLAY/QUIT do not affect repeated sequences.)`, 'var(--error-color)');
+                        writeOutput(`ERROR: No active single sound asset to pause.`, 'var(--error-color)');
                     }
                     break;
 
                 case 'PLAY':
                     if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'stopped') {
-                        // start(0) restarts the track from the beginning.
                         currentPlaybackPlayer.start(0); 
-                        writeOutput(`Playback restarted.`, 'var(--highlight-color)');
+                        writeOutput(`Single playback restarted.`, 'var(--highlight-color)');
                     } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
-                         writeOutput(`Playback is already running.`, 'var(--prompt-caret)');
+                         writeOutput(`Single playback is already running.`, 'var(--prompt-caret)');
                     } else {
-                        writeOutput(`ERROR: No stopped single sound asset to play. (Note: PAUSE/PLAY/QUIT do not affect repeated sequences.)`, 'var(--error-error)');
+                        writeOutput(`ERROR: No stopped single sound asset to play.`, 'var(--error-error)');
                     }
                     break;
                     
                 case 'QUIT':
+                    // We know the security check passed, so this only handles a single, non-sequence sound
                     if (currentPlaybackPlayer) {
-                        disposePlaybackPlayer(); // Calls stop() and dispose(), sets currentPlaybackPlayer = null
-                        writeOutput(`Playback terminated. The asset has been released from memory.`, 'var(--highlight-color)');
+                        disposePlaybackPlayer(); 
+                        writeOutput(`Single playback terminated. The asset has been released from memory.`, 'var(--highlight-color)');
                     } else {
                         writeOutput(`WARNING: No active single sound asset to quit.`, 'var(--prompt-caret)');
-                    }
-                    // If transport is running from a previous sequence, stop it here too
-                    if (Tone.Transport.state === 'started') {
-                         Tone.Transport.stop(); 
-                         writeOutput(`INFO: Tone.Transport stopped due to QUIT command.`, 'var(--prompt-caret)');
                     }
                     break;
                 
                 case 'RUN':
-                    const game = args[0];
+                    const game = args[0] ? args[0].toUpperCase() : null;
                     if (game && GAMES[game]) {
                         GAMES[game]();
                     } else {
                         writeOutput(`ERROR: Game/Program '${game || 'none'}' not found. Available: ${Object.keys(GAMES).join(', ')}.`, 'var(--error-color)');
+                        writeOutput(`(If a game says 'not yet available', it is not implemented).`, 'var(--prompt-caret)');
                     }
                     break;
 
                 case 'LOGOUT':
-                    isLoggedIn = false;
-                    failedAttempts = 0;
-                    
-                    stopTimeInterval(); 
-                    disposePlaybackPlayer(); // Also quit any user sound on logout
-                    Tone.Transport.stop(); // Stop any running sequences
-                    
-                    consoleContainer.style.display = 'none';
-                    showLoginModal();
-                    
-                    loginStatus.textContent = 'System Secured. Please re-authenticate.';
-                    loginStatus.style.color = 'var(--prompt-caret)';
+                    initiateLockdown(`SYSTEM MESSAGE: User ${authUsername} logged out.`);
                     break;
                 
                 default:
-                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, 'var(--error-color)');
+                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, 'var(--error-error)');
                     break;
             }
             
@@ -932,13 +1167,25 @@
         // =========================================================================
         
         loginForm.addEventListener('submit', handleLoginAttempt);
+        quitGameButton.addEventListener('click', quitAsteroidsGame);
         
         document.addEventListener('keypress', function(e) {
-            if (isLoggedIn && e.key === 'Enter' && !commandInput.disabled) {
+            if (isLoggedIn && !isGameRunning && e.key === 'Enter' && !commandInput.disabled) {
                 processCommand(commandInput.value);
                 commandInput.value = '';
             }
         });
+
+        // TROLLING SECURITY: LOCKDOWN ON TAB SWITCH/MINIMIZE
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden && isLoggedIn) {
+                initiateLockdown('SECURITY ALERT: Tab minimized or focus lost. Session locked.');
+            }
+        });
+        
+        // Game control listeners (Only active when isGameRunning is true)
+        document.addEventListener('keydown', gameKeydown);
+        document.addEventListener('keyup', gameKeyup);
         
         window.onload = function() {
             // Pre-load all sound files and synthesize the CENSOR beep on load
