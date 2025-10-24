@@ -4,21 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATLAS: DATA FLOW CONSOLE v8.3 (Security & Gaming)</title>
-    <!-- Use VT323 for the retro terminal look -->
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    
-    <!-- TONE.JS Library for audio playback -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
 
     <style>
         :root {
-            --terminal-color: #00ff41; /* Green */
+            --terminal-color: #00ff41;
             --terminal-background-color: #000;
             --border-color: #00ff41;
-            --prompt-caret: #ffaa00; /* Amber */
-            --error-color: #ff0000; /* Red */
-            --highlight-color: #00aaff; /* Blue */
-            --game-color: #ffffff; /* White for game elements */
+            --prompt-caret: #ffaa00;
+            --error-color: #ff0000;
+            --highlight-color: #00aaff;
+            --game-color: #ffffff;
         }
 
         body {
@@ -42,14 +39,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                repeating-linear-gradient(
-                    0deg, 
-                    var(--terminal-color)33, 
-                    var(--terminal-color)33 1px, 
-                    #000 1px, 
-                    #000 3px
-                );
+            background: repeating-linear-gradient(0deg, var(--terminal-color)33, var(--terminal-color)33 1px, #000 1px, #000 3px);
             pointer-events: none;
             z-index: 0;
             opacity: 0.15;
@@ -327,6 +317,25 @@
             border-bottom: 1px solid var(--border-color);
             color: var(--highlight-color);
             font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #close-chat-button {
+            background-color: var(--error-color);
+            color: #fff;
+            border: 2px solid var(--error-color);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            border-radius: 4px;
+        }
+
+        #close-chat-button:hover {
+            background-color: #cc0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
         }
 
         #user-list {
@@ -349,6 +358,59 @@
             display: none;
         }
 
+        #chat-messages div {
+            margin-bottom: 5px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #chat-messages div:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .message-timestamp {
+            color: var(--prompt-caret);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex-grow: 1;
+        }
+
+        .message-reaction {
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        .reaction-picker {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #222;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            display: none;
+            flex-direction: row;
+            gap: 5px;
+            border-radius: 4px;
+            z-index: 20;
+        }
+
+        .reaction-picker span {
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 2px 5px;
+        }
+
+        .reaction-picker span:hover {
+            background-color: var(--highlight-color);
+        }
+
         #chat-input {
             width: 100%;
             box-sizing: border-box;
@@ -360,6 +422,21 @@
             font-family: 'VT323', monospace;
             font-size: 1.1rem;
             outline: none;
+        }
+
+        .typing-dots::after {
+            content: '';
+            display: inline-block;
+            width: 1.5em;
+            text-align: left;
+            animation: typing-dots 0.9s infinite;
+        }
+
+        @keyframes typing-dots {
+            0% { content: '.'; opacity: 1; }
+            33% { content: '..'; opacity: 1; }
+            66% { content: '...'; opacity: 1; }
+            100% { content: '.'; opacity: 1; }
         }
     </style>
 </head>
@@ -414,14 +491,16 @@
     </div>
 
     <div id="chat-window">
-        <div id="chat-header">ATLAS Chat</div>
+        <div id="chat-header">
+            <span>ATLAS Chat</span>
+            <button id="close-chat-button">Close Chat</button>
+        </div>
         <div id="user-list"></div>
         <div id="chat-messages"></div>
         <input type="text" id="chat-input" placeholder="Type message...">
     </div>
 
     <script>
-        // Global Variables
         const terminalOutput = document.getElementById('terminal-output');
         const consoleHeader = document.getElementById('console-header');
         const commandInput = document.getElementById('command-input');
@@ -440,6 +519,7 @@
         const userList = document.getElementById('user-list');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
+        const closeChatButton = document.getElementById('close-chat-button');
 
         let isBusy = false;
         let isLoggedIn = false;
@@ -451,6 +531,11 @@
         let activeSequence = null;
         let unreadMessages = 0;
         let isChatOpen = false;
+        let isUserTyping = false;
+        let typingTimeout = null;
+        let isOtherTyping = false;
+        let otherTypingInterval = null;
+        let messageReactions = {};
 
         const MANAGER_USER = 'ETHANUNLOCKED';
         const MANAGER_PASSWORD = 'h4cker';
@@ -459,6 +544,7 @@
         const ADMIN_PASSWORD = 'Eat_me';
         const ADMIN_PASSKEY = '2251';
         const LOCATION = 'KOLLARNEY BAY SECURE NODE';
+        const EMOJIS = ['😄', '👍', '❤️', '😮', '😢'];
 
         const SOUND_EFFECTS = {
             'SIREN': 'siren.mp3',
@@ -510,6 +596,11 @@
             authUsername = '';
             userType = '';
             unreadMessages = 0;
+            isUserTyping = false;
+            isOtherTyping = false;
+            clearTimeout(typingTimeout);
+            clearInterval(otherTypingInterval);
+            messageReactions = {};
             updateUnreadCount();
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
@@ -668,6 +759,14 @@
             hours = hours % 12;
             hours = hours ? hours.toString().padStart(2, '0') : '12';
             return `${day}, ${date}-${month}-${year} | ${hours}:${minutes}:${seconds} ${ampm} | LOCATION: ${LOCATION}`;
+        }
+
+        function getMessageTimestamp() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
         }
 
         function updateHeaderDisplay() {
@@ -840,18 +939,9 @@
             ctx.strokeStyle = var2css('game-color');
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(
-                ship.x + 4/3 * ship.r * Math.cos(ship.angle),
-                ship.y - 4/3 * ship.r * Math.sin(ship.angle)
-            );
-            ctx.lineTo(
-                ship.x - ship.r * (2/3 * Math.cos(ship.angle) + Math.sin(ship.angle)),
-                ship.y + ship.r * (2/3 * Math.sin(ship.angle) - Math.cos(ship.angle))
-            );
-            ctx.lineTo(
-                ship.x - ship.r * (2/3 * Math.cos(ship.angle) - Math.sin(ship.angle)),
-                ship.y + ship.r * (2/3 * Math.sin(ship.angle) + Math.cos(ship.angle))
-            );
+            ctx.moveTo(ship.x + 4/3 * ship.r * Math.cos(ship.angle), ship.y - 4/3 * ship.r * Math.sin(ship.angle));
+            ctx.lineTo(ship.x - ship.r * (2/3 * Math.cos(ship.angle) + Math.sin(ship.angle)), ship.y + ship.r * (2/3 * Math.sin(ship.angle) - Math.cos(ship.angle)));
+            ctx.lineTo(ship.x - ship.r * (2/3 * Math.cos(ship.angle) - Math.sin(ship.angle)), ship.y + ship.r * (2/3 * Math.sin(ship.angle) + Math.cos(ship.angle)));
             ctx.closePath();
             ctx.stroke();
         }
@@ -1112,11 +1202,12 @@
         // Chat Feature Logic
         function updateUserList() {
             userList.innerHTML = 'Users in Chat:<br>';
-            const currentStatus = 'ONLINE';
-            const currentColor = 'var(--terminal-color)';
+            const currentStatus = isUserTyping ? 'Typing' : 'ONLINE';
+            const currentColor = isUserTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
             const currentSpan = document.createElement('span');
             currentSpan.style.color = currentColor;
-            currentSpan.innerHTML = `- ${authUsername} (${userType}): ${currentStatus}<br>`;
+            currentSpan.className = isUserTyping ? 'typing-dots' : '';
+            currentSpan.innerHTML = `- ${authUsername} (${userType}): ${currentStatus}${isUserTyping ? '' : ''}<br>`;
             userList.appendChild(currentSpan);
             const otherUser = authUsername === MANAGER_USER ? ADMIN_USER : MANAGER_USER;
             const otherType = authUsername === MANAGER_USER ? 'ADMIN' : 'MANAGER';
@@ -1130,18 +1221,72 @@
                 otherStatus = 'OFFLINE (IDLE)';
                 otherColor = 'var(--prompt-caret)';
             } else {
-                otherStatus = 'ONLINE';
-                otherColor = 'var(--terminal-color)';
+                otherStatus = isOtherTyping ? 'Typing' : 'ONLINE';
+                otherColor = isOtherTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
             }
             const otherSpan = document.createElement('span');
             otherSpan.style.color = otherColor;
-            otherSpan.innerHTML = `- ${otherUser} (${otherType}): ${otherStatus}<br>`;
+            otherSpan.className = isOtherTyping ? 'typing-dots' : '';
+            otherSpan.innerHTML = `- ${otherUser} (${otherType}): ${otherStatus}${isOtherTyping ? '' : ''}<br>`;
             userList.appendChild(otherSpan);
         }
 
         function updateUnreadCount() {
             unreadCount.textContent = unreadMessages;
             unreadCount.style.display = unreadMessages > 0 ? 'flex' : 'none';
+        }
+
+        function closeChat() {
+            isChatOpen = false;
+            chatWindow.style.display = 'none';
+            unreadMessages = 0;
+            isUserTyping = false;
+            isOtherTyping = false;
+            clearTimeout(typingTimeout);
+            clearInterval(otherTypingInterval);
+            updateUnreadCount();
+            commandInput.focus();
+        }
+
+        function simulateOtherTyping() {
+            if (!isChatOpen || !isLoggedIn) return;
+            const rand = Math.random();
+            if (rand < 0.2) {
+                isOtherTyping = !isOtherTyping;
+                updateUserList();
+            }
+        }
+
+        function createReactionPicker(messageDiv, messageId) {
+            const existingPicker = messageDiv.querySelector('.reaction-picker');
+            if (existingPicker) {
+                existingPicker.style.display = 'flex';
+                return;
+            }
+            const picker = document.createElement('div');
+            picker.className = 'reaction-picker';
+            EMOJIS.forEach(emoji => {
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = emoji;
+                emojiSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    messageReactions[messageId] = emoji;
+                    updateMessageReactions(messageDiv, messageId);
+                    picker.style.display = 'none';
+                });
+                picker.appendChild(emojiSpan);
+            });
+            messageDiv.appendChild(picker);
+            picker.style.display = 'flex';
+        }
+
+        function updateMessageReactions(messageDiv, messageId) {
+            const reactionSpan = messageDiv.querySelector('.message-reaction');
+            if (messageReactions[messageId]) {
+                reactionSpan.textContent = messageReactions[messageId];
+            } else {
+                reactionSpan.textContent = '';
+            }
         }
 
         chatButton.addEventListener('click', () => {
@@ -1152,48 +1297,83 @@
                 unreadMessages = 0;
                 updateUnreadCount();
                 chatInput.focus();
+                otherTypingInterval = setInterval(simulateOtherTyping, 5000);
+            } else {
+                clearInterval(otherTypingInterval);
+                isUserTyping = false;
+                isOtherTyping = false;
+                clearTimeout(typingTimeout);
+                document.querySelectorAll('.reaction-picker').forEach(picker => {
+                    picker.style.display = 'none';
+                });
             }
+        });
+
+        closeChatButton.addEventListener('click', closeChat);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isChatOpen && !isGameRunning) {
+                closeChat();
+            }
+        });
+
+        chatInput.addEventListener('input', () => {
+            if (!isUserTyping) {
+                isUserTyping = true;
+                updateUserList();
+            }
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isUserTyping = false;
+                updateUserList();
+            }, 2000);
         });
 
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && chatInput.value.trim()) {
                 const msgText = `${authUsername} (${userType}): ${chatInput.value.trim()}`;
-                const msg = document.createElement('div');
-                msg.textContent = msgText;
-                chatMessages.appendChild(msg);
+                const messageId = Date.now().toString();
+                const msgDiv = document.createElement('div');
+                const timestampSpan = document.createElement('span');
+                timestampSpan.className = 'message-timestamp';
+                timestampSpan.textContent = getMessageTimestamp();
+                const contentSpan = document.createElement('span');
+                contentSpan.className = 'message-content';
+                contentSpan.textContent = msgText;
+                const reactionSpan = document.createElement('span');
+                reactionSpan.className = 'message-reaction';
+                msgDiv.appendChild(timestampSpan);
+                msgDiv.appendChild(contentSpan);
+                msgDiv.appendChild(reactionSpan);
+                msgDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.reaction-picker').forEach(picker => {
+                        picker.style.display = 'none';
+                    });
+                    createReactionPicker(msgDiv, messageId);
+                });
+                chatMessages.appendChild(msgDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 if ('Notification' in window && Notification.permission === 'granted') {
                     new Notification('ATLAS Chat Message', { body: msgText });
                 }
                 chatInput.value = '';
+                isUserTyping = false;
+                updateUserList();
+                if (!isChatOpen) {
+                    unreadMessages++;
+                    updateUnreadCount();
+                }
             }
         });
 
-        function simulateIncomingMessage() {
-            if (!isLoggedIn) return;
-            const otherUser = authUsername === MANAGER_USER ? ADMIN_USER : MANAGER_USER;
-            const otherType = authUsername === MANAGER_USER ? 'ADMIN' : 'MANAGER';
-            const messages = [
-                `Checking system logs...`,
-                `Running diagnostics on node ${LOCATION}.`,
-                `Ping from ${otherUser}. All systems nominal.`,
-                `ATLAS security protocols updated.`
-            ];
-            const msgText = `${otherUser} (${otherType}): ${messages[Math.floor(Math.random() * messages.length)]}`;
-            const msg = document.createElement('div');
-            msg.textContent = msgText;
-            chatMessages.appendChild(msg);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            if (!isChatOpen) {
-                unreadMessages++;
-                updateUnreadCount();
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#chat-messages div') && !e.target.closest('.reaction-picker')) {
+                document.querySelectorAll('.reaction-picker').forEach(picker => {
+                    picker.style.display = 'none';
+                });
             }
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('ATLAS Chat Message', { body: msgText });
-            }
-        }
-
-        setInterval(simulateIncomingMessage, 30000);
+        });
 
         // Initialization and Events
         loginForm.addEventListener('submit', handleLoginAttempt);
