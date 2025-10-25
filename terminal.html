@@ -16,6 +16,14 @@
             --error-color: #ff0000;
             --highlight-color: #00aaff;
             --game-color: #ffffff;
+            --reaction-smile: #ffff00; /* Yellow for 😄 */
+            --reaction-thumbsup: #00ff41; /* Green for 👍 */
+            --reaction-heart: #ff0000; /* Red for ❤️ */
+            --reaction-surprised: #00aaff; /* Blue for 😮 */
+            --reaction-sad: #00ffff; /* Cyan for 😢 */
+            --accept-button: #00ff41; /* Green for Accept */
+            --decline-button: #ff0000; /* Red for Decline */
+            --leave-button: #ffaa00; /* Orange for Leave */
         }
 
         body {
@@ -320,9 +328,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
-        #close-chat-button {
+        #start-call-button, #close-chat-button {
             background-color: var(--error-color);
             color: #fff;
             border: 2px solid var(--error-color);
@@ -333,7 +343,7 @@
             border-radius: 4px;
         }
 
-        #close-chat-button:hover {
+        #start-call-button:hover, #close-chat-button:hover {
             background-color: #cc0000;
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
         }
@@ -371,6 +381,10 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
+        #chat-messages div:hover .message-actions {
+            display: flex;
+        }
+
         .message-timestamp {
             color: var(--prompt-caret);
             font-size: 0.9rem;
@@ -384,6 +398,44 @@
         .message-reaction {
             font-size: 0.9rem;
             margin-left: 5px;
+        }
+
+        .message-reaction.😄 { color: var(--reaction-smile); }
+        .message-reaction.👍 { color: var(--reaction-thumbsup); }
+        .message-reaction.❤️ { color: var(--reaction-heart); }
+        .message-reaction.😮 { color: var(--reaction-surprised); }
+        .message-reaction.😢 { color: var(--reaction-sad); }
+
+        .message-actions {
+            display: none;
+            position: absolute;
+            right: 5px;
+            gap: 5px;
+        }
+
+        .message-actions button {
+            background-color: var(--highlight-color);
+            color: #fff;
+            border: 1px solid var(--highlight-color);
+            padding: 2px 5px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+
+        .message-actions button:hover {
+            background-color: #0088cc;
+        }
+
+        .message-edit-input {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--terminal-color);
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            padding: 2px;
+            width: 100%;
         }
 
         .reaction-picker {
@@ -437,6 +489,120 @@
             33% { content: '..'; opacity: 1; }
             66% { content: '...'; opacity: 1; }
             100% { content: '.'; opacity: 1; }
+        }
+
+        #call-window {
+            position: fixed;
+            bottom: 80px;
+            right: 430px;
+            width: 400px;
+            height: 400px;
+            background-color: #111;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px var(--terminal-color);
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+            border-radius: 8px;
+        }
+
+        #call-header {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--highlight-color);
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        #call-controls {
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #call-videos {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        #call-videos::-webkit-scrollbar {
+            display: none;
+        }
+
+        #call-videos video {
+            width: 100%;
+            height: 150px;
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        #call-participants-list {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            background-color: #222;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            display: none;
+            color: var(--terminal-color);
+            z-index: 20;
+        }
+
+        #toggle-camera, #toggle-screen, #show-participants, #end-call, #leave-call {
+            background-color: var(--highlight-color);
+            color: #fff;
+            border: 1px solid var(--highlight-color);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            border-radius: 4px;
+        }
+
+        #leave-call {
+            background-color: var(--leave-button);
+            border: 1px solid var(--leave-button);
+        }
+
+        #toggle-camera:hover, #toggle-screen:hover, #show-participants:hover, #end-call:hover, #leave-call:hover {
+            background-color: #0088cc;
+        }
+
+        #leave-call:hover {
+            background-color: #cc8800;
+        }
+
+        .notification-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .notification-message img {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        .notification-message .accept-button {
+            filter: hue-rotate(120deg); /* Green tint */
+        }
+
+        .notification-message .decline-button {
+            filter: hue-rotate(0deg); /* Red tint */
         }
     </style>
 </head>
@@ -493,11 +659,34 @@
     <div id="chat-window">
         <div id="chat-header">
             <span>ATLAS Chat</span>
-            <button id="close-chat-button">Close Chat</button>
+            <div>
+                <button id="start-call-button">Start Call</button>
+                <button id="close-chat-button">Close Chat</button>
+            </div>
         </div>
         <div id="user-list"></div>
         <div id="chat-messages"></div>
         <input type="text" id="chat-input" placeholder="Type message...">
+    </div>
+
+    <div id="call-window">
+        <div id="call-header">
+            <span>ATLAS Call</span>
+            <div>
+                <button id="leave-call">Leave Call</button>
+                <button id="end-call">End Call</button>
+            </div>
+        </div>
+        <div id="call-controls">
+            <button id="toggle-camera">Camera: Off</button>
+            <button id="toggle-screen">Share Screen: Off</button>
+            <button id="show-participants">Participants</button>
+        </div>
+        <div id="call-videos">
+            <video id="local-video" autoplay muted></video>
+            <video id="remote-video" autoplay></video>
+        </div>
+        <div id="call-participants-list"></div>
     </div>
 
     <script>
@@ -520,6 +709,16 @@
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const closeChatButton = document.getElementById('close-chat-button');
+        const startCallButton = document.getElementById('start-call-button');
+        const callWindow = document.getElementById('call-window');
+        const localVideo = document.getElementById('local-video');
+        const remoteVideo = document.getElementById('remote-video');
+        const toggleCameraButton = document.getElementById('toggle-camera');
+        const toggleScreenButton = document.getElementById('toggle-screen');
+        const showParticipantsButton = document.getElementById('show-participants');
+        const endCallButton = document.getElementById('end-call');
+        const leaveCallButton = document.getElementById('leave-call');
+        const callParticipantsList = document.getElementById('call-participants-list');
 
         let isBusy = false;
         let isLoggedIn = false;
@@ -536,14 +735,19 @@
         let isOtherTyping = false;
         let otherTypingInterval = null;
         let messageReactions = {};
+        let isCallActive = false;
+        let localStream = null;
+        let peerConnection = null;
+        let isCameraOn = false;
+        let isScreenSharing = false;
+        let callParticipants = [];
+        let pendingInvitations = [];
 
-        const MANAGER_USER = 'ETHANUNLOCKED';
         const MANAGER_PASSWORD = 'h4cker';
-        const MANAGER_PASSKEY = '1957';
-        const ADMIN_USER = 'BEEF WELLINGTON';
-        const ADMIN_PASSWORD = 'Eat_me';
-        const ADMIN_PASSKEY = '2251';
-        const LOCATION = 'KOLLARNEY BAY SECURE NODE';
+        const USERS = {
+            'ETHANUNLOCKED': { password: 'h4cker', passkey: '1957', role: 'MANAGER' },
+            'BEEF WELLINGTON': { password: 'Eat_me', passkey: '2251', role: 'ADMIN' }
+        };
         const EMOJIS = ['😄', '👍', '❤️', '😮', '😢'];
 
         const SOUND_EFFECTS = {
@@ -570,6 +774,7 @@
         const AUDIO_BUFFER = {};
         const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
         let currentPlaybackPlayer = null;
+        const LOCATION = 'KOLLARNEY BAY SECURE NODE';
 
         // Security & Lockdown Functions
         function initiateLockdown(reason) {
@@ -585,10 +790,14 @@
             if (isGameRunning) {
                 quitAsteroidsGame();
             }
+            if (isCallActive) {
+                endCall();
+            }
             consoleContainer.style.display = 'none';
             gameContainer.style.display = 'none';
             chatButton.style.display = 'none';
             chatWindow.style.display = 'none';
+            callWindow.style.display = 'none';
             showLoginModal();
             loginStatus.textContent = reason;
             loginStatus.style.color = 'var(--error-color)';
@@ -601,6 +810,8 @@
             clearTimeout(typingTimeout);
             clearInterval(otherTypingInterval);
             messageReactions = {};
+            callParticipants = [];
+            pendingInvitations = [];
             updateUnreadCount();
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
@@ -836,14 +1047,10 @@
             loadingText.textContent = 'Processing Authentication Handshake...';
             await sleep(1500);
             let success = false;
-            if (username === MANAGER_USER && password === MANAGER_PASSWORD && passkey === MANAGER_PASSKEY) {
+            if (USERS[username] && USERS[username].password === password && USERS[username].passkey === passkey) {
                 success = true;
-                authUsername = MANAGER_USER;
-                userType = 'MANAGER';
-            } else if (username === ADMIN_USER && password === ADMIN_PASSWORD && passkey === ADMIN_PASSKEY) {
-                success = true;
-                authUsername = ADMIN_USER;
-                userType = 'ADMIN';
+                authUsername = username;
+                userType = USERS[username].role;
             }
             showLoading(false);
             if (success) {
@@ -859,7 +1066,7 @@
                 writeOutput('----------------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
                 writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
-                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
+                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)'); 
                 chatButton.style.display = 'flex';
                 if ('Notification' in window && Notification.permission !== 'granted') {
                     Notification.requestPermission();
@@ -1028,6 +1235,401 @@
             keys[e.key] = false;
         }
 
+        // Calling Feature
+        async function startCall() {
+            if (isCallActive) return;
+            isCallActive = true;
+            callParticipants = [authUsername];
+            callWindow.style.display = 'flex';
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const hasCamera = devices.some(device => device.kind === 'videoinput');
+                if (!hasCamera) {
+                    writeOutput('WARNING: No camera detected. Video feed disabled.', 'var(--prompt-caret)');
+                }
+                localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
+                localVideo.srcObject = localStream;
+                toggleCameraButton.textContent = isCameraOn ? 'Camera: On' : 'Camera: Off';
+                toggleCameraButton.disabled = !hasCamera;
+                // Simulate peer connection
+                peerConnection = { simulated: true };
+                remoteVideo.srcObject = null; // Simulated remote stream
+                updateParticipantsList();
+                notifyOtherUsers();
+            } catch (err) {
+                writeOutput(`ERROR: Failed to start call: ${err.message}`, 'var(--error-color)');
+                endCall();
+            }
+        }
+
+        function notifyOtherUsers() {
+            const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
+            if (callParticipants.includes(otherUser)) return;
+            pendingInvitations.push(otherUser);
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('ATLAS Call Invitation', {
+                    body: `${authUsername} has started a call. Join now?`
+                });
+            }
+            if (isChatOpen) {
+                const notificationId = Date.now().toString();
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'notification-message';
+                msgDiv.dataset.notificationId = notificationId;
+                const timestampSpan = document.createElement('span');
+                timestampSpan.className = 'message-timestamp';
+                timestampSpan.textContent = getMessageTimestamp();
+                const contentSpan = document.createElement('span');
+                contentSpan.className = 'message-content';
+                contentSpan.textContent = `SYSTEM: ${authUsername} has started a call. Join now?`;
+                const acceptButton = document.createElement('img');
+                acceptButton.src = 'call.png';
+                acceptButton.className = 'accept-button';
+                acceptButton.alt = 'Accept';
+                acceptButton.addEventListener('click', () => {
+                    chatMessages.removeChild(msgDiv);
+                    pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
+                    joinCall(otherUser);
+                    writeOutput(`SYSTEM: ${otherUser} accepted the call.`, 'var(--highlight-color)');
+                    if (isChatOpen) {
+                        const acceptMsg = document.createElement('div');
+                        const acceptTimestamp = document.createElement('span');
+                        acceptTimestamp.className = 'message-timestamp';
+                        acceptTimestamp.textContent = getMessageTimestamp();
+                        const acceptContent = document.createElement('span');
+                        acceptContent.className = 'message-content';
+                        acceptContent.textContent = `SYSTEM: ${otherUser} accepted the call.`;
+                        acceptMsg.appendChild(acceptTimestamp);
+                        acceptMsg.appendChild(acceptContent);
+                        chatMessages.appendChild(acceptMsg);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                });
+                const declineButton = document.createElement('img');
+                declineButton.src = 'no.png';
+                declineButton.className = 'decline-button';
+                declineButton.alt = 'Decline';
+                declineButton.addEventListener('click', () => {
+                    chatMessages.removeChild(msgDiv);
+                    pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
+                    writeOutput(`SYSTEM: ${otherUser} declined the call.`, 'var(--prompt-caret)');
+                    if (isChatOpen) {
+                        const declineMsg = document.createElement('div');
+                        const declineTimestamp = document.createElement('span');
+                        declineTimestamp.className = 'message-timestamp';
+                        declineTimestamp.textContent = getMessageTimestamp();
+                        const declineContent = document.createElement('span');
+                        declineContent.className = 'message-content';
+                        declineContent.textContent = `SYSTEM: ${otherUser} declined the call.`;
+                        declineMsg.appendChild(declineTimestamp);
+                        declineMsg.appendChild(declineContent);
+                        chatMessages.appendChild(declineMsg);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                });
+                msgDiv.appendChild(timestampSpan);
+                msgDiv.appendChild(contentSpan);
+                msgDiv.appendChild(acceptButton);
+                msgDiv.appendChild(declineButton);
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // Simulate response after a delay
+                setTimeout(() => {
+                    if (pendingInvitations.includes(otherUser)) {
+                        const shouldAccept = Math.random() > 0.3;
+                        chatMessages.removeChild(msgDiv);
+                        pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
+                        if (shouldAccept) {
+                            joinCall(otherUser);
+                            writeOutput(`SYSTEM: ${otherUser} accepted the call.`, 'var(--highlight-color)');
+                            if (isChatOpen) {
+                                const acceptMsg = document.createElement('div');
+                                const acceptTimestamp = document.createElement('span');
+                                acceptTimestamp.className = 'message-timestamp';
+                                acceptTimestamp.textContent = getMessageTimestamp();
+                                const acceptContent = document.createElement('span');
+                                acceptContent.className = 'message-content';
+                                acceptContent.textContent = `SYSTEM: ${otherUser} accepted the call.`;
+                                acceptMsg.appendChild(acceptTimestamp);
+                                acceptMsg.appendChild(acceptContent);
+                                chatMessages.appendChild(acceptMsg);
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
+                        } else {
+                            writeOutput(`SYSTEM: ${otherUser} declined the call.`, 'var(--prompt-caret)');
+                            if (isChatOpen) {
+                                const declineMsg = document.createElement('div');
+                                const declineTimestamp = document.createElement('span');
+                                declineTimestamp.className = 'message-timestamp';
+                                declineTimestamp.textContent = getMessageTimestamp();
+                                const declineContent = document.createElement('span');
+                                declineContent.className = 'message-content';
+                                declineContent.textContent = `SYSTEM: ${otherUser} declined the call.`;
+                                declineMsg.appendChild(declineTimestamp);
+                                declineMsg.appendChild(declineContent);
+                                chatMessages.appendChild(declineMsg);
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
+                        }
+                    }
+                }, 5000 + Math.random() * 25000); // Random delay between 5-30s
+            } else if (USER_STATUSES[authUsername] !== 'BUSY') {
+                unreadMessages++;
+                updateUnreadCount();
+            }
+        }
+
+        async function joinCall(username) {
+            if (!isCallActive) return;
+            callParticipants.push(username);
+            updateParticipantsList();
+            remoteVideo.srcObject = null; // Simulated remote stream
+            writeOutput(`SYSTEM: ${username} has joined the call.`, 'var(--highlight-color)');
+        }
+
+        function endCall() {
+            if (!isCallActive) return;
+            isCallActive = false;
+            callWindow.style.display = 'none';
+            callParticipantsList.style.display = 'none';
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            localVideo.srcObject = null;
+            remoteVideo.srcObject = null;
+            if (peerConnection && peerConnection.simulated) {
+                peerConnection = null;
+            }
+            isCameraOn = false;
+            isScreenSharing = false;
+            toggleCameraButton.textContent = 'Camera: Off';
+            toggleScreenButton.textContent = 'Share Screen: Off';
+            pendingInvitations = [];
+            callParticipants = [];
+            writeOutput('SYSTEM: Call has been terminated.', 'var(--highlight-color)');
+        }
+
+        function leaveCall() {
+            if (!isCallActive) return;
+            callParticipants = callParticipants.filter(u => u !== authUsername);
+            callWindow.style.display = 'none';
+            callParticipantsList.style.display = 'none';
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            localVideo.srcObject = null;
+            isCameraOn = false;
+            isScreenSharing = false;
+            toggleCameraButton.textContent = 'Camera: Off';
+            toggleScreenButton.textContent = 'Share Screen: Off';
+            updateParticipantsList();
+            writeOutput(`SYSTEM: ${authUsername} has left the call.`, 'var(--highlight-color)');
+            if (isChatOpen) {
+                const msgDiv = document.createElement('div');
+                const timestampSpan = document.createElement('span');
+                timestampSpan.className = 'message-timestamp';
+                timestampSpan.textContent = getMessageTimestamp();
+                const contentSpan = document.createElement('span');
+                contentSpan.className = 'message-content';
+                contentSpan.textContent = `SYSTEM: ${authUsername} has left the call.`;
+                msgDiv.appendChild(timestampSpan);
+                msgDiv.appendChild(contentSpan);
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        async function toggleCamera() {
+            if (!isCallActive) return;
+            isCameraOn = !isCameraOn;
+            try {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
+                localVideo.srcObject = localStream;
+                toggleCameraButton.textContent = isCameraOn ? 'Camera: On' : 'Camera: Off';
+            } catch (err) {
+                writeOutput(`ERROR: Failed to toggle camera: ${err.message}`, 'var(--error-color)');
+                isCameraOn = false;
+                toggleCameraButton.textContent = 'Camera: Off';
+            }
+        }
+
+        async function toggleScreenShare() {
+            if (!isCallActive) return;
+            if (!navigator.mediaDevices.getDisplayMedia) {
+                writeOutput('ERROR: Screen sharing not supported in this browser.', 'var(--error-color)');
+                return;
+            }
+            isScreenSharing = !isScreenSharing;
+            try {
+                if (isScreenSharing) {
+                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                    localStream = screenStream;
+                    localVideo.srcObject = localStream;
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        isScreenSharing = false;
+                        toggleScreenButton.textContent = 'Share Screen: Off';
+                        toggleCamera();
+                    };
+                    toggleScreenButton.textContent = 'Share Screen: On';
+                } else {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
+                    localVideo.srcObject = localStream;
+                    toggleScreenButton.textContent = 'Share Screen: Off';
+                }
+            } catch (err) {
+                writeOutput(`ERROR: Failed to toggle screen sharing: ${err.message}`, 'var(--error-color)');
+                isScreenSharing = false;
+                toggleScreenButton.textContent = 'Share Screen: Off';
+            }
+        }
+
+        function updateParticipantsList() {
+            callParticipantsList.innerHTML = 'Participants in Call:<br>';
+            const deviceType = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
+            callParticipants.forEach(user => {
+                const role = USERS[user].role;
+                const userDevice = user === authUsername ? deviceType : (Math.random() > 0.5 ? 'Desktop' : 'Mobile');
+                callParticipantsList.innerHTML += `- ${user} (${role}): ${userDevice}<br>`;
+            });
+            pendingInvitations.forEach(user => {
+                const role = USERS[user].role;
+                const userDevice = Math.random() > 0.5 ? 'Desktop' : 'Mobile';
+                callParticipantsList.innerHTML += `- ${user} (${role}): ${userDevice} (RINGING)<br>`;
+            });
+        }
+
+        // Chat Feature Logic
+        function updateUserList() {
+            userList.innerHTML = 'Users in Chat:<br>';
+            const currentStatus = isUserTyping ? 'Typing' : 'ONLINE';
+            const currentColor = isUserTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
+            const currentSpan = document.createElement('span');
+            currentSpan.style.color = currentColor;
+            currentSpan.className = isUserTyping ? 'typing-dots' : '';
+            currentSpan.innerHTML = `- ${authUsername} (${userType}): ${currentStatus}${isUserTyping ? '' : ''}<br>`;
+            userList.appendChild(currentSpan);
+            const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
+            const otherType = USERS[otherUser].role;
+            const rand = Math.random();
+            let otherStatus;
+            let otherColor;
+            if (rand < 0.05) {
+                otherStatus = 'CRITICAL (BREACH)';
+                otherColor = 'var(--error-color)';
+            } else if (rand < 0.35) {
+                otherStatus = 'OFFLINE (IDLE)';
+                otherColor = 'var(--prompt-caret)';
+            } else {
+                otherStatus = isOtherTyping ? 'Typing' : 'ONLINE';
+                otherColor = isOtherTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
+            }
+            const otherSpan = document.createElement('span');
+            otherSpan.style.color = otherColor;
+            otherSpan.className = isOtherTyping ? 'typing-dots' : '';
+            otherSpan.innerHTML = `- ${otherUser} (${otherType}): ${otherStatus}${isOtherTyping ? '' : ''}<br>`;
+            userList.appendChild(otherSpan);
+        }
+
+        function updateUnreadCount() {
+            unreadCount.textContent = unreadMessages;
+            unreadCount.style.display = unreadMessages > 0 ? 'flex' : 'none';
+        }
+
+        function closeChat() {
+            isChatOpen = false;
+            chatWindow.style.display = 'none';
+            endCall();
+            unreadMessages = 0;
+            isUserTyping = false;
+            isOtherTyping = false;
+            clearTimeout(typingTimeout);
+            clearInterval(otherTypingInterval);
+            updateUnreadCount();
+            commandInput.focus();
+            document.querySelectorAll('.reaction-picker').forEach(picker => {
+                picker.style.display = 'none';
+            });
+        }
+
+        function simulateOtherTyping() {
+            if (!isChatOpen || !isLoggedIn) return;
+            const rand = Math.random();
+            if (rand < 0.2) {
+                isOtherTyping = !isOtherTyping;
+                updateUserList();
+            }
+        }
+
+        function createReactionPicker(messageDiv, messageId) {
+            const existingPicker = messageDiv.querySelector('.reaction-picker');
+            if (existingPicker) {
+                existingPicker.style.display = 'flex';
+                return;
+            }
+            const picker = document.createElement('div');
+            picker.className = 'reaction-picker';
+            EMOJIS.forEach(emoji => {
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = emoji;
+                emojiSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    messageReactions[messageId] = emoji;
+                    updateMessageReactions(messageDiv, messageId);
+                    picker.style.display = 'none';
+                });
+                picker.appendChild(emojiSpan);
+            });
+            messageDiv.appendChild(picker);
+            picker.style.display = 'flex';
+        }
+
+        function updateMessageReactions(messageDiv, messageId) {
+            const reactionSpan = messageDiv.querySelector('.message-reaction');
+            if (messageReactions[messageId]) {
+                reactionSpan.textContent = messageReactions[messageId];
+                reactionSpan.className = `message-reaction ${messageReactions[messageId]}`;
+            } else {
+                reactionSpan.textContent = '';
+                reactionSpan.className = 'message-reaction';
+            }
+        }
+
+        function startEditingMessage(messageDiv, messageId, contentSpan) {
+            const originalText = contentSpan.textContent.split(': ').slice(1).join(': ').trim();
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'message-edit-input';
+            input.value = originalText;
+            contentSpan.innerHTML = '';
+            contentSpan.appendChild(input);
+            input.focus();
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    contentSpan.textContent = `${authUsername} (${userType}): ${input.value.trim()}`;
+                    messageDiv.appendChild(contentSpan);
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    contentSpan.textContent = `${authUsername} (${userType}): ${originalText}`;
+                    messageDiv.appendChild(contentSpan);
+                }
+            });
+        }
+
+        function deleteMessage(messageDiv, messageId) {
+            chatMessages.removeChild(messageDiv);
+            delete messageReactions[messageId];
+        }
+
         // Command Processing
         const GAMES = {
             'ASTEROIDS': initAsteroidsGame,
@@ -1060,7 +1662,12 @@
                     writeOutput(`PAUSE: Stops the currently playing single sound.`, 'var(--highlight-color)');
                     writeOutput(`PLAY: Restarts the currently stopped single sound from the beginning.`, 'var(--highlight-color)');
                     writeOutput(`QUIT: Terminates and releases the active single sound asset.`, 'var(--highlight-color)');
-                    if (userType === 'MANAGER' || userType === 'ADMIN') {
+                    writeOutput(`CHANGE [STATUS]: Set user status (OFFLINE, ONLINE, IDLE, BUSY). BUSY blocks incoming calls/messages.`, 'var(--highlight-color)');
+                    if (userType === 'MANAGER') {
+                        writeOutput(`ACTIVE: (MANAGER/ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
+                        writeOutput(`ADD [USERNAME] [PASSWORD] [PASSKEY] [ROLE] [MANAGER_PASSWORD]: (MANAGER ONLY) Add a new user.`, 'var(--error-color)');
+                        writeOutput(`REMOVE [USERNAME] [MANAGER_PASSWORD]: (MANAGER ONLY) Remove a user.`, 'var(--error-color)');
+                    } else if (userType === 'ADMIN') {
                         writeOutput(`ACTIVE: (MANAGER/ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
                     }
                     writeOutput(`RUN [GAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
@@ -1095,12 +1702,92 @@
                         currentStatus = 'ONLINE';
                         statusColor = 'var(--terminal-color)';
                     }
-                    const otherUser = authUsername === MANAGER_USER ? ADMIN_USER : MANAGER_USER;
-                    const otherType = authUsername === MANAGER_USER ? 'ADMIN' : 'MANAGER';
+                    const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
+                    const otherType = USERS[otherUser].role;
                     writeOutput(`\n--- ACTIVE ATLAS USERS (${new Date().toLocaleTimeString('en-US')}) ---`, 'var(--highlight-color)');
                     writeOutput(`USER ID: ${authUsername} | STATUS: ONLINE (${userType})`, 'var(--terminal-color)');
                     writeOutput(`USER ID: ${otherUser} | STATUS: ${currentStatus} (${otherType})`, statusColor);
                     writeOutput(`--------------------------\n`, 'var(--highlight-color)');
+                    break;
+                case 'CHANGE':
+                    if (args.length !== 1) {
+                        writeOutput(`ERROR: Usage: CHANGE [STATUS] where STATUS is OFFLINE, ONLINE, IDLE, or BUSY.`, 'var(--error-color)');
+                        break;
+                    }
+                    const newStatus = args[0].toUpperCase();
+                    if (!VALID_STATUSES.includes(newStatus)) {
+                        writeOutput(`ERROR: Invalid status. Valid statuses: OFFLINE, ONLINE, IDLE, BUSY.`, 'var(--error-color)');
+                        break;
+                    }
+                    USER_STATUSES[authUsername] = newStatus;
+                    writeOutput(`SUCCESS: Status updated to ${newStatus}.`, 'var(--highlight-color)');
+                    updateUserList();
+                    break;
+                case 'ADD':
+                    if (userType !== 'MANAGER') {
+                        writeOutput(`ACCESS DENIED: Command ADD requires MANAGER privileges.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (args.length !== 5) {
+                        writeOutput(`ERROR: Usage: ADD [USERNAME] [PASSWORD] [PASSKEY] [ROLE] [MANAGER_PASSWORD]`, 'var(--error-color)');
+                        break;
+                    }
+                    const [newUsername, newPassword, newPasskey, newRole, managerPassword] = args;
+                    if (managerPassword !== MANAGER_PASSWORD) {
+                        writeOutput(`ERROR: Invalid manager password.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (USERS[newUsername.toUpperCase()]) {
+                        writeOutput(`ERROR: User '${newUsername}' already exists.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (!/^\d{4}$/.test(newPasskey)) {
+                        writeOutput(`ERROR: Passkey must be 4 digits.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (newRole.toUpperCase() !== 'MANAGER' && newRole.toUpperCase() !== 'ADMIN') {
+                        writeOutput(`ERROR: Role must be MANAGER or ADMIN.`, 'var(--error-color)');
+                        break;
+                    }
+                    USERS[newUsername.toUpperCase()] = {
+                        password: newPassword,
+                        passkey: newPasskey,
+                        role: newRole.toUpperCase()
+                    };
+                    USER_STATUSES[newUsername.toUpperCase()] = 'OFFLINE';
+                    writeOutput(`SUCCESS: User '${newUsername}' added with role ${newRole.toUpperCase()}.`, 'var(--highlight-color)');
+                    updateUserList();
+                    break;
+                case 'REMOVE':
+                    if (userType !== 'MANAGER') {
+                        writeOutput(`ACCESS DENIED: Command REMOVE requires MANAGER privileges.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (args.length !== 2) {
+                        writeOutput(`ERROR: Usage: REMOVE [USERNAME] [MANAGER_PASSWORD]`, 'var(--error-color)');
+                        break;
+                    }
+                    const [removeUsername, removeManagerPassword] = args;
+                    if (removeManagerPassword !== MANAGER_PASSWORD) {
+                        writeOutput(`ERROR: Invalid manager password.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (!USERS[removeUsername.toUpperCase()]) {
+                        writeOutput(`ERROR: User '${removeUsername}' not found.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (removeUsername.toUpperCase() === 'ETHANUNLOCKED' || removeUsername.toUpperCase() === 'BEEF WELLINGTON') {
+                        writeOutput(`ERROR: Cannot remove default users.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (removeUsername.toUpperCase() === authUsername) {
+                        writeOutput(`ERROR: Cannot remove current user.`, 'var(--error-color)');
+                        break;
+                    }
+                    delete USERS[removeUsername.toUpperCase()];
+                    delete USER_STATUSES[removeUsername.toUpperCase()];
+                    writeOutput(`SUCCESS: User '${removeUsername}' removed.`, 'var(--highlight-color)');
+                    updateUserList();
                     break;
                 case 'LIVE':
                     updateHeaderDisplay();
@@ -1199,95 +1886,17 @@
             showPrompt();
         }
 
-        // Chat Feature Logic
-        function updateUserList() {
-            userList.innerHTML = 'Users in Chat:<br>';
-            const currentStatus = isUserTyping ? 'Typing' : 'ONLINE';
-            const currentColor = isUserTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
-            const currentSpan = document.createElement('span');
-            currentSpan.style.color = currentColor;
-            currentSpan.className = isUserTyping ? 'typing-dots' : '';
-            currentSpan.innerHTML = `- ${authUsername} (${userType}): ${currentStatus}${isUserTyping ? '' : ''}<br>`;
-            userList.appendChild(currentSpan);
-            const otherUser = authUsername === MANAGER_USER ? ADMIN_USER : MANAGER_USER;
-            const otherType = authUsername === MANAGER_USER ? 'ADMIN' : 'MANAGER';
-            const rand = Math.random();
-            let otherStatus;
-            let otherColor;
-            if (rand < 0.05) {
-                otherStatus = 'CRITICAL (BREACH)';
-                otherColor = 'var(--error-color)';
-            } else if (rand < 0.35) {
-                otherStatus = 'OFFLINE (IDLE)';
-                otherColor = 'var(--prompt-caret)';
-            } else {
-                otherStatus = isOtherTyping ? 'Typing' : 'ONLINE';
-                otherColor = isOtherTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
+        // Event Listeners
+        loginForm.addEventListener('submit', handleLoginAttempt);
+        quitGameButton.addEventListener('click', quitAsteroidsGame);
+        document.addEventListener('keypress', function(e) {
+            if (isLoggedIn && !isGameRunning && e.key === 'Enter' && !commandInput.disabled) {
+                processCommand(commandInput.value);
+                commandInput.value = '';
             }
-            const otherSpan = document.createElement('span');
-            otherSpan.style.color = otherColor;
-            otherSpan.className = isOtherTyping ? 'typing-dots' : '';
-            otherSpan.innerHTML = `- ${otherUser} (${otherType}): ${otherStatus}${isOtherTyping ? '' : ''}<br>`;
-            userList.appendChild(otherSpan);
-        }
-
-        function updateUnreadCount() {
-            unreadCount.textContent = unreadMessages;
-            unreadCount.style.display = unreadMessages > 0 ? 'flex' : 'none';
-        }
-
-        function closeChat() {
-            isChatOpen = false;
-            chatWindow.style.display = 'none';
-            unreadMessages = 0;
-            isUserTyping = false;
-            isOtherTyping = false;
-            clearTimeout(typingTimeout);
-            clearInterval(otherTypingInterval);
-            updateUnreadCount();
-            commandInput.focus();
-        }
-
-        function simulateOtherTyping() {
-            if (!isChatOpen || !isLoggedIn) return;
-            const rand = Math.random();
-            if (rand < 0.2) {
-                isOtherTyping = !isOtherTyping;
-                updateUserList();
-            }
-        }
-
-        function createReactionPicker(messageDiv, messageId) {
-            const existingPicker = messageDiv.querySelector('.reaction-picker');
-            if (existingPicker) {
-                existingPicker.style.display = 'flex';
-                return;
-            }
-            const picker = document.createElement('div');
-            picker.className = 'reaction-picker';
-            EMOJIS.forEach(emoji => {
-                const emojiSpan = document.createElement('span');
-                emojiSpan.textContent = emoji;
-                emojiSpan.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    messageReactions[messageId] = emoji;
-                    updateMessageReactions(messageDiv, messageId);
-                    picker.style.display = 'none';
-                });
-                picker.appendChild(emojiSpan);
-            });
-            messageDiv.appendChild(picker);
-            picker.style.display = 'flex';
-        }
-
-        function updateMessageReactions(messageDiv, messageId) {
-            const reactionSpan = messageDiv.querySelector('.message-reaction');
-            if (messageReactions[messageId]) {
-                reactionSpan.textContent = messageReactions[messageId];
-            } else {
-                reactionSpan.textContent = '';
-            }
-        }
+        });
+        document.addEventListener('keydown', gameKeydown);
+        document.addEventListener('keyup', gameKeyup);
 
         chatButton.addEventListener('click', () => {
             isChatOpen = !isChatOpen;
@@ -1299,13 +1908,7 @@
                 chatInput.focus();
                 otherTypingInterval = setInterval(simulateOtherTyping, 5000);
             } else {
-                clearInterval(otherTypingInterval);
-                isUserTyping = false;
-                isOtherTyping = false;
-                clearTimeout(typingTimeout);
-                document.querySelectorAll('.reaction-picker').forEach(picker => {
-                    picker.style.display = 'none';
-                });
+                closeChat();
             }
         });
 
@@ -1342,9 +1945,26 @@
                 contentSpan.textContent = msgText;
                 const reactionSpan = document.createElement('span');
                 reactionSpan.className = 'message-reaction';
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    startEditingMessage(msgDiv, messageId, contentSpan);
+                });
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteMessage(msgDiv, messageId);
+                });
+                actionsDiv.appendChild(editButton);
+                actionsDiv.appendChild(deleteButton);
                 msgDiv.appendChild(timestampSpan);
                 msgDiv.appendChild(contentSpan);
                 msgDiv.appendChild(reactionSpan);
+                msgDiv.appendChild(actionsDiv);
                 msgDiv.addEventListener('click', (e) => {
                     e.stopPropagation();
                     document.querySelectorAll('.reaction-picker').forEach(picker => {
@@ -1372,20 +1992,17 @@
                 document.querySelectorAll('.reaction-picker').forEach(picker => {
                     picker.style.display = 'none';
                 });
-            }
+                }
         });
 
-        // Initialization and Events
-        loginForm.addEventListener('submit', handleLoginAttempt);
-        quitGameButton.addEventListener('click', quitAsteroidsGame);
-        document.addEventListener('keypress', function(e) {
-            if (isLoggedIn && !isGameRunning && e.key === 'Enter' && !commandInput.disabled) {
-                processCommand(commandInput.value);
-                commandInput.value = '';
-            }
+        startCallButton.addEventListener('click', startCall);
+        endCallButton.addEventListener('click', endCall);
+        leaveCallButton.addEventListener('click', leaveCall);
+        toggleCameraButton.addEventListener('click', toggleCamera);
+        toggleScreenButton.addEventListener('click', toggleScreenShare);
+        showParticipantsButton.addEventListener('click', () => {
+            callParticipantsList.style.display = callParticipantsList.style.display === 'block' ? 'none' : 'block';
         });
-        document.addEventListener('keydown', gameKeydown);
-        document.addEventListener('keyup', gameKeyup);
 
         window.onload = function() {
             SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
