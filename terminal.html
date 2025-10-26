@@ -1,165 +1,341 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ATLAS Console</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATLAS: DATA FLOW CONSOLE v8.3 (Security & Gaming)</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+
     <style>
-        body {
-            background-color: #000;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            font-family: 'VT323', monospace;
-            color: #0f0;
+        :root {
+            --terminal-color: #00ff41;
+            --terminal-background-color: #000;
+            --border-color: #00ff41;
+            --prompt-caret: #ffaa00;
+            --error-color: #ff0000;
+            --highlight-color: #00aaff;
+            --game-color: #ffffff;
+            --reaction-smile: #ffff00; /* Yellow for 😄 */
+            --reaction-thumbsup: #00ff41; /* Green for 👍 */
+            --reaction-heart: #ff0000; /* Red for ❤️ */
+            --reaction-surprised: #00aaff; /* Blue for 😮 */
+            --reaction-sad: #00ffff; /* Cyan for 😢 */
+            --accept-button: #00ff41; /* Green for Accept */
+            --decline-button: #ff0000; /* Red for Decline */
+            --leave-button: #ffaa00; /* Orange for Leave */
         }
 
-        #console {
+        body {
+            background-color: var(--terminal-background-color);
+            font-family: 'VT323', monospace;
+            color: var(--terminal-color);
+            font-size: 1.1rem;
+            line-height: 1.4;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #terminal-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
-            color: #0f0;
+            background: repeating-linear-gradient(0deg, var(--terminal-color)33, var(--terminal-color)33 1px, #000 1px, #000 3px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.15;
+            animation: flicker 10s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.15; }
+            50% { opacity: 0.1; }
+            100% { opacity: 0.2; }
+        }
+
+        #console-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            background-color: #111;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px var(--terminal-color);
+            padding: 20px;
+            overflow: hidden;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #console-header {
+            flex-shrink: 0;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--highlight-color);
             font-size: 1.2rem;
-            padding: 10px;
-            box-sizing: border-box;
+            color: var(--highlight-color);
+            white-space: pre;
+        }
+
+        #terminal-output {
+            flex-grow: 1;
             overflow-y: auto;
-            font-family: 'VT323', monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+
+        #terminal-output::-webkit-scrollbar {
+            display: none;
+        }
+
+        #command-line {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            margin-top: 10px;
         }
 
         #prompt {
-            display: flex;
-            align-items: center;
-        }
-
-        #prompt-caret {
-            color: #ff4500;
+            color: var(--prompt-caret);
             margin-right: 5px;
+            white-space: nowrap;
         }
 
-        #prompt-input {
+        #command-input {
+            flex-grow: 1;
             background: transparent;
             border: none;
-            color: #0f0;
+            color: var(--terminal-color);
             font-family: 'VT323', monospace;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             outline: none;
-            flex-grow: 1;
+            caret-color: var(--terminal-color);
+            padding: 0;
         }
 
-        .output-line {
-            margin: 5px 0;
-        }
-
-        #login-modal, #chat-window, #call-window, #call-participants {
-            display: none;
+        #login-overlay {
             position: fixed;
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #0f0;
-            color: #0f0;
-            font-family: 'VT323', monospace;
-            padding: 20px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        #login-card {
+            border: 3px solid var(--error-color);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
+            padding: 30px;
+            background-color: #111;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
             border-radius: 5px;
         }
 
-        #login-modal {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            z-index: 1000; /* Ensure modal is on top */
+        .login-field {
+            margin-bottom: 20px;
+            text-align: left;
         }
 
-        #chat-window {
-            bottom: 10px;
-            right: 10px;
-            width: 300px;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
+        .login-field label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--prompt-caret);
         }
 
-        #chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            border: 1px solid #0f0;
+        .login-field input {
+            width: 100%;
             padding: 10px;
-        }
-
-        #chat-input {
-            background: transparent;
-            border: 1px solid #0f0;
-            color: #0f0;
+            background-color: #000;
+            border: 1px solid var(--error-color);
+            color: var(--prompt-caret);
             font-family: 'VT323', monospace;
-            font-size: 1rem;
-            padding: 5px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            outline: none;
         }
 
-        #chat-button, #call-controls button, #start-call-button {
-            background-color: #0f0;
-            color: #000;
-            border: 1px solid #0f0;
-            padding: 5px 10px;
+        #passkey {
+            max-width: 50%;
+        }
+
+        #login-button {
+            background-color: var(--error-color);
+            color: #fff;
+            border: 2px solid var(--error-color);
+            padding: 10px 20px;
             cursor: pointer;
             font-family: 'VT323', monospace;
-            font-size: 1rem;
+            font-size: 1.2rem;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            transition: background-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        #login-button:hover {
+            background-color: #cc0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+        }
+
+        #login-status {
+            color: var(--prompt-caret);
+            margin-top: 15px;
+            min-height: 1.5rem;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.98);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 200;
+            color: var(--terminal-color);
+        }
+
+        #loading-logo {
+            font-size: 5rem;
+            color: var(--highlight-color);
+            animation: glitch 1.5s infinite alternate;
+            margin-bottom: 20px;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0 0 1px var(--error-color), 0 0 5px var(--highlight-color); transform: skew(0.5deg); }
+            50% { text-shadow: 0 0 1px var(--terminal-color), 0 0 5px var(--prompt-caret); transform: skew(-0.5deg); }
+            100% { text-shadow: 0 0 1px var(--highlight-color), 0 0 5px var(--error-color); transform: skew(0deg); }
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            background-color: #000;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px var(--terminal-color);
+            z-index: 1;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+        }
+
+        #game-canvas {
+            background-color: #000;
+            display: block;
+            border: 1px dashed var(--game-color);
+            width: 800px;
+            height: 600px;
+            max-width: 100%;
+            max-height: 80%;
+        }
+
+        #quit-game-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: var(--error-color);
+            color: #fff;
+            border: 2px solid var(--error-color);
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            cursor: pointer;
             border-radius: 4px;
         }
 
         #chat-button {
             position: fixed;
-            bottom: 10px;
-            right: 10px;
-        }
-
-        #chat-button.unread {
-            background-color: #ff4500;
-            color: #fff;
-        }
-
-        #call-window {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 600px;
-            height: 400px;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            display: none;
+            background-color: var(--error-color);
+            border-radius: 50%;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            position: relative;
         }
 
-        #call-videos {
+        #chat-button img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        #unread-count {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--prompt-caret);
+            color: #000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        #chat-window {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 400px;
+            height: 400px;
+            background-color: #111;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px var(--terminal-color);
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+            border-radius: 8px;
+        }
+
+        #chat-header {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--highlight-color);
+            font-size: 1.2rem;
             display: flex;
             justify-content: space-between;
-            width: 100%;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
-        #local-video, #remote-video {
-            width: 48%;
-            height: 300px;
-            background: #111;
-            border: 1px solid #0f0;
-        }
-
-        #call-controls {
-            margin-top: 10px;
-            display: flex;
-            gap: 10px;
-        }
-
-        #call-participants {
-            top: 10px;
-            right: 10px;
-            width: 200px;
-        }
-
-        #toggle-camera, #toggle-microphone, #toggle-screen, #show-participants {
-            background-color: #0f0;
-            color: #000;
-            border: 1px solid #0f0;
+        #start-call-button, #close-chat-button {
+            background-color: var(--error-color);
+            color: #fff;
+            border: 2px solid var(--error-color);
             padding: 5px 10px;
             cursor: pointer;
             font-family: 'VT323', monospace;
@@ -167,129 +343,412 @@
             border-radius: 4px;
         }
 
-        #toggle-camera:hover, #toggle-microphone:hover, #toggle-screen:hover, #show-participants:hover {
-            background-color: #0088cc;
+        #start-call-button:hover, #close-chat-button:hover {
+            background-color: #cc0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
         }
 
-        .notification-message {
+        #user-list {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--terminal-color);
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            color: var(--terminal-color);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            scrollbar-width: none;
+        }
+
+        #chat-messages::-webkit-scrollbar {
+            display: none;
+        }
+
+        #chat-messages div {
+            margin-bottom: 5px;
+            cursor: pointer;
+            position: relative;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .accept-button, .decline-button {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
+        #chat-messages div:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #chat-messages div:hover .message-actions {
+            display: flex;
         }
 
         .message-timestamp {
-            color: #ff4500;
-            margin-right: 5px;
+            color: var(--prompt-caret);
+            font-size: 0.9rem;
+            flex-shrink: 0;
         }
 
         .message-content {
             flex-grow: 1;
         }
 
-        .typing-dots::after {
-            content: '...';
-            animation: dots 1s steps(3, end) infinite;
+        .message-reaction {
+            font-size: 0.9rem;
+            margin-left: 5px;
         }
 
-        @keyframes dots {
-            0% { content: '.'; }
-            33% { content: '..'; }
-            66% { content: '...'; }
+        .message-reaction.😄 { color: var(--reaction-smile); }
+        .message-reaction.👍 { color: var(--reaction-thumbsup); }
+        .message-reaction.❤️ { color: var(--reaction-heart); }
+        .message-reaction.😮 { color: var(--reaction-surprised); }
+        .message-reaction.😢 { color: var(--reaction-sad); }
+
+        .message-actions {
+            display: none;
+            position: absolute;
+            right: 5px;
+            gap: 5px;
+        }
+
+        .message-actions button {
+            background-color: var(--highlight-color);
+            color: #fff;
+            border: 1px solid var(--highlight-color);
+            padding: 2px 5px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+
+        .message-actions button:hover {
+            background-color: #0088cc;
+        }
+
+        .message-edit-input {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--terminal-color);
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            padding: 2px;
+            width: 100%;
+        }
+
+        .reaction-picker {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #222;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            display: none;
+            flex-direction: row;
+            gap: 5px;
+            border-radius: 4px;
+            z-index: 20;
+        }
+
+        .reaction-picker span {
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 2px 5px;
+        }
+
+        .reaction-picker span:hover {
+            background-color: var(--highlight-color);
+        }
+
+        #chat-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-top: 1px solid var(--border-color);
+            color: var(--terminal-color);
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        .typing-dots::after {
+            content: '';
+            display: inline-block;
+            width: 1.5em;
+            text-align: left;
+            animation: typing-dots 0.9s infinite;
+        }
+
+        @keyframes typing-dots {
+            0% { content: '.'; opacity: 1; }
+            33% { content: '..'; opacity: 1; }
+            66% { content: '...'; opacity: 1; }
+            100% { content: '.'; opacity: 1; }
+        }
+
+        #call-window {
+            position: fixed;
+            bottom: 80px;
+            right: 430px;
+            width: 400px;
+            height: 400px;
+            background-color: #111;
+            border: 2px solid var(--border-color);
+            box-shadow: 0 0 20px var(--terminal-color);
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+            border-radius: 8px;
+        }
+
+        #call-header {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--highlight-color);
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        #call-controls {
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #call-videos {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        #call-videos::-webkit-scrollbar {
+            display: none;
+        }
+
+        #call-videos video {
+            width: 100%;
+            height: 150px;
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        #call-participants-list {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            background-color: #222;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            display: none;
+            color: var(--terminal-color);
+            z-index: 20;
+        }
+
+        #toggle-camera, #toggle-screen, #show-participants, #end-call, #leave-call {
+            background-color: var(--highlight-color);
+            color: #fff;
+            border: 1px solid var(--highlight-color);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            border-radius: 4px;
+        }
+
+        #leave-call {
+            background-color: var(--leave-button);
+            border: 1px solid var(--leave-button);
+        }
+
+        #toggle-camera:hover, #toggle-screen:hover, #show-participants:hover, #end-call:hover, #leave-call:hover {
+            background-color: #0088cc;
+        }
+
+        #leave-call:hover {
+            background-color: #cc8800;
+        }
+
+        .notification-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .notification-message img {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+
+        .notification-message .accept-button {
+            filter: hue-rotate(120deg); /* Green tint */
+        }
+
+        .notification-message .decline-button {
+            filter: hue-rotate(0deg); /* Red tint */
         }
     </style>
 </head>
 <body>
-    <div id="console"></div>
-    <div id="prompt">
-        <span id="prompt-caret">></span>
-        <input type="text" id="prompt-input" autocomplete="off">
+    <div id="terminal-background"></div>
+
+    <div id="login-overlay" style="display: flex;">
+        <div id="login-card">
+            <h2 style="color: var(--error-color); margin-top: 0; margin-bottom: 20px;">ATLAS ACCESS PROTOCOL</h2>
+            <p style="color: var(--prompt-caret); font-size: 1rem;">STATUS: Three-Factor Authentication Required.</p>
+            <form id="login-form">
+                <div class="login-field">
+                    <label for="username">USERNAME:</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="login-field">
+                    <label for="password">PASSWORD:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="login-field">
+                    <label for="passkey">PASSKEY (4 DIGITS):</label>
+                    <input type="text" id="passkey" required maxlength="4">
+                </div>
+                <button type="submit" id="login-button">INITIATE ACCESS SEQUENCE</button>
+            </form>
+            <div id="login-status">Awaiting Authentication...</div>
+        </div>
     </div>
-    <div id="login-modal">
-        <h2>ATLAS CONSOLE LOGIN</h2>
-        <p>Username: <input type="text" id="login-username"></p>
-        <p>Password: <input type="password" id="login-password"></p>
-        <p>Passkey: <input type="password" id="login-passkey"></p>
-        <button onclick="attemptLogin()">Login</button>
+
+    <div id="loading-screen">
+        <div id="loading-logo">ATLAS_INIT</div>
+        <div id="loading-text" style="color:var(--highlight-color);">Processing Authentication Handshake...</div>
     </div>
+
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <button id="quit-game-button">TERMINATE GAME SEQUENCE</button>
+    </div>
+
+    <div id="console-container">
+        <div id="console-header">ATLAS_SYSTEM_OFFLINE</div>
+        <div id="terminal-output"></div>
+        <div id="command-line">
+            <span id="prompt">LOGIN&gt; </span>
+            <input type="text" id="command-input" autocomplete="off" spellcheck="false" placeholder="Enter command...">
+        </div>
+    </div>
+
+    <div id="chat-button">
+        <img src="chat.png" alt="Chat">
+        <div id="unread-count">0</div>
+    </div>
+
     <div id="chat-window">
+        <div id="chat-header">
+            <span>ATLAS Chat</span>
+            <div>
+                <button id="start-call-button">Start Call</button>
+                <button id="close-chat-button">Close Chat</button>
+            </div>
+        </div>
+        <div id="user-list"></div>
         <div id="chat-messages"></div>
-        <button id="start-call-button">Start Call</button>
         <input type="text" id="chat-input" placeholder="Type message...">
     </div>
-    <button id="chat-button">Chat</button>
+
     <div id="call-window">
+        <div id="call-header">
+            <span>ATLAS Call</span>
+            <div>
+                <button id="leave-call">Leave Call</button>
+                <button id="end-call">End Call</button>
+            </div>
+        </div>
+        <div id="call-controls">
+            <button id="toggle-camera">Camera: Off</button>
+            <button id="toggle-screen">Share Screen: Off</button>
+            <button id="show-participants">Participants</button>
+        </div>
         <div id="call-videos">
             <video id="local-video" autoplay muted></video>
             <video id="remote-video" autoplay></video>
         </div>
-        <div id="call-controls">
-            <button id="toggle-camera">Camera: Off</button>
-            <button id="toggle-microphone">Microphone: On</button>
-            <button id="toggle-screen">Share Screen: Off</button>
-            <button id="show-participants">Participants</button>
-        </div>
+        <div id="call-participants-list"></div>
     </div>
-    <div id="call-participants"></div>
+
     <script>
-        const consoleDiv = document.getElementById('console');
-        const promptInput = document.getElementById('prompt-input');
-        const loginModal = document.getElementById('login-modal');
-        const loginUsername = document.getElementById('login-username');
-        const loginPassword = document.getElementById('login-password');
-        const loginPasskey = document.getElementById('login-passkey');
+        const terminalOutput = document.getElementById('terminal-output');
+        const consoleHeader = document.getElementById('console-header');
+        const commandInput = document.getElementById('command-input');
+        const promptSpan = document.getElementById('prompt');
+        const consoleContainer = document.getElementById('console-container');
+        const gameContainer = document.getElementById('game-container');
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginForm = document.getElementById('login-form');
+        const loginStatus = document.getElementById('login-status');
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingText = document.getElementById('loading-text');
+        const quitGameButton = document.getElementById('quit-game-button');
+        const chatButton = document.getElementById('chat-button');
+        const unreadCount = document.getElementById('unread-count');
         const chatWindow = document.getElementById('chat-window');
+        const userList = document.getElementById('user-list');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
-        const chatButton = document.getElementById('chat-button');
+        const closeChatButton = document.getElementById('close-chat-button');
+        const startCallButton = document.getElementById('start-call-button');
         const callWindow = document.getElementById('call-window');
         const localVideo = document.getElementById('local-video');
         const remoteVideo = document.getElementById('remote-video');
         const toggleCameraButton = document.getElementById('toggle-camera');
-        const toggleMicrophoneButton = document.getElementById('toggle-microphone');
         const toggleScreenButton = document.getElementById('toggle-screen');
         const showParticipantsButton = document.getElementById('show-participants');
-        const startCallButton = document.getElementById('start-call-button');
-        const callParticipantsList = document.getElementById('call-participants');
-        const USERS = {
-            'ETHANUNLOCKED': { role: 'ADMIN', password: 'h4cker', passkey: '1957' },
-            'BEEF WELLINGTON': { role: 'USER', password: 'password123', passkey: '2468' }
-        };
-        const USER_STATUSES = {
-            'ETHANUNLOCKED': 'ONLINE',
-            'BEEF WELLINGTON': 'ONLINE'
-        };
-        const SOUND_COMMAND_NAMES = [
-            'SIREN', 'CONFIRM', 'ALARM', 'GET OUT', 'VINE BOOM', 'RIZZ', 'YOUR IDOL',
-            'FART', '6 7', 'GOLDEN', 'SODA POP', 'BRUH', 'SUI', 'JOHN CENA', 'PUMPKIN',
-            'CENSOR', 'B+F', 'BURP'
-        ];
-        const AUDIO_BUFFER = {};
-        const VERBOSE = false; // Control debug logging
-        let ringingPlayer = null;
-        let lastStatusUpdate = Date.now();
-        let authUsername = null;
-        let userType = null;
+        const endCallButton = document.getElementById('end-call');
+        const leaveCallButton = document.getElementById('leave-call');
+        const callParticipantsList = document.getElementById('call-participants-list');
+
+        let isBusy = false;
         let isLoggedIn = false;
+        let isGameRunning = false;
+        let failedAttempts = 0;
+        let timeUpdateInterval = null;
+        let authUsername = '';
+        let userType = '';
+        let activeSequence = null;
+        let unreadMessages = 0;
         let isChatOpen = false;
-        let isCallActive = false;
-        let isCameraOn = false;
-        let isMicrophoneOn = true;
-        let isScreenSharing = false;
         let isUserTyping = false;
+        let typingTimeout = null;
         let isOtherTyping = false;
+        let otherTypingInterval = null;
+        let messageReactions = {};
+        let isCallActive = false;
         let localStream = null;
         let peerConnection = null;
+        let isCameraOn = false;
+        let isScreenSharing = false;
         let callParticipants = [];
         let pendingInvitations = [];
-        let unreadMessages = 0;
-        let commandHistory = [];
-        let historyIndex = -1;
+
+        const MANAGER_PASSWORD = 'h4cker';
+        const USERS = {
+            'ETHANUNLOCKED': { password: 'h4cker', passkey: '1957', role: 'MANAGER' },
+            'BEEF WELLINGTON': { password: 'Eat_me', passkey: '2251', role: 'ADMIN' }
+        };
+        const EMOJIS = ['😄', '👍', '❤️', '😮', '😢'];
 
         const SOUND_EFFECTS = {
             'SIREN': 'siren.mp3',
@@ -309,45 +768,93 @@
             'PUMPKIN': 'kin.mp3',
             'CENSOR': '__SYNTH_CENSOR__',
             'B+F': 'b.mp3',
-            'BURP': 'burp.mp3',
-            'RINGING': '__SYNTH_RINGING__'
+            'BURP': 'burp.mp3'
         };
 
+        const AUDIO_BUFFER = {};
+        const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
+        let currentPlaybackPlayer = null;
+        const LOCATION = 'KOLLARNEY BAY SECURE NODE';
+
+        // Security & Lockdown Functions
+        function initiateLockdown(reason) {
+            if (!isLoggedIn) return;
+            isLoggedIn = false;
+            stopTimeInterval();
+            disposePlaybackPlayer();
+            if (Tone.Transport.state === 'started') {
+                Tone.Transport.stop();
+                activeSequence?.dispose();
+                activeSequence = null;
+            }
+            if (isGameRunning) {
+                quitAsteroidsGame();
+            }
+            if (isCallActive) {
+                endCall();
+            }
+            consoleContainer.style.display = 'none';
+            gameContainer.style.display = 'none';
+            chatButton.style.display = 'none';
+            chatWindow.style.display = 'none';
+            callWindow.style.display = 'none';
+            showLoginModal();
+            loginStatus.textContent = reason;
+            loginStatus.style.color = 'var(--error-color)';
+            failedAttempts = 0;
+            authUsername = '';
+            userType = '';
+            unreadMessages = 0;
+            isUserTyping = false;
+            isOtherTyping = false;
+            clearTimeout(typingTimeout);
+            clearInterval(otherTypingInterval);
+            messageReactions = {};
+            callParticipants = [];
+            pendingInvitations = [];
+            updateUnreadCount();
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('passkey').value = '';
+        }
+
+        // Audio Functions
+        async function checkAudioContext() {
+            const context = Tone.context;
+            let status = context.state.toUpperCase();
+            writeOutput(`\n[AUDIO_CONTEXT_CHECK] Status: ${status}`, 'var(--terminal-color)');
+            if (status !== 'RUNNING') {
+                try {
+                    await context.resume();
+                    status = context.state.toUpperCase();
+                    if (status === 'RUNNING') {
+                        writeOutput(`[INIT AUDIO SUCCESS] Web Audio Context is now RUNNING.`, 'var(--highlight-color)');
+                    } else {
+                        writeOutput(`[INIT AUDIO WARNING] Context status is ${status}. Playback may be restricted.`, 'var(--prompt-caret)');
+                    }
+                } catch (e) {
+                    writeOutput(`[INIT AUDIO ERROR] Failed to resume audio context: ${e.message}`, 'var(--error-color)');
+                }
+            } else {
+                writeOutput(`[INIT AUDIO SUCCESS] Web Audio Context is RUNNING.`, 'var(--highlight-color)');
+            }
+        }
+
         function getSoundPath(name) {
-            return SOUND_EFFECTS[name] || 'siren.mp3';
+            return SOUND_EFFECTS[name] || name;
         }
 
         function createCensorBeepBuffer() {
             const context = Tone.context;
-            const duration = 0.5;
+            const frequency = 2000;
+            const duration = 0.3;
             const sampleRate = context.sampleRate;
             const numSamples = Math.floor(sampleRate * duration);
             const audioBuffer = context.createBuffer(1, numSamples, sampleRate);
             const channel = audioBuffer.getChannelData(0);
-            const freq = 1000;
             for (let i = 0; i < numSamples; i++) {
                 const time = i / sampleRate;
-                channel[i] = Math.sin(2 * Math.PI * freq * time) * 0.5;
-            }
-            return new Tone.ToneAudioBuffer(audioBuffer);
-        }
-
-        function createRingingBuffer() {
-            const context = Tone.context;
-            const duration = 2;
-            const sampleRate = context.sampleRate;
-            const numSamples = Math.floor(sampleRate * duration);
-            const audioBuffer = context.createBuffer(1, numSamples, sampleRate);
-            const channel = audioBuffer.getChannelData(0);
-            const freq1 = 440;
-            const freq2 = 480;
-            for (let i = 0; i < numSamples; i++) {
-                const time = i / sampleRate;
-                if (time < 1) {
-                    channel[i] = (Math.sin(2 * Math.PI * freq1 * time) + Math.sin(2 * Math.PI * freq2 * time)) * 0.25;
-                } else {
-                    channel[i] = 0;
-                }
+                channel[i] = Math.sin(2 * Math.PI * frequency * time) * 0.5;
             }
             return new Tone.ToneAudioBuffer(audioBuffer);
         }
@@ -363,194 +870,372 @@
                     AUDIO_BUFFER[path] = buffer;
                     return buffer;
                 } catch (e) {
-                    if (VERBOSE) writeOutput(`[LOAD ERROR] Failed to synthesize CENSOR: ${e.message}`, 'var(--error-color)');
+                    writeOutput(`[LOAD ERROR] Failed to synthesize CENSOR: ${e.message}`, 'var(--error-color)');
                     return null;
                 }
             }
-            if (path === '__SYNTH_RINGING__') {
-                try {
-                    const buffer = createRingingBuffer();
-                    AUDIO_BUFFER[path] = buffer;
-                    return buffer;
-                } catch (e) {
-                    if (VERBOSE) writeOutput(`[LOAD ERROR] Failed to synthesize RINGING: ${e.message}`, 'var(--error-color)');
-                    return null;
-                }
-            }
-            if (VERBOSE) writeOutput(`[LOAD] Requesting asset: ${name}...`, 'var(--prompt-caret)');
+            writeOutput(`[LOAD] Requesting asset: ${name}...`, 'var(--prompt-caret)');
             try {
                 const buffer = new Tone.ToneAudioBuffer(path);
                 await buffer.loaded;
                 AUDIO_BUFFER[path] = buffer;
-                if (VERBOSE) writeOutput(`[LOAD SUCCESS] Asset ${name} loaded. Duration: ${buffer.duration.toFixed(2)}s.`, 'var(--terminal-color)');
+                writeOutput(`[LOAD SUCCESS] Asset ${name} loaded. Duration: ${buffer.duration.toFixed(2)}s.`, 'var(--terminal-color)');
                 return buffer;
             } catch (e) {
-                if (VERBOSE) writeOutput(`[LOAD ERROR] Failed to load external asset: ${path}`, 'var(--error-color)');
+                writeOutput(`[LOAD ERROR] Failed to load external asset: ${path}`, 'var(--error-color)');
                 return null;
             }
         }
 
-        function stopRinging() {
-            if (ringingPlayer) {
-                ringingPlayer.stop();
-                ringingPlayer.dispose();
-                ringingPlayer = null;
-                writeOutput(`SYSTEM: Call ringing terminated.`, 'var(--prompt-caret)');
+        function disposePlaybackPlayer() {
+            if (currentPlaybackPlayer) {
+                currentPlaybackPlayer.stop();
+                currentPlaybackPlayer.dispose();
+                currentPlaybackPlayer = null;
             }
         }
 
-        function writeOutput(text, color = 'var(--terminal-color)') {
-            const line = document.createElement('div');
-            line.className = 'output-line';
-            line.style.color = color;
-            line.innerHTML = text.replace(/\n/g, '<br>');
-            consoleDiv.appendChild(line);
-            consoleDiv.scrollTop = consoleDiv.scrollHeight;
-        }
-
-        function showLoginModal() {
-            loginModal.style.display = 'block';
-            loginUsername.focus();
-            chatWindow.style.display = 'none';
-            callWindow.style.display = 'none';
-            callParticipantsList.style.display = 'none';
-        }
-
-        function attemptLogin() {
-            const username = loginUsername.value.trim().toUpperCase();
-            const password = loginPassword.value;
-            const passkey = loginPasskey.value;
-            if (USERS[username] && USERS[username].password === password && USERS[username].passkey === passkey) {
-                authUsername = username;
-                userType = USERS[username].role;
-                isLoggedIn = true;
-                loginModal.style.display = 'none';
-                writeOutput(`\nWELCOME TO ATLAS CONSOLE\nAUTHENTICATED USER: ${authUsername} (${userType})\n`, 'var(--highlight-color)');
-                promptInput.focus();
+        async function loadAndPlaySound(name, times = 1) {
+            if (Tone.context.state !== 'running') {
+                writeOutput(`[PLAY ERROR] Audio Context is not running. Run: INIT AUDIO`, 'var(--error-color)');
+                return;
+            }
+            if (currentPlaybackPlayer) { disposePlaybackPlayer(); }
+            if (Tone.Transport.state === 'started') {
+                Tone.Transport.stop();
+                activeSequence?.dispose();
+                activeSequence = null;
+                writeOutput(`[WARNING] Previous sequence terminated prematurely.`, 'var(--prompt-caret)');
+            }
+            const buffer = await loadSound(name);
+            if (!buffer) return;
+            const sequenceRunning = (times > 1);
+            const totalDuration = buffer.duration;
+            if (sequenceRunning) {
+                writeOutput(`[SEQUENCE START] Scheduling ${name} for ${times} repetition${times > 1 ? 's' : ''}.`, 'var(--highlight-color)');
+                const totalCycleTime = totalDuration + 0.1;
+                const sequence = new Tone.Sequence((time, index) => {
+                    const player = new Tone.Player({
+                        url: buffer,
+                        volume: -10
+                    }).toDestination();
+                    player.start(time);
+                    Tone.Transport.scheduleOnce(() => {
+                        player.dispose();
+                    }, time + totalDuration);
+                    if (index === times - 1) {
+                        Tone.Transport.scheduleOnce(() => {
+                            Tone.Transport.stop();
+                            sequence.dispose();
+                            activeSequence = null;
+                            writeOutput(`[SEQUENCE END] Playback of ${name} completed.`, 'var(--highlight-color)');
+                        }, time + totalDuration + 0.15);
+                    }
+                }, Array.from({ length: times }, (_, i) => i * totalCycleTime), "1").start(0);
+                Tone.Transport.start();
+                activeSequence = sequence;
             } else {
-                writeOutput('AUTHENTICATION FAILED: Invalid credentials.', 'var(--error-color)');
-                loginUsername.value = '';
-                loginPassword.value = '';
-                loginPasskey.value = '';
-                loginUsername.focus();
+                const player = new Tone.Player({
+                    url: buffer,
+                    loop: false,
+                    volume: -10
+                }).toDestination();
+                player.start(0);
+                player.onstop = () => {
+                    if (currentPlaybackPlayer === player) {
+                        writeOutput(`[PLAYBACK FINISHED] Single playback of ${name} completed.`, 'var(--prompt-caret)');
+                    }
+                };
+                currentPlaybackPlayer = player;
             }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Output & UI Functions
+        function getCurrentFormattedTime() {
+            const now = new Date();
+            const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            const day = dayNames[now.getDay()];
+            const date = now.getDate().toString().padStart(2, '0');
+            const month = monthNames[now.getMonth()];
+            const year = now.getFullYear();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours.toString().padStart(2, '0') : '12';
+            return `${day}, ${date}-${month}-${year} | ${hours}:${minutes}:${seconds} ${ampm} | LOCATION: ${LOCATION}`;
         }
 
         function getMessageTimestamp() {
-            return new Date().toLocaleTimeString('en-US');
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
         }
 
-        function updateUserList() {
-            const userList = document.getElementById('chat-messages');
-            userList.innerHTML = 'Users in Chat:<br>';
-            const currentStatus = isUserTyping ? 'Typing' : USER_STATUSES[authUsername] || 'ONLINE';
-            const currentColor = isUserTyping ? 'var(--prompt-caret)' : USER_STATUSES[authUsername] === 'CRITICAL (BREACH)' ? 'var(--error-color)' : USER_STATUSES[authUsername] === 'OFFLINE (IDLE)' ? 'var(--prompt-caret)' : 'var(--terminal-color)';
-            const currentSpan = document.createElement('span');
-            currentSpan.style.color = currentColor;
-            currentSpan.className = isUserTyping ? 'typing-dots' : '';
-            currentSpan.innerHTML = `- ${authUsername} (${userType}): ${currentStatus}<br>`;
-            userList.appendChild(currentSpan);
-            const otherUsers = Object.keys(USERS).filter(u => u !== authUsername);
-            otherUsers.forEach(user => {
-                const otherType = USERS[user].role;
-                const otherStatus = isOtherTyping && user === (Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON') ? 'Typing' : USER_STATUSES[user] || 'ONLINE';
-                const otherColor = otherStatus === 'Typing' ? 'var(--prompt-caret)' : otherStatus === 'CRITICAL (BREACH)' ? 'var(--error-color)' : otherStatus === 'OFFLINE (IDLE)' ? 'var(--prompt-caret)' : 'var(--terminal-color)';
-                const otherSpan = document.createElement('span');
-                otherSpan.style.color = otherColor;
-                otherSpan.className = otherStatus === 'Typing' ? 'typing-dots' : '';
-                otherSpan.innerHTML = `- ${user} (${otherType}): ${otherStatus}<br>`;
-                userList.appendChild(otherSpan);
-            });
+        function updateHeaderDisplay() {
+            consoleHeader.textContent = `[ ${getCurrentFormattedTime()} | USER: ${authUsername} ]`;
         }
 
-        function simulateStatusUpdates() {
-            const now = Date.now();
-            if (now - lastStatusUpdate >= 30000) {
-                const otherUsers = Object.keys(USERS).filter(u => u !== authUsername);
-                otherUsers.forEach(user => {
-                    const rand = Math.random();
-                    if (rand < 0.05) {
-                        USER_STATUSES[user] = 'CRITICAL (BREACH)';
-                    } else if (rand < 0.35) {
-                        USER_STATUSES[user] = 'OFFLINE (IDLE)';
-                    } else if (rand < 0.65) {
-                        USER_STATUSES[user] = 'ONLINE';
-                    } else {
-                        USER_STATUSES[user] = 'BUSY';
-                    }
-                });
-                lastStatusUpdate = now;
-                if (isChatOpen) {
-                    updateUserList();
-                }
+        function stopTimeInterval() {
+            if (timeUpdateInterval) {
+                clearInterval(timeUpdateInterval);
+                timeUpdateInterval = null;
+                consoleHeader.textContent = 'ATLAS_SYSTEM_OFFLINE';
             }
         }
 
-        function simulateOtherTyping() {
-            if (!isChatOpen || !isLoggedIn) return;
-            const rand = Math.random();
-            if (rand < 0.2) {
-                isOtherTyping = !isOtherTyping;
-                updateUserList();
-            }
-            simulateStatusUpdates();
+        function startTimeInterval() {
+            stopTimeInterval();
+            updateHeaderDisplay();
+            timeUpdateInterval = setInterval(updateHeaderDisplay, 1000);
         }
 
-        async function toggleCamera() {
-            if (!isCallActive) return;
-            isCameraOn = !isCameraOn;
-            if (localStream) {
-                localStream.getVideoTracks().forEach(track => {
-                    track.enabled = isCameraOn;
-                });
-                toggleCameraButton.textContent = isCameraOn ? 'Camera: On' : 'Camera: Off';
-                writeOutput(`SYSTEM: Camera turned ${isCameraOn ? 'on' : 'off'}.`, 'var(--highlight-color)');
-            }
+        function clearOutput() {
+            terminalOutput.innerHTML = '';
         }
 
-        async function toggleMicrophone() {
-            if (!isCallActive) return;
-            isMicrophoneOn = !isMicrophoneOn;
-            if (localStream) {
-                localStream.getAudioTracks().forEach(track => {
-                    track.enabled = isMicrophoneOn;
-                });
-                toggleMicrophoneButton.textContent = isMicrophoneOn ? 'Microphone: On' : 'Microphone: Off';
-                writeOutput(`SYSTEM: Microphone turned ${isMicrophoneOn ? 'on' : 'off'}.`, 'var(--highlight-color)');
+        function writeOutput(text, color = 'var(--terminal-color)') {
+            const p = document.createElement('span');
+            p.style.color = color;
+            p.innerHTML = text + '<br>';
+            terminalOutput.appendChild(p);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        function showPrompt() {
+            promptSpan.textContent = isLoggedIn ? 'ATLAS> ' : 'LOGIN> ';
+            if (!isLoggedIn) {
+                document.getElementById('username').focus();
+            } else {
+                commandInput.focus();
             }
         }
 
-        async function toggleScreenShare() {
-            if (!isCallActive) return;
-            if (!isScreenSharing) {
-                try {
-                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                    const screenTrack = screenStream.getVideoTracks()[0];
-                    localVideo.srcObject = screenStream;
-                    isScreenSharing = true;
-                    toggleScreenButton.textContent = 'Share Screen: On';
-                    writeOutput('SYSTEM: Screen sharing enabled.', 'var(--highlight-color)');
-                    screenTrack.onended = () => {
-                        isScreenSharing = false;
-                        toggleScreenButton.textContent = 'Share Screen: Off';
-                        if (localStream) {
-                            localVideo.srcObject = localStream;
-                        }
-                        writeOutput('SYSTEM: Screen sharing stopped.', 'var(--highlight-color)');
-                    };
-                } catch (err) {
-                    writeOutput(`ERROR: Failed to share screen: ${err.message}`, 'var(--error-color)');
+        function showLoginModal() {
+            loginOverlay.style.display = 'flex';
+            showPrompt();
+        }
+
+        function hideLoginModal() {
+            loginOverlay.style.display = 'none';
+        }
+
+        function showLoading(show) {
+            loadingScreen.style.display = show ? 'flex' : 'none';
+        }
+
+        // Login State Management
+        async function handleLoginAttempt(event) {
+            event.preventDefault();
+            if (isBusy) return;
+            const username = document.getElementById('username').value.trim().toUpperCase();
+            const password = document.getElementById('password').value.trim();
+            const passkey = document.getElementById('passkey').value.trim();
+            isBusy = true;
+            document.getElementById('login-button').disabled = true;
+            loginStatus.style.color = 'var(--highlight-color)';
+            loginStatus.textContent = 'INITIATING HANDSHAKE...';
+            showLoading(true);
+            loadingText.textContent = 'Processing Authentication Handshake...';
+            await sleep(1500);
+            let success = false;
+            if (USERS[username] && USERS[username].password === password && USERS[username].passkey === passkey) {
+                success = true;
+                authUsername = username;
+                userType = USERS[username].role;
+            }
+            showLoading(false);
+            if (success) {
+                failedAttempts = 0;
+                isLoggedIn = true;
+                hideLoginModal();
+                consoleContainer.style.display = 'flex';
+                startTimeInterval();
+                clearOutput();
+                writeOutput('----------------------------------------------------', 'var(--terminal-color)');
+                writeOutput(`>> ACCESS GRANTED. WELCOME, ${authUsername} (${userType}).`, 'var(--terminal-color)');
+                writeOutput('>> ATLAS CONSOLE V8.3: FULL SECURITY PROTOCOLS ONLINE.', 'var(--terminal-color)');
+                writeOutput('----------------------------------------------------', 'var(--terminal-color)');
+                writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
+                writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
+                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)'); 
+                chatButton.style.display = 'flex';
+                if ('Notification' in window && Notification.permission !== 'granted') {
+                    Notification.requestPermission();
                 }
             } else {
-                if (localStream) {
-                    localVideo.srcObject = localStream;
+                failedAttempts++;
+                let errorMessage;
+                let color = 'var(--error-color)';
+                if (failedAttempts === 1) {
+                    errorMessage = `ACCESS DENIED (Error Code 401.1). Attempt ${failedAttempts} of 3.`;
+                } else if (failedAttempts === 2) {
+                    errorMessage = `WARNING! UNAUTHORIZED ATTEMPT DETECTED. Attempt ${failedAttempts} of 3.`;
+                    color = 'var(--prompt-caret)';
+                } else {
+                    errorMessage = `CRITICAL BREACH. SYSTEM LOCKDOWN INITIATED. All access terminated.`;
+                    failedAttempts = 0;
                 }
-                isScreenSharing = false;
-                toggleScreenButton.textContent = 'Share Screen: Off';
-                writeOutput('SYSTEM: Screen sharing stopped.', 'var(--highlight-color)');
+                loginStatus.textContent = errorMessage;
+                loginStatus.style.color = color;
+                if (failedAttempts > 0) {
+                    loginStatus.textContent += ` | Remaining attempts: ${3 - failedAttempts}`;
+                } else {
+                    await sleep(1000);
+                    loginStatus.textContent = 'SECURITY PROTOCOLS RESETTING...';
+                    loginStatus.style.color = 'var(--highlight-color)';
+                }
+            }
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('passkey').value = '';
+            isBusy = false;
+            document.getElementById('login-button').disabled = false;
+            showPrompt();
+        }
+
+        // Game Logic (ASTEROIDS)
+        let canvas, ctx, animationFrameId;
+        let ship, bullets, keys;
+        const FIRE_DELAY = 150;
+        let lastFireTime = 0;
+
+        function initAsteroidsGame() {
+            canvas = document.getElementById('game-canvas');
+            if (!canvas) {
+                writeOutput('ERROR: Game canvas not found.', 'var(--error-color)');
+                return;
+            }
+            ctx = canvas.getContext('2d');
+            if (!ctx) {
+                writeOutput('ERROR: Failed to initialize 2D context for game canvas.', 'var(--error-color)');
+                return;
+            }
+            isGameRunning = true;
+            consoleContainer.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            commandInput.disabled = true;
+            ship = { x: canvas.width / 2, y: canvas.height / 2, r: 10, angle: 0, thrust: { x: 0, y: 0, power: 0.08 }, rotateSpeed: 0.05, friction: 0.99 };
+            bullets = [];
+            keys = {};
+            gameLoop();
+        }
+
+        function quitAsteroidsGame() {
+            isGameRunning = false;
+            commandInput.disabled = false;
+            gameContainer.style.display = 'none';
+            cancelAnimationFrame(animationFrameId);
+            document.removeEventListener('keydown', gameKeydown);
+            document.removeEventListener('keyup', gameKeyup);
+            consoleContainer.style.display = 'flex';
+            clearOutput();
+            writeOutput(`\nSYSTEM MESSAGE: ASTEROIDS terminated.`, 'var(--highlight-color)');
+            commandInput.focus();
+        }
+
+        function drawShip() {
+            ctx.strokeStyle = var2css('game-color');
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(ship.x + 4/3 * ship.r * Math.cos(ship.angle), ship.y - 4/3 * ship.r * Math.sin(ship.angle));
+            ctx.lineTo(ship.x - ship.r * (2/3 * Math.cos(ship.angle) + Math.sin(ship.angle)), ship.y + ship.r * (2/3 * Math.sin(ship.angle) - Math.cos(ship.angle)));
+            ctx.lineTo(ship.x - ship.r * (2/3 * Math.cos(ship.angle) - Math.sin(ship.angle)), ship.y + ship.r * (2/3 * Math.sin(ship.angle) + Math.cos(ship.angle)));
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        function updateShip() {
+            if (keys['ArrowLeft']) { ship.angle += ship.rotateSpeed; }
+            if (keys['ArrowRight']) { ship.angle -= ship.rotateSpeed; }
+            if (keys['ArrowUp']) {
+                ship.thrust.x += ship.thrust.power * Math.cos(ship.angle);
+                ship.thrust.y -= ship.thrust.power * Math.sin(ship.angle);
+            }
+            ship.thrust.x *= ship.friction;
+            ship.thrust.y *= ship.friction;
+            ship.x += ship.thrust.x;
+            ship.y += ship.thrust.y;
+            if (ship.x < 0) ship.x = canvas.width;
+            if (ship.x > canvas.width) ship.x = 0;
+            if (ship.y < 0) ship.y = canvas.height;
+            if (ship.y > canvas.height) ship.y = 0;
+        }
+
+        function drawBullets() {
+            ctx.fillStyle = var2css('game-color');
+            for (let i = 0; i < bullets.length; i++) {
+                const b = bullets[i];
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
 
+        function updateBullets() {
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.x += b.vx;
+                b.y += b.vy;
+                if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+                    bullets.splice(i, 1);
+                }
+            }
+        }
+
+        function fireBullet() {
+            const BULLET_SPEED = 7;
+            const bullet = {
+                x: ship.x + 4/3 * ship.r * Math.cos(ship.angle),
+                y: ship.y - 4/3 * ship.r * Math.sin(ship.angle),
+                vx: BULLET_SPEED * Math.cos(ship.angle),
+                vy: -BULLET_SPEED * Math.sin(ship.angle),
+                life: 60
+            };
+            bullets.push(bullet);
+        }
+
+        function var2css(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+        }
+
+        function gameLoop() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            updateShip();
+            updateBullets();
+            drawShip();
+            drawBullets();
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function gameKeydown(e) {
+            if (!isGameRunning) return;
+            keys[e.key] = true;
+            if (e.key === ' ') {
+                e.preventDefault();
+                const now = Date.now();
+                if (now - lastFireTime > FIRE_DELAY) {
+                    fireBullet();
+                    lastFireTime = now;
+                }
+            }
+        }
+
+        function gameKeyup(e) {
+            if (!isGameRunning) return;
+            keys[e.key] = false;
+        }
+
+        // Calling Feature
         async function startCall() {
             if (isCallActive) return;
             isCallActive = true;
@@ -559,21 +1244,16 @@
             try {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const hasCamera = devices.some(device => device.kind === 'videoinput');
-                const hasMicrophone = devices.some(device => device.kind === 'audioinput');
                 if (!hasCamera) {
                     writeOutput('WARNING: No camera detected. Video feed disabled.', 'var(--prompt-caret)');
                 }
-                if (!hasMicrophone) {
-                    writeOutput('WARNING: No microphone detected. Audio disabled.', 'var(--prompt-caret)');
-                }
-                localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: hasMicrophone });
+                localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
                 localVideo.srcObject = localStream;
                 toggleCameraButton.textContent = isCameraOn ? 'Camera: On' : 'Camera: Off';
                 toggleCameraButton.disabled = !hasCamera;
-                toggleMicrophoneButton.textContent = isMicrophoneOn ? 'Microphone: On' : 'Microphone: Off';
-                toggleMicrophoneButton.disabled = !hasMicrophone;
+                // Simulate peer connection
                 peerConnection = { simulated: true };
-                remoteVideo.srcObject = null;
+                remoteVideo.srcObject = null; // Simulated remote stream
                 updateParticipantsList();
                 notifyOtherUsers();
             } catch (err) {
@@ -582,122 +1262,129 @@
             }
         }
 
-        async function notifyOtherUsers() {
-            const otherUsers = Object.keys(USERS).filter(u => u !== authUsername && USER_STATUSES[u] !== 'BUSY' && USER_STATUSES[u] !== 'OFFLINE (IDLE)' && USER_STATUSES[u] !== 'CRITICAL (BREACH)');
-            if (otherUsers.length === 0) {
-                writeOutput('SYSTEM: No eligible users available to invite.', 'var(--prompt-caret)');
-                stopRinging();
-                return;
+        function notifyOtherUsers() {
+            const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
+            if (callParticipants.includes(otherUser)) return;
+            pendingInvitations.push(otherUser);
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('ATLAS Call Invitation', {
+                    body: `${authUsername} has started a call. Join now?`
+                });
             }
-            if (!ringingPlayer && Tone.context.state === 'running' && pendingInvitations.length === 0) {
-                const buffer = await loadSound('RINGING');
-                if (buffer) {
-                    ringingPlayer = new Tone.Player({
-                        url: buffer,
-                        loop: true,
-                        volume: -10
-                    }).toDestination();
-                    ringingPlayer.start();
-                    writeOutput(`SYSTEM: Initiating call to eligible users: ${otherUsers.join(', ')}.`, 'var(--highlight-color)');
-                }
-            }
-            otherUsers.forEach(otherUser => {
-                if (callParticipants.includes(otherUser) || pendingInvitations.includes(otherUser)) return;
-                pendingInvitations.push(otherUser);
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('ATLAS Call Invitation', {
-                        body: `${authUsername} has started a call. Join now?`
-                    });
-                }
-                if (isChatOpen) {
-                    const notificationId = Date.now().toString();
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = 'notification-message';
-                    msgDiv.dataset.notificationId = notificationId;
-                    const timestampSpan = document.createElement('span');
-                    timestampSpan.className = 'message-timestamp';
-                    timestampSpan.textContent = getMessageTimestamp();
-                    const contentSpan = document.createElement('span');
-                    contentSpan.className = 'message-content';
-                    contentSpan.textContent = `SYSTEM: ${authUsername} has started a call. Join now?`;
-                    const acceptButton = document.createElement('img');
-                    acceptButton.src = 'call.png';
-                    acceptButton.className = 'accept-button';
-                    acceptButton.alt = 'Accept';
-                    acceptButton.addEventListener('click', () => {
+            if (isChatOpen) {
+                const notificationId = Date.now().toString();
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'notification-message';
+                msgDiv.dataset.notificationId = notificationId;
+                const timestampSpan = document.createElement('span');
+                timestampSpan.className = 'message-timestamp';
+                timestampSpan.textContent = getMessageTimestamp();
+                const contentSpan = document.createElement('span');
+                contentSpan.className = 'message-content';
+                contentSpan.textContent = `SYSTEM: ${authUsername} has started a call. Join now?`;
+                const acceptButton = document.createElement('img');
+                acceptButton.src = 'call.png';
+                acceptButton.className = 'accept-button';
+                acceptButton.alt = 'Accept';
+                acceptButton.addEventListener('click', () => {
+                    chatMessages.removeChild(msgDiv);
+                    pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
+                    joinCall(otherUser);
+                    writeOutput(`SYSTEM: ${otherUser} accepted the call.`, 'var(--highlight-color)');
+                    if (isChatOpen) {
+                        const acceptMsg = document.createElement('div');
+                        const acceptTimestamp = document.createElement('span');
+                        acceptTimestamp.className = 'message-timestamp';
+                        acceptTimestamp.textContent = getMessageTimestamp();
+                        const acceptContent = document.createElement('span');
+                        acceptContent.className = 'message-content';
+                        acceptContent.textContent = `SYSTEM: ${otherUser} accepted the call.`;
+                        acceptMsg.appendChild(acceptTimestamp);
+                        acceptMsg.appendChild(acceptContent);
+                        chatMessages.appendChild(acceptMsg);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                });
+                const declineButton = document.createElement('img');
+                declineButton.src = 'no.png';
+                declineButton.className = 'decline-button';
+                declineButton.alt = 'Decline';
+                declineButton.addEventListener('click', () => {
+                    chatMessages.removeChild(msgDiv);
+                    pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
+                    writeOutput(`SYSTEM: ${otherUser} declined the call.`, 'var(--prompt-caret)');
+                    if (isChatOpen) {
+                        const declineMsg = document.createElement('div');
+                        const declineTimestamp = document.createElement('span');
+                        declineTimestamp.className = 'message-timestamp';
+                        declineTimestamp.textContent = getMessageTimestamp();
+                        const declineContent = document.createElement('span');
+                        declineContent.className = 'message-content';
+                        declineContent.textContent = `SYSTEM: ${otherUser} declined the call.`;
+                        declineMsg.appendChild(declineTimestamp);
+                        declineMsg.appendChild(declineContent);
+                        chatMessages.appendChild(declineMsg);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                });
+                msgDiv.appendChild(timestampSpan);
+                msgDiv.appendChild(contentSpan);
+                msgDiv.appendChild(acceptButton);
+                msgDiv.appendChild(declineButton);
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // Simulate response after a delay
+                setTimeout(() => {
+                    if (pendingInvitations.includes(otherUser)) {
+                        const shouldAccept = Math.random() > 0.3;
                         chatMessages.removeChild(msgDiv);
                         pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
-                        joinCall(otherUser);
-                        if (pendingInvitations.length === 0) {
-                            stopRinging();
+                        if (shouldAccept) {
+                            joinCall(otherUser);
+                            writeOutput(`SYSTEM: ${otherUser} accepted the call.`, 'var(--highlight-color)');
+                            if (isChatOpen) {
+                                const acceptMsg = document.createElement('div');
+                                const acceptTimestamp = document.createElement('span');
+                                acceptTimestamp.className = 'message-timestamp';
+                                acceptTimestamp.textContent = getMessageTimestamp();
+                                const acceptContent = document.createElement('span');
+                                acceptContent.className = 'message-content';
+                                acceptContent.textContent = `SYSTEM: ${otherUser} accepted the call.`;
+                                acceptMsg.appendChild(acceptTimestamp);
+                                acceptMsg.appendChild(acceptContent);
+                                chatMessages.appendChild(acceptMsg);
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
+                        } else {
+                            writeOutput(`SYSTEM: ${otherUser} declined the call.`, 'var(--prompt-caret)');
+                            if (isChatOpen) {
+                                const declineMsg = document.createElement('div');
+                                const declineTimestamp = document.createElement('span');
+                                declineTimestamp.className = 'message-timestamp';
+                                declineTimestamp.textContent = getMessageTimestamp();
+                                const declineContent = document.createElement('span');
+                                declineContent.className = 'message-content';
+                                declineContent.textContent = `SYSTEM: ${otherUser} declined the call.`;
+                                declineMsg.appendChild(declineTimestamp);
+                                declineMsg.appendChild(declineContent);
+                                chatMessages.appendChild(declineMsg);
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            }
                         }
-                        writeOutput(`SYSTEM: ${otherUser} accepted the call.`, 'var(--highlight-color)');
-                        if (isChatOpen) {
-                            const acceptMsg = document.createElement('div');
-                            const acceptTimestamp = document.createElement('span');
-                            acceptTimestamp.className = 'message-timestamp';
-                            acceptTimestamp.textContent = getMessageTimestamp();
-                            const acceptContent = document.createElement('span');
-                            acceptContent.className = 'message-content';
-                            acceptContent.textContent = `SYSTEM: ${otherUser} accepted the call.`;
-                            acceptMsg.appendChild(acceptTimestamp);
-                            acceptMsg.appendChild(acceptContent);
-                            chatMessages.appendChild(acceptMsg);
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        }
-                    });
-                    const declineButton = document.createElement('img');
-                    declineButton.src = 'no.png';
-                    declineButton.className = 'decline-button';
-                    declineButton.alt = 'Decline';
-                    declineButton.addEventListener('click', () => {
-                        chatMessages.removeChild(msgDiv);
-                        pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
-                        if (pendingInvitations.length === 0) {
-                            stopRinging();
-                        }
-                        writeOutput(`SYSTEM: ${otherUser} declined the call.`, 'var(--prompt-caret)');
-                        if (isChatOpen) {
-                            const declineMsg = document.createElement('div');
-                            const declineTimestamp = document.createElement('span');
-                            declineTimestamp.className = 'message-timestamp';
-                            declineTimestamp.textContent = getMessageTimestamp();
-                            const declineContent = document.createElement('span');
-                            declineContent.className = 'message-content';
-                            declineContent.textContent = `SYSTEM: ${otherUser} declined the call.`;
-                            declineMsg.appendChild(declineTimestamp);
-                            declineMsg.appendChild(declineContent);
-                            chatMessages.appendChild(declineMsg);
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        }
-                    });
-                    msgDiv.appendChild(timestampSpan);
-                    msgDiv.appendChild(contentSpan);
-                    msgDiv.appendChild(acceptButton);
-                    msgDiv.appendChild(declineButton);
-                    chatMessages.appendChild(msgDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                } else if (USER_STATUSES[authUsername] !== 'BUSY') {
-                    unreadMessages++;
-                    updateUnreadCount();
-                }
-            });
+                    }
+                }, 5000 + Math.random() * 25000); // Random delay between 5-30s
+            } else if (USER_STATUSES[authUsername] !== 'BUSY') {
+                unreadMessages++;
+                updateUnreadCount();
+            }
         }
 
         async function joinCall(username) {
             if (!isCallActive) return;
             callParticipants.push(username);
             updateParticipantsList();
-            remoteVideo.srcObject = null;
-            pendingInvitations = pendingInvitations.filter(u => u !== username);
-            if (pendingInvitations.length === 0) {
-                stopRinging();
-            }
+            remoteVideo.srcObject = null; // Simulated remote stream
             writeOutput(`SYSTEM: ${username} has joined the call.`, 'var(--highlight-color)');
-        }
-
-        function updateParticipantsList() {
-            callParticipantsList.innerHTML = 'Participants:<br>' + callParticipants.map(p => `- ${p}`).join('<br>');
         }
 
         function endCall() {
@@ -715,14 +1402,11 @@
                 peerConnection = null;
             }
             isCameraOn = false;
-            isMicrophoneOn = true;
             isScreenSharing = false;
             toggleCameraButton.textContent = 'Camera: Off';
-            toggleMicrophoneButton.textContent = 'Microphone: On';
             toggleScreenButton.textContent = 'Share Screen: Off';
             pendingInvitations = [];
             callParticipants = [];
-            stopRinging();
             writeOutput('SYSTEM: Call has been terminated.', 'var(--highlight-color)');
         }
 
@@ -737,13 +1421,10 @@
             }
             localVideo.srcObject = null;
             isCameraOn = false;
-            isMicrophoneOn = true;
             isScreenSharing = false;
             toggleCameraButton.textContent = 'Camera: Off';
-            toggleMicrophoneButton.textContent = 'Microphone: On';
             toggleScreenButton.textContent = 'Share Screen: Off';
             updateParticipantsList();
-            stopRinging();
             writeOutput(`SYSTEM: ${authUsername} has left the call.`, 'var(--highlight-color)');
             if (isChatOpen) {
                 const msgDiv = document.createElement('div');
@@ -760,218 +1441,575 @@
             }
         }
 
-        function updateUnreadCount() {
-            chatButton.textContent = `Chat${unreadMessages > 0 ? ` (${unreadMessages})` : ''}`;
-            chatButton.className = unreadMessages > 0 ? 'unread' : '';
+        async function toggleCamera() {
+            if (!isCallActive) return;
+            isCameraOn = !isCameraOn;
+            try {
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
+                localVideo.srcObject = localStream;
+                toggleCameraButton.textContent = isCameraOn ? 'Camera: On' : 'Camera: Off';
+            } catch (err) {
+                writeOutput(`ERROR: Failed to toggle camera: ${err.message}`, 'var(--error-color)');
+                isCameraOn = false;
+                toggleCameraButton.textContent = 'Camera: Off';
+            }
         }
 
-        async function processCommand(command) {
-            command = command.trim().toUpperCase();
-            if (!command) return;
-            writeOutput(`> ${command}`);
-            commandHistory.push(command);
-            historyIndex = commandHistory.length;
-            const parts = command.split(/\s+/);
-            const cmd = parts[0];
+        async function toggleScreenShare() {
+            if (!isCallActive) return;
+            if (!navigator.mediaDevices.getDisplayMedia) {
+                writeOutput('ERROR: Screen sharing not supported in this browser.', 'var(--error-color)');
+                return;
+            }
+            isScreenSharing = !isScreenSharing;
+            try {
+                if (isScreenSharing) {
+                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                    localStream = screenStream;
+                    localVideo.srcObject = localStream;
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        isScreenSharing = false;
+                        toggleScreenButton.textContent = 'Share Screen: Off';
+                        toggleCamera();
+                    };
+                    toggleScreenButton.textContent = 'Share Screen: On';
+                } else {
+                    localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
+                    localVideo.srcObject = localStream;
+                    toggleScreenButton.textContent = 'Share Screen: Off';
+                }
+            } catch (err) {
+                writeOutput(`ERROR: Failed to toggle screen sharing: ${err.message}`, 'var(--error-color)');
+                isScreenSharing = false;
+                toggleScreenButton.textContent = 'Share Screen: Off';
+            }
+        }
+
+        function updateParticipantsList() {
+            callParticipantsList.innerHTML = 'Participants in Call:<br>';
+            const deviceType = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
+            callParticipants.forEach(user => {
+                const role = USERS[user].role;
+                const userDevice = user === authUsername ? deviceType : (Math.random() > 0.5 ? 'Desktop' : 'Mobile');
+                callParticipantsList.innerHTML += `- ${user} (${role}): ${userDevice}<br>`;
+            });
+            pendingInvitations.forEach(user => {
+                const role = USERS[user].role;
+                const userDevice = Math.random() > 0.5 ? 'Desktop' : 'Mobile';
+                callParticipantsList.innerHTML += `- ${user} (${role}): ${userDevice} (RINGING)<br>`;
+            });
+        }
+
+        // Chat Feature Logic
+        function updateUserList() {
+            userList.innerHTML = 'Users in Chat:<br>';
+            const currentStatus = isUserTyping ? 'Typing' : 'ONLINE';
+            const currentColor = isUserTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
+            const currentSpan = document.createElement('span');
+            currentSpan.style.color = currentColor;
+            currentSpan.className = isUserTyping ? 'typing-dots' : '';
+            currentSpan.innerHTML = `- ${authUsername} (${userType}): ${currentStatus}${isUserTyping ? '' : ''}<br>`;
+            userList.appendChild(currentSpan);
+            const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
+            const otherType = USERS[otherUser].role;
+            const rand = Math.random();
+            let otherStatus;
+            let otherColor;
+            if (rand < 0.05) {
+                otherStatus = 'CRITICAL (BREACH)';
+                otherColor = 'var(--error-color)';
+            } else if (rand < 0.35) {
+                otherStatus = 'OFFLINE (IDLE)';
+                otherColor = 'var(--prompt-caret)';
+            } else {
+                otherStatus = isOtherTyping ? 'Typing' : 'ONLINE';
+                otherColor = isOtherTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
+            }
+            const otherSpan = document.createElement('span');
+            otherSpan.style.color = otherColor;
+            otherSpan.className = isOtherTyping ? 'typing-dots' : '';
+            otherSpan.innerHTML = `- ${otherUser} (${otherType}): ${otherStatus}${isOtherTyping ? '' : ''}<br>`;
+            userList.appendChild(otherSpan);
+        }
+
+        function updateUnreadCount() {
+            unreadCount.textContent = unreadMessages;
+            unreadCount.style.display = unreadMessages > 0 ? 'flex' : 'none';
+        }
+
+        function closeChat() {
+            isChatOpen = false;
+            chatWindow.style.display = 'none';
+            endCall();
+            unreadMessages = 0;
+            isUserTyping = false;
+            isOtherTyping = false;
+            clearTimeout(typingTimeout);
+            clearInterval(otherTypingInterval);
+            updateUnreadCount();
+            commandInput.focus();
+            document.querySelectorAll('.reaction-picker').forEach(picker => {
+                picker.style.display = 'none';
+            });
+        }
+
+        function simulateOtherTyping() {
+            if (!isChatOpen || !isLoggedIn) return;
+            const rand = Math.random();
+            if (rand < 0.2) {
+                isOtherTyping = !isOtherTyping;
+                updateUserList();
+            }
+        }
+
+        function createReactionPicker(messageDiv, messageId) {
+            const existingPicker = messageDiv.querySelector('.reaction-picker');
+            if (existingPicker) {
+                existingPicker.style.display = 'flex';
+                return;
+            }
+            const picker = document.createElement('div');
+            picker.className = 'reaction-picker';
+            EMOJIS.forEach(emoji => {
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = emoji;
+                emojiSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    messageReactions[messageId] = emoji;
+                    updateMessageReactions(messageDiv, messageId);
+                    picker.style.display = 'none';
+                });
+                picker.appendChild(emojiSpan);
+            });
+            messageDiv.appendChild(picker);
+            picker.style.display = 'flex';
+        }
+
+        function updateMessageReactions(messageDiv, messageId) {
+            const reactionSpan = messageDiv.querySelector('.message-reaction');
+            if (messageReactions[messageId]) {
+                reactionSpan.textContent = messageReactions[messageId];
+                reactionSpan.className = `message-reaction ${messageReactions[messageId]}`;
+            } else {
+                reactionSpan.textContent = '';
+                reactionSpan.className = 'message-reaction';
+            }
+        }
+
+        function startEditingMessage(messageDiv, messageId, contentSpan) {
+            const originalText = contentSpan.textContent.split(': ').slice(1).join(': ').trim();
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'message-edit-input';
+            input.value = originalText;
+            contentSpan.innerHTML = '';
+            contentSpan.appendChild(input);
+            input.focus();
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    contentSpan.textContent = `${authUsername} (${userType}): ${input.value.trim()}`;
+                    messageDiv.appendChild(contentSpan);
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    contentSpan.textContent = `${authUsername} (${userType}): ${originalText}`;
+                    messageDiv.appendChild(contentSpan);
+                }
+            });
+        }
+
+        function deleteMessage(messageDiv, messageId) {
+            chatMessages.removeChild(messageDiv);
+            delete messageReactions[messageId];
+        }
+
+        // Command Processing
+        const GAMES = {
+            'ASTEROIDS': initAsteroidsGame,
+            'SNAKE': () => writeOutput('Launching SNAKE... (Not yet available)', 'var(--highlight-color)')
+        };
+
+        function processCommand(input) {
+            const fullInput = input.trim();
+            if (isBusy || !isLoggedIn || fullInput.length === 0) return;
+            const isSequenceRunning = Tone.Transport.state === 'started';
+            const attemptingTermination = fullInput.toUpperCase() === 'PAUSE' || fullInput.toUpperCase() === 'QUIT';
+            if (isSequenceRunning && attemptingTermination) {
+                initiateLockdown(`SECURITY ALERT: Attempted unauthorized termination of active sound sequence. System lock engaged.`);
+                return;
+            }
+            writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
+            const parts = fullInput.split(/\s+/);
+            const cmd = parts[0].toUpperCase();
             const args = parts.slice(1);
+            let assetArg = args.join(' ').trim();
             switch (cmd) {
                 case 'HELP':
-                    writeOutput(`
-Available Commands:
-HELP - Display this help message
-CLEAR - Clear the console
-INIT AUDIO - Initialize audio context
-ACTIVE - List active users (MANAGER/ADMIN only)
-[Sound Commands]: ${SOUND_COMMAND_NAMES.join(', ')}
-`, 'var(--highlight-color)');
+                    writeOutput(`\n--- ATLAS CONSOLE COMMANDS ---`, 'var(--highlight-color)');
+                    writeOutput(`HELP: Display this list.`, 'var(--highlight-color)');
+                    writeOutput(`CLEAR: Clear the console output.`, 'var(--highlight-color)');
+                    writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
+                    writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
+                    writeOutput(`INIT AUDIO: Initialize the Web Audio Context (CRITICAL for sound playback).`, 'var(--error-color)');
+                    writeOutput(`SOUND [ASSET] [COUNT]x: Play an audio asset. Use 'RANDOM' for a surprise asset.`, 'var(--highlight-color)');
+                    writeOutput(`PAUSE: Stops the currently playing single sound.`, 'var(--highlight-color)');
+                    writeOutput(`PLAY: Restarts the currently stopped single sound from the beginning.`, 'var(--highlight-color)');
+                    writeOutput(`QUIT: Terminates and releases the active single sound asset.`, 'var(--highlight-color)');
+                    writeOutput(`CHANGE [STATUS]: Set user status (OFFLINE, ONLINE, IDLE, BUSY). BUSY blocks incoming calls/messages.`, 'var(--highlight-color)');
+                    if (userType === 'MANAGER') {
+                        writeOutput(`ACTIVE: (MANAGER/ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
+                        writeOutput(`ADD [USERNAME] [PASSWORD] [PASSKEY] [ROLE] [MANAGER_PASSWORD]: (MANAGER ONLY) Add a new user.`, 'var(--error-color)');
+                        writeOutput(`REMOVE [USERNAME] [MANAGER_PASSWORD]: (MANAGER ONLY) Remove a user.`, 'var(--error-color)');
+                    } else if (userType === 'ADMIN') {
+                        writeOutput(`ACTIVE: (MANAGER/ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
+                    }
+                    writeOutput(`RUN [GAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
+                    writeOutput(`LOGOUT: Return to the login screen.`, 'var(--highlight-color)');
+                    writeOutput(`------------------------------\n`, 'var(--highlight-color)');
                     break;
                 case 'CLEAR':
-                    consoleDiv.innerHTML = '';
+                    clearOutput();
                     break;
-                case 'INIT':
-                    if (args[0] === 'AUDIO') {
-                        if (Tone.context.state !== 'running') {
-                            await Tone.context.resume();
-                            writeOutput('SYSTEM: Audio context initialized.', 'var(--highlight-color)');
-                        } else {
-                            writeOutput('SYSTEM: Audio context already running.', 'var(--prompt-caret)');
-                        }
-                    } else {
-                        writeOutput('ERROR: Unknown INIT subcommand.', 'var(--error-color)');
-                    }
+                case 'STATUS':
+                    writeOutput(`SYSTEM STATUS: ONLINE`, 'var(--terminal-color)');
+                    writeOutput(`Web Audio Context: ${Tone.context.state.toUpperCase()}`, 'var(--terminal-color)');
+                    writeOutput(`Current User: ${authUsername}`, 'var(--terminal-color)');
+                    writeOutput(`Uptime: 74 days, 12 hours, 34 minutes`, 'var(--terminal-color)');
+                    writeOutput(`Security Level: [${userType} EXECUTION]`, 'var(--terminal-color)');
                     break;
                 case 'ACTIVE':
                     if (userType !== 'MANAGER' && userType !== 'ADMIN') {
                         writeOutput(`\nACCESS DENIED: Command ACTIVE requires MANAGER or ADMIN privileges. Current User: ${authUsername}.`, 'var(--error-color)');
                         break;
                     }
-                    lastStatusUpdate = 0;
-                    simulateStatusUpdates();
+                    const rand = Math.random();
+                    let currentStatus;
+                    let statusColor;
+                    if (rand < 0.05) {
+                        currentStatus = 'CRITICAL (BREACH)';
+                        statusColor = 'var(--error-color)';
+                    } else if (rand < 0.35) {
+                        currentStatus = 'OFFLINE (IDLE)';
+                        statusColor = 'var(--prompt-caret)';
+                    } else {
+                        currentStatus = 'ONLINE';
+                        statusColor = 'var(--terminal-color)';
+                    }
+                    const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
+                    const otherType = USERS[otherUser].role;
                     writeOutput(`\n--- ACTIVE ATLAS USERS (${new Date().toLocaleTimeString('en-US')}) ---`, 'var(--highlight-color)');
-                    Object.keys(USERS).forEach(user => {
-                        let statusColor;
-                        switch (USER_STATUSES[user]) {
-                            case 'CRITICAL (BREACH)':
-                                statusColor = 'var(--error-color)';
-                                break;
-                            case 'OFFLINE (IDLE)':
-                                statusColor = 'var(--prompt-caret)';
-                                break;
-                            default:
-                                statusColor = 'var(--terminal-color)';
-                        }
-                        writeOutput(`USER ID: ${user} | STATUS: ${USER_STATUSES[user]} (${USERS[user].role})`, statusColor);
-                    });
+                    writeOutput(`USER ID: ${authUsername} | STATUS: ONLINE (${userType})`, 'var(--terminal-color)');
+                    writeOutput(`USER ID: ${otherUser} | STATUS: ${currentStatus} (${otherType})`, statusColor);
                     writeOutput(`--------------------------\n`, 'var(--highlight-color)');
                     break;
-                default:
-                    if (SOUND_COMMAND_NAMES.includes(cmd)) {
-                        if (Tone.context.state !== 'running') {
-                            writeOutput('ERROR: Audio context not initialized. Run INIT AUDIO first.', 'var(--error-color)');
+                case 'CHANGE':
+                    if (args.length !== 1) {
+                        writeOutput(`ERROR: Usage: CHANGE [STATUS] where STATUS is OFFLINE, ONLINE, IDLE, or BUSY.`, 'var(--error-color)');
+                        break;
+                    }
+                    const newStatus = args[0].toUpperCase();
+                    if (!VALID_STATUSES.includes(newStatus)) {
+                        writeOutput(`ERROR: Invalid status. Valid statuses: OFFLINE, ONLINE, IDLE, BUSY.`, 'var(--error-color)');
+                        break;
+                    }
+                    USER_STATUSES[authUsername] = newStatus;
+                    writeOutput(`SUCCESS: Status updated to ${newStatus}.`, 'var(--highlight-color)');
+                    updateUserList();
+                    break;
+                case 'ADD':
+                    if (userType !== 'MANAGER') {
+                        writeOutput(`ACCESS DENIED: Command ADD requires MANAGER privileges.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (args.length !== 5) {
+                        writeOutput(`ERROR: Usage: ADD [USERNAME] [PASSWORD] [PASSKEY] [ROLE] [MANAGER_PASSWORD]`, 'var(--error-color)');
+                        break;
+                    }
+                    const [newUsername, newPassword, newPasskey, newRole, managerPassword] = args;
+                    if (managerPassword !== MANAGER_PASSWORD) {
+                        writeOutput(`ERROR: Invalid manager password.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (USERS[newUsername.toUpperCase()]) {
+                        writeOutput(`ERROR: User '${newUsername}' already exists.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (!/^\d{4}$/.test(newPasskey)) {
+                        writeOutput(`ERROR: Passkey must be 4 digits.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (newRole.toUpperCase() !== 'MANAGER' && newRole.toUpperCase() !== 'ADMIN') {
+                        writeOutput(`ERROR: Role must be MANAGER or ADMIN.`, 'var(--error-color)');
+                        break;
+                    }
+                    USERS[newUsername.toUpperCase()] = {
+                        password: newPassword,
+                        passkey: newPasskey,
+                        role: newRole.toUpperCase()
+                    };
+                    USER_STATUSES[newUsername.toUpperCase()] = 'OFFLINE';
+                    writeOutput(`SUCCESS: User '${newUsername}' added with role ${newRole.toUpperCase()}.`, 'var(--highlight-color)');
+                    updateUserList();
+                    break;
+                case 'REMOVE':
+                    if (userType !== 'MANAGER') {
+                        writeOutput(`ACCESS DENIED: Command REMOVE requires MANAGER privileges.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (args.length !== 2) {
+                        writeOutput(`ERROR: Usage: REMOVE [USERNAME] [MANAGER_PASSWORD]`, 'var(--error-color)');
+                        break;
+                    }
+                    const [removeUsername, removeManagerPassword] = args;
+                    if (removeManagerPassword !== MANAGER_PASSWORD) {
+                        writeOutput(`ERROR: Invalid manager password.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (!USERS[removeUsername.toUpperCase()]) {
+                        writeOutput(`ERROR: User '${removeUsername}' not found.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (removeUsername.toUpperCase() === 'ETHANUNLOCKED' || removeUsername.toUpperCase() === 'BEEF WELLINGTON') {
+                        writeOutput(`ERROR: Cannot remove default users.`, 'var(--error-color)');
+                        break;
+                    }
+                    if (removeUsername.toUpperCase() === authUsername) {
+                        writeOutput(`ERROR: Cannot remove current user.`, 'var(--error-color)');
+                        break;
+                    }
+                    delete USERS[removeUsername.toUpperCase()];
+                    delete USER_STATUSES[removeUsername.toUpperCase()];
+                    writeOutput(`SUCCESS: User '${removeUsername}' removed.`, 'var(--highlight-color)');
+                    updateUserList();
+                    break;
+                case 'LIVE':
+                    updateHeaderDisplay();
+                    writeOutput(`\nLIVE DATA SYNCHRONIZED. Pinned header refreshed.`, 'var(--terminal-color)');
+                    writeOutput(`----------------------\n`, 'var(--highlight-color)');
+                    break;
+                case 'INIT':
+                case 'INIT AUDIO':
+                    checkAudioContext();
+                    break;
+                case 'SOUND':
+                    if (!assetArg) {
+                        writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-color)');
+                        writeOutput(`Usage: SOUND [ASSET_NAME|RANDOM] [COUNT]x (e.g., SOUND CENSOR 3x)`, 'var(--prompt-caret)');
+                        writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
+                        writeOutput(`&nbsp;&nbsp;[+] RANDOM (Selects one of the following)`, 'var(--highlight-color)');
+                        SOUND_COMMAND_NAMES.forEach(name => {
+                            writeOutput(`&nbsp;&nbsp;[+] ${name}`, 'var(--highlight-color)');
+                        });
+                        writeOutput(`----------------------------\n`, 'var(--highlight-color)');
+                        break;
+                    }
+                    let assetName = assetArg;
+                    const MAX_REPETITIONS = 1000000;
+                    let times = 1;
+                    const repeatMatch = assetArg.match(/\s(\d+)[xX]$/);
+                    if (repeatMatch) {
+                        times = parseInt(repeatMatch[1], 10);
+                        const suffixLength = repeatMatch[0].length;
+                        assetName = assetArg.substring(0, assetArg.length - suffixLength).trim();
+                        if (times > MAX_REPETITIONS) {
+                            writeOutput(`WARNING: Engaging the maximum chaos setting. Requested ${times} repetitions. Limiting to ${MAX_REPETITIONS}.`, 'var(--error-color)');
+                            times = MAX_REPETITIONS;
+                        } else if (times < 1) {
+                            writeOutput(`ERROR: Repetition count must be at least 1.`, 'var(--error-color)');
                             break;
                         }
-                        const buffer = await loadSound(cmd);
-                        if (buffer) {
-                            const player = new Tone.Player(buffer).toDestination();
-                            player.start();
-                            writeOutput(`SYSTEM: Playing ${cmd}.`, 'var(--highlight-color)');
-                        }
+                    }
+                    const lookupName = assetName.toUpperCase();
+                    let finalAssetName = lookupName;
+                    if (lookupName === 'RANDOM') {
+                        const randomIndex = Math.floor(Math.random() * SOUND_COMMAND_NAMES.length);
+                        finalAssetName = SOUND_COMMAND_NAMES[randomIndex];
+                        writeOutput(`ASSET RESOLVED: Selecting random asset: ${finalAssetName}.`, 'var(--prompt-caret)');
+                    }
+                    if (SOUND_COMMAND_NAMES.includes(finalAssetName)) {
+                        loadAndPlaySound(finalAssetName, times);
                     } else {
-                        writeOutput(`ERROR: Unknown command: ${cmd}`, 'var(--error-color)');
+                        writeOutput(`\nERROR: Asset '${assetName}' not found in SFX database.`, 'var(--error-color)');
                     }
                     break;
+                case 'PAUSE':
+                    if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
+                        currentPlaybackPlayer.stop();
+                        writeOutput(`Single playback stopped. Type PLAY to restart from the beginning or QUIT to terminate.`, 'var(--highlight-color)');
+                    } else if (currentPlaybackPlayer) {
+                        writeOutput(`Single playback is already stopped or finished. Type PLAY to restart.`, 'var(--prompt-caret)');
+                    } else {
+                        writeOutput(`ERROR: No active single sound asset to pause.`, 'var(--error-color)');
+                    }
+                    break;
+                case 'PLAY':
+                    if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'stopped') {
+                        currentPlaybackPlayer.start(0);
+                        writeOutput(`Single playback restarted.`, 'var(--highlight-color)');
+                    } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
+                        writeOutput(`Single playback is already running.`, 'var(--prompt-caret)');
+                    } else {
+                        writeOutput(`ERROR: No stopped single sound asset to play.`, 'var(--error-color)');
+                    }
+                    break;
+                case 'QUIT':
+                    if (currentPlaybackPlayer) {
+                        disposePlaybackPlayer();
+                        writeOutput(`Single playback terminated. The asset has been released from memory.`, 'var(--highlight-color)');
+                    } else {
+                        writeOutput(`WARNING: No active single sound asset to quit.`, 'var(--prompt-caret)');
+                    }
+                    break;
+                case 'RUN':
+                    const game = args[0] ? args[0].toUpperCase() : null;
+                    if (game && GAMES[game]) {
+                        GAMES[game]();
+                    } else {
+                        writeOutput(`ERROR: Game/Program '${game || 'none'}' not found. Available: ${Object.keys(GAMES).join(', ')}.`, 'var(--error-color)');
+                        writeOutput(`(If a game says 'not yet available', it is not implemented).`, 'var(--prompt-caret)');
+                    }
+                    break;
+                case 'LOGOUT':
+                    initiateLockdown(`SYSTEM MESSAGE: User ${authUsername} logged out.`);
+                    break;
+                default:
+                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, 'var(--error-color)');
+                    break;
             }
-            promptInput.value = '';
+            showPrompt();
         }
 
-        promptInput.addEventListener('keydown', (e) => {
-            if (!isLoggedIn) return;
-            if (e.key === 'Enter') {
-                processCommand(promptInput.value);
-            } else if (e.key === 'ArrowUp') {
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    promptInput.value = commandHistory[historyIndex] || '';
-                }
-                e.preventDefault();
-            } else if (e.key === 'ArrowDown') {
-                if (historyIndex < commandHistory.length - 1) {
-                    historyIndex++;
-                    promptInput.value = commandHistory[historyIndex];
-                } else {
-                    historyIndex = commandHistory.length;
-                    promptInput.value = '';
-                }
-                e.preventDefault();
+        // Event Listeners
+        loginForm.addEventListener('submit', handleLoginAttempt);
+        quitGameButton.addEventListener('click', quitAsteroidsGame);
+        document.addEventListener('keypress', function(e) {
+            if (isLoggedIn && !isGameRunning && e.key === 'Enter' && !commandInput.disabled) {
+                processCommand(commandInput.value);
+                commandInput.value = '';
             }
         });
-
-        loginUsername.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                loginPassword.focus();
-            }
-        });
-
-        loginPassword.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                loginPasskey.focus();
-            }
-        });
-
-        loginPasskey.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                attemptLogin();
-            }
-        });
+        document.addEventListener('keydown', gameKeydown);
+        document.addEventListener('keyup', gameKeyup);
 
         chatButton.addEventListener('click', () => {
-            if (!isLoggedIn) {
-                writeOutput('ERROR: Must be logged in to open chat.', 'var(--error-color)');
-                return;
-            }
             isChatOpen = !isChatOpen;
-            chatWindow.style.display = isChatOpen ? 'block' : 'none';
+            chatWindow.style.display = isChatOpen ? 'flex' : 'none';
             if (isChatOpen) {
+                updateUserList();
                 unreadMessages = 0;
                 updateUnreadCount();
-                updateUserList();
                 chatInput.focus();
+                otherTypingInterval = setInterval(simulateOtherTyping, 5000);
+            } else {
+                closeChat();
             }
         });
 
-        chatInput.addEventListener('keydown', (e) => {
-            if (!isChatOpen || !isLoggedIn) return;
+        closeChatButton.addEventListener('click', closeChat);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isChatOpen && !isGameRunning) {
+                closeChat();
+            }
+        });
+
+        chatInput.addEventListener('input', () => {
+            if (!isUserTyping) {
+                isUserTyping = true;
+                updateUserList();
+            }
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isUserTyping = false;
+                updateUserList();
+            }, 2000);
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && chatInput.value.trim()) {
-                const message = chatInput.value.trim();
+                const msgText = `${authUsername} (${userType}): ${chatInput.value.trim()}`;
+                const messageId = Date.now().toString();
                 const msgDiv = document.createElement('div');
                 const timestampSpan = document.createElement('span');
                 timestampSpan.className = 'message-timestamp';
                 timestampSpan.textContent = getMessageTimestamp();
                 const contentSpan = document.createElement('span');
                 contentSpan.className = 'message-content';
-                contentSpan.textContent = `${authUsername}: ${message}`;
+                contentSpan.textContent = msgText;
+                const reactionSpan = document.createElement('span');
+                reactionSpan.className = 'message-reaction';
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    startEditingMessage(msgDiv, messageId, contentSpan);
+                });
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteMessage(msgDiv, messageId);
+                });
+                actionsDiv.appendChild(editButton);
+                actionsDiv.appendChild(deleteButton);
                 msgDiv.appendChild(timestampSpan);
                 msgDiv.appendChild(contentSpan);
+                msgDiv.appendChild(reactionSpan);
+                msgDiv.appendChild(actionsDiv);
+                msgDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.reaction-picker').forEach(picker => {
+                        picker.style.display = 'none';
+                    });
+                    createReactionPicker(msgDiv, messageId);
+                });
                 chatMessages.appendChild(msgDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('ATLAS Chat Message', { body: msgText });
+                }
                 chatInput.value = '';
                 isUserTyping = false;
                 updateUserList();
-                setTimeout(() => {
-                    const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
-                    const replyMsg = document.createElement('div');
-                    const replyTimestamp = document.createElement('span');
-                    replyTimestamp.className = 'message-timestamp';
-                    replyTimestamp.textContent = getMessageTimestamp();
-                    const replyContent = document.createElement('span');
-                    replyContent.className = 'message-content';
-                    replyContent.textContent = `${otherUser}: Received your message: "${message}"`;
-                    replyMsg.appendChild(replyTimestamp);
-                    replyMsg.appendChild(replyContent);
-                    chatMessages.appendChild(replyMsg);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    if (!isChatOpen && USER_STATUSES[authUsername] !== 'BUSY') {
-                        unreadMessages++;
-                        updateUnreadCount();
-                    }
-                }, 1000);
-            } else if (e.key !== 'Enter') {
-                isUserTyping = chatInput.value.trim() !== '';
-                updateUserList();
+                if (!isChatOpen) {
+                    unreadMessages++;
+                    updateUnreadCount();
+                }
             }
         });
 
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#chat-messages div') && !e.target.closest('.reaction-picker')) {
+                document.querySelectorAll('.reaction-picker').forEach(picker => {
+                    picker.style.display = 'none';
+                });
+                }
+        });
+
         startCallButton.addEventListener('click', startCall);
+        endCallButton.addEventListener('click', endCall);
+        leaveCallButton.addEventListener('click', leaveCall);
         toggleCameraButton.addEventListener('click', toggleCamera);
-        toggleMicrophoneButton.addEventListener('click', toggleMicrophone);
         toggleScreenButton.addEventListener('click', toggleScreenShare);
         showParticipantsButton.addEventListener('click', () => {
             callParticipantsList.style.display = callParticipantsList.style.display === 'block' ? 'none' : 'block';
         });
 
-        setInterval(simulateOtherTyping, 5000);
-        setInterval(simulateStatusUpdates, 10000);
-
         window.onload = function() {
-            // Ensure windows are hidden
-            chatWindow.style.display = 'none';
-            callWindow.style.display = 'none';
-            callParticipantsList.style.display = 'none';
-            // Initialize sounds silently
-            SOUND_COMMAND_NAMES.concat(['RINGING']).forEach(key => loadSound(key));
+            SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
             document.body.addEventListener('click', () => { Tone.context.resume(); }, { once: true });
             document.body.addEventListener('keydown', () => { Tone.context.resume(); }, { once: true });
-            Object.keys(USERS).forEach(user => {
-                if (!USER_STATUSES[user]) {
-                    USER_STATUSES[user] = 'ONLINE';
-                }
-            });
             showLoginModal();
         };
-
-        if ('Notification' in window && Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
     </script>
 </body>
 </html>
