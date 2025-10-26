@@ -2004,6 +2004,10 @@
             callParticipantsList.style.display = callParticipantsList.style.display === 'block' ? 'none' : 'block';
         });
 
+        // ⭐ THIS IS THE FIX: Attach the login handler to the form's SUBMIT event.
+        // The handler uses event.preventDefault() to stop the page from refreshing.
+        loginForm.addEventListener('submit', handleLoginAttempt); 
+
         window.onload = function() {
             SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
             document.body.addEventListener('click', () => { Tone.context.resume(); }, { once: true });
@@ -2011,5 +2015,5 @@
             showLoginModal();
         };
     </script>
-</body>
-</html>
+
+</body></html>
