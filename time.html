@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Timing Hub</title>
+    <style>
+        /* --- General Reset & Styling --- */
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #2196F3; /* Blue */
+            --background-color: #f4f7f6;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --timing-font: 'Arial Black', sans-serif;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* --- Layout & Container --- */
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 2.5em;
+        }
+
+        .timing-section {
+            background-color: var(--card-background);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .timing-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--secondary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* --- Display Styles --- */
+        .display {
+            font-family: var(--timing-font);
+            font-size: 4em;
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            background-color: #e8f5e9; /* Light Green */
+            color: var(--primary-color);
+        }
+
+        /* --- Button Styles --- */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .start-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .start-btn:hover { background-color: #43A047; }
+
+        .stop-btn {
+            background-color: #FF9800; /* Orange */
+            color: white;
+        }
+        .stop-btn:hover { background-color: #FB8C00; }
+
+        .reset-btn {
+            background-color: #F44336; /* Red */
+            color: white;
+        }
+        .reset-btn:hover { background-color: #E53935; }
+
+        /* Customization (Simplified) */
+        .customization {
+            margin-top: 15px;
+            padding: 10px;
+            border-top: 1px dashed #ccc;
+            text-align: center;
+        }
+
+        .customization input[type="color"] {
+            margin-left: 10px;
+            border: none;
+            height: 30px;
+            width: 30px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⏱️ Fun Timing Hub - Stopwatch & Timer</h1>
+    
+    <div class="timing-section" id="stopwatch-section">
+        <h2>Stopwatch</h2>
+        <div class="display" id="stopwatch-display">00:00:00.00</div>
+        
+        <div class="controls">
+            <button class="start-btn" onclick="stopwatch.start()">Start</button>
+            <button class="stop-btn" onclick="stopwatch.stop()">Stop</button>
+            <button class="reset-btn" onclick="stopwatch.reset()">Reset</button>
+        </div>
+
+        <div class="customization">
+            <label for="sw-color">Custom Color:</label>
+            <input type="color" id="sw-color" value="#4CAF50" onchange="customizeDisplay('stopwatch-display', this.value)">
+        </div>
+    </div>
+    
+    <hr> <div class="timing-section" id="timer-section">
+        <h2>Countdown Timer</h2>
+        <div class="display" id="timer-display">00:00:00</div>
+        
+        <div class="controls">
+            <input type="number" id="timer-minutes" placeholder="Minutes" value="5" min="1" style="width: 80px; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <button class="start-btn" onclick="timer.start()">Start</button>
+            <button class="stop-btn" onclick="timer.stop()">Pause</button>
+            <button class="reset-btn" onclick="timer.reset()">Reset</button>
+        </div>
+
+        <div class="customization">
+            <label for="timer-color">Custom Color:</label>
+            <input type="color" id="timer-color" value="#2196F3" onchange="customizeDisplay('timer-display', this.value)">
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- UTILITY FUNCTION ---
+    // Formats milliseconds into HH:MM:SS.MS (for Stopwatch) or HH:MM:SS (for Timer)
+    function formatTime(ms, includeMs = true) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+        const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+
+        if (includeMs) {
+            const milliseconds = Math.floor((ms % 1000) / 10).toString().padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+        }
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    // --- STOPWATCH LOGIC ---
+    const stopwatch = (function() {
+        let startTime = 0;
+        let elapsed = 0;
+        let intervalId = null;
+        const display = document.getElementById('stopwatch-display');
+
+        function updateDisplay() {
+            const currentTime = Date.now();
+            elapsed = currentTime - startTime;
+            display.textContent = formatTime(elapsed, true);
+        }
+
+        function start() {
+            if (intervalId) return; // Already running
+            startTime = Date.now() - elapsed; // Adjust start time for pause/resume
+            intervalId = setInterval(updateDisplay, 10); // Update every 10ms
+        }
+
+        function stop() {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+
+        function reset() {
+            stop();
+            startTime = 0;
+            elapsed = 0;
+            display.textContent = "00:00:00.00";
+        }
+
+        return { start, stop, reset };
+    })();
+
+    // --- COUNTDOWN TIMER LOGIC ---
+    const timer = (function() {
+        let totalTimeMs = 0;
+        let remainingTimeMs = 0;
+        let intervalId = null;
+        let endTime = 0;
+        const display = document.getElementById('timer-display');
+        const minutesInput = document.getElementById('timer-minutes');
+
+        function initializeTime() {
+            const minutes = parseInt(minutesInput.value) || 0;
+            totalTimeMs = minutes * 60 * 1000;
+            remainingTimeMs = totalTimeMs;
+            display.textContent = formatTime(remainingTimeMs, false);
+        }
+
+        // Initialize on load
+        initializeTime();
+
+        function updateDisplay() {
+            const now = Date.now();
+            const elapsedSinceStart = now - (endTime - remainingTimeMs);
+
+            remainingTimeMs = totalTimeMs - elapsedSinceStart;
+
+            if (remainingTimeMs <= 0) {
+                remainingTimeMs = 0;
+                stop();
+                display.textContent = "TIME UP! 🔔";
+                alert("Time's up!");
+                return;
+            }
+            display.textContent = formatTime(remainingTimeMs, false);
+        }
+
+        function start() {
+            if (intervalId) return; // Already running
+
+            if (remainingTimeMs <= 0) {
+                // If timer finished, reset to input value before starting
+                initializeTime();
+            }
+
+            endTime = Date.now() + remainingTimeMs; // Calculate when it should stop
+            intervalId = setInterval(updateDisplay, 1000); // Update every second
+        }
+
+        function stop() {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+
+        function reset() {
+            stop();
+            initializeTime(); // Reset remaining time based on input value
+        }
+        
+        // Listen for input changes to update display immediately
+        minutesInput.addEventListener('change', reset);
+        minutesInput.addEventListener('keyup', reset);
+
+
+        return { start, stop, reset };
+    })();
+
+    // --- CUSTOMIZATION LOGIC ---
+    function customizeDisplay(displayId, color) {
+        const displayElement = document.getElementById(displayId);
+        displayElement.style.color = color;
+        displayElement.style.borderColor = color;
+    }
+</script>
+
+</body>
+</html>
