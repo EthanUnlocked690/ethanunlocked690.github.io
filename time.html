@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Timing Hub - FIXED</title>
+    <title>Ultimate Timing Hub - FINAL FIX</title>
     <style>
         /* --- General Reset & Styling --- */
         :root {
@@ -236,7 +236,6 @@
 <script>
     // --- UTILITY FUNCTIONS ---
 
-    // Formats milliseconds into different time strings
     function formatTime(ms, type = 'stopwatch') {
         const totalSeconds = Math.floor(ms / 1000);
         
@@ -255,7 +254,7 @@
         }
 
         if (type === 'date-countdown') {
-            const distance = Math.abs(ms); // Use absolute value for calculations
+            const distance = Math.abs(ms);
             const totalSecs = Math.floor(distance / 1000);
             
             const days = Math.floor(totalSecs / (3600 * 24));
@@ -330,6 +329,7 @@
 
         function updateDisplay() {
             const now = Date.now();
+            // Calculate remaining time relative to the moment 'start' was pressed
             remainingTimeMs = targetTimeMs - now;
 
             if (remainingTimeMs <= 0) {
@@ -345,8 +345,9 @@
         function start() {
             if (intervalId) return;
 
-            if (remainingTimeMs <= 0) initializeTime(); // Reset if finished
+            if (remainingTimeMs <= 0) initializeTime(); 
 
+            // Calculate the exact future time when the countdown should hit zero
             targetTimeMs = Date.now() + remainingTimeMs;
             intervalId = setInterval(updateDisplay, 1000);
         }
@@ -368,7 +369,7 @@
     })();
 
 
-    // --- ADVANCED DATE COUNTDOWN LOGIC (FIXED) ---
+    // --- ADVANCED DATE COUNTDOWN LOGIC ---
     const dateCountdown = (function() {
         let intervalId = null;
         let targetDateMs = 0;
@@ -377,8 +378,7 @@
         const titleInput = document.getElementById('countdown-title');
 
         // Set a default target date 30 days from now
-        const defaultDate = new Date();
-        defaultDate.setDate(defaultDate.getDate() + 30);
+        const defaultDate = new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000);
         const year = defaultDate.getFullYear();
         const month = String(defaultDate.getMonth() + 1).padStart(2, '0');
         const day = String(defaultDate.getDate()).padStart(2, '0');
@@ -395,6 +395,7 @@
                 // Event finished
                 clearInterval(intervalId);
                 intervalId = null;
+                // Use a different color for the "Passed" state
                 display.innerHTML = `<strong>${title}</strong><br>${formatTime(distance, 'date-countdown')}`;
                 alert(`The event "${title}" has arrived!`);
                 return;
@@ -419,13 +420,8 @@
                 return;
             }
             
-            // Check if date is in the past, and if so, don't start
-            if (targetDateMs < new Date().getTime()) {
-                display.textContent = "Target time is in the past. Choose a future time.";
-                return;
-            }
-
-            updateDisplay(); // Initial display update
+            // Allow countdown to start even if it's counting down to a past date
+            updateDisplay(); 
             intervalId = setInterval(updateDisplay, 1000);
         }
 
@@ -433,7 +429,6 @@
             clearInterval(intervalId);
             intervalId = null;
             targetDateMs = 0;
-            // Re-run initialization to show default/placeholder
             const title = titleInput.value || "My Event";
             display.innerHTML = `<strong>${title}</strong><br>Set a Date and Time Below...`;
         }
@@ -449,7 +444,8 @@
         return { start, reset };
     })();
     
-    // --- GLOBAL EVENT LISTENERS (THE FIX!) ---
+    // --- GLOBAL EVENT LISTENER (THE CORE FIX) ---
+    // This attaches ALL button handlers based on the data- attributes.
     document.addEventListener('DOMContentLoaded', () => {
         // Map the data-target names to the actual JS objects
         const timers = {
@@ -460,8 +456,8 @@
 
         // Attach listeners to all control buttons
         document.querySelectorAll('.controls button').forEach(button => {
-            const action = button.dataset.action;
-            const target = button.dataset.target;
+            const action = button.dataset.action; // 'start', 'stop', 'reset'
+            const target = button.dataset.target; // 'stopwatch', 'timer', 'dateCountdown'
             
             if (action && target && timers[target] && typeof timers[target][action] === 'function') {
                 button.addEventListener('click', () => {
