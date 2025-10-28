@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Timing Hub</title>
+    <title>Ultimate Timing Hub - FIXED</title>
     <style>
         /* --- General Reset & Styling --- */
         :root {
@@ -13,9 +13,8 @@
             --background-color: #f8f9fa;
             --card-background: #ffffff;
             --text-color: #343a40;
-            --timing-font: 'Digital-7', monospace; /* A classic digital font feel */
+            --timing-font: 'Digital-7', monospace; 
         }
-        /* Fallback for Digital-7 font - standard monospace */
         @font-face {
             font-family: 'Digital-7';
             src: local('Courier New'), local('Monospace');
@@ -81,7 +80,7 @@
             padding: 15px;
             border: 3px solid var(--primary-color);
             border-radius: 10px;
-            background-color: #e6f7ff; /* Very Light Blue */
+            background-color: #e6f7ff;
             color: var(--primary-color);
             transition: color 0.3s, border-color 0.3s;
         }
@@ -117,7 +116,7 @@
         .start-btn:hover { background-color: #1e7e34; transform: translateY(-1px); }
 
         .stop-btn {
-            background-color: #FFC107; /* Yellow/Orange */
+            background-color: #FFC107;
             color: var(--text-color);
         }
         .stop-btn:hover { background-color: #e0a800; transform: translateY(-1px); }
@@ -237,11 +236,10 @@
 <script>
     // --- UTILITY FUNCTIONS ---
 
-    // Formats milliseconds into HH:MM:SS.MS (for Stopwatch) or M:S (for Timer) or detailed (for Countdown)
+    // Formats milliseconds into different time strings
     function formatTime(ms, type = 'stopwatch') {
         const totalSeconds = Math.floor(ms / 1000);
-        const totalMinutes = Math.floor(totalSeconds / 60);
-
+        
         if (type === 'stopwatch') {
             const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
             const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -251,16 +249,19 @@
         }
 
         if (type === 'timer') {
-            const minutes = totalMinutes.toString().padStart(2, '0');
+            const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
             const seconds = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
             return `${minutes}:${seconds}`;
         }
 
         if (type === 'date-countdown') {
-            const days = Math.floor(totalSeconds / (3600 * 24));
-            const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = Math.floor(totalSeconds % 60);
+            const distance = Math.abs(ms); // Use absolute value for calculations
+            const totalSecs = Math.floor(distance / 1000);
+            
+            const days = Math.floor(totalSecs / (3600 * 24));
+            const hours = Math.floor((totalSecs % (3600 * 24)) / 3600);
+            const minutes = Math.floor((totalSecs % 3600) / 60);
+            const seconds = Math.floor(totalSecs % 60);
 
             if (ms < 0) return `<span style="color:var(--tertiary-color);">EVENT PASSED!</span>`;
 
@@ -273,7 +274,6 @@
     function customizeDisplay(displayId, color) {
         const displayElement = document.getElementById(displayId);
         displayElement.style.color = color;
-        // Also update the border color for a cohesive look
         displayElement.style.borderColor = color;
     }
 
@@ -321,17 +321,16 @@
 
         function initializeTime() {
             const minutes = parseInt(minutesInput.value) || 0;
-            targetTimeMs = minutes * 60 * 1000;
-            totalTimeMs = targetTimeMs;
+            totalTimeMs = minutes * 60 * 1000;
             remainingTimeMs = totalTimeMs;
             display.textContent = formatTime(remainingTimeMs, 'timer');
         }
 
-        initializeTime(); // Initialize on load
+        initializeTime();
 
         function updateDisplay() {
             const now = Date.now();
-            remainingTimeMs = targetTimeMs - (now - (totalTimeMs - remainingTimeMs)); // Calculate remaining based on start time
+            remainingTimeMs = targetTimeMs - now;
 
             if (remainingTimeMs <= 0) {
                 remainingTimeMs = 0;
@@ -346,7 +345,8 @@
         function start() {
             if (intervalId) return;
 
-            // Adjust start time for continuous countdown/pause logic
+            if (remainingTimeMs <= 0) initializeTime(); // Reset if finished
+
             targetTimeMs = Date.now() + remainingTimeMs;
             intervalId = setInterval(updateDisplay, 1000);
         }
@@ -368,7 +368,7 @@
     })();
 
 
-    // --- ADVANCED DATE COUNTDOWN LOGIC ---
+    // --- ADVANCED DATE COUNTDOWN LOGIC (FIXED) ---
     const dateCountdown = (function() {
         let intervalId = null;
         let targetDateMs = 0;
@@ -376,10 +376,9 @@
         const dateInput = document.getElementById('date-countdown-target-input');
         const titleInput = document.getElementById('countdown-title');
 
-        // Set a default target date 30 days from now for a better initial view
+        // Set a default target date 30 days from now
         const defaultDate = new Date();
         defaultDate.setDate(defaultDate.getDate() + 30);
-        // Format to YYYY-MM-DDTHH:MM for input compatibility
         const year = defaultDate.getFullYear();
         const month = String(defaultDate.getMonth() + 1).padStart(2, '0');
         const day = String(defaultDate.getDate()).padStart(2, '0');
@@ -387,13 +386,13 @@
         const minutes = String(defaultDate.getMinutes()).padStart(2, '0');
         dateInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-
         function updateDisplay() {
             const now = new Date().getTime();
             const distance = targetDateMs - now;
             const title = titleInput.value || "Target Event";
-
+            
             if (distance < 0 && intervalId) {
+                // Event finished
                 clearInterval(intervalId);
                 intervalId = null;
                 display.innerHTML = `<strong>${title}</strong><br>${formatTime(distance, 'date-countdown')}`;
@@ -409,7 +408,7 @@
             if (intervalId) return;
 
             if (!dateInput.value) {
-                display.textContent = "Please set a target date and time.";
+                display.textContent = "Please set a valid target date and time.";
                 return;
             }
 
@@ -419,11 +418,14 @@
                 display.textContent = "Invalid date format.";
                 return;
             }
+            
+            // Check if date is in the past, and if so, don't start
+            if (targetDateMs < new Date().getTime()) {
+                display.textContent = "Target time is in the past. Choose a future time.";
+                return;
+            }
 
-            // Immediately run updateDisplay to show time before the 1-second interval kicks in
-            updateDisplay();
-
-            // Set interval to run every 1 second
+            updateDisplay(); // Initial display update
             intervalId = setInterval(updateDisplay, 1000);
         }
 
@@ -431,16 +433,43 @@
             clearInterval(intervalId);
             intervalId = null;
             targetDateMs = 0;
-            display.textContent = "Set a Date and Time Below...";
+            // Re-run initialization to show default/placeholder
+            const title = titleInput.value || "My Event";
+            display.innerHTML = `<strong>${title}</strong><br>Set a Date and Time Below...`;
         }
 
-        // Initialize with default date set in the input
-        targetDateMs = new Date(dateInput.value).getTime();
-        updateDisplay();
+        // Initialize with default content
+        reset(); 
+        
+        // Ensure the countdown resets/updates when the input changes
+        dateInput.addEventListener('change', reset);
+        titleInput.addEventListener('keyup', reset);
 
 
         return { start, reset };
     })();
+    
+    // --- GLOBAL EVENT LISTENERS (THE FIX!) ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Map the data-target names to the actual JS objects
+        const timers = {
+            stopwatch: stopwatch,
+            timer: timer,
+            dateCountdown: dateCountdown
+        };
+
+        // Attach listeners to all control buttons
+        document.querySelectorAll('.controls button').forEach(button => {
+            const action = button.dataset.action;
+            const target = button.dataset.target;
+            
+            if (action && target && timers[target] && typeof timers[target][action] === 'function') {
+                button.addEventListener('click', () => {
+                    timers[target][action]();
+                });
+            }
+        });
+    });
 
 </script>
 
