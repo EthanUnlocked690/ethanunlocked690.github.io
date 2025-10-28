@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pokédex - The Ultimate Version</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+<link href="./Pokédex - The Ultimate Version_files/css2" rel="stylesheet">
 <style>
 /* General Body Styles */
 body {
@@ -896,14 +895,14 @@ h1 {
 </style>
 </head>
 <body>
-<div id="login-modal">
+<div id="login-modal" style="display: none;">
     <div id="login-content">
-        <span class="close-button">&times;</span>
-        <img id="login-logo" src="logo.png" alt="Logo">
-        <button id="login-option" class="login-option">Log In</button>
-        <button id="signup-option" class="login-option">Sign Up</button>
-        <button id="admin-login-option" class="login-option">Admin Log-in</button>
-        <div id="login-form" style="display: none;">
+        <span class="close-button">×</span>
+        <img id="login-logo" src="file:///C:/Users/ethan.ioannou30/Downloads/logo.png" alt="Logo">
+        <button id="login-option" class="login-option" style="background: rgb(194, 0, 13);">Log In</button>
+        <button id="signup-option" class="login-option" style="background: rgb(228, 0, 15);">Sign Up</button>
+        <button id="admin-login-option" class="login-option" style="background: rgb(228, 0, 15);">Admin Log-in</button>
+        <div id="login-form" style="display: block;">
             <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
             <button id="login-button" class="login-option">Submit</button>
@@ -929,7 +928,7 @@ h1 {
 
 <div id="profile-modal">
     <div id="profile-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Profile</h2>
         <p>Premium: <span id="premium-status">No</span></p>
         <p>Caught Pokémon: <span id="caught-count">0</span></p>
@@ -948,7 +947,7 @@ h1 {
 
 <div id="message-modal">
     <div id="message-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Message <span id="message-recipient"></span></h2>
         <div id="quick-chat-options">
             <button class="quick-chat-option" data-message="Hey, want to battle?">Hey, want to battle?</button>
@@ -962,7 +961,7 @@ h1 {
 
 <div id="battle-modal">
     <div id="battle-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Battle</h2>
         <div id="team-rocket"></div>
         <div id="battle-friend"></div>
@@ -971,7 +970,7 @@ h1 {
 
 <div id="caught-pokemon-modal">
     <div id="caught-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Caught Pokémon</h2>
         <div id="caught-list"></div>
     </div>
@@ -979,7 +978,7 @@ h1 {
 
 <div id="help-modal">
     <div id="help-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Help</h2>
         <p>Welcome to the Ultimate Pokédex! Browse Pokémon, catch them in a Pokémon GO-style simulation, battle Team Rocket or friends, and play Guess the Pokémon!</p>
     </div>
@@ -987,17 +986,17 @@ h1 {
 
 <div id="guess-modal">
     <div id="guess-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Guess the Pokémon</h2>
         <div id="guess-image"></div>
-        <input type="text" id="guess-input" placeholder="Who's that Pokémon?">
+        <input type="text" id="guess-input" placeholder="Who&#39;s that Pokémon?">
         <button id="guess-submit">Submit</button>
     </div>
 </div>
 
 <div id="edit-modal">
     <div id="edit-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Propose Changes</h2>
         <p>Admin can propose changes here.</p>
     </div>
@@ -1005,7 +1004,7 @@ h1 {
 
 <div id="catch-modal">
     <div id="catch-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Catch a Pokémon</h2>
         <div id="pokemon-area"></div>
         <button id="berry-button"></button>
@@ -1017,7 +1016,7 @@ h1 {
 
 <div id="payment-modal">
     <div id="payment-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <h2>Premium Subscription</h2>
         <p>Upgrade to Premium for unlimited catches! Cancel anytime.</p>
         <p id="weekly-price"><strong>$20/week</strong></p>
@@ -1051,7 +1050,7 @@ h1 {
 </div>
 
 <div class="top-navbar">
-    <a href="turtle.html">Back to others</a>
+    <a href="file:///C:/Users/ethan.ioannou30/Downloads/turtle.html">Back to others</a>
 </div>
 
 <div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; position: fixed; top: 10px; right: 10px; display: none;"></div>
@@ -1070,6 +1069,39 @@ h1 {
 </div>
 
 <div class="search-container">
+    <div id="sortAndFilterContainer" style="margin-bottom: 10px; display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+        <select id="sortCriteria" class="nav-button">
+            <option value="id">Sort by Pokédex #</option>
+            <option value="name">Sort by Name</option>
+            <option value="height">Sort by Size (Height)</option>
+        </select>
+        <select id="filterType" class="nav-button">
+            <option value="all">Filter by Type (All)</option>
+            <option value="normal">Normal</option>
+            <option value="fire">Fire</option>
+            <option value="water">Water</option>
+            <option value="electric">Electric</option>
+            <option value="grass">Grass</option>
+            <option value="ice">Ice</option>
+            <option value="fighting">Fighting</option>
+            <option value="poison">Poison</option>
+            <option value="ground">Ground</option>
+            <option value="flying">Flying</option>
+            <option value="psychic">Psychic</option>
+            <option value="bug">Bug</option>
+            <option value="rock">Rock</option>
+            <option value="ghost">Ghost</option>
+            <option value="dragon">Dragon</option>
+            <option value="dark">Dark</option>
+            <option value="steel">Steel</option>
+            <option value="fairy">Fairy</option>
+        </select>
+        <select id="filterForms" class="nav-button">
+            <option value="all">Filter by Forms (All)</option>
+            <option value="mega">Has Mega Evolution</option>
+            <option value="gmax">Has G-Max Form</option>
+        </select>
+    </div>
     <input type="text" id="searchInput" placeholder="Search for a Pokémon...">
 </div>
 
@@ -1080,7 +1112,7 @@ h1 {
 
 <div id="pokemonModal" class="modal">
     <div class="modal-content">
-        <span class="close-button">&times;</span>
+        <span class="close-button">×</span>
         <div id="modal-body"></div>
     </div>
 </div>
@@ -1135,6 +1167,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const claimTrial = document.getElementById('claim-trial');
     const cancelPremium = document.getElementById('cancel-premium');
     const trialSection = document.getElementById('trial-section');
+    
+    // NEW FILTERING ELEMENTS
+    const sortCriteria = document.getElementById('sortCriteria');
+    const filterType = document.getElementById('filterType');
+    const filterForms = document.getElementById('filterForms');
+
 
     let allPokemon = [];
     const cachedSpeciesData = {};
@@ -1146,6 +1184,76 @@ document.addEventListener('DOMContentLoaded', () => {
     let isPremium = false;
     let loginTimestamp = null;
     let currentExtendWeeks = 1;
+    
+    // NEW VARIABLES FOR COMBINED FILTERING/SORTING
+    let currentCategoryPokemon = []; // Holds the list filtered by the primary category buttons
+    let currentFilterType = 'all'; // The active category button (e.g., 'mega', 'shiny')
+
+    // =========================================================================================
+    // ********** START OF NEW MEGA POKÉMON DATA INJECTION **********
+
+    // Data for new Mega Evolutions in Pokémon Legends: Z-A (Manually added as they are not yet in PokeAPI)
+    const newLegendsZAMegaData = [
+        { id: 652, name: 'chesnaught-mega', types: ['grass', 'fighting'] },
+        { id: 655, name: 'delphox-mega', types: ['fire', 'psychic'] },
+        { id: 658, name: 'greninja-mega', types: ['water', 'dark'] },
+        { id: 149, name: 'dragonite-mega', types: ['dragon', 'flying'] },
+        { id: 71, name: 'victreebel-mega', types: ['grass', 'poison'] },
+        { id: 701, name: 'hawlucha-mega', types: ['fighting', 'flying'] },
+        { id: 687, name: 'malamar-mega', types: ['dark', 'psychic'] },
+        // Raichu has two forms
+        { id: 26, name: 'raichu-mega-x', types: ['electric'] },
+        { id: 26, name: 'raichu-mega-y', types: ['electric'] },
+        
+        // Other reported new Mega Evolutions
+        { id: 612, name: 'chandelure-mega', types: ['ghost', 'fire'] },
+        { id: 780, name: 'drampa-mega', types: ['normal', 'dragon'] },
+        { id: 604, name: 'eelektross-mega', types: ['electric'] },
+        { id: 500, name: 'emboar-mega', types: ['fire', 'fighting'] },
+        { id: 530, name: 'excadrill-mega', types: ['ground', 'steel'] },
+        { id: 870, name: 'falinks-mega', types: ['fighting'] },
+        { id: 718, name: 'zygarde-mega', types: ['dragon', 'ground'] },
+        { id: 689, name: 'barbaracle-mega', types: ['rock', 'fighting'] },
+        { id: 36, name: 'clefable-mega', types: ['fairy', 'flying'] },
+        { id: 691, name: 'dragalge-mega', types: ['poison', 'dragon'] },
+        { id: 160, name: 'feraligatr-mega', types: ['water', 'dragon'] },
+        { id: 670, name: 'floette-eternal-mega', types: ['fairy'] }, // Using base Floette ID
+        { id: 478, name: 'froslass-mega', types: ['ice', 'ghost'] },
+        { id: 154, name: 'meganium-mega', types: ['grass', 'fairy'] },
+        { id: 668, name: 'pyroar-mega', types: ['fire', 'normal'] },
+        { id: 545, name: 'scolipede-mega', types: ['bug', 'poison'] },
+        { id: 560, name: 'scrafty-mega', types: ['dark', 'fighting'] },
+        { id: 227, name: 'skarmory-mega', types: ['steel', 'flying'] },
+        { id: 121, name: 'starmie-mega', types: ['water', 'psychic'] },
+    ];
+
+    function createMegaPlaceholder(data) {
+        // Creates a placeholder object that mimics the PokeAPI structure
+        // so it can be filtered by the 'mega' category and displayed.
+        return {
+            id: data.id,
+            // Name MUST contain '-mega' or '-primal' to be recognized by the 'mega' filter.
+            name: data.name, 
+            is_default: false,
+            types: data.types.map(t => ({ type: { name: t } })),
+            // Placeholder sprite: Using a dummy URL for now. 
+            sprites: {
+                front_default: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/0.png',
+            },
+            // Minimal required fields to prevent errors when viewing details
+            stats: Array(6).fill({ base_stat: 100, stat: { name: 'unknown' } }),
+            abilities: [],
+            moves: [],
+            // Custom flag to easily identify manually added entries
+            is_legends_za_mega: true,
+            height: 10, // Placeholder for size filter (1.0m)
+            weight: 1000, // Placeholder for size filter (100.0kg)
+        };
+    }
+
+    // ********** END OF NEW MEGA POKÉMON DATA INJECTION **********
+    // =========================================================================================
+
 
     // Device detection for payment system
     const isMobileDevice = () => {
@@ -1262,6 +1370,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
             allPokemon = await Promise.all(pokemonPromises);
 
+            // *** INJECTION OF NEW MEGA POKÉMON from Z-A ***
+            const newMegaPlaceholders = newLegendsZAMegaData.map(data => createMegaPlaceholder(data));
+            
+            newMegaPlaceholders.forEach(newMega => {
+                // Only add if it doesn't already exist (in case the API updates later)
+                if (!allPokemon.some(p => p.name === newMega.name)) {
+                    allPokemon.push(newMega);
+                }
+            });
+            // *** END INJECTION ***
+            
             loadingMessage.style.display = 'none';
             filterAndDisplayPokemon('all');
         } catch (error) {
@@ -1271,15 +1390,19 @@ document.addEventListener('DOMContentLoaded', () => {
             retryButton.style.display = 'block';
         }
     };
-
+    
+    // NEW: Function to handle primary category filters
     const filterAndDisplayPokemon = async (category) => {
         pokedexContainer.innerHTML = '';
         loadingMessage.style.display = 'block';
+        
+        // Update the global category filter
+        currentFilterType = category;
 
         let currentPokemonToDisplay;
         switch (category) {
             case 'all': currentPokemonToDisplay = allPokemon; break;
-            case 'mega': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal')); break;
+            case 'mega': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-mega') || p.name.includes('-primal') || p.is_legends_za_mega); break;
             case 'regional': currentPokemonToDisplay = allPokemon.filter(p => p.name.includes('-alola') || p.name.includes('-galar') || p.name.includes('-hisui')); break;
             case 'shiny': currentPokemonToDisplay = allPokemon.filter(p => p.sprites.front_shiny || p.sprites.other['official-artwork'].front_shiny); break;
             case 'legendary': 
@@ -1306,11 +1429,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         loadingMessage.style.display = 'none';
-        displayPokemon(currentPokemonToDisplay, category);
+        
+        // Store the result of the category filter
+        currentCategoryPokemon = currentPokemonToDisplay; 
+        // Apply all secondary filters and sort
+        applyFiltersAndSort();
     };
 
     const getPokemonImageUrl = (pokemon, isShiny = false) => {
+        // ... (existing getPokemonImageUrl logic)
         const name = pokemon.name;
+        // NEW: Use placeholder sprite for custom Mega forms
+        if (pokemon.is_legends_za_mega && !isShiny) {
+            return pokemon.sprites.front_default;
+        }
+        
         const isMegaOrPrimal = name.includes('-mega') || name.includes('-primal');
         const isRegional = name.includes('-alola') || name.includes('-galar') || name.includes('-hisui');
         const isGmax = name.includes('-gmax');
@@ -1327,6 +1460,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayPokemon = (pokemonList, category) => {
         pokedexContainer.innerHTML = '';
         const displayShiny = category === 'shiny';
+        
+        // ... (existing displayPokemon logic)
         pokemonList.forEach(pokemon => {
             const pokemonCard = document.createElement('div');
             pokemonCard.classList.add('pokemon-card');
@@ -1337,6 +1472,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const imageUrl = getPokemonImageUrl(pokemon, displayShiny);
 
             let displayName = name.replace(/-gmax|-amped/, '').replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(/-primal/, ' Primal').replace(/-alola/, ' Alola').replace(/-galar/, ' Galar').replace(/-hisui/, ' Hisui').replace(/-battle-bond/, '').replace(/-original-cap/, '');
+            
+            // NEW: Clean up custom mega names for display
+            if (pokemon.is_legends_za_mega) {
+                displayName = displayName.replace(/-mega-x/, ' Mega X').replace(/-mega-y/, ' Mega Y').replace(/-mega/, ' Mega').replace(getSpeciesNameFromVarietyName(name) + ' ', '');
+                displayName = getSpeciesNameFromVarietyName(name) + ' ' + displayName;
+            }
 
             pokemonCard.innerHTML = `
                 <div class="pokemon-id">#${id}</div>
@@ -1349,8 +1490,82 @@ document.addEventListener('DOMContentLoaded', () => {
             pokedexContainer.appendChild(pokemonCard);
         });
     };
+    
+    // NEW: Function to apply search, sorting, and secondary filters
+    const applyFiltersAndSort = () => {
+        // Start with the list filtered by the primary category button (e.g., 'mega' or 'all')
+        let list = [...currentCategoryPokemon]; 
+
+        // 1. Apply Search Filter
+        const search = searchInput.value.toLowerCase().trim();
+        if (search) {
+            list = list.filter(p => p.name.includes(search) || p.id.toString() === search);
+        }
+
+        // 2. Apply Type Filter
+        const selectedType = filterType.value;
+        if (selectedType !== 'all') {
+            list = list.filter(p => p.types.some(t => t.type.name === selectedType));
+        }
+        
+        // 3. Apply Form Filter (Has Mega / Has G-Max) - Applied to base forms only
+        const selectedForm = filterForms.value;
+        if (selectedForm === 'mega') {
+            // Get the list of all base Pokémon names that have a Mega form (including custom ones)
+            const megaPokemonNames = allPokemon
+                .filter(p => p.name.includes('-mega') || p.name.includes('-primal') || p.is_legends_za_mega)
+                .map(p => getSpeciesNameFromVarietyName(p.name));
+            
+            // Filter the current list to only show base forms that are in the megaPokemonNames list
+            list = list.filter(p => {
+                const baseName = getSpeciesNameFromVarietyName(p.name);
+                // Check if it's the default form OR a form that should be displayed in the current category
+                const isDisplayableForm = !p.name.includes('-') || currentFilterType !== 'all';
+
+                // We want to show the base form (or special form if category is active)
+                return isDisplayableForm && megaPokemonNames.includes(baseName);
+            });
+        } else if (selectedForm === 'gmax') {
+            // Get the list of all base Pokémon names that have a G-Max form
+            const gmaxPokemonNames = allPokemon
+                .filter(p => p.name.includes('-gmax'))
+                .map(p => getSpeciesNameFromVarietyName(p.name));
+                
+            // Filter the current list to only show base forms that are in the gmaxPokemonNames list
+            list = list.filter(p => {
+                const baseName = getSpeciesNameFromVarietyName(p.name);
+                const isDisplayableForm = !p.name.includes('-') || currentFilterType !== 'all';
+                return isDisplayableForm && gmaxPokemonNames.includes(baseName);
+            });
+        }
+        
+        // 4. Apply Sort
+        const sort = sortCriteria.value;
+        list.sort((a, b) => {
+            if (sort === 'name') {
+                return a.name.localeCompare(b.name);
+            } else if (sort === 'height') {
+                // Height is in decimeters (dm)
+                return a.height - b.height;
+            } else { // 'id'
+                return a.id - b.id;
+            }
+        });
+
+        // 5. Display the final list
+        const displayShiny = currentFilterType === 'shiny';
+        displayPokemon(list, displayShiny ? 'shiny' : 'all');
+    };
+    
+    // Attach event listeners for new filtering/sorting controls
+    sortCriteria.addEventListener('change', applyFiltersAndSort);
+    filterType.addEventListener('change', applyFiltersAndSort);
+    filterForms.addEventListener('change', applyFiltersAndSort);
+    searchInput.addEventListener('input', applyFiltersAndSort);
+
 
     const fetchTcgCard = async (pokemonName) => {
+        // ... (existing fetchTcgCard logic)
         try {
             const searchName = pokemonName.split('-')[0];
             const url = `https://api.pokemontcg.io/v2/cards?q=name:${searchName}`;
@@ -1364,6 +1579,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getAttackSound = async (pokemon) => {
+        // ... (existing getAttackSound logic)
         try {
             const move = pokemon.moves[0]?.move.name || 'tackle';
             return `https://play.pokemonshowdown.com/audio/cries/${move}.mp3`;
@@ -1373,11 +1589,21 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showPokemonDetails = async (pokemon, isShiny = false) => {
+        // ... (existing showPokemonDetails logic)
         try {
             const speciesName = getSpeciesNameFromVarietyName(pokemon.name);
             const speciesData = await getSpeciesData(speciesName);
             if (!speciesData) throw new Error(`No species data for ${speciesName}`);
-            const varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+            
+            // Custom megas don't have varieties in the API, so we manually check the list
+            let varieties;
+            if (pokemon.is_legends_za_mega) {
+                // For custom megas, only show the custom mega form as a "variety"
+                varieties = [pokemon];
+            } else {
+                varieties = await Promise.all(speciesData.varieties.map(v => getPokemonData(v.pokemon.name)));
+            }
+            
             const evolutionChain = await getEvolutionChain(speciesData);
             renderModalContent(pokemon, speciesData, varieties, isShiny, evolutionChain);
             pokemonModal.style.display = 'block';
@@ -1422,6 +1648,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const getVarietyButtonName = (varietyName) => {
+        // ... (existing getVarietyButtonName logic)
         if (varietyName.includes('-mega-x')) return 'Mega X';
         if (varietyName.includes('-mega-y')) return 'Mega Y';
         if (varietyName.includes('-mega')) return 'Mega';
@@ -1434,6 +1661,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderModalContent = (pokemon, speciesData, varieties, isShiny = false, evolutionChain) => {
+        // ... (existing renderModalContent logic)
         const name = pokemon.name;
         const id = pokemon.id.toString().padStart(3, '0');
         const types = pokemon.types.map(typeInfo => typeInfo.type.name);
@@ -1449,7 +1677,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/\n/g, ' ') : 'No description available.';
         const origin = speciesData.generation ? speciesData.generation.name.replace('generation-', '') : 'Unknown';
 
-        const megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
+        // Filter varieties manually for custom Megas
+        let megaForms = varieties.filter(v => v.name.includes('-mega') || v.name.includes('-primal'));
+        // If the current pokemon is a custom mega, add it to the list of forms for button rendering
+        if (pokemon.is_legends_za_mega && !megaForms.some(v => v.name === pokemon.name)) {
+            megaForms.push(pokemon);
+        }
+        
         const regionalForms = varieties.filter(v => v.name.includes('-alola') || v.name.includes('-galar') || v.name.includes('-hisui'));
         const gmaxForms = varieties.filter(v => v.name.includes('-gmax'));
         const normalForm = varieties.find(v => !v.name.includes('-') || v.name === 'basculin-red-striped' || v.name === 'minior-red-meteor');
@@ -1470,7 +1704,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <h4>Evolution Chain</h4>
                     <div class="evolution-chain">
                         ${evolutionChain.map(evo => `
-                            <div class="evolution-item ${evo.name === pokemon.name ? 'current' : ''}" data-name="${evo.name}">
+                            <div class="evolution-item ${evo.name === getSpeciesNameFromVarietyName(pokemon.name) ? 'current' : ''}" data-name="${evo.name}">
                                 <img src="${getPokemonImageUrl(evo.data)}" alt="${evo.name}">
                                 <div class="evolution-name">${evo.name}</div>
                             </div>
@@ -1542,6 +1776,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const checkLoginTimeout = () => {
+        // ... (existing checkLoginTimeout logic)
         if (loginTimestamp && (Date.now() - loginTimestamp) > 7 * 24 * 60 * 60 * 1000) {
             user = null;
             localStorage.removeItem('currentUser');
@@ -1552,6 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showLoginForm = () => {
+        // ... (existing showLoginForm logic)
         loginForm.style.display = 'block';
         signupForm.style.display = 'none';
         adminLoginForm.style.display = 'none';
@@ -1561,6 +1797,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const showAdminLoginForm = () => {
+        // ... (existing showAdminLoginForm logic)
         adminLoginForm.style.display = 'block';
         loginForm.style.display = 'none';
         signupForm.style.display = 'none';
@@ -1570,6 +1807,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateFriendsList = () => {
+        // ... (existing updateFriendsList logic)
         const friendsList = document.getElementById('friends-list');
         if (!friendsList) return;
         
@@ -1599,6 +1837,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginOption.addEventListener('click', showLoginForm);
 
     signupOption.addEventListener('click', () => {
+        // ... (existing signupOption logic)
         signupForm.style.display = 'block';
         loginForm.style.display = 'none';
         adminLoginForm.style.display = 'none';
@@ -1610,6 +1849,7 @@ document.addEventListener('DOMContentLoaded', () => {
     adminLoginOption.addEventListener('click', showAdminLoginForm);
 
     loginButton.addEventListener('click', () => {
+        // ... (existing loginButton logic)
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         if (users[username] && users[username].password === password) {
@@ -1642,6 +1882,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     adminLoginButton.addEventListener('click', () => {
+        // ... (existing adminLoginButton logic)
         const username = document.getElementById('admin-username').value;
         const password = document.getElementById('admin-password').value;
         if (username === adminCredentials.username && password === adminCredentials.password) {
@@ -1663,6 +1904,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     submitSignup.addEventListener('click', () => {
+        // ... (existing submitSignup logic)
         const username = document.getElementById('signup-name').value;
         const password = document.getElementById('signup-password').value;
         const profileName = document.getElementById('profile-name').value;
@@ -1712,6 +1954,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Profile functionality
     profile.addEventListener('click', () => {
+        // ... (existing profile click logic)
         if (!user) {
             alert('Please log in first!');
             return;
@@ -1729,6 +1972,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cancelPremium.addEventListener('click', () => {
+        // ... (existing cancelPremium logic)
         if (confirm('Are you sure you want to cancel your premium subscription? You can resubscribe anytime.')) {
             user.isPremium = false;
             user.premiumExpiry = null;
@@ -1745,6 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     friendSearch.addEventListener('input', () => {
+        // ... (existing friendSearch input logic)
         const searchTerm = friendSearch.value.toLowerCase().trim();
         const friendResults = document.getElementById('friend-results');
         
@@ -1773,6 +2018,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', (e) => {
+        // ... (existing document click logic)
         if (e.target.closest('.friend-result')) {
             const friendResult = e.target.closest('.friend-result');
             const friendUsername = friendResult.dataset.username;
@@ -1790,6 +2036,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('friends-list').addEventListener('click', (e) => {
+        // ... (existing friends-list click logic)
         if (e.target.classList.contains('message-friend')) {
             const friendUsername = e.target.dataset.username;
             messageRecipient.textContent = friendUsername;
@@ -1803,6 +2050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('online-status').addEventListener('change', (e) => {
+        // ... (existing online-status change logic)
         if (user) {
             user.onlineStatus = e.target.value;
             users[user.username].onlineStatus = user.onlineStatus;
@@ -1812,6 +2060,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sendMessageButton.addEventListener('click', () => {
+        // ... (existing sendMessageButton click logic)
         const message = messageInput.value.trim();
         if (message) {
             alert(`Message sent to ${messageRecipient.textContent}: ${message}`);
@@ -1821,6 +2070,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('quick-chat-options').addEventListener('click', (e) => {
+        // ... (existing quick-chat-options click logic)
         if (e.target.classList.contains('quick-chat-option')) {
             const message = e.target.dataset.message;
             alert(`Message sent to ${messageRecipient.textContent}: ${message}`);
@@ -1830,15 +2080,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Menu functionality
     menuButton.addEventListener('click', () => {
+        // ... (existing menuButton click logic)
         menuOptions.style.display = menuOptions.style.display === 'flex' ? 'none' : 'flex';
     });
 
     document.getElementById('help-option').addEventListener('click', () => {
+        // ... (existing help-option click logic)
         helpModal.style.display = 'block';
         menuOptions.style.display = 'none';
     });
 
     document.getElementById('catch-option').addEventListener('click', () => {
+        // ... (existing catch-option click logic)
         catchModal.style.display = 'block';
         menuOptions.style.display = 'none';
         dailyLeft.textContent = isPremium ? '∞' : dailyCatches;
@@ -1846,17 +2099,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('guess-option').addEventListener('click', () => {
+        // ... (existing guess-option click logic)
         guessModal.style.display = 'block';
         menuOptions.style.display = 'none';
         startGuessGame();
     });
 
     document.getElementById('battle-option').addEventListener('click', () => {
+        // ... (existing battle-option click logic)
         battleModal.style.display = 'block';
         menuOptions.style.display = 'none';
     });
 
     editOption.addEventListener('click', () => {
+        // ... (existing editOption click logic)
         if (user && user.isAdmin) {
             editModal.style.display = 'block';
             menuOptions.style.display = 'none';
@@ -1866,6 +2122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('caught-option').addEventListener('click', () => {
+        // ... (existing caught-option click logic)
         displayCaughtPokemon();
         caughtPokemonModal.style.display = 'block';
         menuOptions.style.display = 'none';
@@ -1873,6 +2130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Catch Pokemon functionality
     const spawnRandomPokemon = () => {
+        // ... (existing spawnRandomPokemon logic)
         const randomPokemon = allPokemon[Math.floor(Math.random() * allPokemon.length)];
         const pokemonArea = document.getElementById('pokemon-area');
         pokemonArea.innerHTML = `
@@ -1886,12 +2144,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let isDragging = false;
 
     pokeball.addEventListener('mousedown', (e) => {
+        // ... (existing pokeball mousedown logic)
         isDragging = true;
         pokeball.classList.add('dragging');
         e.preventDefault();
     });
 
     document.addEventListener('mousemove', (e) => {
+        // ... (existing document mousemove logic)
         if (isDragging) {
             const rect = document.getElementById('catch-content').getBoundingClientRect();
             const x = e.clientX - rect.left - 30;
@@ -1903,6 +2163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('mouseup', () => {
+        // ... (existing document mouseup logic)
         if (isDragging) {
             isDragging = false;
             pokeball.classList.remove('dragging');
@@ -1927,6 +2188,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const attemptCatch = (pokemonImg) => {
+        // ... (existing attemptCatch logic)
         pokeball.classList.add('shake');
         setTimeout(() => {
             pokeball.classList.remove('shake');
@@ -1960,17 +2222,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const resetPokeball = () => {
+        // ... (existing resetPokeball logic)
         pokeball.style.left = '50%';
         pokeball.style.top = '';
         pokeball.style.transform = 'translateX(-50%)';
     };
 
     berryButton.addEventListener('click', () => {
+        // ... (existing berryButton click logic)
         alert('You used a berry! The Pokémon is easier to catch now.');
         // Optionally, you can increase the catch success rate here.
     });
 
     payUnlimited.addEventListener('click', () => {
+        // ... (existing payUnlimited click logic)
         paymentModal.style.display = 'block';
         let discount = getHolidayDiscount();
         let price = 20;
@@ -1992,6 +2257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     claimTrial.addEventListener('click', () => {
+        // ... (existing claimTrial click logic)
         if (user && !user.trialUsed) {
             user.isPremium = true;
             user.trialUsed = true;
@@ -2007,6 +2273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     confirmPayment.addEventListener('click', () => {
+        // ... (existing confirmPayment click logic)
         // Payment validation logic would go here (omitted for demo)
         if (user) {
             user.isPremium = true;
@@ -2022,11 +2289,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     mobileConfirm.addEventListener('click', () => {
+        // ... (existing mobileConfirm click logic)
         confirmPayment.click();
     });
 
     // Modal close handlers
     document.querySelectorAll('.close-button').forEach(btn => {
+        // ... (existing close-button click logic)
         btn.addEventListener('click', (e) => {
             e.target.closest('.modal, #login-modal').style.display = 'none';
             if (e.target.closest('#login-modal')) {
@@ -2038,6 +2307,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal click outside to close
     window.onclick = function(event) {
+        // ... (existing window onclick logic)
         document.querySelectorAll('.modal, #login-modal').forEach(modal => {
             if (event.target == modal) {
                 modal.style.display = 'none';
@@ -2045,24 +2315,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Search functionality
-    searchInput.addEventListener('input', () => {
-        const search = searchInput.value.toLowerCase().trim();
-        const filtered = allPokemon.filter(p => p.name.includes(search));
-        displayPokemon(filtered, 'all');
-    });
-
     // Navigation category buttons
     navButtons.forEach(btn => {
         btn.addEventListener('click', async function() {
             navButtons.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
+            // Reset secondary filters/sort when changing primary category
+            sortCriteria.value = 'id';
+            filterType.value = 'all';
+            filterForms.value = 'all';
+            searchInput.value = '';
+            
             await filterAndDisplayPokemon(this.dataset.category);
         });
     });
 
     // Pokémon card click for modal
     pokedexContainer.addEventListener('click', async (e) => {
+        // ... (existing pokedexContainer click logic)
         const card = e.target.closest('.pokemon-card');
         if (card) {
             const id = card.dataset.id;
@@ -2073,6 +2343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Variety and shiny buttons in modal
     modalBody.addEventListener('click', async (e) => {
+        // ... (existing modalBody click logic)
         if (e.target.classList.contains('variety-button')) {
             const varietyName = e.target.dataset.varietyName;
             const isShiny = e.target.classList.contains('shiny-button');
@@ -2090,6 +2361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Guess the Pokémon game logic
     function startGuessGame() {
+        // ... (existing startGuessGame logic)
         const guessImage = document.getElementById('guess-image');
         const guessInput = document.getElementById('guess-input');
         const guessSubmit = document.getElementById('guess-submit');
@@ -2109,6 +2381,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Display caught Pokémon
     function displayCaughtPokemon() {
+        // ... (existing displayCaughtPokemon logic)
         const caughtList = document.getElementById('caught-list');
         if (!user || !user.caught || user.caught.length === 0) {
             caughtList.innerHTML = '<p>You have not caught any Pokémon yet!</p>';
@@ -2146,5 +2419,6 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 });
 </script>
-</body>
-</html>
+
+
+</body></html>
