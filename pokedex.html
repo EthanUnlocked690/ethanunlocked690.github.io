@@ -1,1088 +1,435 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex - The Ultimate Version</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ===================================================================
+           NOTE: This CSS is based on your original file's structure.
+           You may need to add more styles for .modal-sections, .chain-diagram,
+           .form-item, and .shiny-toggle-button for perfect visual alignment!
+           =================================================================== */
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pokédex - The Ultimate Version</title>
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="./Pokédex - The Ultimate Version_files/css2" rel="stylesheet">
-<style>
-/* General Body Styles */
-body {
-    font-family: 'Roboto Mono', monospace;
-    background-color: #f0f0f0;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-    background-image: url('pokedex-top.png'), url('pokedex-bottom.png');
-    background-position: top center, bottom center;
-    background-repeat: no-repeat;
-    background-size: contain;
-}
+        /* General Body Styles */
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            /* Placeholder background images if they are local */
+            /* background-image: url('pokedex-top.png'), url('pokedex-bottom.png');
+            background-position: top center, bottom center;
+            background-repeat: no-repeat;
+            background-size: contain; */
+        }
 
-h1 {
-    color: #e4000f;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
+        h1 {
+            color: #e4000f;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
 
-#loadingMessage {
-    font-size: 1.2rem;
-    color: #555;
-    display: none;
-}
+        #loadingMessage {
+            font-size: 1.2rem;
+            color: #555;
+            display: none;
+        }
 
-#loadingMessage.error {
-    color: #e4000f;
-}
+        #loadingMessage.error {
+            color: #e4000f;
+        }
 
-#retryButton {
-    background-color: #e4000f;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 10px;
-    display: none;
-}
+        /* Profile/Logout Area */
+        #profile {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #333;
+            background-size: cover;
+            cursor: pointer;
+            display: none; /* Hidden by default, shown on login */
+            border: 3px solid #e4000f;
+        }
 
-#retryButton:hover {
-    background-color: #c2000d;
-}
+        /* Search and Controls */
+        #controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
 
-/* Top Navbar */
-.top-navbar {
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    text-align: left;
-}
+        #searchInput {
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 300px;
+        }
 
-.top-navbar a {
-    color: #fff;
-    text-decoration: none;
-    font-size: 16px;
-}
+        /* Pokédex Grid */
+        .pokedex-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-.nav-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-    gap: 10px;
-}
+        .pokemon-card {
+            background-color: #fff;
+            border: 3px solid #333;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: capitalize;
+            box-shadow: 4px 4px 0 #888;
+        }
 
-.nav-button {
-    background-color: #333;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
+        .pokemon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 6px 6px 0 #e4000f;
+        }
 
-.nav-button:hover,
-.nav-button.active {
-    background-color: #e4000f;
-}
+        .pokemon-card img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
 
-/* Search Bar */
-.search-container {
-    margin-bottom: 20px;
-}
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
 
-#searchInput {
-    width: 80%;
-    max-width: 400px;
-    padding: 10px 15px;
-    border: 2px solid #ccc;
-    border-radius: 25px;
-    font-size: 16px;
-    font-family: 'Roboto Mono', monospace;
-    outline: none;
-    transition: border-color 0.3s;
-}
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border: 5px solid #e4000f;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 900px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            position: relative;
+        }
 
-#searchInput:focus {
-    border-color: #e4000f;
-}
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
 
-/* Pokédex Container (Grid) */
-.pokedex-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
+        .modal-info {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
 
-/* Pokémon Card */
-.pokemon-card {
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    padding: 20px;
-    text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-}
+        .modal-info img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            background-color: #f7f7f7;
+            border-radius: 10px;
+            padding: 10px;
+        }
 
-.pokemon-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-}
+        .modal-details {
+            flex-grow: 1;
+        }
 
-.pokemon-card .pokemon-id {
-    font-size: 14px;
-    color: #888;
-    font-weight: bold;
-}
+        .modal-id {
+            color: #888;
+            font-size: 1.2rem;
+        }
 
-.pokemon-card img {
-    width: 150px;
-    height: 150px;
-    margin: 10px auto;
-    display: block;
-}
+        /* Types Styling */
+        .modal-types {
+            margin: 10px 0;
+        }
 
-.pokemon-card .pokemon-name {
-    margin: 15px 0 10px;
-    font-size: 22px;
-    font-weight: bold;
-    text-transform: capitalize;
-}
+        .type {
+            display: inline-block;
+            padding: 5px 10px;
+            margin-right: 5px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
 
-/* Types Container */
-.pokemon-types {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-}
+        /* Type Colors (Add more as needed) */
+        .normal { background-color: #A8A77A; }
+        .fire { background-color: #EE8130; }
+        .water { background-color: #6390F0; }
+        .grass { background-color: #7AC74C; }
+        .electric { background-color: #F7D02C; }
+        .ice { background-color: #96D9D6; }
+        .fighting { background-color: #C22E28; }
+        .poison { background-color: #A33EA1; }
+        .ground { background-color: #E2BF65; }
+        .flying { background-color: #A98FF3; }
+        .psychic { background-color: #F95587; }
+        .bug { background-color: #A6B91A; }
+        .rock { background-color: #B6A136; }
+        .ghost { background-color: #735797; }
+        .dragon { background-color: #6F35FC; }
+        .steel { background-color: #B7B7CE; }
+        .fairy { background-color: #D685AD; }
+        .dark { background-color: #705746; }
 
-.type {
-    padding: 5px 15px;
-    border-radius: 15px;
-    color: white;
-    font-size: 14px;
-    text-transform: uppercase;
-    font-weight: bold;
-}
+        /* Stats List */
+        .stats-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
 
-/* Pokémon Type Colors */
-.type.normal { background-color: #A8A77A; }
-.type.fire { background-color: #EE8130; }
-.type.water { background-color: #6390F0; }
-.type.electric { background-color: #F7D02C; }
-.type.grass { background-color: #7AC74C; }
-.type.ice { background-color: #96D9D6; }
-.type.fighting { background-color: #C22E28; }
-.type.poison { background-color: #A33EA1; }
-.type.ground { background-color: #E2BF65; }
-.type.flying { background-color: #A98FF3; }
-.type.psychic { background-color: #F95587; }
-.type.bug { background-color: #A6B91A; }
-.type.rock { background-color: #B6A136; }
-.type.ghost { background-color: #735797; }
-.type.dragon { background-color: #6F35FC; }
-.type.dark { background-color: #705746; }
-.type.steel { background-color: #B7B7CE; }
-.type.fairy { background-color: #D685AD; }
+        .stats-list li {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding: 5px 0;
+        }
 
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 10;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-    backdrop-filter: blur(5px);
-}
+        /* Variety Buttons */
+        .variety-buttons {
+            margin: 15px 0;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
 
-.modal-content {
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 30px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
-    border-radius: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative;
-    animation-name: animatetop;
-    animation-duration: 0.4s;
-    text-align: left;
-}
+        .variety-button {
+            padding: 5px 10px;
+            border: 2px solid #888;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
 
-@keyframes animatetop {
-    from {top: -300px; opacity: 0}
-    to {top: 0; opacity: 1}
-}
+        .variety-button.active {
+            background-color: #e4000f;
+            color: white;
+            border-color: #e4000f;
+        }
 
-.close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
+        /* New: Shiny Toggle Button */
+        .modal-controls {
+            text-align: center;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        .shiny-toggle-button {
+            padding: 8px 15px;
+            background-color: #f7d02c; /* Gold/Yellow color for shiny */
+            color: #333;
+            border: 2px solid #b6a136;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
 
-.close-button:hover,
-.close-button:focus {
-    color: black;
-    text-decoration: none;
-}
+        /* New: Evolution and Forms Sections */
+        .modal-sections {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+        
+        .evolution-chain-container, .other-forms-container {
+            margin-bottom: 25px;
+        }
+        
+        .evolution-chain-container h3, .other-forms-container h3 {
+            border-bottom: 2px solid #e4000f;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            color: #e4000f;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+        }
+        
+        .chain-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .chain-item {
+            text-align: center;
+            text-transform: capitalize;
+            font-size: 0.9rem;
+        }
+        
+        .chain-item img {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            padding: 5px;
+            background-color: #fff;
+            cursor: default;
+        }
+        
+        .chain-arrow {
+            font-size: 2rem;
+            color: #333;
+        }
 
-.modal-info h2 {
-    text-align: center;
-    text-transform: capitalize;
-    font-size: 2.5rem;
-    margin-top: 0;
-}
+        .forms-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .form-item {
+            text-align: center;
+            text-transform: capitalize;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .form-item img {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+            background-color: #fff;
+        }
 
-.modal-info .modal-id {
-    font-size: 1.5rem;
-    color: #888;
-    text-align: center;
-}
+        /* Login Modal (Placeholder styles) */
+        #loginModal .modal-content {
+            text-align: center;
+            margin-top: 15%;
+            max-width: 400px;
+        }
+        
+        #loginModal input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        #loginModal button {
+            padding: 10px 20px;
+            background-color: #e4000f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
 
-.modal-info .modal-image {
-    display: block;
-    margin: 0 auto 20px;
-    width: 200px;
-    height: 200px;
-    cursor: pointer;
-}
-
-/* Attack Animation */
-.modal-image.attack {
-    animation: attack-pulse 0.5s ease-in-out;
-}
-
-@keyframes attack-pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1) translateX(-5px); }
-    100% { transform: scale(1); }
-}
-
-.modal-info .modal-types {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.modal-info .details p {
-    margin: 5px 0;
-}
-
-.modal-info .description {
-    margin-top: 20px;
-    font-style: italic;
-    text-align: justify;
-}
-
-.modal-info .stats-list {
-    list-style-type: none;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-}
-
-.modal-info .stats-list li {
-    background-color: #f5f5f5;
-    padding: 10px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-info .stats-list span:first-child {
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-/* Variety Button Styles */
-.variety-section {
-    margin-top: 20px;
-}
-.variety-section h4 {
-    margin-bottom: 10px;
-    font-size: 1.2rem;
-    color: #555;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 5px;
-}
-.variety-buttons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.variety-button {
-    background-color: #6390F0;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-family: 'Roboto Mono', monospace;
-    font-size: 14px;
-    transition: background-color 0.3s;
-}
-.variety-button.active {
-    background-color: #3f65b8;
-}
-.variety-button.shiny-button {
-    background-color: #FFD700;
-    color: #000;
-}
-.variety-button.shiny-button.active {
-    background-color: #e4c200;
-}
-
-.tcg-card-section {
-    margin-top: 20px;
-    text-align: center;
-}
-.tcg-card-section img {
-    max-width: 100%;
-    height: auto;
-    border: 5px solid #fff;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    border-radius: 10px;
-}
-.tcg-card-section .card-loading {
-    font-style: italic;
-    color: #888;
-}
-
-/* Evolution Chain */
-.evolution-section {
-    margin-top: 20px;
-}
-.evolution-section h4 {
-    margin-bottom: 10px;
-    font-size: 1.2rem;
-    color: #555;
-    border-bottom: 2px solid #ddd;
-    padding-bottom: 5px;
-}
-.evolution-chain {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-}
-.evolution-item {
-    cursor: pointer;
-}
-.evolution-item.current img {
-    transform: scale(1.2);
-}
-.evolution-item.current .evolution-name {
-    font-weight: bold;
-}
-.evolution-item img {
-    width: 80px;
-    height: 80px;
-}
-.evolution-item .evolution-name {
-    text-transform: capitalize;
-}
-
-/* Menu Button */
-#menu-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: url('ball.png') no-repeat center;
-    background-size: contain;
-    width: 60px;
-    height: 60px;
-    border: none;
-    cursor: pointer;
-    z-index: 1000;
-}
-#menu-button:hover::after {
-    content: 'Menu';
-    position: absolute;
-    bottom: 70px;
-    right: 0;
-    background: #000;
-    color: #fff;
-    padding: 5px;
-    border-radius: 5px;
-}
-.menu-options {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 1000;
-}
-.menu-option {
-    width: 50px;
-    height: 50px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    cursor: pointer;
-    position: relative;
-}
-.menu-option:hover::after {
-    content: attr(data-text);
-    position: absolute;
-    right: 60px;
-    top: 10px;
-    background: #000;
-    color: #fff;
-    padding: 5px;
-    border-radius: 5px;
-    white-space: nowrap;
-}
-#help-option { background: url('question.png') no-repeat center; background-size: contain; }
-#catch-option { background: url('pokeball-outline.png') no-repeat center; background-size: contain; }
-#guess-option { background: url('guess.png') no-repeat center; background-size: contain; }
-#battle-option { background: url('battle.png') no-repeat center; background-size: contain; }
-#edit-option { background: url('admin.png') no-repeat center; background-size: contain; }
-#edit-option.admin-signed-in { background: url('edit.png') no-repeat center; background-size: contain; }
-#edit-option:hover::after { content: 'Admin Access Only!'; }
-#edit-option.admin-signed-in:hover::after { content: 'Edit'; }
-#caught-option { background: url('caught.png') no-repeat center; background-size: contain; }
-
-/* Login Modal */
-#login-modal {
-    display: block;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-}
-#login-content {
-    background: #fff;
-    margin: 15% auto;
-    padding: 20px;
-    width: 300px;
-    text-align: center;
-    border-radius: 10px;
-}
-#login-logo {
-    width: 100px;
-    margin-bottom: 20px;
-}
-#username, #password, #signup-name, #signup-password, #signup-age, #profile-name, #admin-username, #admin-password {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-.login-option {
-    padding: 10px 20px;
-    background: #e4000f;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    margin: 5px;
-    width: 100%;
-}
-
-/* Catch Modal */
-#catch-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#catch-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-    position: relative;
-}
-#pokemon-area {
-    height: 200px;
-    position: relative;
-}
-#berry-button {
-    background: url('berry.png') no-repeat center;
-    background-size: contain;
-    width: 50px;
-    height: 50px;
-    border: none;
-    cursor: pointer;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
-#pokeball {
-    position: absolute;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 60px;
-    background: url('pokeball.png') no-repeat center;
-    background-size: contain;
-    cursor: grab;
-}
-#pokeball.dragging {
-    cursor: grabbing;
-}
-.shake {
-    animation: shake 0.5s;
-    animation-iteration-count: 3;
-}
-@keyframes shake {
-    0% { transform: translate(1px, 1px) rotate(0deg); }
-    10% { transform: translate(-1px, -2px) rotate(-1deg); }
-    20% { transform: translate(-3px, 0px) rotate(1deg); }
-    30% { transform: translate(3px, 2px) rotate(0deg); }
-    40% { transform: translate(1px, -1px) rotate(1deg); }
-    50% { transform: translate(-1px, 2px) rotate(-1deg); }
-    60% { transform: translate(-3px, 1px) rotate(0deg); }
-    70% { transform: translate(3px, 1px) rotate(-1deg); }
-    80% { transform: translate(-1px, -1px) rotate(1deg); }
-    90% { transform: translate(1px, 2px) rotate(0deg); }
-    100% { transform: translate(1px, -2px) rotate(-1deg); }
-}
-#pay-unlimited {
-    padding: 10px 20px;
-    background: #e4000f;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    margin-top: 20px;
-    border-radius: 5px;
-}
-
-/* Payment Modal */
-#payment-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#payment-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-}
-#payment-form input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-#confirm-payment {
-    background: #e4000f;
-    color: #fff;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    margin: 20px 0;
-}
-#confirm-payment:hover {
-    background: #c2000d;
-}
-#claim-trial {
-    background: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 10px;
-}
-#claim-trial:hover {
-    background: #45a049;
-}
-#trial-section {
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-.mobile-payment {
-    font-size: 18px;
-    padding: 20px;
-}
-.mobile-payment button {
-    background: #007AFF;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 10px;
-}
-.mobile-payment button:hover {
-    background: #005bb5;
-}
-
-/* Profile Modal */
-#profile-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#profile-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-    position: relative;
-}
-#add-friend-button {
-    background: url('add.png') no-repeat center;
-    background-size: contain;
-    width: 40px;
-    height: 40px;
-    border: none;
-    cursor: pointer;
-}
-#online-status {
-    margin-top: 10px;
-    padding: 5px;
-}
-#friends-list {
-    margin-top: 20px;
-    text-align: left;
-}
-.friend-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
-.friend-item img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-.friend-item .friend-name {
-    flex-grow: 1;
-}
-.friend-item .friend-status {
-    font-size: 12px;
-    color: #888;
-}
-.friend-item button {
-    padding: 5px 10px;
-    margin-left: 5px;
-    background: #e4000f;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-.friend-item button:hover {
-    background: #c2000d;
-}
-#cancel-premium {
-    background: #f44336;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 10px;
-}
-#cancel-premium:hover {
-    background: #da190b;
-}
-
-/* Message Modal */
-#message-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#message-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-}
-#message-input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-#quick-chat-options {
-    display: none;
-    margin-top: 10px;
-}
-.quick-chat-option {
-    padding: 8px 15px;
-    margin: 5px;
-    background: #6390F0;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-}
-.quick-chat-option:hover {
-    background: #3f65b8;
-}
-
-/* Battle Modal */
-#battle-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#battle-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 300px;
-    text-align: center;
-    border-radius: 10px;
-}
-#team-rocket, #battle-friend {
-    width: 100px;
-    height: 100px;
-    background-size: contain;
-    cursor: pointer;
-    margin: 10px auto;
-}
-#team-rocket { background: url('team.png') no-repeat center; }
-#battle-friend { background: url('some.png') no-repeat center; }
-
-/* Caught Pokemon Modal */
-#caught-pokemon-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#caught-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-}
-
-/* Help Modal */
-#help-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#help-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-}
-
-/* Guess Modal */
-#guess-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#guess-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-}
-
-/* Edit Modal */
-#edit-modal {
-    display: none;
-    position: fixed;
-    z-index: 1500;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-}
-#edit-content {
-    background: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    text-align: center;
-    border-radius: 10px;
-}
-</style>
+    </style>
 </head>
 <body>
-<div id="login-modal" style="display: none;">
-    <div id="login-content">
-        <span class="close-button">×</span>
-        <img id="login-logo" src="file:///C:/Users/ethan.ioannou30/Downloads/logo.png" alt="Logo">
-        <button id="login-option" class="login-option" style="background: rgb(194, 0, 13);">Log In</button>
-        <button id="signup-option" class="login-option" style="background: rgb(228, 0, 15);">Sign Up</button>
-        <button id="admin-login-option" class="login-option" style="background: rgb(228, 0, 15);">Admin Log-in</button>
-        <div id="login-form" style="display: block;">
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <button id="login-button" class="login-option">Submit</button>
+
+    <div id="profile" title="User Profile / Logout"></div>
+
+    <h1>The Ultimate Pokédex</h1>
+
+    <div id="controls">
+        <input type="text" id="searchInput" placeholder="Search by name or ID...">
+    </div>
+
+    <div id="loadingMessage"></div>
+    <button id="retryButton" style="display:none; margin-top: 10px;">Retry Loading</button>
+
+    <div class="pokedex-container">
         </div>
-        <div id="signup-form" style="display: none;">
-            <input type="text" id="signup-name" placeholder="Username">
-            <input type="password" id="signup-password" placeholder="Password">
-            <input type="text" id="profile-name" placeholder="Profile Name">
-            <input type="number" id="signup-age" placeholder="Age">
-            <input type="file" id="profile-pic" accept="image/*">
-            <select id="profile-gallery">
-                <option value="default-profile.png">Default</option>
-            </select>
-            <button id="submit-signup" class="login-option">Submit</button>
-        </div>
-        <div id="admin-login-form" style="display: none;">
-            <input type="text" id="admin-username" placeholder="Admin Username">
-            <input type="password" id="admin-password" placeholder="Admin Password">
-            <button id="admin-login-button" class="login-option">Submit</button>
+
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>Welcome Trainer!</h2>
+            <p>Please log in to start catching Pokémon.</p>
+            <input type="text" placeholder="Username" id="loginUsername">
+            <input type="password" placeholder="Password" id="loginPassword">
+            <button id="loginButton">Login</button>
+            <p style="margin-top: 20px;">*The full login logic is skipped in the script, but the modal is displayed/hidden.</p>
         </div>
     </div>
-</div>
 
-<div id="profile-modal">
-    <div id="profile-content">
-        <span class="close-button">×</span>
-        <h2>Profile</h2>
-        <p>Premium: <span id="premium-status">No</span></p>
-        <p>Caught Pokémon: <span id="caught-count">0</span></p>
-        <p>Daily Catches Left: <span id="daily-catches">5</span></p>
-        <button id="cancel-premium" style="display: none;">Cancel Premium</button>
-        <button id="add-friend-button"></button>
-        <input type="text" id="friend-search" placeholder="Search for a friend...">
-        <div id="friend-results"></div>
-        <select id="online-status">
-            <option>Online</option>
-            <option>Offline</option>
-        </select>
-        <div id="friends-list"></div>
-    </div>
-</div>
+    <div id="pokemonModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">×</span>
+            
+            <div class="modal-controls">
+                <button id="shinyToggle" class="shiny-toggle-button">Toggle Shiny</button>
+            </div>
+            
+            <div class="modal-info">
+                <img class="modal-image" src="" alt="Pokémon Image">
 
-<div id="message-modal">
-    <div id="message-content">
-        <span class="close-button">×</span>
-        <h2>Message <span id="message-recipient"></span></h2>
-        <div id="quick-chat-options">
-            <button class="quick-chat-option" data-message="Hey, want to battle?">Hey, want to battle?</button>
-            <button class="quick-chat-option" data-message="Nice Pokémon collection!">Nice Pokémon collection!</button>
-            <button class="quick-chat-option" data-message="Caught anything new?">Caught anything new?</button>
-        </div>
-        <textarea id="message-input" placeholder="Type your message..." rows="4"></textarea>
-        <button id="send-message">Send</button>
-    </div>
-</div>
+                <div class="modal-details">
+                    <h2 style="margin-top: 0;">Pokémon Name</h2>
+                    <p class="modal-id">#000</p>
+                    
+                    <div class="variety-buttons">
+                        </div>
 
-<div id="battle-modal">
-    <div id="battle-content">
-        <span class="close-button">×</span>
-        <h2>Battle</h2>
-        <div id="team-rocket"></div>
-        <div id="battle-friend"></div>
-    </div>
-</div>
+                    <div class="modal-types">
+                        </div>
 
-<div id="caught-pokemon-modal">
-    <div id="caught-content">
-        <span class="close-button">×</span>
-        <h2>Caught Pokémon</h2>
-        <div id="caught-list"></div>
-    </div>
-</div>
+                    <h3>Base Stats</h3>
+                    <ul class="stats-list">
+                        </ul>
+                </div>
+            </div>
 
-<div id="help-modal">
-    <div id="help-content">
-        <span class="close-button">×</span>
-        <h2>Help</h2>
-        <p>Welcome to the Ultimate Pokédex! Browse Pokémon, catch them in a Pokémon GO-style simulation, battle Team Rocket or friends, and play Guess the Pokémon!</p>
-    </div>
-</div>
+            <div class="modal-sections">
+                <div class="evolution-chain-container">
+                    <h3>Evolution Chain</h3>
+                    <div id="evolutionChain" class="chain-diagram">
+                        </div>
+                </div>
+                
+                <div class="other-forms-container">
+                    <h3>Other Forms & Varieties</h3>
+                    <div id="otherForms" class="forms-grid">
+                        </div>
+                </div>
+            </div>
 
-<div id="guess-modal">
-    <div id="guess-content">
-        <span class="close-button">×</span>
-        <h2>Guess the Pokémon</h2>
-        <div id="guess-image"></div>
-        <input type="text" id="guess-input" placeholder="Who&#39;s that Pokémon?">
-        <button id="guess-submit">Submit</button>
-    </div>
-</div>
-
-<div id="edit-modal">
-    <div id="edit-content">
-        <span class="close-button">×</span>
-        <h2>Propose Changes</h2>
-        <p>Admin can propose changes here.</p>
-    </div>
-</div>
-
-<div id="catch-modal">
-    <div id="catch-content">
-        <span class="close-button">×</span>
-        <h2>Catch a Pokémon</h2>
-        <div id="pokemon-area"></div>
-        <button id="berry-button"></button>
-        <div id="pokeball"></div>
-        <p>Daily catches left: <span id="daily-left">5</span></p>
-        <button id="pay-unlimited">Pay for Unlimited</button>
-    </div>
-</div>
-
-<div id="payment-modal">
-    <div id="payment-content">
-        <span class="close-button">×</span>
-        <h2>Premium Subscription</h2>
-        <p>Upgrade to Premium for unlimited catches! Cancel anytime.</p>
-        <p id="weekly-price"><strong>$20/week</strong></p>
-        <div id="trial-section" style="display: none;">
-            <p>If subscribed to <a href="https://www.youtube.com/@ethanandisabella4098" target="_blank">EthanUnlocked's gaming hits</a>, claim 7-day free trial! (One-time only)</p>
-            <button id="claim-trial">Claim Free Trial</button>
-        </div>
-        <div id="payment-form">
-            <input type="text" id="card-name" placeholder="Cardholder Name">
-            <input type="text" id="card-number" placeholder="Card Number">
-            <input type="text" id="card-expiry" placeholder="MM/YY">
-            <input type="text" id="card-cvv" placeholder="CVV">
-            <button id="confirm-payment">Confirm Payment</button>
-        </div>
-        <div id="mobile-payment" class="mobile-payment" style="display: none;">
-            <p>Confirm your purchase with Face ID or Touch ID</p>
-            <button id="mobile-confirm">Confirm with Face ID</button>
-            <button id="touch-confirm" style="display: none;">Confirm with Touch ID</button>
         </div>
     </div>
-</div>
-
-<button id="menu-button"></button>
-<div class="menu-options">
-    <div id="help-option" class="menu-option" data-text="Help"></div>
-    <div id="catch-option" class="menu-option" data-text="Catch a Pokémon"></div>
-    <div id="guess-option" class="menu-option" data-text="Guess the Pokémon"></div>
-    <div id="battle-option" class="menu-option" data-text="Battle"></div>
-    <div id="edit-option" class="menu-option" data-text="Edit"></div>
-    <div id="caught-option" class="menu-option" data-text="Show Caught Pokémon"></div>
-</div>
-
-<div class="top-navbar">
-    <a href="file:///C:/Users/ethan.ioannou30/Downloads/turtle.html">Back to others</a>
-</div>
-
-<div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; position: fixed; top: 10px; right: 10px; display: none;"></div>
-
-<h1>Pokédex</h1>
-
-<div class="nav-container">
-    <button class="nav-button active" data-category="all">All</button>
-    <button class="nav-button" data-category="mega">Mega</button>
-    <button class="nav-button" data-category="regional">Regional</button>
-    <button class="nav-button" data-category="shiny">Shiny</button>
-    <button class="nav-button" data-category="legendary">Legendary</button>
-    <button class="nav-button" data-category="mythical">Mythical</button>
-    <button class="nav-button" data-category="gmax">G-Max</button>
-    <button class="nav-button" data-category="ultra-beast">Ultra Beast</button>
-</div>
-
-<div class="search-container">
-    <input type="text" id="searchInput" placeholder="Search for a Pokémon...">
-</div>
-
-<p id="loadingMessage">Loading Pokédex...</p>
-<button id="retryButton">Retry</button>
-
-<div id="pokedex-container" class="pokedex-container"></div>
-
-<div id="pokemonModal" class="modal">
-    <div class="modal-content">
-        <span class="close-button">×</span>
-        <div id="modal-body"></div>
-    </div>
-</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -1108,15 +455,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const otherFormsContainer = document.getElementById('otherForms');
     const SHINY_TOGGLE = document.getElementById('shinyToggle');
     
-    // LOGIN/USER Elements (Assumed IDs)
+    // LOGIN/USER Elements
     const loginModal = document.getElementById('loginModal');
     const profile = document.getElementById('profile');
     
     // State Variables
     let allPokemon = [];
-    let detailedPokemonData = new Map(); // Cache for API details
-    let varietiesData = new Map(); // Cache for forms/varieties
-    let evolutionChains = new Map(); // Cache for evolution chain URLs
+    let detailedPokemonData = new Map();
+    let varietiesData = new Map();
+    let evolutionChains = new Map();
     let isShiny = false;
     let user = null; 
     let isPremium = false; 
@@ -1124,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Utility Functions ---
 
-    // Formats the API variety name (e.g., 'charizard-mega-x') into a display name (e.g., 'Mega-X')
     function formatFormName(apiName) {
         if (apiName === 'standard') return 'Standard';
         if (apiName.includes('-mega')) {
@@ -1135,7 +481,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return apiName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('-');
     }
 
-    // Gets the high-quality PNG URL for the main modal image
     function getPokemonImageUrl(pokemonId, formName = 'Standard') {
         const paddedId = String(pokemonId).padStart(3, '0');
         let imageFileName;
@@ -1143,7 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (formName === 'Standard') {
             imageFileName = `${paddedId}.png`;
         } else {
-            // Cleans up the form name for the file path
             const cleanedFormName = formName.replace(/-/g, ''); 
             imageFileName = `${paddedId}-${cleanedFormName}.png`;
         }
@@ -1151,7 +495,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${IMAGE_BASE_URL}${imageFileName}`;
     }
 
-    // Gets the smaller sprite URL for the evolution chain and other forms
     function getPokemonSpriteUrl(pokemonId, isShiny = false) {
         let path = isShiny ? 'shiny/' : '';
         return `${SPRITE_BASE_URL}${path}${pokemonId}.png`;
@@ -1267,7 +610,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = '';
             for (let i = 0; i < chain.length; i++) {
                 const poke = chain[i];
-                // Use isShiny state for the sprite URL
                 const spriteUrl = getPokemonSpriteUrl(poke.id, isShiny);
 
                 html += `
@@ -1291,7 +633,6 @@ document.addEventListener('DOMContentLoaded', () => {
         otherFormsContainer.innerHTML = '';
         const allVarieties = varietiesData.get(pokemonId) || [];
         
-        // Filter out Mega and standard forms
         const otherForms = allVarieties.filter(v => !v.isMega && !v.isDefault && v.name !== 'Standard');
         
         if (otherForms.length === 0) {
@@ -1341,7 +682,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             
             card.addEventListener('click', () => {
-                isShiny = false; // Reset shiny state when opening new card
+                isShiny = false; 
                 SHINY_TOGGLE.textContent = 'Toggle Shiny'; 
                 showPokemonDetails(pokemon.id, pokemon.name);
             });
@@ -1385,7 +726,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.modal-info .modal-id').textContent = `#${String(speciesId).padStart(3, '0')}`;
         
         const mainImageUpdate = () => {
-             // Use high-quality image for standard, reliable sprite for shiny
              modalImage.src = isShiny ? getPokemonSpriteUrl(speciesId, true) : imageUrl;
              modalImage.alt = `${detailedPoke.name} - ${currentFormName} ${isShiny ? '(Shiny)' : ''}`;
         };
@@ -1465,7 +805,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loggedInUser) {
             user = JSON.parse(loggedInUser);
             isPremium = user.isPremium;
-            // Assuming your profile element is styled to show the image via background property
             profile.style.backgroundImage = `url(${user.profilePic})`; 
             profile.style.display = 'block';
             loginTimestamp = parseInt(localStorage.getItem('loginTimestamp'), 10) || Date.now();
@@ -1495,7 +834,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Search Filter (Fixed to use name or padded/unpadded ID)
+    // Search Filter (Fixed)
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         const filteredPokemon = allPokemon.filter(p => 
@@ -1511,5 +850,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-
-</body></html>
+</body>
+</html>
