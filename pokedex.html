@@ -9,12 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        /* ===================================================================
-           NOTE: This CSS is based on your original file's structure.
-           You may need to add more styles for .modal-sections, .chain-diagram,
-           .form-item, and .shiny-toggle-button for perfect visual alignment!
-           =================================================================== */
-
         /* General Body Styles */
         body {
             font-family: 'Roboto Mono', monospace;
@@ -23,7 +17,7 @@
             margin: 0;
             padding: 20px;
             text-align: center;
-            /* Placeholder background images if they are local */
+            /* If you had background images, uncomment these lines */
             /* background-image: url('pokedex-top.png'), url('pokedex-bottom.png');
             background-position: top center, bottom center;
             background-repeat: no-repeat;
@@ -185,7 +179,7 @@
             font-size: 0.8rem;
         }
 
-        /* Type Colors (Add more as needed) */
+        /* Type Colors */
         .normal { background-color: #A8A77A; }
         .fire { background-color: #EE8130; }
         .water { background-color: #6390F0; }
@@ -243,7 +237,7 @@
             border-color: #e4000f;
         }
 
-        /* New: Shiny Toggle Button */
+        /* Shiny Toggle Button */
         .modal-controls {
             text-align: center;
             margin-bottom: 15px;
@@ -261,7 +255,7 @@
             transition: background-color 0.2s;
         }
 
-        /* New: Evolution and Forms Sections */
+        /* Evolution and Forms Sections */
         .modal-sections {
             margin-top: 20px;
             padding-top: 20px;
@@ -293,6 +287,7 @@
             text-align: center;
             text-transform: capitalize;
             font-size: 0.9rem;
+            cursor: pointer; /* Added cursor for better UX when clicking evolution items */
         }
         
         .chain-item img {
@@ -302,7 +297,6 @@
             border-radius: 50%;
             padding: 5px;
             background-color: #fff;
-            cursor: default;
         }
         
         .chain-arrow {
@@ -333,7 +327,7 @@
             background-color: #fff;
         }
 
-        /* Login Modal (Placeholder styles) */
+        /* Login Modal */
         #loginModal .modal-content {
             text-align: center;
             margin-top: 15%;
@@ -383,7 +377,7 @@
             <input type="text" placeholder="Username" id="loginUsername">
             <input type="password" placeholder="Password" id="loginPassword">
             <button id="loginButton">Login</button>
-            <p style="margin-top: 20px;">*The full login logic is skipped in the script, but the modal is displayed/hidden.</p>
+            <p style="margin-top: 20px;">*The full login logic is skipped in the script, but the modal is displayed/hidden by the `init()` function.</p>
         </div>
     </div>
 
@@ -435,9 +429,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Global Variables and Constants ---
     const BASE_API_URL = 'https://pokeapi.co/api/v2/pokemon?limit=1017';
-    // High-quality PNGs for the main modal image (supports most Mega forms)
     const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/HybridShivam/Pokemon/master/assets/images/';
-    // PokeAPI sprites for evolution chain/forms (supports shiny reliably)
     const SPRITE_BASE_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
     
     // Core Pokédex Elements
@@ -691,6 +683,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function showPokemonDetails(pokemonId, pokemonName, formApiName = null) {
+        // This check ensures the Pokédex is not visible unless logged in, 
+        // as per your original file's structure.
+        if (!user) return; 
+
         let detailedPoke;
         const fetchName = formApiName || pokemonName;
 
@@ -787,7 +783,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- Login/User Session Logic (Restored) ---
+    // --- Login/User Session Logic (Restored to original behavior) ---
 
     function checkPremiumExpiry() {
         const PREMIUM_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -805,17 +801,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (loggedInUser) {
             user = JSON.parse(loggedInUser);
             isPremium = user.isPremium;
+            // NOTE: Assuming user.profilePic is stored correctly
             profile.style.backgroundImage = `url(${user.profilePic})`; 
             profile.style.display = 'block';
             loginTimestamp = parseInt(localStorage.getItem('loginTimestamp'), 10) || Date.now();
             checkPremiumExpiry();
+            
+            // IF LOGGED IN: Hide login, fetch data, and show Pokedex content
             loginModal.style.display = 'none';
+            fetchAllPokemon(); 
+            
         } else {
-            // SHOW THE LOGIN MODAL if not logged in
+            // IF NOT LOGGED IN: Show login modal and prevent Pokedex from loading/showing content
             loginModal.style.display = 'block';
             profile.style.display = 'none';
+            
+            // Clear Pokedex content/loading messages when not logged in
+            pokedexContainer.innerHTML = '';
+            loadingMessage.style.display = 'none';
         }
-        fetchAllPokemon();
     }
 
     // --- Event Listeners ---
@@ -834,8 +838,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // Search Filter (Fixed)
+    // Search Filter
     searchInput.addEventListener('input', (e) => {
+        // Only run search if the user is logged in (user object exists)
+        if (!user) return;
+        
         const searchTerm = e.target.value.toLowerCase();
         const filteredPokemon = allPokemon.filter(p => 
             p.name.includes(searchTerm) || String(p.id).padStart(3, '0').includes(searchTerm) || String(p.id).includes(searchTerm)
