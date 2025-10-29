@@ -3,546 +3,234 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SIM-HACK LAB — ATLAS Hacking Simulation (SAFE, LOCAL ONLY)</title>
-<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+<title>ATLAS — Simple Simulation Console (LOCAL ONLY)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#050507; --panel:#0c0d0f; --accent:#00ff8a; --muted:#7f8c8d; --danger:#ff4d4d;
-    --glass: rgba(255,255,255,0.03);
+    --bg:#060608;
+    --panel:#0d0e10;
+    --accent:#00ff66;
+    --muted:#9aa;
     --radius:10px;
     --mono: "Inconsolata", monospace;
-    --ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   }
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#000,#05010a 60%);color:#dfe; font-family:var(--ui);}
-  .container{display:grid;grid-template-columns:340px 1fr 420px;gap:18px;padding:18px;height:100vh;align-items:stretch}
-  header.site-title{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:10px 18px;border-radius:8px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.03)}
-  .logo{font-family:var(--mono);font-weight:700;color:var(--accent);font-size:1.05rem;letter-spacing:1px}
-  .subtitle{color:var(--muted);font-size:0.95rem}
-  aside.left-panel{background:linear-gradient(180deg,var(--panel), rgba(8,8,10,0.9));padding:12px;border-radius:var(--radius);border:1px solid rgba(255,255,255,0.03);height:calc(100% - 64px);overflow:auto}
-  section.center{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:var(--radius);border:1px solid rgba(255,255,255,0.03);display:flex;flex-direction:column;height:calc(100% - 64px);overflow:hidden}
-  .right-panel{background:var(--panel);padding:12px;border-radius:var(--radius);border:1px solid rgba(255,255,255,0.03);height:calc(100% - 64px);overflow:auto}
-  h3{margin:6px 0;color:#cfe}
-  .site-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-  .site-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-  .site-card:hover{box-shadow:0 6px 20px rgba(0,255,138,0.04);transform:translateY(-2px)}
-  .site-card .favicon{width:36px;height:36px;border-radius:6px;background:linear-gradient(45deg,#123,#456)}
-  .site-meta{flex:1}
-  .site-meta .name{font-weight:700}
-  .site-meta .url{font-size:0.85rem;color:var(--muted)}
-  .badge{font-size:0.75rem;padding:4px 6px;border-radius:6px;background:rgba(0,0,0,0.3);color:var(--muted)}
-  .danger{background:linear-gradient(90deg,#3b0000,#610000);color:#ffdede}
-  .controls{display:flex;gap:8px;margin-top:12px}
-  button.btn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#dfe;padding:8px 10px;border-radius:8px;cursor:pointer;font-family:var(--mono)}
-  button.btn.primary{background:linear-gradient(90deg, rgba(0,255,138,0.06), rgba(0,255,138,0.02));border-color:rgba(0,255,138,0.12)}
-  button.btn.ghost{background:transparent}
-  .login-box{margin-top:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px dashed rgba(255,255,255,0.02)}
-  .login-box input{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#dfe;margin-top:6px;font-family:var(--mono)}
-  .terminal{flex:1;background:#050507;border-radius:8px;padding:10px;margin-top:8px;overflow:auto;border:1px solid rgba(255,255,255,0.02);font-family:var(--mono);font-size:13px;color:#bdf}
-  .log-line{white-space:pre-wrap;margin:6px 0;line-height:1.35}
-  .status-ok{color:var(--accent)}
-  .status-warn{color:#ffd86b}
-  .status-err{color:var(--danger)}
-  .editor{height:220px;background:#0b0b0d;border-radius:6px;padding:10px;border:1px solid rgba(255,255,255,0.02);font-family:var(--mono);font-size:13px;color:#dfe;overflow:auto}
-  .panel-block{margin-top:10px}
-  .settings-list{display:flex;flex-direction:column;gap:8px}
-  .setting-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:8px;border-radius:6px;background:rgba(255,255,255,0.01)}
-  .setting-row input[type="text"], .setting-row input[type="number"]{background:transparent;border:1px solid rgba(255,255,255,0.03);padding:6px;border-radius:6px;color:#dfe;font-family:var(--mono)}
-  .diff-view{background:#081018;padding:10px;border-radius:6px;font-family:var(--mono);font-size:13px;color:#cfe;white-space:pre-wrap;overflow:auto;max-height:160px}
-  .notice{padding:10px;border-radius:6px;background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02);color:var(--muted);font-size:13px}
-  footer.small{grid-column:1/-1;color:var(--muted);font-size:13px;padding:6px 18px}
-  .big-title{font-family:var(--mono);font-weight:700}
-  .muted{color:var(--muted)}
-  .kbd{font-family:var(--mono);padding:4px 6px;background:rgba(255,255,255,0.02);border-radius:6px;border:1px solid rgba(255,255,255,0.02)}
-  .flex{display:flex;gap:8px;align-items:center}
-  .small{font-size:12px}
-  .danger-cta{background:linear-gradient(90deg,#5b0000,#8a0000);border-color:#8a0000;color:#ffecec}
-  .preview{background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));padding:10px;border-radius:6px;border:1px solid rgba(255,255,255,0.02);color:#dfe}
-  .footer-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
-  .muted-italic{color:var(--muted);font-style:italic}
-  /* responsive */
-  @media (max-width:1100px){ .container{grid-template-columns:1fr;grid-auto-rows:min-content} header.site-title{order:-1} .right-panel{order:3} .left-panel{order:1} .center{order:2}}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#000,#05030b);color:#dfe;font-family:var(--mono),monospace}
+  .wrap{max-width:1000px;margin:24px auto;padding:18px;display:grid;grid-template-columns:320px 1fr;gap:16px}
+  .panel{background:var(--panel);padding:12px;border-radius:var(--radius);border:1px solid rgba(255,255,255,0.03)}
+  .title{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .logo{font-weight:700;color:var(--accent);font-size:1.1rem}
+  .help{color:var(--muted);font-size:0.85rem}
+  /* Left column */
+  .targets{display:flex;flex-direction:column;gap:8px}
+  .target{padding:8px;border-radius:8px;background:rgba(255,255,255,0.01);cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+  .target.selected{outline:2px solid rgba(0,255,102,0.12);box-shadow:0 6px 14px rgba(0,255,102,0.03)}
+  .actions{margin-top:12px;display:flex;gap:8px}
+  button{font-family:var(--mono);padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#dfe;cursor:pointer}
+  button.primary{background:linear-gradient(90deg, rgba(0,255,102,0.05), transparent);border-color:rgba(0,255,102,0.12)}
+  /* Right column (terminal) */
+  .terminal{height:62vh;display:flex;flex-direction:column}
+  .output{flex:1;background:#050507;padding:12px;border-radius:8px;overflow:auto;border:1px solid rgba(255,255,255,0.02);font-size:13px;line-height:1.35}
+  .controls{display:flex;gap:8px;margin-top:10px;align-items:center}
+  input[type="text"]{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#dfe;font-family:var(--mono)}
+  .small{font-size:12px;color:var(--muted)}
+  .kbd{background:rgba(255,255,255,0.02);padding:3px 6px;border-radius:6px;border:1px solid rgba(255,255,255,0.02)}
+  .log-line{white-space:pre-wrap;margin:6px 0}
+  .muted-note{color:var(--muted);font-size:12px;margin-top:8px}
+  /* compact mobile */
+  @media (max-width:820px){
+    .wrap{grid-template-columns:1fr; padding:12px}
+  }
 </style>
 </head>
 <body>
-  <div class="container" role="application" aria-label="Simulated hacking sandbox — safe and local only">
-    <header class="site-title" role="banner">
-      <div class="logo">SIM-HACK LAB</div>
-      <div style="flex:1">
-        <div class="big-title">ATLAS — Simulation Console</div>
-        <div class="subtitle muted">This is a local-only simulation. No network requests. No real credentials.</div>
-      </div>
-      <div class="flex small">
-        <div class="kbd">Ctrl+Enter</div>
-        <div class="muted">run</div>
-      </div>
-    </header>
-
-    <!-- LEFT: target list + quick controls -->
-    <aside class="left-panel" aria-label="Targets">
-      <h3>Targets</h3>
-      <div class="notice">
-        Ethical notice: This page is a sandbox only. It simulates the actions of penetration testing and site configuration. Do not use it to interact with real services or credentials.
+  <main class="wrap" role="main" aria-label="ATLAS simple simulation console">
+    <section class="panel" aria-label="Targets">
+      <div class="title">
+        <div class="logo">ATLAS SIM</div>
+        <div class="help small">Local demo • no network • safe</div>
       </div>
 
-      <div class="site-list" id="siteList" aria-live="polite">
-        <!-- populated by JS -->
+      <div>
+        <div class="small muted-note">Pick a simulated target to inspect and operate on.</div>
+        <div id="targets" class="targets" role="list" aria-label="Simulated targets"></div>
       </div>
 
-      <div class="panel-block">
-        <h4 class="muted">Actions</h4>
-        <div class="controls">
-          <button id="btnSimLogin" class="btn primary">Sim Login</button>
-          <button id="btnOpenEditor" class="btn">Open Editor</button>
-          <button id="btnApply" class="btn danger-cta">Apply (SIM)</button>
-        </div>
-        <div class="login-box" id="loginBox" aria-hidden="true">
-          <label for="simUsername" class="muted small">Username</label>
-          <input id="simUsername" placeholder="username@example.com" />
-          <label for="simPassword" class="muted small">Password (local only)</label>
-          <input id="simPassword" type="password" placeholder="password" />
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button id="btnSubmitLogin" class="btn primary">Submit</button>
-            <button id="btnCancelLogin" class="btn ghost">Cancel</button>
-          </div>
-        </div>
+      <div class="actions">
+        <button id="btnSimLogin" class="primary">Sim Login</button>
+        <button id="btnApply">Apply</button>
       </div>
 
-      <div class="panel-block">
-        <h4 class="muted">Quick Templates</h4>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <button class="btn" data-template="maintenance">Set Maintenance Mode</button>
-          <button class="btn" data-template="welcome">Change Homepage Text</button>
-          <button class="btn" data-template="adminLock">Lock Admin Panel</button>
-        </div>
-      </div>
-
-    </aside>
-
-    <!-- CENTER: terminal + editor -->
-    <section class="center" aria-label="Main console">
-      <div style="display:flex;gap:12px;align-items:center">
-        <h3>Terminal</h3>
-        <div class="muted small">Simulated network console</div>
-        <div style="margin-left:auto" class="muted small">Target: <span id="selectedTarget">— none —</span></div>
-      </div>
-
-      <div id="terminal" class="terminal" role="log" aria-live="polite" tabindex="0">
-        <!-- logs go here -->
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <input id="cmdInput" placeholder="Type a simulated command (help)" style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:#dfe;font-family:var(--mono)"/>
-        <button id="btnRun" class="btn primary">Run</button>
-        <button id="btnClear" class="btn">Clear</button>
-      </div>
-
-      <div class="panel-block">
-        <h4 class="muted">Payload Editor (Sandboxed)</h4>
-        <div class="editor" id="payloadEditor" contenteditable="true" spellcheck="false" aria-label="Payload editor">
-/* This is a safe sandbox: code here will run locally only and cannot make network requests.
-   Use it to craft "simulated payloads" that modify the simulated target state. */
-function payload(state) {
-  // Example: toggle maintenance
-  state.settings.maintenance = !state.settings.maintenance;
-  state.logs.push("[payload] toggled maintenance:" + state.settings.maintenance);
-  return state;
-}
-        </div>
+      <div class="muted-note" style="margin-top:10px">
+        Shortcuts: Up/Down (history), Tab (autocomplete), Ctrl+Enter (run payload — disabled in simplified view).
       </div>
     </section>
 
-    <!-- RIGHT: site details and settings -->
-    <aside class="right-panel" aria-label="Inspector">
-      <h3>Inspector</h3>
-      <div class="preview" id="sitePreview">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div id="previewName" style="font-weight:700">— select a site —</div>
-            <div id="previewUrl" class="muted small">—</div>
-          </div>
-          <div id="previewStatus" class="badge">—</div>
+    <section class="panel terminal" aria-label="Terminal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <strong>Terminal</strong>
+          <div class="small">Simple commands: help, list, select, status, apply, clear, export</div>
         </div>
-
-        <div style="margin-top:12px">
-          <div class="muted-italic small">Simulated homepage preview</div>
-          <div id="previewContent" style="margin-top:8px;padding:10px;border-radius:6px;background:rgba(0,0,0,0.25);min-height:60px;color:#e6ffe8"></div>
-        </div>
+        <div class="small">Target: <span id="currentTarget">— none —</span></div>
       </div>
 
-      <div class="panel-block">
-        <h4>Settings</h4>
-        <div class="settings-list" id="settingsList">
-          <!-- rows rendered by JS -->
-        </div>
+      <div id="output" class="output" role="log" aria-live="polite" tabindex="0"></div>
+
+      <div class="controls">
+        <input id="cmd" type="text" placeholder='Type a command (help)' aria-label="Command input" />
+        <button id="run" class="primary">Run</button>
+        <button id="clear">Clear</button>
       </div>
 
-      <div class="panel-block">
-        <h4>Diff / Changes</h4>
-        <div class="diff-view" id="diffView">No pending changes.</div>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="btnCommit" class="btn primary">Commit (Sim)</button>
-          <button id="btnReset" class="btn">Reset</button>
-        </div>
-      </div>
-
-      <div class="panel-block">
-        <h4>Action Log</h4>
-        <div id="actionLog" style="max-height:160px;overflow:auto;font-family:var(--mono);font-size:13px;color:#bfe;padding:8px;background:rgba(0,0,0,0.05);border-radius:6px"></div>
-      </div>
-    </aside>
-
-    <footer class="small" style="grid-column:1/-1">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="muted">Local simulation — safe for demos, training, and UI prototyping.</div>
-        <div class="muted">If you want a server-backed lab for learning, I can help design one (requires explicit safeguards).</div>
-      </div>
-    </footer>
-  </div>
+      <div class="muted-note">This page is intentionally simple and local-only. Do NOT paste real credentials.</div>
+    </section>
+  </main>
 
 <script>
 /*
-  hack.html — Simulated hacking sandbox
-  SAFE: All targets, accounts, and changes are purely client-side and stored in localStorage.
-  No network calls. Do not paste real credentials into this page.
+  Simplified hack-like simulation:
+  - Local-only simulated targets (stored in localStorage)
+  - Very small command set and clear UI
+  - Command history (Up/Down) and Tab autocomplete
+  - No payload editor, no network, no real credential handling
 */
 
-/* ---- Utilities ---- */
-const uid = (n=6) => Math.random().toString(36).slice(2,2+n);
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const el = id => document.getElementById(id);
-const now = ()=> new Date().toISOString().replace('T',' ').split('.')[0];
-
-/* ---- Simulated dataset ----
-   This list defines fictional targets; expand as needed. */
-const DEFAULT_TARGETS = [
-  {
-    id: 'site-1',
-    name: 'NOVA SHOP',
-    url: 'nova-shop.example',
-    favicon: '',
-    settings: {
-      maintenance: false,
-      homepageText: 'Welcome to Nova — the best deals in the quadrant.',
-      maxUsers: 12000,
-      featureX: true
-    },
-    accounts: [
-      { user:'admin@nova.example', pass:'password1', role:'ADMIN' },
-      { user:'ops@nova.example', pass:'ops1234', role:'OP' }
-    ],
-    logs: ['[init] site created'],
-    metadata:{created:now()}
-  },
-  {
-    id: 'site-2',
-    name: 'SKYCHAT',
-    url: 'chat.sky.example',
-    favicon: '',
-    settings: {
-      maintenance: true,
-      homepageText: 'Secure messaging for everyone.',
-      maxUsers: 500000,
-      featureX: false
-    },
-    accounts:[
-      { user:'root@skychat.example', pass:'root!234', role:'ROOT' },
-      { user:'mod@skychat.example', pass:'modpass', role:'MOD' }
-    ],
-    logs:['[init] site created'],
-    metadata:{created:now()}
-  },
-  {
-    id: 'site-3',
-    name: 'UNI LIBRARY',
-    url: 'lib.uni.example',
-    favicon: '',
-    settings: {
-      maintenance: false,
-      homepageText: 'University digital library — search, borrow, read.',
-      maxUsers: 250000,
-      featureX: false
-    },
-    accounts:[
-      { user:'librarian@uni.example', pass:'shelf123', role:'LIB' },
-      { user:'student@uni.example', pass:'learn2024', role:'USER' }
-    ],
-    logs:['[init] site created'],
-    metadata:{created:now()}
-  }
+const DEFAULT = [
+  { id:'site-1', name:'NOVA SHOP', url:'nova-shop.local', settings:{maintenance:false, homepage:'Welcome to Nova!'}, accounts:[{user:'admin@nova', pass:'pass1'}], logs:[] },
+  { id:'site-2', name:'SKYCHAT', url:'skychat.local', settings:{maintenance:true, homepage:'SkyChat is offline'}, accounts:[{user:'root@sky', pass:'root'}], logs:[] },
+  { id:'site-3', name:'UNI LIBRARY', url:'lib.uni.local', settings:{maintenance:false, homepage:'Read & learn'}, accounts:[], logs:[] }
 ];
 
-/* Storage helpers */
-const STORAGE_KEY = 'simhack_targets_v1';
+const STORAGE_KEY = 'atlas_simple_targets_v1';
+
 function loadTargets(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) { localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_TARGETS)); return JSON.parse(JSON.stringify(DEFAULT_TARGETS)); }
+    if(!raw){ localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT)); return JSON.parse(JSON.stringify(DEFAULT)); }
     return JSON.parse(raw);
-  } catch(e) {
-    console.error('load targets fail', e);
-    return JSON.parse(JSON.stringify(DEFAULT_TARGETS));
-  }
+  } catch(e){ console.error(e); return JSON.parse(JSON.stringify(DEFAULT)); }
 }
-function saveTargets(targets){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(targets));
-}
+function saveTargets(t){ localStorage.setItem(STORAGE_KEY, JSON.stringify(t)); }
 
-/* State */
 let targets = loadTargets();
 let selected = null;
-let pendingChanges = {}; // id -> shallow copy of changes
-const terminal = el('terminal');
-const siteList = el('siteList');
-const selectedTargetSpan = el('selectedTarget');
-const previewName = el('previewName');
-const previewUrl = el('previewUrl');
-const previewContent = el('previewContent');
-const previewStatus = el('previewStatus');
-const settingsList = el('settingsList');
-const diffView = el('diffView');
-const actionLog = el('actionLog');
-const payloadEditor = el('payloadEditor');
 
-/* ---- Render functions ---- */
-function renderSiteList(){
-  siteList.innerHTML='';
+/* UI refs */
+const targetsEl = document.getElementById('targets');
+const output = document.getElementById('output');
+const cmdInput = document.getElementById('cmd');
+const runBtn = document.getElementById('run');
+const clearBtn = document.getElementById('clear');
+const currentTargetSpan = document.getElementById('currentTarget');
+const btnSimLogin = document.getElementById('btnSimLogin');
+const btnApply = document.getElementById('btnApply');
+
+/* Command history + autocomplete */
+let history = JSON.parse(localStorage.getItem('atlas_cmd_history') || '[]');
+let histIndex = history.length;
+const COMMANDS = ['help','list','select','status','login','apply','clear','export','info'];
+
+function persistHistory(){
+  localStorage.setItem('atlas_cmd_history', JSON.stringify(history.slice(-200)));
+}
+
+/* Render target list (very simple) */
+function renderTargets(){
+  targetsEl.innerHTML = '';
   targets.forEach(t=>{
-    const card = document.createElement('div');
-    card.className='site-card';
-    card.tabIndex=0;
-    card.setAttribute('role','button');
-    card.innerHTML = `
-      <div class="favicon" aria-hidden="true"></div>
-      <div class="site-meta">
-        <div class="name">${escapeHtml(t.name)}</div>
-        <div class="url">${escapeHtml(t.url)}</div>
-      </div>
-      <div class="badge">${t.settings.maintenance ? 'maintenance' : (t.settings.featureX?'featureX':'online')}</div>
-    `;
-    card.addEventListener('click', ()=> selectTarget(t.id));
-    card.addEventListener('keydown', (ev)=> { if(ev.key==='Enter' || ev.key===' ') { selectTarget(t.id); ev.preventDefault(); } });
-    siteList.appendChild(card);
+    const div = document.createElement('div');
+    div.className = 'target' + (selected && selected.id===t.id ? ' selected' : '');
+    div.tabIndex = 0;
+    div.setAttribute('role','button');
+    div.innerHTML = `<div><strong>${t.name}</strong><div class="small" style="color:var(--muted)">${t.url}</div></div>
+                     <div class="small">${t.settings.maintenance ? 'MAINT' : 'OK'}</div>`;
+    div.addEventListener('click', ()=> selectTarget(t.id));
+    div.addEventListener('keydown', (e)=> { if(e.key==='Enter' || e.key===' ') selectTarget(t.id); });
+    targetsEl.appendChild(div);
   });
 }
 
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-function selectTarget(id){
-  selected = targets.find(t=>t.id===id);
-  if(!selected) return;
-  selectedTargetSpan.textContent = selected.name;
-  previewName.textContent = selected.name;
-  previewUrl.textContent = selected.url;
-  previewContent.textContent = selected.settings.homepageText;
-  previewStatus.textContent = selected.settings.maintenance ? 'MAINT' : 'ONLINE';
-  renderSettings(selected);
-  logAction(`[select] ${selected.name} selected`);
-  appendTerminal(`[UI] Selected ${selected.name} (${selected.url})`, 'status-ok');
-  renderDiff();
+/* Terminal helpers */
+function log(s, cls=''){
+  const d = document.createElement('div');
+  d.className = 'log-line ' + cls;
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${s}`;
+  output.appendChild(d);
+  output.scrollTop = output.scrollHeight;
 }
 
-function renderSettings(site){
-  settingsList.innerHTML = '';
-  const s = site.settings;
-  // dynamic rows for each setting
-  Object.keys(s).forEach(key=>{
-    const row = document.createElement('div');
-    row.className='setting-row';
-    const left = document.createElement('div');
-    left.innerHTML = `<div style="font-weight:700">${escapeHtml(key)}</div><div class="muted small">${typeof s[key]}</div>`;
-    const right = document.createElement('div');
-    if(typeof s[key] === 'boolean'){
-      const input = document.createElement('input');
-      input.type='checkbox';
-      input.checked = s[key];
-      input.addEventListener('change', ()=> setPending(key, input.checked));
-      right.appendChild(input);
-    } else if(typeof s[key] === 'number'){
-      const input = document.createElement('input');
-      input.type='number';
-      input.value = s[key];
-      input.addEventListener('change', ()=> setPending(key, Number(input.value)));
-      right.appendChild(input);
-    } else {
-      const input = document.createElement('input');
-      input.type='text';
-      input.value = s[key];
-      input.addEventListener('input', ()=> setPending(key, input.value));
-      right.appendChild(input);
-    }
-    row.appendChild(left);
-    row.appendChild(right);
-    settingsList.appendChild(row);
-  });
-}
-
-function setPending(key, value){
-  if(!selected) return;
-  if(!pendingChanges[selected.id]) pendingChanges[selected.id] = { settings: {...selected.settings}, logs: [...selected.logs] };
-  pendingChanges[selected.id].settings[key] = value;
-  pendingChanges[selected.id].logs.push(`[pending] ${now()} ${key} => ${value}`);
-  renderDiff();
-  appendTerminal(`[PENDING] ${key} = ${JSON.stringify(value)}`, 'status-warn');
-}
-
-/* Diff rendering: simple JSON diff view (side-by-side style) */
-function renderDiff(){
-  if(!selected) { diffView.textContent = 'No target selected.'; return; }
-  const p = pendingChanges[selected.id];
-  if(!p){ diffView.textContent = 'No pending changes.'; return; }
-  const oldS = selected.settings;
-  const newS = p.settings;
-  const lines=[];
-  Object.keys(newS).forEach(k=>{
-    if(JSON.stringify(oldS[k]) !== JSON.stringify(newS[k])){
-      lines.push(`- ${k}: ${JSON.stringify(oldS[k])}`);
-      lines.push(`+ ${k}: ${JSON.stringify(newS[k])}`);
-    }
-  });
-  if(lines.length===0) diffView.textContent = 'No effective changes (values identical).';
-  else diffView.textContent = lines.join('\n');
-}
-
-/* Terminal logging */
-function appendTerminal(text, cls=''){
-  const ln = document.createElement('div');
-  ln.className = 'log-line '+(cls||'');
-  ln.textContent = `[${now()}] ${text}`;
-  terminal.appendChild(ln);
-  terminal.scrollTop = terminal.scrollHeight;
-}
-
-/* Action log (inspector) */
-function logAction(msg){
-  const t = document.createElement('div');
-  t.textContent = `[${now()}] ${msg}`;
-  actionLog.prepend(t);
-}
-
-/* ---- Simulated commands ---- */
+/* Basic commands */
 async function runCommand(raw){
-  appendTerminal(`> ${raw}`, 'status-ok');
-  const args = raw.trim().split(/\s+/);
-  const cmd = args.shift().toLowerCase();
+  const line = raw.trim();
+  if(!line) return;
+  history.push(line); persistHistory(); histIndex = history.length;
+  log('> ' + line, ''); // echo
+  const parts = line.split(/\s+/);
+  const cmd = parts.shift().toLowerCase();
+
   switch(cmd){
     case 'help':
-      appendTerminal('help — show this\nlist — list targets\nselect <id|name> — choose a target\nstatus — show selected settings\nlogin <user> <pass> — attempt simulated login\napply — apply pending changes (local only)\nrunpayload — execute payload editor content safely\nclear — clear terminal\nexport — download simulated target JSON', 'status-ok');
+      log('Commands: help, list, select <id|name>, status, login <user> <pass> (sim), apply (sim), export <id>, clear', 'status-ok');
       break;
     case 'list':
-      targets.forEach(t=> appendTerminal(`${t.id} — ${t.name} — ${t.url} — maintenance=${t.settings.maintenance}`, ''));
+      targets.forEach(t => log(`${t.id} — ${t.name} — ${t.url} — maintenance=${t.settings.maintenance}`));
       break;
     case 'select':
-      if(args.length===0) { appendTerminal('select requires id or name', 'status-err'); break;}
-      const query = args.join(' ');
-      const found = targets.find(t=> t.id===query || t.name.toLowerCase()===query.toLowerCase());
-      if(found) { selectTarget(found.id); } else appendTerminal('target not found', 'status-err');
+      if(parts.length === 0){ log('select requires id or name', 'status-err'); break; }
+      const q = parts.join(' ');
+      const found = targets.find(t => t.id === q || t.name.toLowerCase() === q.toLowerCase());
+      if(found){ selectTarget(found.id); log(`Selected ${found.name}`, 'status-ok'); } else log('target not found', 'status-err');
       break;
     case 'status':
-      if(!selected) { appendTerminal('no target selected', 'status-err'); break; }
-      appendTerminal(JSON.stringify(selected.settings, null, 2), '');
+      if(!selected){ log('no target selected', 'status-err'); break; }
+      log(JSON.stringify(selected.settings, null, 2));
       break;
     case 'login':
-      if(!selected) { appendTerminal('select a target first', 'status-err'); break; }
-      if(args.length<2){ appendTerminal('usage: login <user> <pass>', 'status-err'); break; }
-      const user = args[0], pass = args[1];
-      attemptSimLogin(selected, user, pass);
+      if(!selected){ log('select a target first', 'status-err'); break; }
+      if(parts.length < 2){ log('usage: login <user> <pass>', 'status-err'); break; }
+      const user = parts[0], pass = parts[1];
+      const acct = selected.accounts.find(a => a.user === user && a.pass === pass);
+      if(acct){ log(`[AUTH] Success role=${acct.role || 'user'}`, 'status-ok'); selected.logs.push(`[auth] ${new Date().toISOString()} ${user} success`); saveTargets(targets); }
+      else { log('[AUTH] Failed', 'status-err'); selected.logs.push(`[auth] ${new Date().toISOString()} ${user} failed`); saveTargets(targets); }
       break;
     case 'apply':
-      if(!selected) { appendTerminal('no target selected', 'status-err'); break; }
-      await applyPending(selected.id);
-      break;
-    case 'runpayload':
-      await runPayloadSafely();
-      break;
-    case 'clear':
-      terminal.innerHTML='';
+      if(!selected){ log('no target selected', 'status-err'); break; }
+      // small simulated apply
+      log('[APPLY] Running simulated deploy...', 'status-warn');
+      await new Promise(r=>setTimeout(r,400));
+      log('[APPLY] Completed (local only).', 'status-ok');
+      selected.logs.push(`[apply] ${new Date().toISOString()}`);
+      saveTargets(targets);
       break;
     case 'export':
-      if(!selected){ appendTerminal('no target', 'status-err'); break; }
-      downloadJson(selected, `${selected.id}.json`);
-      appendTerminal('exported JSON (local download)', 'status-ok');
+      // export a target JSON
+      let toExport = selected;
+      if(parts.length>0){ toExport = targets.find(t => t.id === parts[0]); if(!toExport){ log('target not found', 'status-err'); break; } }
+      downloadJson(toExport, `${toExport.id}.json`);
+      log('Exported JSON (download started)', 'status-ok');
+      break;
+    case 'clear':
+      output.innerHTML = '';
+      break;
+    case 'info':
+      log('Simple ATLAS simulator — local only. Use responsibly for learning.', 'status-ok');
       break;
     default:
-      appendTerminal('unknown command: ' + cmd, 'status-err');
+      log('Unknown command: ' + cmd, 'status-err');
   }
 }
 
-/* ---- Simulated login ---- */
-function attemptSimLogin(site, user, pass){
-  appendTerminal(`[AUTH] Attempting login for ${user} on ${site.name}...`, 'status-warn');
-  const acct = site.accounts.find(a => a.user === user && a.pass === pass);
-  if(acct) {
-    appendTerminal(`[AUTH] Success. role=${acct.role}`, 'status-ok');
-    site.logs.push(`[auth] ${now()} login ${user} success role=${acct.role}`);
-    logAction(`[login] ${user}@${site.name} (role=${acct.role})`);
-  } else {
-    appendTerminal(`[AUTH] Failed for ${user}`, 'status-err');
-    site.logs.push(`[auth] ${now()} login ${user} failed`);
-    logAction(`[login failed] ${user}@${site.name}`);
-  }
-  saveTargets(targets);
+/* select a target programmatically */
+function selectTarget(id){
+  selected = targets.find(t => t.id === id) || null;
+  currentTargetSpan.textContent = selected ? selected.name : '— none —';
+  renderTargets();
 }
 
-/* ---- Apply pending changes (simulate admin applying changes) ---- */
-async function applyPending(id){
-  const p = pendingChanges[id];
-  if(!p){ appendTerminal('no pending changes for this target', 'status-err'); return; }
-  appendTerminal('[APPLY] Starting simulated apply process...', 'status-warn');
-  // simulate network activity and checks
-  await sleep(600);
-  appendTerminal('[CHECK] Running preflight checks...', '');
-  await sleep(500);
-  appendTerminal('[CHECK] Integrity OK', 'status-ok');
-  // merge changes
-  const siteIndex = targets.findIndex(t=>t.id===id);
-  if(siteIndex === -1){ appendTerminal('target disappeared', 'status-err'); return; }
-  // apply changes: overwrite settings and logs (safe local only)
-  targets[siteIndex].settings = {...p.settings};
-  targets[siteIndex].logs = [...p.logs, `[applied] ${now()}`];
-  saveTargets(targets);
-  appendTerminal('[APPLY] Applied changes successfully (local only)', 'status-ok');
-  logAction(`[apply] changes applied to ${targets[siteIndex].name}`);
-  delete pendingChanges[id];
-  renderSiteList();
-  selectTarget(id); // re-render inspector
-}
-
-/* ---- Payload sandbox runner (very restricted) ----
-   We evaluate the user text inside a Function but restrict global access.
-   The payload must be a function named "payload" that accepts the site "state" and returns a new state.
-   We run it with a deep-cloned state so it cannot access external JS variables.
-*/
-async function runPayloadSafely(){
-  if(!selected){ appendTerminal('no target selected', 'status-err'); return; }
-  const code = payloadEditor.innerText || payloadEditor.textContent || '';
-  appendTerminal('[PAYLOAD] Compiling payload...', '');
-  // minimal sanitization: disallow "fetch", "XMLHttpRequest", "WebSocket", "location", "document", "window"
-  const banned = ['fetch','XMLHttpRequest','WebSocket','location','document','window','process','require'];
-  for(const b of banned) if(code.includes(b)){ appendTerminal(`[PAYLOAD] forbidden token: ${b}`, 'status-err'); return; }
-  try {
-    // create a Function with only payload as named export
-    const fn = new Function('"use strict"; return (' + code + ')')();
-    if(typeof fn !== 'function'){ appendTerminal('[PAYLOAD] The payload must evaluate to a function(state) { ... }', 'status-err'); return; }
-    // deep clone state
-    const state = JSON.parse(JSON.stringify(selected));
-    appendTerminal('[PAYLOAD] Executing payload (sandboxed)...', '');
-    await sleep(200);
-    const newState = await Promise.resolve(fn(state));
-    if(!newState || typeof newState !== 'object'){ appendTerminal('[PAYLOAD] Payload did not return a state object', 'status-err'); return; }
-    // treat returned state as pending changes (do not directly mutate real)
-    pendingChanges[selected.id] = { settings: {...newState.settings}, logs: [...(newState.logs||[])], metadata: {...newState.metadata || {}} };
-    appendTerminal('[PAYLOAD] Payload executed. Changes staged as pending.', 'status-ok');
-    renderDiff();
-    logAction('[payload] executed for ' + selected.name);
-  } catch(e){
-    appendTerminal('[PAYLOAD] runtime error: ' + e.message, 'status-err');
-  }
-}
-
-/* ---- Misc helpers ---- */
+/* small helper: download JSON */
 function downloadJson(obj, filename){
-  const blob = new Blob([JSON.stringify(obj,null,2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
@@ -551,80 +239,109 @@ function downloadJson(obj, filename){
   a.remove();
 }
 
-/* ---- UI bindings ---- */
-el('btnRun').addEventListener('click', ()=> { const v=el('cmdInput').value.trim(); if(v) runCommand(v); el('cmdInput').value='';});
-el('cmdInput').addEventListener('keydown', (ev)=> {
-  if(ev.key === 'Enter' && !ev.shiftKey){ ev.preventDefault(); el('btnRun').click(); }
-  if(ev.key === 'Enter' && ev.ctrlKey){ ev.preventDefault(); runPayloadSafely(); }
-});
-el('btnClear').addEventListener('click', ()=> terminal.innerHTML='');
-
-el('btnSimLogin').addEventListener('click', ()=> { el('loginBox').style.display = el('loginBox').style.display === 'block' ? 'none' : 'block'; });
-el('btnOpenEditor').addEventListener('click', ()=> { payloadEditor.scrollIntoView({behavior:'smooth'}); payloadEditor.focus(); });
-
-el('btnSubmitLogin').addEventListener('click', ()=> {
-  const u = el('simUsername').value.trim(), p = el('simPassword').value;
-  if(!selected) { appendTerminal('select a target first', 'status-err'); return; }
-  attemptSimLogin(selected, u, p);
-  el('loginBox').style.display='none';
-});
-
-el('btnCancelLogin').addEventListener('click', ()=> { el('loginBox').style.display='none'; });
-
-el('btnApply').addEventListener('click', async ()=> {
-  if(!selected) { appendTerminal('no selection', 'status-err'); return; }
-  await applyPending(selected.id);
-});
-
-el('btnCommit').addEventListener('click', async ()=> {
-  if(!selected) { appendTerminal('no selection', 'status-err'); return; }
-  // commit here equals apply
-  await applyPending(selected.id);
-});
-el('btnReset').addEventListener('click', ()=> {
-  if(selected && pendingChanges[selected.id]) { delete pendingChanges[selected.id]; renderDiff(); appendTerminal('[PENDING] reset', 'status-warn'); }
-});
-
-/* Quick templates buttons */
-document.querySelectorAll('.left-panel .btn[data-template]').forEach(b=>{
-  b.addEventListener('click', ()=> {
-    const t = b.getAttribute('data-template');
-    if(!selected) { appendTerminal('select a target', 'status-err'); return; }
-    switch(t){
-      case 'maintenance':
-        setPending('maintenance', true);
-        break;
-      case 'welcome':
-        setPending('homepageText', 'This site has been updated by ATLAS Simulation — demo text.');
-        break;
-      case 'adminLock':
-        setPending('featureX', false);
-        break;
+/* Autocomplete: tab cycles suggestions for commands and target names */
+function autocomplete(inputValue){
+  const caret = inputValue;
+  const parts = caret.split(/\s+/);
+  if(parts.length <= 1){
+    // suggest commands
+    const prefix = parts[0] ? parts[0].toLowerCase() : '';
+    const matches = COMMANDS.concat(targets.map(t=>t.id)).filter(x => x.toLowerCase().startsWith(prefix) && x.toLowerCase() !== prefix);
+    return matches;
+  } else {
+    // after a command, suggest target ids or names for select/export
+    const cmd = parts[0].toLowerCase();
+    if(['select','export'].includes(cmd)){
+      const prefix = parts.slice(1).join(' ');
+      return targets.map(t=>t.id).filter(x => x.startsWith(prefix));
     }
-  });
+    return [];
+  }
+}
+
+/* Keyboard handling: history and tab */
+cmdInput.addEventListener('keydown', (ev) => {
+  if(ev.key === 'ArrowUp'){
+    if(history.length === 0) return;
+    ev.preventDefault();
+    histIndex = Math.max(0, histIndex - 1);
+    cmdInput.value = history[histIndex] || '';
+  } else if(ev.key === 'ArrowDown'){
+    if(history.length === 0) return;
+    ev.preventDefault();
+    histIndex = Math.min(history.length, histIndex + 1);
+    cmdInput.value = history[histIndex] || '';
+  } else if(ev.key === 'Tab'){
+    ev.preventDefault();
+    const matches = autocomplete(cmdInput.value);
+    if(matches && matches.length > 0){
+      // if single match, complete; if multiple, show the first and rotate suggestions on repeated Tab
+      const current = cmdInput.value;
+      // store rotation in dataset
+      const key = 'autocompleteIndex';
+      const idx = Number(cmdInput.dataset[key] || 0) % matches.length;
+      cmdInput.value = (current.split(/\s+/)[0] ? current.split(/\s+/)[0] + ' ' : '') + matches[idx];
+      cmdInput.dataset[key] = (idx + 1);
+    }
+  } else if(ev.key === 'Enter' && ev.ctrlKey){
+    // ctrl+enter reserved, but simplified view does nothing special
+    ev.preventDefault();
+    log('[INFO] Ctrl+Enter reserved for advanced operations (disabled in this simplified view).', 'status-warn');
+  } else if(ev.key === 'Enter'){
+    ev.preventDefault();
+    const v = cmdInput.value;
+    cmdInput.value = '';
+    runCommand(v);
+  }
 });
 
-/* keyboard shortcuts for payload run (Ctrl+Enter) */
-window.addEventListener('keydown', (ev)=>{
-  if(ev.ctrlKey && ev.key === 'Enter'){ ev.preventDefault(); runPayloadSafely(); }
+/* Button bindings */
+runBtn.addEventListener('click', ()=> { const v = cmdInput.value.trim(); if(v){ cmdInput.value=''; runCommand(v); } });
+clearBtn.addEventListener('click', ()=> { output.innerHTML=''; });
+
+btnSimLogin.addEventListener('click', ()=> {
+  if(!selected){ log('no target selected', 'status-err'); return; }
+  // small fake login flow
+  const user = prompt('Sim username (local only):','admin@demo');
+  if(!user) { log('Sim login cancelled', 'status-warn'); return; }
+  const pass = prompt('Sim password (local only):','password');
+  if(!pass) { log('Sim login cancelled', 'status-warn'); return; }
+  const acct = selected.accounts.find(a => a.user === user && a.pass === pass);
+  if(acct){ log(`[AUTH] Success user=${user}`, 'status-ok'); selected.logs.push(`[auth] ${new Date().toISOString()} ${user} success`); saveTargets(targets); }
+  else { log('[AUTH] Failed (sim)', 'status-err'); selected.logs.push(`[auth] ${new Date().toISOString()} ${user} failed`); saveTargets(targets); }
 });
 
-/* init UI */
-renderSiteList();
-appendTerminal('SIM-HACK LAB initialized — all actions are simulated and local.', 'status-ok');
-appendTerminal('Type "help" in the command box for a list of commands.', 'status-ok');
+btnApply.addEventListener('click', async ()=> {
+  if(!selected){ log('no target selected', 'status-err'); return; }
+  log('[APPLY] Simulated apply starting...', 'status-warn');
+  await new Promise(r=>setTimeout(r, 300));
+  log('[APPLY] Done (local only)', 'status-ok');
+  selected.logs.push(`[apply] ${new Date().toISOString()}`);
+  saveTargets(targets);
+});
 
-/* restore selection from last session */
-(function restore(){
-  const last = targets[0];
-  if(last) selectTarget(last.id);
-})();
+/* Initialization */
+renderTargets();
+appendStartup();
 
-/* expose for debugging in console (safe references only) */
-window.__SIM = { targetsRef: targets, pendingChanges, saveTargets, loadTargets };
+function appendStartup(){
+  log('ATLAS simple simulator initialized. Type "help" for commands.', 'status-ok');
+  // restore last selected target if exists
+  const lastId = localStorage.getItem('atlas_last_selected');
+  if(lastId){
+    const s = targets.find(t=>t.id === lastId);
+    if(s) selectTarget(s.id);
+  }
+}
 
-/* ---- Safety note in JS console (so users do not paste real secrets) ---- */
-console.log('SIM-HACK LAB — This is a simulation. Do NOT paste real credentials or attempt network scans from this page.');
+/* Save selected on unload */
+window.addEventListener('beforeunload', ()=> {
+  if(selected) localStorage.setItem('atlas_last_selected', selected.id);
+});
+
+/* expose for debugging (safe) */
+window._ATLAS_SIMPLE = { targets, runCommand, selectTarget };
+
 </script>
 </body>
 </html>
