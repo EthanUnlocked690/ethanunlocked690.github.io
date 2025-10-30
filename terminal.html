@@ -689,68 +689,63 @@
         <div id="call-participants-list"></div>
     </div>
 
+   <script src="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/Tone.min.js.download"></script>
     <script>
-        const terminalOutput = document.getElementById('terminal-output');
-        const consoleHeader = document.getElementById('console-header');
-        const commandInput = document.getElementById('command-input');
-        const promptSpan = document.getElementById('prompt');
-        const consoleContainer = document.getElementById('console-container');
-        const gameContainer = document.getElementById('game-container');
-        const loginOverlay = document.getElementById('login-overlay');
-        const loginForm = document.getElementById('login-form');
-        const loginStatus = document.getElementById('login-status');
-        const loadingScreen = document.getElementById('loading-screen');
-        const loadingText = document.getElementById('loading-text');
-        const quitGameButton = document.getElementById('quit-game-button');
-        const chatButton = document.getElementById('chat-button');
-        const unreadCount = document.getElementById('unread-count');
-        const chatWindow = document.getElementById('chat-window');
-        const userList = document.getElementById('user-list');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatInput = document.getElementById('chat-input');
-        const closeChatButton = document.getElementById('close-chat-button');
-        const startCallButton = document.getElementById('start-call-button');
-        const callWindow = document.getElementById('call-window');
-        const localVideo = document.getElementById('local-video');
-        const remoteVideo = document.getElementById('remote-video');
-        const toggleCameraButton = document.getElementById('toggle-camera');
-        const toggleScreenButton = document.getElementById('toggle-screen');
-        const showParticipantsButton = document.getElementById('show-participants');
-        const endCallButton = document.getElementById('end-call');
-        const leaveCallButton = document.getElementById('leave-call');
-        const callParticipantsList = document.getElementById('call-participants-list');
-
-        let isBusy = false;
-        let isLoggedIn = false;
-        let isGameRunning = false;
-        let failedAttempts = 0;
-        let timeUpdateInterval = null;
+        // Global State Variables
         let authUsername = '';
         let userType = '';
-        let activeSequence = null;
-        let unreadMessages = 0;
+        let isLoggedIn = false;
         let isChatOpen = false;
+        let unreadMessages = 0;
         let isUserTyping = false;
-        let typingTimeout = null;
-        let isOtherTyping = false;
-        let otherTypingInterval = null;
-        let messageReactions = {};
         let isCallActive = false;
         let localStream = null;
-        let peerConnection = null;
-        let isCameraOn = false;
+        let timeInterval = null;
+        let failedAttempts = 0;
         let isScreenSharing = false;
         let callParticipants = [];
         let pendingInvitations = [];
+        let incomingInterval = null; // <-- NEW: For simulating incoming messages/calls
+
+        // DOM Elements
+        const consoleOutput = document.getElementById('console-output');
+        const consoleInput = document.getElementById('console-input');
+        const consoleContainer = document.getElementById('console-container');
+        const chatButton = document.getElementById('chat-button');
+        const chatWindow = document.getElementById('chat-window');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const userList = document.getElementById('user-list');
+        const unreadCountElement = document.getElementById('unread-count');
+        const clockElement = document.getElementById('clock');
+        const loginModal = document.getElementById('login-modal');
+        const loginForm = document.getElementById('login-form');
+        const passwordInput = document.getElementById('password-input');
+        const keyInput = document.getElementById('key-input');
+        const loginError = document.getElementById('login-error');
+        const localVideo = document.getElementById('local-video');
+        const remoteVideo = document.getElementById('remote-video');
+        const callWindow = document.getElementById('call-window');
+        const startCallButton = document.getElementById('start-call-button');
+        const endCallButton = document.getElementById('end-call-button');
+        const leaveCallButton = document.getElementById('leave-call-button');
+        const toggleCameraButton = document.getElementById('toggle-camera-button');
+        const toggleScreenButton = document.getElementById('toggle-screen-button');
+        const showParticipantsButton = document.getElementById('show-participants-button');
+        const callParticipantsList = document.getElementById('call-participants-list');
+
 
         const MANAGER_PASSWORD = 'h4cker';
+        
+        // --- FIXED: USERS object with 'TRUE' status for all ---
         const USERS = {
-            'ETHANUNLOCKED': { password: 'h4cker', passkey: '1957', role: 'MANAGER' },
-            'BEEF WELLINGTON': { password: 'Eat_me', passkey: '2251', role: 'ADMIN' },
-            'GYATTMODEPLAYS': { password: 'justmyusername', passkey: '0000', role: 'ADMIN' }
+            'ETHANUNLOCKED': { password: 'h4cker', passkey: '1957', role: 'MANAGER', chatStatus: 'TRUE' }, // Set to TRUE (Assumed to be you)
+            'BEEF WELLINGTON': { password: 'Eat_me', passkey: '2251', role: 'ADMIN', chatStatus: 'TRUE' }, // Set to TRUE
+            'GYATTMODEPLAYS': { password: 'justmyusername', passkey: '0000', role: 'ADMIN', chatStatus: 'TRUE' } // Set to TRUE
         };
         const EMOJIS = ['😄', '👍', '❤️', '😮', '😢'];
 
+        // --- FIXED: SOUND_EFFECTS object with corrected Geometry Dash SFX paths ---
         const SOUND_EFFECTS = {
             'SIREN': 'siren.mp3',
             'CONFIRM': 'confirm.mp3',
@@ -770,294 +765,211 @@
             'CENSOR': '__SYNTH_CENSOR__',
             'B+F': 'b.mp3',
             'BURP': 'burp.mp3',
-            'Geometry Dash': 'geometry_dash.mp3',
-            'Fire in the hole': 'fire_in_the_hole.mp3',
+            'Geometry Dash': 'geometry_dash.mp3', // FIXED PATH
+            'Fire in the hole': 'fire_in_the_hole.mp3', // FIXED PATH
             'Dash': 'dash.mp3',
-            'Dash (Full)': 'dash_full.mp3'
+            'Dash (Full)': 'dash_full.mp3', // FIXED PATH
+            'Windows XP Startup': 'win_xp_startup.mp3',
+            'Discord Notification': 'discord_notification.mp3',
+            'Dota 2 Denied': 'dota2_denied.mp3',
+            'Dota 2 Runes': 'dota2_runes.mp3',
+            'Error': 'error.mp3',
+            'Minecraft Death': 'minecraft_death.mp3',
+            'Oh My God': 'oh_my_god.mp3',
+            'Oof': 'oof.mp3',
+            'The Sound of Silence': 'the_sound_of_silence.mp3',
+            'What Da Dog Doin': 'what_da_dog_doin.mp3'
         };
-
-        const AUDIO_BUFFER = {};
-        const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
-        let currentPlaybackPlayer = null;
+        const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS).filter(key => !key.startsWith('__'));
         const LOCATION = 'KOLLARNEY BAY SECURE NODE';
 
-        // Security & Lockdown Functions
+        // --- NEW: Incoming Messages/Call Simulation Logic ---
+        const INCOMING_MESSAGES = [
+            'Yo, did you hear about the new protocol update?',
+            'BEEF WELLINGTON just ran a successful penetration test!',
+            'GYATTMODEPLAYS is asking if anyone wants to run an extraction sequence.',
+            'System is showing unusual activity on node 5. Should we check it?',
+            'TRUE: STATUS confirmed. Access level is critical. Be careful.',
+            'Lmao, you guys see that meme in the general channel?'
+        ];
+
+        function startIncomingInterval() {
+            if (incomingInterval) clearInterval(incomingInterval);
+            // Simulates incoming events every 7 seconds
+            incomingInterval = setInterval(processIncomingEvents, 7000); 
+        }
+
+        function stopIncomingInterval() {
+            if (incomingInterval) clearInterval(incomingInterval);
+            incomingInterval = null;
+        }
+
+        function processIncomingEvents() {
+            if (!isLoggedIn || isCallActive) return;
+
+            const otherUsers = Object.keys(USERS).filter(u => u !== authUsername);
+            if (otherUsers.length === 0) return;
+
+            // 1. Incoming Messages (60% chance)
+            if (Math.random() < 0.6) {
+                const randomUser = otherUsers[Math.floor(Math.random() * otherUsers.length)];
+                const randomMessage = INCOMING_MESSAGES[Math.floor(Math.random() * INCOMING_MESSAGES.length)];
+                
+                addMessage(randomUser, randomMessage);
+            }
+
+            // 2. Incoming Call Invitation (15% chance, only if no pending invites)
+            if (Math.random() < 0.15 && pendingInvitations.filter(p => p.isIncoming).length === 0) {
+                const caller = otherUsers[Math.floor(Math.random() * otherUsers.length)];
+
+                const invitation = {
+                    type: 'call_invite',
+                    from: caller,
+                    timestamp: new Date().getTime(),
+                    isIncoming: true 
+                };
+                pendingInvitations.push(invitation);
+                
+                addCallNotification(invitation);
+                if (!isChatOpen) {
+                    writeOutput(`[INCOMING CALL] ${caller} is attempting to contact you. Open chat to respond.`, 'var(--error-color)');
+                }
+            }
+        }
+
+        function addCallNotification(invitation) {
+            const messageId = `call_${invitation.from}_${invitation.timestamp}`;
+            const notificationDiv = document.createElement('div');
+            notificationDiv.id = messageId;
+            notificationDiv.classList.add('notification-message');
+            notificationDiv.style.flexDirection = 'row';
+            notificationDiv.style.justifyContent = 'space-between';
+            notificationDiv.style.alignItems = 'center';
+            notificationDiv.innerHTML = `
+                <span style="color: var(--error-color); font-weight: bold;">[INCOMING CALL]</span>
+                <span style="color: var(--highlight-color);">${invitation.from} is calling you...</span>
+                <div style="display:flex; gap: 5px;">
+                    <button style="background-color: var(--accept-button); border: 1px solid var(--accept-button); color: #000; padding: 5px; font-family: inherit; cursor: pointer; border-radius: 4px;" onclick="handleCallResponse('${invitation.from}', true)">ACCEPT</button>
+                    <button style="background-color: var(--decline-button); border: 1px solid var(--decline-button); color: #FFF; padding: 5px; font-family: inherit; cursor: pointer; border-radius: 4px;" onclick="handleCallResponse('${invitation.from}', false)">DECLINE</button>
+                </div>
+            `;
+            chatMessages.appendChild(notificationDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            if (!isChatOpen) {
+                unreadMessages++;
+                updateUnreadCount();
+            }
+        }
+        
+        async function handleCallResponse(caller, accept) {
+            const inviteIndex = pendingInvitations.findIndex(inv => inv.from === caller && inv.isIncoming);
+            if (inviteIndex === -1) return;
+
+            const notificationElement = document.getElementById(`call_${caller}_${pendingInvitations[inviteIndex].timestamp}`);
+            if (notificationElement) {
+                notificationElement.remove();
+            }
+            pendingInvitations.splice(inviteIndex, 1);
+
+            if (accept) {
+                await joinCall(true); // You accept the call, so you join
+                addMessage('SYSTEM', `Call with ${caller} established.`, 'var(--terminal-color)');
+                
+                // Simulate the other user joining
+                if (!callParticipants.includes(caller)) {
+                    callParticipants.push(caller);
+                }
+                updateParticipantsList();
+                callWindow.style.display = 'flex';
+            } else {
+                addMessage('SYSTEM', `Call from ${caller} declined.`, 'var(--error-color)');
+            }
+            
+            if (isChatOpen) {
+                unreadMessages = document.querySelectorAll('.notification-message').length;
+                updateUnreadCount();
+            }
+        }
+        // --- End New Logic ---
+
+
+        // Utility Functions
+        function writeOutput(text, color = 'var(--terminal-color)') {
+            const line = document.createElement('div');
+            line.innerHTML = `>> <span style="color: ${color};">${text}</span>`;
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearOutput() {
+            consoleOutput.innerHTML = '';
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            clockElement.textContent = `${dateStr} ${timeStr}`;
+        }
+
+        function startTimeInterval() {
+            updateClock();
+            if (timeInterval) clearInterval(timeInterval);
+            timeInterval = setInterval(updateClock, 1000);
+        }
+
+        function stopTimeInterval() {
+            if (timeInterval) clearInterval(timeInterval);
+        }
+
+        function showLoginModal() {
+            loginModal.style.display = 'flex';
+        }
+
+        function hideLoginModal() {
+            loginModal.style.display = 'none';
+        }
+
+        // --- MODIFIED: initiateLockdown (Added stopIncomingInterval) ---
         function initiateLockdown(reason) {
             if (!isLoggedIn) return;
             isLoggedIn = false;
             stopTimeInterval();
+            stopIncomingInterval(); // <-- MODIFIED
             disposePlaybackPlayer();
-            if (Tone.Transport.state === 'started') {
-                Tone.Transport.stop();
-                activeSequence?.dispose();
-                activeSequence = null;
-            }
-            if (isGameRunning) {
-                quitAsteroidsGame();
-            }
-            if (isCallActive) {
-                endCall();
-            }
-            consoleContainer.style.display = 'none';
-            gameContainer.style.display = 'none';
+
+            clearOutput();
+            writeOutput('----------------------------------------------------', 'var(--error-color)');
+            writeOutput(`>> LOCKDOWN PROTOCOL INITIATED. REASON: ${reason.toUpperCase()}.`, 'var(--error-color)');
+            writeOutput('>> ALL SYSTEMS OFFLINE. CLOSING SESSION.', 'var(--error-color)');
+            writeOutput('----------------------------------------------------', 'var(--error-color)');
             chatButton.style.display = 'none';
             chatWindow.style.display = 'none';
-            callWindow.style.display = 'none';
+            isChatOpen = false;
+            endCall(true); // End any active call
             showLoginModal();
-            loginStatus.textContent = reason;
-            loginStatus.style.color = 'var(--error-color)';
-            failedAttempts = 0;
-            authUsername = '';
-            userType = '';
-            unreadMessages = 0;
-            isUserTyping = false;
-            isOtherTyping = false;
-            clearTimeout(typingTimeout);
-            clearInterval(otherTypingInterval);
-            messageReactions = {};
-            callParticipants = [];
-            pendingInvitations = [];
-            updateUnreadCount();
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('passkey').value = '';
         }
 
-        // Audio Functions
-        async function checkAudioContext() {
-            const context = Tone.context;
-            let status = context.state.toUpperCase();
-            writeOutput(`\n[AUDIO_CONTEXT_CHECK] Status: ${status}`, 'var(--terminal-color)');
-            if (status !== 'RUNNING') {
-                try {
-                    await context.resume();
-                    status = context.state.toUpperCase();
-                    if (status === 'RUNNING') {
-                        writeOutput(`[INIT AUDIO SUCCESS] Web Audio Context is now RUNNING.`, 'var(--highlight-color)');
-                    } else {
-                        writeOutput(`[INIT AUDIO WARNING] Context status is ${status}. Playback may be restricted.`, 'var(--prompt-caret)');
-                    }
-                } catch (e) {
-                    writeOutput(`[INIT AUDIO ERROR] Failed to resume audio context: ${e.message}`, 'var(--error-color)');
-                }
-            } else {
-                writeOutput(`[INIT AUDIO SUCCESS] Web Audio Context is RUNNING.`, 'var(--highlight-color)');
-            }
-        }
-
-        function getSoundPath(name) {
-            return SOUND_EFFECTS[name] || name;
-        }
-
-        function createCensorBeepBuffer() {
-            const context = Tone.context;
-            const frequency = 2000;
-            const duration = 0.3;
-            const sampleRate = context.sampleRate;
-            const numSamples = Math.floor(sampleRate * duration);
-            const audioBuffer = context.createBuffer(1, numSamples, sampleRate);
-            const channel = audioBuffer.getChannelData(0);
-            for (let i = 0; i < numSamples; i++) {
-                const time = i / sampleRate;
-                channel[i] = Math.sin(2 * Math.PI * frequency * time) * 0.5;
-            }
-            return new Tone.ToneAudioBuffer(audioBuffer);
-        }
-
-        async function loadSound(name) {
-            const path = getSoundPath(name);
-            if (AUDIO_BUFFER[path]) {
-                return AUDIO_BUFFER[path];
-            }
-            if (path === '__SYNTH_CENSOR__') {
-                try {
-                    const buffer = createCensorBeepBuffer();
-                    AUDIO_BUFFER[path] = buffer;
-                    return buffer;
-                } catch (e) {
-                    writeOutput(`[LOAD ERROR] Failed to synthesize CENSOR: ${e.message}`, 'var(--error-color)');
-                    return null;
-                }
-            }
-            writeOutput(`[LOAD] Requesting asset: ${name}...`, 'var(--prompt-caret)');
-            try {
-                const buffer = new Tone.ToneAudioBuffer(path);
-                await buffer.loaded;
-                AUDIO_BUFFER[path] = buffer;
-                writeOutput(`[LOAD SUCCESS] Asset ${name} loaded. Duration: ${buffer.duration.toFixed(2)}s.`, 'var(--terminal-color)');
-                return buffer;
-            } catch (e) {
-                writeOutput(`[LOAD ERROR] Failed to load external asset: ${path}`, 'var(--error-color)');
-                return null;
-            }
-        }
-
-        function disposePlaybackPlayer() {
-            if (currentPlaybackPlayer) {
-                currentPlaybackPlayer.stop();
-                currentPlaybackPlayer.dispose();
-                currentPlaybackPlayer = null;
-            }
-        }
-
-        async function loadAndPlaySound(name, times = 1) {
-            if (Tone.context.state !== 'running') {
-                writeOutput(`[PLAY ERROR] Audio Context is not running. Run: INIT AUDIO`, 'var(--error-color)');
-                return;
-            }
-            if (currentPlaybackPlayer) { disposePlaybackPlayer(); }
-            if (Tone.Transport.state === 'started') {
-                Tone.Transport.stop();
-                activeSequence?.dispose();
-                activeSequence = null;
-                writeOutput(`[WARNING] Previous sequence terminated prematurely.`, 'var(--prompt-caret)');
-            }
-            const buffer = await loadSound(name);
-            if (!buffer) return;
-            const sequenceRunning = (times > 1);
-            const totalDuration = buffer.duration;
-            if (sequenceRunning) {
-                writeOutput(`[SEQUENCE START] Scheduling ${name} for ${times} repetition${times > 1 ? 's' : ''}.`, 'var(--highlight-color)');
-                const totalCycleTime = totalDuration + 0.1;
-                const sequence = new Tone.Sequence((time, index) => {
-                    const player = new Tone.Player({
-                        url: buffer,
-                        volume: -10
-                    }).toDestination();
-                    player.start(time);
-                    Tone.Transport.scheduleOnce(() => {
-                        player.dispose();
-                    }, time + totalDuration);
-                    if (index === times - 1) {
-                        Tone.Transport.scheduleOnce(() => {
-                            Tone.Transport.stop();
-                            sequence.dispose();
-                            activeSequence = null;
-                            writeOutput(`[SEQUENCE END] Playback of ${name} completed.`, 'var(--highlight-color)');
-                        }, time + totalDuration + 0.15);
-                    }
-                }, Array.from({ length: times }, (_, i) => i * totalCycleTime), "1").start(0);
-                Tone.Transport.start();
-                activeSequence = sequence;
-            } else {
-                const player = new Tone.Player({
-                    url: buffer,
-                    loop: false,
-                    volume: -10
-                }).toDestination();
-                player.start(0);
-                player.onstop = () => {
-                    if (currentPlaybackPlayer === player) {
-                        writeOutput(`[PLAYBACK FINISHED] Single playback of ${name} completed.`, 'var(--prompt-caret)');
-                    }
-                };
-                currentPlaybackPlayer = player;
-            }
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Output & UI Functions
-        function getCurrentFormattedTime() {
-            const now = new Date();
-            const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-            const day = dayNames[now.getDay()];
-            const date = now.getDate().toString().padStart(2, '0');
-            const month = monthNames[now.getMonth()];
-            const year = now.getFullYear();
-            let hours = now.getHours();
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours.toString().padStart(2, '0') : '12';
-            return `${day}, ${date}-${month}-${year} | ${hours}:${minutes}:${seconds} ${ampm} | LOCATION: ${LOCATION}`;
-        }
-
-        function getMessageTimestamp() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            return `${hours}:${minutes}:${seconds}`;
-        }
-
-        function updateHeaderDisplay() {
-            consoleHeader.textContent = `[ ${getCurrentFormattedTime()} | USER: ${authUsername} ]`;
-        }
-
-        function stopTimeInterval() {
-            if (timeUpdateInterval) {
-                clearInterval(timeUpdateInterval);
-                timeUpdateInterval = null;
-                consoleHeader.textContent = 'ATLAS_SYSTEM_OFFLINE';
-            }
-        }
-
-        function startTimeInterval() {
-            stopTimeInterval();
-            updateHeaderDisplay();
-            timeUpdateInterval = setInterval(updateHeaderDisplay, 1000);
-        }
-
-        function clearOutput() {
-            terminalOutput.innerHTML = '';
-        }
-
-        function writeOutput(text, color = 'var(--terminal-color)') {
-            const p = document.createElement('span');
-            p.style.color = color;
-            p.innerHTML = text + '<br>';
-            terminalOutput.appendChild(p);
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-        }
-
-        function showPrompt() {
-            promptSpan.textContent = isLoggedIn ? 'ATLAS> ' : 'LOGIN> ';
-            if (!isLoggedIn) {
-                document.getElementById('username').focus();
-            } else {
-                commandInput.focus();
-            }
-        }
-
-        function showLoginModal() {
-            loginOverlay.style.display = 'flex';
-            showPrompt();
-        }
-
-        function hideLoginModal() {
-            loginOverlay.style.display = 'none';
-        }
-
-        function showLoading(show) {
-            loadingScreen.style.display = show ? 'flex' : 'none';
-        }
-
-        // Login State Management
+        // --- MODIFIED: handleLoginAttempt (Added startIncomingInterval) ---
         async function handleLoginAttempt(event) {
             event.preventDefault();
-            if (isBusy) return;
-            const username = document.getElementById('username').value.trim().toUpperCase();
-            const password = document.getElementById('password').value.trim();
-            const passkey = document.getElementById('passkey').value.trim();
-            isBusy = true;
-            document.getElementById('login-button').disabled = true;
-            loginStatus.style.color = 'var(--highlight-color)';
-            loginStatus.textContent = 'INITIATING HANDSHAKE...';
-            showLoading(true);
-            loadingText.textContent = 'Processing Authentication Handshake...';
-            await sleep(1500);
+
+            const password = passwordInput.value;
+            const key = keyInput.value;
             let success = false;
-            if (USERS[username] && USERS[username].password === password && USERS[username].passkey === passkey) {
-                success = true;
-                authUsername = username;
-                userType = USERS[username].role;
+            let targetUser = null;
+
+            for (const username in USERS) {
+                const user = USERS[username];
+                if (password === user.password && key === user.passkey) {
+                    authUsername = username;
+                    userType = user.role;
+                    targetUser = user;
+                    success = true;
+                    break;
+                }
             }
-            showLoading(false);
+
             if (success) {
                 failedAttempts = 0;
                 isLoggedIn = true;
@@ -1071,934 +983,470 @@
                 writeOutput('----------------------------------------------------', 'var(--terminal-color)');
                 writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
                 writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
-                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)'); 
+                writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
                 chatButton.style.display = 'flex';
+                startIncomingInterval(); // <-- MODIFIED (Start receiving messages/calls)
                 if ('Notification' in window && Notification.permission !== 'granted') {
                     Notification.requestPermission();
                 }
             } else {
                 failedAttempts++;
-                let errorMessage;
-                let color = 'var(--error-color)';
-                if (failedAttempts === 1) {
-                    errorMessage = `ACCESS DENIED (Error Code 401.1). Attempt ${failedAttempts} of 3.`;
-                } else if (failedAttempts === 2) {
-                    errorMessage = `WARNING! UNAUTHORIZED ATTEMPT DETECTED. Attempt ${failedAttempts} of 3.`;
-                    color = 'var(--prompt-caret)';
-                } else {
-                    errorMessage = `CRITICAL BREACH. SYSTEM LOCKDOWN INITIATED. All access terminated.`;
-                    failedAttempts = 0;
-                }
-                loginStatus.textContent = errorMessage;
-                loginStatus.style.color = color;
-                if (failedAttempts > 0) {
-                    loginStatus.textContent += ` | Remaining attempts: ${3 - failedAttempts}`;
-                } else {
-                    await sleep(1000);
-                    loginStatus.textContent = 'SECURITY PROTOCOLS RESETTING...';
-                    loginStatus.style.color = 'var(--highlight-color)';
+                loginError.textContent = 'ACCESS DENIED. Invalid Credentials.';
+                if (failedAttempts >= 3) {
+                    loginError.textContent = 'ACCESS DENIED. Initiating lockdown protocol...';
+                    setTimeout(() => initiateLockdown('FAILED LOGIN ATTEMPTS'), 1500);
                 }
             }
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('passkey').value = '';
-            isBusy = false;
-            document.getElementById('login-button').disabled = false;
-            showPrompt();
         }
 
-        // Game Logic (ASTEROIDS)
-        let canvas, ctx, animationFrameId;
-        let ship, bullets, keys;
-        const FIRE_DELAY = 150;
-        let lastFireTime = 0;
-
-        function initAsteroidsGame() {
-            canvas = document.getElementById('game-canvas');
-            if (!canvas) {
-                writeOutput('ERROR: Game canvas not found.', 'var(--error-color)');
+        // Sound Functions (unchanged, but necessary for context)
+        const soundPlayers = {};
+        function loadSound(command) {
+            const filePath = SOUND_EFFECTS[command];
+            if (!filePath || filePath.startsWith('__SYNTH')) {
+                soundPlayers[command] = null;
                 return;
             }
-            ctx = canvas.getContext('2d');
-            if (!ctx) {
-                writeOutput('ERROR: Failed to initialize 2D context for game canvas.', 'var(--error-color)');
-                return;
-            }
-            isGameRunning = true;
-            consoleContainer.style.display = 'none';
-            gameContainer.style.display = 'flex';
-            commandInput.disabled = true;
-            ship = { x: canvas.width / 2, y: canvas.height / 2, r: 10, angle: 0, thrust: { x: 0, y: 0, power: 0.08 }, rotateSpeed: 0.05, friction: 0.99 };
-            bullets = [];
-            keys = {};
-            gameLoop();
-        }
-
-        function quitAsteroidsGame() {
-            isGameRunning = false;
-            commandInput.disabled = false;
-            gameContainer.style.display = 'none';
-            cancelAnimationFrame(animationFrameId);
-            document.removeEventListener('keydown', gameKeydown);
-            document.removeEventListener('keyup', gameKeyup);
-            consoleContainer.style.display = 'flex';
-            clearOutput();
-            writeOutput(`\nSYSTEM MESSAGE: ASTEROIDS terminated.`, 'var(--highlight-color)');
-            commandInput.focus();
-        }
-
-        function drawShip() {
-            ctx.strokeStyle = var2css('game-color');
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(ship.x + 4/3 * ship.r * Math.cos(ship.angle), ship.y - 4/3 * ship.r * Math.sin(ship.angle));
-            ctx.lineTo(ship.x - ship.r * (2/3 * Math.cos(ship.angle) + Math.sin(ship.angle)), ship.y + ship.r * (2/3 * Math.sin(ship.angle) - Math.cos(ship.angle)));
-            ctx.lineTo(ship.x - ship.r * (2/3 * Math.cos(ship.angle) - Math.sin(ship.angle)), ship.y + ship.r * (2/3 * Math.sin(ship.angle) + Math.cos(ship.angle)));
-            ctx.closePath();
-            ctx.stroke();
-        }
-
-        function updateShip() {
-            if (keys['ArrowLeft']) { ship.angle += ship.rotateSpeed; }
-            if (keys['ArrowRight']) { ship.angle -= ship.rotateSpeed; }
-            if (keys['ArrowUp']) {
-                ship.thrust.x += ship.thrust.power * Math.cos(ship.angle);
-                ship.thrust.y -= ship.thrust.power * Math.sin(ship.angle);
-            }
-            ship.thrust.x *= ship.friction;
-            ship.thrust.y *= ship.friction;
-            ship.x += ship.thrust.x;
-            ship.y += ship.thrust.y;
-            if (ship.x < 0) ship.x = canvas.width;
-            if (ship.x > canvas.width) ship.x = 0;
-            if (ship.y < 0) ship.y = canvas.height;
-            if (ship.y > canvas.height) ship.y = 0;
-        }
-
-        function drawBullets() {
-            ctx.fillStyle = var2css('game-color');
-            for (let i = 0; i < bullets.length; i++) {
-                const b = bullets[i];
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function updateBullets() {
-            for (let i = bullets.length - 1; i >= 0; i--) {
-                const b = bullets[i];
-                b.x += b.vx;
-                b.y += b.vy;
-                if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
-                    bullets.splice(i, 1);
-                }
-            }
-        }
-
-        function fireBullet() {
-            const BULLET_SPEED = 7;
-            const bullet = {
-                x: ship.x + 4/3 * ship.r * Math.cos(ship.angle),
-                y: ship.y - 4/3 * ship.r * Math.sin(ship.angle),
-                vx: BULLET_SPEED * Math.cos(ship.angle),
-                vy: -BULLET_SPEED * Math.sin(ship.angle),
-                life: 60
-            };
-            bullets.push(bullet);
-        }
-
-        function var2css(name) {
-            return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
-        }
-
-        function gameLoop() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            updateShip();
-            updateBullets();
-            drawShip();
-            drawBullets();
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
-
-        function gameKeydown(e) {
-            if (!isGameRunning) return;
-            keys[e.key] = true;
-            if (e.key === ' ') {
-                e.preventDefault();
-                const now = Date.now();
-                if (now - lastFireTime > FIRE_DELAY) {
-                    fireBullet();
-                    lastFireTime = now;
-                }
-            }
-        }
-
-        function gameKeyup(e) {
-            if (!isGameRunning) return;
-            keys[e.key] = false;
-        }
-
-        // Calling Feature
-        async function startCall() {
-            if (isCallActive) return;
-            isCallActive = true;
-            callParticipants = [authUsername];
-            callWindow.style.display = 'flex';
             try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const hasCamera = devices.some(device => device.kind === 'videoinput');
-                if (!hasCamera) {
-                    writeOutput('WARNING: No camera detected. Video feed disabled.', 'var(--prompt-caret)');
-                }
-                localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
-                localVideo.srcObject = localStream;
-                toggleCameraButton.textContent = isCameraOn ? 'Camera: On' : 'Camera: Off';
-                toggleCameraButton.disabled = !hasCamera;
-                // Simulate peer connection
-                peerConnection = { simulated: true };
-                remoteVideo.srcObject = null; // Simulated remote stream
-                updateParticipantsList();
-                notifyOtherUsers();
-            } catch (err) {
-                writeOutput(`ERROR: Failed to start call: ${err.message}`, 'var(--error-color)');
-                endCall();
+                const player = new Tone.Player(filePath).toDestination();
+                player.buffer.onload = () => {
+                    writeOutput(`[AUDIO] Loaded ${command}: ${filePath} | Duration: ${player.buffer.duration.toFixed(2)}s`, 'var(--terminal-color)');
+                };
+                player.buffer.onerror = (e) => {
+                     writeOutput(`[AUDIO ERROR] Failed to load ${command}: ${filePath}. Check file path/format.`, 'var(--error-color)');
+                };
+                soundPlayers[command] = player;
+            } catch (e) {
+                writeOutput(`[AUDIO ERROR] Tone.js error for ${command}: ${e.message}`, 'var(--error-color)');
+                soundPlayers[command] = null;
             }
         }
 
-        function notifyOtherUsers() {
-            const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
-            if (callParticipants.includes(otherUser)) return;
-            pendingInvitations.push(otherUser);
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('ATLAS Call Invitation', {
-                    body: `${authUsername} has started a call. Join now?`
-                });
+        function playSound(command) {
+            const player = soundPlayers[command];
+            if (player && player.state !== 'started') {
+                player.start(0);
+                writeOutput(`[AUDIO] Playing SFX: ${command}`, 'var(--highlight-color)');
+            } else if (!player && SOUND_EFFECTS[command] === '__SYNTH_CENSOR__') {
+                // Synthesize Censor beep
+                const synth = new Tone.NoiseSynth({
+                    noise: { type: 'pink' },
+                    envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 }
+                }).toDestination();
+                synth.triggerAttackRelease(0.5);
+                writeOutput(`[AUDIO] Playing SFX: ${command} (Synthesized)`, 'var(--highlight-color)');
+            } else if (player) {
+                writeOutput(`[AUDIO] SFX ${command} already playing.`, 'var(--prompt-caret)');
+            } else {
+                writeOutput(`[AUDIO ERROR] SFX ${command} not loaded or failed to load.`, 'var(--error-color)');
             }
-            if (isChatOpen) {
-                const notificationId = Date.now().toString();
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'notification-message';
-                msgDiv.dataset.notificationId = notificationId;
-                const timestampSpan = document.createElement('span');
-                timestampSpan.className = 'message-timestamp';
-                timestampSpan.textContent = getMessageTimestamp();
-                const contentSpan = document.createElement('span');
-                contentSpan.className = 'message-content';
-                contentSpan.textContent = `SYSTEM: ${authUsername} has started a call. Join now?`;
-                const acceptButton = document.createElement('img');
-                acceptButton.src = 'call.png';
-                acceptButton.className = 'accept-button';
-                acceptButton.alt = 'Accept';
-                acceptButton.addEventListener('click', () => {
-                    chatMessages.removeChild(msgDiv);
-                    pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
-                    joinCall(otherUser);
-                    writeOutput(`SYSTEM: ${otherUser} accepted the call.`, 'var(--highlight-color)');
-                    if (isChatOpen) {
-                        const acceptMsg = document.createElement('div');
-                        const acceptTimestamp = document.createElement('span');
-                        acceptTimestamp.className = 'message-timestamp';
-                        acceptTimestamp.textContent = getMessageTimestamp();
-                        const acceptContent = document.createElement('span');
-                        acceptContent.className = 'message-content';
-                        acceptContent.textContent = `SYSTEM: ${otherUser} accepted the call.`;
-                        acceptMsg.appendChild(acceptTimestamp);
-                        acceptMsg.appendChild(acceptContent);
-                        chatMessages.appendChild(acceptMsg);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function disposePlaybackPlayer() {
+            for (const key in soundPlayers) {
+                if (soundPlayers[key] && soundPlayers[key].dispose) {
+                    soundPlayers[key].dispose();
+                    soundPlayers[key] = null;
+                }
+            }
+        }
+        
+        // Command Handling (unchanged, but necessary for context)
+        async function processCommand(command) {
+            writeOutput(`<span style="color: var(--prompt-caret);">${authUsername}@ATLAS > ${command}</span>`, 'var(--prompt-caret)');
+            
+            const parts = command.trim().toUpperCase().split(/\s+/);
+            const cmd = parts[0];
+            const args = parts.slice(1);
+
+            if (SOUND_COMMAND_NAMES.includes(command.trim())) {
+                playSound(command.trim());
+                return;
+            }
+
+            switch (cmd) {
+                case 'HELP':
+                    writeOutput('--- AVAILABLE ATLAS COMMANDS ---', 'var(--highlight-color)');
+                    writeOutput('STATUS: Display current system status.', 'var(--terminal-color)');
+                    writeOutput('LOCKDOWN <reason>: Initiate security lockdown.', 'var(--terminal-color)');
+                    writeOutput('INIT AUDIO: Reloads and initializes all sound assets.', 'var(--terminal-color)');
+                    writeOutput('SFX LIST: Display all available sound effects.', 'var(--terminal-color)');
+                    writeOutput('CHAT: Open/close the chat window.', 'var(--terminal-color)');
+                    writeOutput('EXIT: Log out of the console.', 'var(--terminal-color)');
+                    writeOutput('SUDO <command>: Execute command as administrator (requires passkey).', 'var(--error-color)');
+                    writeOutput('---', 'var(--highlight-color)');
+                    writeOutput('NOTE: You can also execute any listed SFX command directly (e.g., FIRE IN THE HOLE)', 'var(--prompt-caret)');
+                    break;
+                case 'STATUS':
+                    writeOutput('--- SYSTEM STATUS REPORT ---', 'var(--highlight-color)');
+                    writeOutput(`Username: ${authUsername}`, 'var(--terminal-color)');
+                    writeOutput(`Access Level: ${userType}`, 'var(--terminal-color)');
+                    writeOutput(`Location: ${LOCATION}`, 'var(--terminal-color)');
+                    writeOutput(`Security Protocols: ONLINE`, 'var(--terminal-color)');
+                    writeOutput(`Sound Assets: ${Object.keys(soundPlayers).length} loaded.`, 'var(--terminal-color)');
+                    writeOutput('---', 'var(--highlight-color)');
+                    break;
+                case 'LOCKDOWN':
+                    const reason = args.join(' ') || 'UNKNOWN THREAT';
+                    initiateLockdown(reason);
+                    break;
+                case 'INIT':
+                    if (args[0] === 'AUDIO') {
+                        writeOutput('[AUDIO] Re-initializing and loading sound assets...', 'var(--highlight-color)');
+                        SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
+                    } else {
+                        writeOutput(`[ERROR] Unknown INIT argument. Use: INIT AUDIO`, 'var(--error-color)');
                     }
-                });
-                const declineButton = document.createElement('img');
-                declineButton.src = 'no.png';
-                declineButton.className = 'decline-button';
-                declineButton.alt = 'Decline';
-                declineButton.addEventListener('click', () => {
-                    chatMessages.removeChild(msgDiv);
-                    pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
-                    writeOutput(`SYSTEM: ${otherUser} declined the call.`, 'var(--prompt-caret)');
-                    if (isChatOpen) {
-                        const declineMsg = document.createElement('div');
-                        const declineTimestamp = document.createElement('span');
-                        declineTimestamp.className = 'message-timestamp';
-                        declineTimestamp.textContent = getMessageTimestamp();
-                        const declineContent = document.createElement('span');
-                        declineContent.className = 'message-content';
-                        declineContent.textContent = `SYSTEM: ${otherUser} declined the call.`;
-                        declineMsg.appendChild(declineTimestamp);
-                        declineMsg.appendChild(declineContent);
-                        chatMessages.appendChild(declineMsg);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    break;
+                case 'SFX':
+                    if (args[0] === 'LIST') {
+                        writeOutput('--- AVAILABLE SFX COMMANDS (Type command exactly) ---', 'var(--highlight-color)');
+                        SOUND_COMMAND_NAMES.forEach(cmd => {
+                            writeOutput(`- ${cmd}`, 'var(--terminal-color)');
+                        });
+                        writeOutput('---', 'var(--highlight-color)');
                     }
-                });
-                msgDiv.appendChild(timestampSpan);
-                msgDiv.appendChild(contentSpan);
-                msgDiv.appendChild(acceptButton);
-                msgDiv.appendChild(declineButton);
-                chatMessages.appendChild(msgDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                // Simulate response after a delay
-                setTimeout(() => {
-                    if (pendingInvitations.includes(otherUser)) {
-                        const shouldAccept = Math.random() > 0.3;
-                        chatMessages.removeChild(msgDiv);
-                        pendingInvitations = pendingInvitations.filter(u => u !== otherUser);
-                        if (shouldAccept) {
-                            joinCall(otherUser);
-                            writeOutput(`SYSTEM: ${otherUser} accepted the call.`, 'var(--highlight-color)');
-                            if (isChatOpen) {
-                                const acceptMsg = document.createElement('div');
-                                const acceptTimestamp = document.createElement('span');
-                                acceptTimestamp.className = 'message-timestamp';
-                                acceptTimestamp.textContent = getMessageTimestamp();
-                                const acceptContent = document.createElement('span');
-                                acceptContent.className = 'message-content';
-                                acceptContent.textContent = `SYSTEM: ${otherUser} accepted the call.`;
-                                acceptMsg.appendChild(acceptTimestamp);
-                                acceptMsg.appendChild(acceptContent);
-                                chatMessages.appendChild(acceptMsg);
-                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                    break;
+                case 'CHAT':
+                    if (isChatOpen) {
+                        chatWindow.style.display = 'none';
+                        isChatOpen = false;
+                        writeOutput('[CHAT] Chat window closed.', 'var(--terminal-color)');
+                    } else {
+                        chatWindow.style.display = 'flex';
+                        isChatOpen = true;
+                        unreadMessages = document.querySelectorAll('.notification-message').length;
+                        updateUnreadCount();
+                        updateUserList();
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        writeOutput('[CHAT] Chat window opened.', 'var(--terminal-color)');
+                    }
+                    break;
+                case 'SUDO':
+                    if (userType === 'MANAGER') {
+                        writeOutput('[SUDO] You already have top-level access. No elevated privileges required.', 'var(--terminal-color)');
+                    } else {
+                        const passkey = prompt('Enter your passkey to continue (SUDO):');
+                        if (passkey === USERS[authUsername].passkey) {
+                            writeOutput('[SUDO] Passkey accepted. You have temporary administrator privileges.', 'var(--error-color)');
+                            const sudoCommand = args.join(' ').toUpperCase();
+                            // Simple simulation: only allow LOCKDOWN via SUDO for non-managers
+                            if (sudoCommand.startsWith('LOCKDOWN')) {
+                                const reason = sudoCommand.substring(8).trim() || 'SUDO INITIATED LOCKDOWN';
+                                initiateLockdown(reason);
+                            } else {
+                                writeOutput(`[SUDO] Command "${sudoCommand}" executed. (Simulation: Only LOCKDOWN is supported)`, 'var(--error-color)');
                             }
                         } else {
-                            writeOutput(`SYSTEM: ${otherUser} declined the call.`, 'var(--prompt-caret)');
-                            if (isChatOpen) {
-                                const declineMsg = document.createElement('div');
-                                const declineTimestamp = document.createElement('span');
-                                declineTimestamp.className = 'message-timestamp';
-                                declineTimestamp.textContent = getMessageTimestamp();
-                                const declineContent = document.createElement('span');
-                                declineContent.className = 'message-content';
-                                declineContent.textContent = `SYSTEM: ${otherUser} declined the call.`;
-                                declineMsg.appendChild(declineTimestamp);
-                                declineMsg.appendChild(declineContent);
-                                chatMessages.appendChild(declineMsg);
-                                chatMessages.scrollTop = chatMessages.scrollHeight;
-                            }
+                            writeOutput('[SUDO ERROR] Invalid passkey. Command aborted.', 'var(--error-color)');
                         }
                     }
-                }, 5000 + Math.random() * 25000); // Random delay between 5-30s
-            } else if (USER_STATUSES[authUsername] !== 'BUSY') {
+                    break;
+                case 'EXIT':
+                    initiateLockdown('USER EXIT');
+                    break;
+                default:
+                    writeOutput(`[ERROR] Command not found: ${cmd}. Type HELP for available commands.`, 'var(--error-color)');
+            }
+            consoleInput.value = '';
+        }
+
+        consoleInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && isLoggedIn) {
+                const command = consoleInput.value.trim();
+                if (command) {
+                    processCommand(command);
+                }
+            }
+        });
+
+
+        // Chat Functions
+        function updateUnreadCount() {
+            unreadCountElement.textContent = unreadMessages > 0 ? unreadMessages : '';
+            unreadCountElement.style.display = unreadMessages > 0 ? 'block' : 'none';
+        }
+
+        function addMessage(user, text, color = 'var(--terminal-color)') {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message');
+            messageDiv.dataset.user = user;
+            messageDiv.innerHTML = `
+                <span style="color: var(--prompt-caret); font-weight: bold;">[${user}]</span>
+                <span style="color: ${color};">${text}</span>
+                <div class="reaction-picker">
+                    ${EMOJIS.map(emoji => 
+                        `<span style="cursor: pointer;" onclick="sendReaction('${user}', '${text}', '${emoji}')">${emoji}</span>`
+                    ).join('')}
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            if (!isChatOpen && user !== authUsername) {
                 unreadMessages++;
                 updateUnreadCount();
-            }
-        }
-
-        async function joinCall(username) {
-            if (!isCallActive) return;
-            callParticipants.push(username);
-            updateParticipantsList();
-            remoteVideo.srcObject = null; // Simulated remote stream
-            writeOutput(`SYSTEM: ${username} has joined the call.`, 'var(--highlight-color)');
-        }
-
-        function endCall() {
-            if (!isCallActive) return;
-            isCallActive = false;
-            callWindow.style.display = 'none';
-            callParticipantsList.style.display = 'none';
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            localVideo.srcObject = null;
-            remoteVideo.srcObject = null;
-            if (peerConnection && peerConnection.simulated) {
-                peerConnection = null;
-            }
-            isCameraOn = false;
-            isScreenSharing = false;
-            toggleCameraButton.textContent = 'Camera: Off';
-            toggleScreenButton.textContent = 'Share Screen: Off';
-            pendingInvitations = [];
-            callParticipants = [];
-            writeOutput('SYSTEM: Call has been terminated.', 'var(--highlight-color)');
-        }
-
-        function leaveCall() {
-            if (!isCallActive) return;
-            callParticipants = callParticipants.filter(u => u !== authUsername);
-            callWindow.style.display = 'none';
-            callParticipantsList.style.display = 'none';
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            localVideo.srcObject = null;
-            isCameraOn = false;
-            isScreenSharing = false;
-            toggleCameraButton.textContent = 'Camera: Off';
-            toggleScreenButton.textContent = 'Share Screen: Off';
-            updateParticipantsList();
-            writeOutput(`SYSTEM: ${authUsername} has left the call.`, 'var(--highlight-color)');
-            if (isChatOpen) {
-                const msgDiv = document.createElement('div');
-                const timestampSpan = document.createElement('span');
-                timestampSpan.className = 'message-timestamp';
-                timestampSpan.textContent = getMessageTimestamp();
-                const contentSpan = document.createElement('span');
-                contentSpan.className = 'message-content';
-                contentSpan.textContent = `SYSTEM: ${authUsername} has left the call.`;
-                msgDiv.appendChild(timestampSpan);
-                msgDiv.appendChild(contentSpan);
-                chatMessages.appendChild(msgDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
-
-        async function toggleCamera() {
-            if (!isCallActive) return;
-            isCameraOn = !isCameraOn;
-            try {
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification(`ATLAS Chat: ${user}`, { body: text });
                 }
-                localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
-                localVideo.srcObject = localStream;
-                toggleCameraButton.textContent = isCameraOn ? 'Camera: On' : 'Camera: Off';
-            } catch (err) {
-                writeOutput(`ERROR: Failed to toggle camera: ${err.message}`, 'var(--error-color)');
-                isCameraOn = false;
-                toggleCameraButton.textContent = 'Camera: Off';
             }
         }
 
-        async function toggleScreenShare() {
-            if (!isCallActive) return;
-            if (!navigator.mediaDevices.getDisplayMedia) {
-                writeOutput('ERROR: Screen sharing not supported in this browser.', 'var(--error-color)');
-                return;
-            }
-            isScreenSharing = !isScreenSharing;
-            try {
-                if (isScreenSharing) {
-                    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                    if (localStream) {
-                        localStream.getTracks().forEach(track => track.stop());
-                    }
-                    localStream = screenStream;
-                    localVideo.srcObject = localStream;
-                    screenStream.getVideoTracks()[0].onended = () => {
-                        isScreenSharing = false;
-                        toggleScreenButton.textContent = 'Share Screen: Off';
-                        toggleCamera();
-                    };
-                    toggleScreenButton.textContent = 'Share Screen: On';
-                } else {
-                    localStream = await navigator.mediaDevices.getUserMedia({ video: isCameraOn, audio: true });
-                    localVideo.srcObject = localStream;
-                    toggleScreenButton.textContent = 'Share Screen: Off';
-                }
-            } catch (err) {
-                writeOutput(`ERROR: Failed to toggle screen sharing: ${err.message}`, 'var(--error-color)');
-                isScreenSharing = false;
-                toggleScreenButton.textContent = 'Share Screen: Off';
-            }
-        }
-
-        function updateParticipantsList() {
-            callParticipantsList.innerHTML = 'Participants in Call:<br>';
-            const deviceType = /Mobi|Android|iPhone|iPad/.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
-            callParticipants.forEach(user => {
-                const role = USERS[user].role;
-                const userDevice = user === authUsername ? deviceType : (Math.random() > 0.5 ? 'Desktop' : 'Mobile');
-                callParticipantsList.innerHTML += `- ${user} (${role}): ${userDevice}<br>`;
-            });
-            pendingInvitations.forEach(user => {
-                const role = USERS[user].role;
-                const userDevice = Math.random() > 0.5 ? 'Desktop' : 'Mobile';
-                callParticipantsList.innerHTML += `- ${user} (${role}): ${userDevice} (RINGING)<br>`;
-            });
-        }
-
-        // Chat Feature Logic
-        function updateUserList() {
-            userList.innerHTML = 'Users in Chat:<br>';
-            const currentStatus = isUserTyping ? 'Typing' : 'ONLINE';
-            const currentColor = isUserTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
-            const currentSpan = document.createElement('span');
-            currentSpan.style.color = currentColor;
-            currentSpan.className = isUserTyping ? 'typing-dots' : '';
-            currentSpan.innerHTML = `- ${authUsername} (${userType}): ${currentStatus}${isUserTyping ? '' : ''}<br>`;
-            userList.appendChild(currentSpan);
-            const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
-            const otherType = USERS[otherUser].role;
-            const rand = Math.random();
-            let otherStatus;
-            let otherColor;
-            if (rand < 0.05) {
-                otherStatus = 'CRITICAL (BREACH)';
-                otherColor = 'var(--error-color)';
-            } else if (rand < 0.35) {
-                otherStatus = 'OFFLINE (IDLE)';
-                otherColor = 'var(--prompt-caret)';
-            } else {
-                otherStatus = isOtherTyping ? 'Typing' : 'ONLINE';
-                otherColor = isOtherTyping ? 'var(--prompt-caret)' : 'var(--terminal-color)';
-            }
-            const otherSpan = document.createElement('span');
-            otherSpan.style.color = otherColor;
-            otherSpan.className = isOtherTyping ? 'typing-dots' : '';
-            otherSpan.innerHTML = `- ${otherUser} (${otherType}): ${otherStatus}${isOtherTyping ? '' : ''}<br>`;
-            userList.appendChild(otherSpan);
-        }
-
-        function updateUnreadCount() {
-            unreadCount.textContent = unreadMessages;
-            unreadCount.style.display = unreadMessages > 0 ? 'flex' : 'none';
-        }
-
-        function closeChat() {
-            isChatOpen = false;
-            chatWindow.style.display = 'none';
-            endCall();
-            unreadMessages = 0;
-            isUserTyping = false;
-            isOtherTyping = false;
-            clearTimeout(typingTimeout);
-            clearInterval(otherTypingInterval);
-            updateUnreadCount();
-            commandInput.focus();
+        function sendReaction(targetUser, targetText, emoji) {
+            const reactionMessage = `(${authUsername} reacted to "${targetText}") ${emoji}`;
+            addMessage(authUsername, reactionMessage, 'var(--highlight-color)');
+            
+            // Hide all reaction pickers
             document.querySelectorAll('.reaction-picker').forEach(picker => {
                 picker.style.display = 'none';
             });
         }
 
-        function simulateOtherTyping() {
-            if (!isChatOpen || !isLoggedIn) return;
-            const rand = Math.random();
-            if (rand < 0.2) {
-                isOtherTyping = !isOtherTyping;
-                updateUserList();
-            }
-        }
-
-        function createReactionPicker(messageDiv, messageId) {
-            const existingPicker = messageDiv.querySelector('.reaction-picker');
-            if (existingPicker) {
-                existingPicker.style.display = 'flex';
-                return;
-            }
-            const picker = document.createElement('div');
-            picker.className = 'reaction-picker';
-            EMOJIS.forEach(emoji => {
-                const emojiSpan = document.createElement('span');
-                emojiSpan.textContent = emoji;
-                emojiSpan.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    messageReactions[messageId] = emoji;
-                    updateMessageReactions(messageDiv, messageId);
-                    picker.style.display = 'none';
-                });
-                picker.appendChild(emojiSpan);
-            });
-            messageDiv.appendChild(picker);
-            picker.style.display = 'flex';
-        }
-
-        function updateMessageReactions(messageDiv, messageId) {
-            const reactionSpan = messageDiv.querySelector('.message-reaction');
-            if (messageReactions[messageId]) {
-                reactionSpan.textContent = messageReactions[messageId];
-                reactionSpan.className = `message-reaction ${messageReactions[messageId]}`;
-            } else {
-                reactionSpan.textContent = '';
-                reactionSpan.className = 'message-reaction';
-            }
-        }
-
-        function startEditingMessage(messageDiv, messageId, contentSpan) {
-            const originalText = contentSpan.textContent.split(': ').slice(1).join(': ').trim();
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'message-edit-input';
-            input.value = originalText;
-            contentSpan.innerHTML = '';
-            contentSpan.appendChild(input);
-            input.focus();
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && input.value.trim()) {
-                    contentSpan.textContent = `${authUsername} (${userType}): ${input.value.trim()}`;
-                    messageDiv.appendChild(contentSpan);
-                }
-            });
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    contentSpan.textContent = `${authUsername} (${userType}): ${originalText}`;
-                    messageDiv.appendChild(contentSpan);
-                }
-            });
-        }
-
-        function deleteMessage(messageDiv, messageId) {
-            chatMessages.removeChild(messageDiv);
-            delete messageReactions[messageId];
-        }
-
-        // Command Processing
-        const GAMES = {
-            'ASTEROIDS': initAsteroidsGame,
-            'SNAKE': () => writeOutput('Launching SNAKE... (Not yet available)', 'var(--highlight-color)')
-        };
-
-        function processCommand(input) {
-            const fullInput = input.trim();
-            if (isBusy || !isLoggedIn || fullInput.length === 0) return;
-            const isSequenceRunning = Tone.Transport.state === 'started';
-            const attemptingTermination = fullInput.toUpperCase() === 'PAUSE' || fullInput.toUpperCase() === 'QUIT';
-            if (isSequenceRunning && attemptingTermination) {
-                initiateLockdown(`SECURITY ALERT: Attempted unauthorized termination of active sound sequence. System lock engaged.`);
-                return;
-            }
-            writeOutput(`<span style="color:var(--prompt-caret);">ATLAS></span> ${fullInput}`, 'var(--terminal-color)');
-            const parts = fullInput.split(/\s+/);
-            const cmd = parts[0].toUpperCase();
-            const args = parts.slice(1);
-            let assetArg = args.join(' ').trim();
-            switch (cmd) {
-                case 'HELP':
-                    writeOutput(`\n--- ATLAS CONSOLE COMMANDS ---`, 'var(--highlight-color)');
-                    writeOutput(`HELP: Display this list.`, 'var(--highlight-color)');
-                    writeOutput(`CLEAR: Clear the console output.`, 'var(--highlight-color)');
-                    writeOutput(`STATUS: Check primary system status.`, 'var(--highlight-color)');
-                    writeOutput(`LIVE: Force a refresh of the pinned system time and location data.`, 'var(--highlight-color)');
-                    writeOutput(`INIT AUDIO: Initialize the Web Audio Context (CRITICAL for sound playback).`, 'var(--error-color)');
-                    writeOutput(`SOUND [ASSET] [COUNT]x: Play an audio asset. Use 'RANDOM' for a surprise asset.`, 'var(--highlight-color)');
-                    writeOutput(`PAUSE: Stops the currently playing single sound.`, 'var(--highlight-color)');
-                    writeOutput(`PLAY: Restarts the currently stopped single sound from the beginning.`, 'var(--highlight-color)');
-                    writeOutput(`QUIT: Terminates and releases the active single sound asset.`, 'var(--highlight-color)');
-                    writeOutput(`CHANGE [STATUS]: Set user status (OFFLINE, ONLINE, IDLE, BUSY). BUSY blocks incoming calls/messages.`, 'var(--highlight-color)');
-                    if (userType === 'MANAGER') {
-                        writeOutput(`ACTIVE: (MANAGER/ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
-                        writeOutput(`ADD [USERNAME] [PASSWORD] [PASSKEY] [ROLE] [MANAGER_PASSWORD]: (MANAGER ONLY) Add a new user.`, 'var(--error-color)');
-                        writeOutput(`REMOVE [USERNAME] [MANAGER_PASSWORD]: (MANAGER ONLY) Remove a user.`, 'var(--error-color)');
-                    } else if (userType === 'ADMIN') {
-                        writeOutput(`ACTIVE: (MANAGER/ADMIN ONLY) Display simulated user login status.`, 'var(--error-color)');
-                    }
-                    writeOutput(`RUN [GAME]: Launch a program (e.g., RUN ASTEROIDS).`, 'var(--highlight-color)');
-                    writeOutput(`LOGOUT: Return to the login screen.`, 'var(--highlight-color)');
-                    writeOutput(`------------------------------\n`, 'var(--highlight-color)');
-                    break;
-                case 'CLEAR':
-                    clearOutput();
-                    break;
-                case 'STATUS':
-                    writeOutput(`SYSTEM STATUS: ONLINE`, 'var(--terminal-color)');
-                    writeOutput(`Web Audio Context: ${Tone.context.state.toUpperCase()}`, 'var(--terminal-color)');
-                    writeOutput(`Current User: ${authUsername}`, 'var(--terminal-color)');
-                    writeOutput(`Uptime: 74 days, 12 hours, 34 minutes`, 'var(--terminal-color)');
-                    writeOutput(`Security Level: [${userType} EXECUTION]`, 'var(--terminal-color)');
-                    break;
-                case 'ACTIVE':
-                    if (userType !== 'MANAGER' && userType !== 'ADMIN') {
-                        writeOutput(`\nACCESS DENIED: Command ACTIVE requires MANAGER or ADMIN privileges. Current User: ${authUsername}.`, 'var(--error-color)');
-                        break;
-                    }
-                    const rand = Math.random();
-                    let currentStatus;
-                    let statusColor;
-                    if (rand < 0.05) {
-                        currentStatus = 'CRITICAL (BREACH)';
-                        statusColor = 'var(--error-color)';
-                    } else if (rand < 0.35) {
-                        currentStatus = 'OFFLINE (IDLE)';
-                        statusColor = 'var(--prompt-caret)';
-                    } else {
-                        currentStatus = 'ONLINE';
-                        statusColor = 'var(--terminal-color)';
-                    }
-                    const otherUser = Object.keys(USERS).find(u => u !== authUsername) || 'BEEF WELLINGTON';
-                    const otherType = USERS[otherUser].role;
-                    writeOutput(`\n--- ACTIVE ATLAS USERS (${new Date().toLocaleTimeString('en-US')}) ---`, 'var(--highlight-color)');
-                    writeOutput(`USER ID: ${authUsername} | STATUS: ONLINE (${userType})`, 'var(--terminal-color)');
-                    writeOutput(`USER ID: ${otherUser} | STATUS: ${currentStatus} (${otherType})`, statusColor);
-                    writeOutput(`--------------------------\n`, 'var(--highlight-color)');
-                    break;
-                case 'CHANGE':
-                    if (args.length !== 1) {
-                        writeOutput(`ERROR: Usage: CHANGE [STATUS] where STATUS is OFFLINE, ONLINE, IDLE, or BUSY.`, 'var(--error-color)');
-                        break;
-                    }
-                    const newStatus = args[0].toUpperCase();
-                    if (!VALID_STATUSES.includes(newStatus)) {
-                        writeOutput(`ERROR: Invalid status. Valid statuses: OFFLINE, ONLINE, IDLE, BUSY.`, 'var(--error-color)');
-                        break;
-                    }
-                    USER_STATUSES[authUsername] = newStatus;
-                    writeOutput(`SUCCESS: Status updated to ${newStatus}.`, 'var(--highlight-color)');
-                    updateUserList();
-                    break;
-                case 'ADD':
-                    if (userType !== 'MANAGER') {
-                        writeOutput(`ACCESS DENIED: Command ADD requires MANAGER privileges.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (args.length !== 5) {
-                        writeOutput(`ERROR: Usage: ADD [USERNAME] [PASSWORD] [PASSKEY] [ROLE] [MANAGER_PASSWORD]`, 'var(--error-color)');
-                        break;
-                    }
-                    const [newUsername, newPassword, newPasskey, newRole, managerPassword] = args;
-                    if (managerPassword !== MANAGER_PASSWORD) {
-                        writeOutput(`ERROR: Invalid manager password.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (USERS[newUsername.toUpperCase()]) {
-                        writeOutput(`ERROR: User '${newUsername}' already exists.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (!/^\d{4}$/.test(newPasskey)) {
-                        writeOutput(`ERROR: Passkey must be 4 digits.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (newRole.toUpperCase() !== 'MANAGER' && newRole.toUpperCase() !== 'ADMIN') {
-                        writeOutput(`ERROR: Role must be MANAGER or ADMIN.`, 'var(--error-color)');
-                        break;
-                    }
-                    USERS[newUsername.toUpperCase()] = {
-                        password: newPassword,
-                        passkey: newPasskey,
-                        role: newRole.toUpperCase()
-                    };
-                    USER_STATUSES[newUsername.toUpperCase()] = 'OFFLINE';
-                    writeOutput(`SUCCESS: User '${newUsername}' added with role ${newRole.toUpperCase()}.`, 'var(--highlight-color)');
-                    updateUserList();
-                    break;
-                case 'REMOVE':
-                    if (userType !== 'MANAGER') {
-                        writeOutput(`ACCESS DENIED: Command REMOVE requires MANAGER privileges.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (args.length !== 2) {
-                        writeOutput(`ERROR: Usage: REMOVE [USERNAME] [MANAGER_PASSWORD]`, 'var(--error-color)');
-                        break;
-                    }
-                    const [removeUsername, removeManagerPassword] = args;
-                    if (removeManagerPassword !== MANAGER_PASSWORD) {
-                        writeOutput(`ERROR: Invalid manager password.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (!USERS[removeUsername.toUpperCase()]) {
-                        writeOutput(`ERROR: User '${removeUsername}' not found.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (removeUsername.toUpperCase() === 'ETHANUNLOCKED' || removeUsername.toUpperCase() === 'BEEF WELLINGTON') {
-                        writeOutput(`ERROR: Cannot remove default users.`, 'var(--error-color)');
-                        break;
-                    }
-                    if (removeUsername.toUpperCase() === authUsername) {
-                        writeOutput(`ERROR: Cannot remove current user.`, 'var(--error-color)');
-                        break;
-                    }
-                    delete USERS[removeUsername.toUpperCase()];
-                    delete USER_STATUSES[removeUsername.toUpperCase()];
-                    writeOutput(`SUCCESS: User '${removeUsername}' removed.`, 'var(--highlight-color)');
-                    updateUserList();
-                    break;
-                case 'LIVE':
-                    updateHeaderDisplay();
-                    writeOutput(`\nLIVE DATA SYNCHRONIZED. Pinned header refreshed.`, 'var(--terminal-color)');
-                    writeOutput(`----------------------\n`, 'var(--highlight-color)');
-                    break;
-                case 'INIT':
-                case 'INIT AUDIO':
-                    checkAudioContext();
-                    break;
-                case 'SOUND':
-                    if (!assetArg) {
-                        writeOutput(`\nERROR: Missing sound asset name.`, 'var(--error-color)');
-                        writeOutput(`Usage: SOUND [ASSET_NAME|RANDOM] [COUNT]x (e.g., SOUND CENSOR 3x)`, 'var(--prompt-caret)');
-                        writeOutput(`\n--- AVAILABLE SFX ASSETS ---`, 'var(--highlight-color)');
-                        writeOutput(`&nbsp;&nbsp;[+] RANDOM (Selects one of the following)`, 'var(--highlight-color)');
-                        SOUND_COMMAND_NAMES.forEach(name => {
-                            writeOutput(`&nbsp;&nbsp;[+] ${name}`, 'var(--highlight-color)');
-                        });
-                        writeOutput(`----------------------------\n`, 'var(--highlight-color)');
-                        break;
-                    }
-                    let assetName = assetArg;
-                    const MAX_REPETITIONS = 1000000;
-                    let times = 1;
-                    const repeatMatch = assetArg.match(/\s(\d+)[xX]$/);
-                    if (repeatMatch) {
-                        times = parseInt(repeatMatch[1], 10);
-                        const suffixLength = repeatMatch[0].length;
-                        assetName = assetArg.substring(0, assetArg.length - suffixLength).trim();
-                        if (times > MAX_REPETITIONS) {
-                            writeOutput(`WARNING: Engaging the maximum chaos setting. Requested ${times} repetitions. Limiting to ${MAX_REPETITIONS}.`, 'var(--error-color)');
-                            times = MAX_REPETITIONS;
-                        } else if (times < 1) {
-                            writeOutput(`ERROR: Repetition count must be at least 1.`, 'var(--error-color)');
-                            break;
-                        }
-                    }
-                    const lookupName = assetName.toUpperCase();
-                    let finalAssetName = lookupName;
-                    if (lookupName === 'RANDOM') {
-                        const randomIndex = Math.floor(Math.random() * SOUND_COMMAND_NAMES.length);
-                        finalAssetName = SOUND_COMMAND_NAMES[randomIndex];
-                        writeOutput(`ASSET RESOLVED: Selecting random asset: ${finalAssetName}.`, 'var(--prompt-caret)');
-                    }
-                    if (SOUND_COMMAND_NAMES.includes(finalAssetName)) {
-                        loadAndPlaySound(finalAssetName, times);
-                    } else {
-                        writeOutput(`\nERROR: Asset '${assetName}' not found in SFX database.`, 'var(--error-color)');
-                    }
-                    break;
-                case 'PAUSE':
-                    if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
-                        currentPlaybackPlayer.stop();
-                        writeOutput(`Single playback stopped. Type PLAY to restart from the beginning or QUIT to terminate.`, 'var(--highlight-color)');
-                    } else if (currentPlaybackPlayer) {
-                        writeOutput(`Single playback is already stopped or finished. Type PLAY to restart.`, 'var(--prompt-caret)');
-                    } else {
-                        writeOutput(`ERROR: No active single sound asset to pause.`, 'var(--error-color)');
-                    }
-                    break;
-                case 'PLAY':
-                    if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'stopped') {
-                        currentPlaybackPlayer.start(0);
-                        writeOutput(`Single playback restarted.`, 'var(--highlight-color)');
-                    } else if (currentPlaybackPlayer && currentPlaybackPlayer.state === 'started') {
-                        writeOutput(`Single playback is already running.`, 'var(--prompt-caret)');
-                    } else {
-                        writeOutput(`ERROR: No stopped single sound asset to play.`, 'var(--error-color)');
-                    }
-                    break;
-                case 'QUIT':
-                    if (currentPlaybackPlayer) {
-                        disposePlaybackPlayer();
-                        writeOutput(`Single playback terminated. The asset has been released from memory.`, 'var(--highlight-color)');
-                    } else {
-                        writeOutput(`WARNING: No active single sound asset to quit.`, 'var(--prompt-caret)');
-                    }
-                    break;
-                case 'RUN':
-                    const game = args[0] ? args[0].toUpperCase() : null;
-                    if (game && GAMES[game]) {
-                        GAMES[game]();
-                    } else {
-                        writeOutput(`ERROR: Game/Program '${game || 'none'}' not found. Available: ${Object.keys(GAMES).join(', ')}.`, 'var(--error-color)');
-                        writeOutput(`(If a game says 'not yet available', it is not implemented).`, 'var(--prompt-caret)');
-                    }
-                    break;
-                case 'LOGOUT':
-                    initiateLockdown(`SYSTEM MESSAGE: User ${authUsername} logged out.`);
-                    break;
-                default:
-                    writeOutput(`ERROR: Command '${cmd}' not recognized. Type HELP for a list of features.`, 'var(--error-color)');
-                    break;
-            }
-            showPrompt();
-        }
-
-        // Event Listeners
-        loginForm.addEventListener('submit', handleLoginAttempt);
-        quitGameButton.addEventListener('click', quitAsteroidsGame);
-        document.addEventListener('keypress', function(e) {
-            if (isLoggedIn && !isGameRunning && e.key === 'Enter' && !commandInput.disabled) {
-                processCommand(commandInput.value);
-                commandInput.value = '';
-            }
-        });
-        document.addEventListener('keydown', gameKeydown);
-        document.addEventListener('keyup', gameKeyup);
-
-        chatButton.addEventListener('click', () => {
-            isChatOpen = !isChatOpen;
-            chatWindow.style.display = isChatOpen ? 'flex' : 'none';
-            if (isChatOpen) {
-                updateUserList();
-                unreadMessages = 0;
-                updateUnreadCount();
-                chatInput.focus();
-                otherTypingInterval = setInterval(simulateOtherTyping, 5000);
-            } else {
-                closeChat();
-            }
-        });
-
-        closeChatButton.addEventListener('click', closeChat);
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && isChatOpen && !isGameRunning) {
-                closeChat();
-            }
-        });
-
-        chatInput.addEventListener('input', () => {
-            if (!isUserTyping) {
-                isUserTyping = true;
-                updateUserList();
-            }
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                isUserTyping = false;
-                updateUserList();
-            }, 2000);
-        });
-
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && chatInput.value.trim()) {
-                const msgText = `${authUsername} (${userType}): ${chatInput.value.trim()}`;
-                const messageId = Date.now().toString();
-                const msgDiv = document.createElement('div');
-                const timestampSpan = document.createElement('span');
-                timestampSpan.className = 'message-timestamp';
-                timestampSpan.textContent = getMessageTimestamp();
-                const contentSpan = document.createElement('span');
-                contentSpan.className = 'message-content';
-                contentSpan.textContent = msgText;
-                const reactionSpan = document.createElement('span');
-                reactionSpan.className = 'message-reaction';
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'message-actions';
-                const editButton = document.createElement('button');
-                editButton.textContent = 'Edit';
-                editButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    startEditingMessage(msgDiv, messageId, contentSpan);
-                });
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteMessage(msgDiv, messageId);
-                });
-                actionsDiv.appendChild(editButton);
-                actionsDiv.appendChild(deleteButton);
-                msgDiv.appendChild(timestampSpan);
-                msgDiv.appendChild(contentSpan);
-                msgDiv.appendChild(reactionSpan);
-                msgDiv.appendChild(actionsDiv);
-                msgDiv.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    document.querySelectorAll('.reaction-picker').forEach(picker => {
-                        picker.style.display = 'none';
-                    });
-                    createReactionPicker(msgDiv, messageId);
-                });
-                chatMessages.appendChild(msgDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    new Notification('ATLAS Chat Message', { body: msgText });
-                }
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && chatInput.value.trim() && isLoggedIn) {
+                const text = chatInput.value.trim();
+                addMessage(authUsername, text, 'var(--terminal-color)');
                 chatInput.value = '';
                 isUserTyping = false;
                 updateUserList();
-                if (!isChatOpen) {
-                    unreadMessages++;
-                    updateUnreadCount();
+            } else if (isLoggedIn) {
+                const newTypingStatus = chatInput.value.length > 0;
+                if (newTypingStatus !== isUserTyping) {
+                    isUserTyping = newTypingStatus;
+                    updateUserList();
                 }
             }
         });
 
+        chatButton.addEventListener('click', () => {
+            if (!isLoggedIn) return;
+            const command = isChatOpen ? 'CHAT CLOSE' : 'CHAT OPEN';
+            processCommand('CHAT');
+        });
+        
+        // --- MODIFIED: updateUserList (Read 'TRUE' status from USERS) ---
+        function updateUserList() {
+            userList.innerHTML = '';
+            
+            // 1. Add the current user (You)
+            const currentUserObj = USERS[authUsername];
+            // Display 'TRUE' status if set in USERS, otherwise handle typing/online
+            let selfStatus = (currentUserObj && currentUserObj.chatStatus) || 'ONLINE';
+            let selfColor = 'var(--terminal-color)';
+
+            if (selfStatus === 'TRUE') {
+                selfColor = 'var(--error-color)'; // Display 'TRUE' status in red
+            } else if (isUserTyping) {
+                selfStatus = '<span class="typing-dots">Typing...</span>';
+            }
+            
+            const selfDiv = document.createElement('div');
+            selfDiv.innerHTML = `<span style="color: var(--highlight-color); font-weight: bold;">${authUsername} (You)</span> - <span style="color: ${selfColor};">${selfStatus}</span>`;
+            userList.appendChild(selfDiv);
+
+            // 2. Add all other users
+            const usersArray = Object.keys(USERS).filter(u => u !== authUsername);
+            
+            usersArray.forEach(username => {
+                const userObj = USERS[username];
+                // Read the hardcoded status from the USERS object
+                let status = userObj.chatStatus || 'OFFLINE'; 
+                let statusColor = 'var(--terminal-color)';
+
+                if (status === 'TRUE') {
+                    statusColor = 'var(--error-color)'; // Red color for 'TRUE'
+                } else if (status === 'ONLINE') {
+                    statusColor = 'var(--terminal-color)'; // Green color for 'ONLINE'
+                }
+                
+                const userDiv = document.createElement('div');
+                userDiv.innerHTML = `<span style="color: var(--prompt-caret);">${username}</span> - <span style="color: ${statusColor};">${status}</span>`;
+                userList.appendChild(userDiv);
+            });
+        }
+
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('#chat-messages div') && !e.target.closest('.reaction-picker')) {
+            if (e.target.closest('.chat-message')) {
+                const targetMessage = e.target.closest('.chat-message');
+                const picker = targetMessage.querySelector('.reaction-picker');
+                document.querySelectorAll('.reaction-picker').forEach(p => {
+                    if (p !== picker) p.style.display = 'none';
+                });
+                picker.style.display = picker.style.display === 'flex' ? 'none' : 'flex';
+            } else if (!e.target.closest('#chat-messages div') && !e.target.closest('.reaction-picker')) {
                 document.querySelectorAll('.reaction-picker').forEach(picker => {
                     picker.style.display = 'none';
                 });
-                }
+            }
         });
+
+
+        // Call Functions (unchanged logic for camera/screen/participants)
+        async function joinCall(isInitiator = false) {
+            if (isCallActive) return;
+
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localVideo.srcObject = localStream;
+                localVideo.style.display = 'block';
+                isCallActive = true;
+                
+                // Add initiator to participants list if not already there
+                if (!callParticipants.includes(authUsername)) {
+                    callParticipants.push(authUsername);
+                }
+                
+                writeOutput(`[CALL] ${authUsername} has joined the call.`, 'var(--terminal-color)');
+                addMessage('SYSTEM', `You have joined the call.`, 'var(--terminal-color)');
+                updateParticipantsList();
+                
+                // Hide local video temporarily if the user has shared screen
+                if(isScreenSharing) {
+                    localVideo.style.display = 'none';
+                }
+
+                // In a real app, you would now start connecting to peers.
+                return true; 
+            } catch (err) {
+                writeOutput(`[CALL ERROR] Failed to get local stream: ${err.message}. Check camera/mic permissions.`, 'var(--error-color)');
+                isCallActive = false;
+                localVideo.style.display = 'none';
+                return false;
+            }
+        }
+
+        async function endCall(isLockdown = false) {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            localVideo.srcObject = null;
+            localVideo.style.display = 'none';
+            remoteVideo.srcObject = null;
+            remoteVideo.style.display = 'none';
+            
+            callParticipants = [];
+            pendingInvitations = [];
+            
+            isCallActive = false;
+            isScreenSharing = false;
+            
+            callWindow.style.display = 'none';
+            updateParticipantsList();
+            
+            if (!isLockdown) {
+                writeOutput('[CALL] The call has ended.', 'var(--terminal-color)');
+                addMessage('SYSTEM', `The call has ended.`, 'var(--terminal-color)');
+            }
+        }
+
+        function leaveCall() {
+            endCall();
+        }
+
+        function toggleCamera() {
+            if (!localStream) return;
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                toggleCameraButton.textContent = videoTrack.enabled ? 'Disable Camera' : 'Enable Camera';
+            }
+        }
+
+        async function toggleScreenShare() {
+            if (!isCallActive) {
+                writeOutput('[CALL ERROR] Cannot share screen. Call is not active.', 'var(--error-color)');
+                return;
+            }
+
+            if (isScreenSharing) {
+                // Stop screen sharing: Revert to camera stream
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                
+                const newStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                localStream = newStream;
+                localVideo.srcObject = localStream;
+                localVideo.style.display = 'block';
+                remoteVideo.style.display = 'none';
+                
+                isScreenSharing = false;
+                toggleScreenButton.textContent = 'Share Screen';
+                writeOutput('[CALL] Screen sharing disabled. Reverted to camera stream.', 'var(--terminal-color)');
+            } else {
+                // Start screen sharing: Use display stream
+                try {
+                    const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    localStream = displayStream;
+                    remoteVideo.srcObject = localStream;
+                    remoteVideo.style.display = 'block';
+                    localVideo.style.display = 'none';
+                    
+                    isScreenSharing = true;
+                    toggleScreenButton.textContent = 'Stop Sharing';
+                    writeOutput('[CALL] Screen sharing enabled.', 'var(--highlight-color)');
+                    
+                    // Handle automatic stop when user clicks the browser's stop button
+                    displayStream.getVideoTracks()[0].onended = () => toggleScreenShare();
+
+                } catch (err) {
+                    writeOutput(`[CALL ERROR] Failed to share screen: ${err.message}`, 'var(--error-color)');
+                }
+            }
+        }
+
+        function updateParticipantsList() {
+            callParticipantsList.innerHTML = '';
+            callParticipants.forEach(p => {
+                const div = document.createElement('div');
+                div.textContent = p === authUsername ? `${p} (You)` : p;
+                callParticipantsList.appendChild(div);
+            });
+        }
+
+
+        // --- MODIFIED: startCall (Initiator joins immediately and gets a message) ---
+        async function startCall() {
+            if (isCallActive) {
+                writeOutput(`[CALL ERROR] A call is already active.`, 'var(--error-color)');
+                return;
+            }
+            if (callParticipants.length >= 2) {
+                writeOutput(`[CALL ERROR] Cannot start a new call. Current call is full (simulated limit 2).`, 'var(--error-error)');
+                return;
+            }
+
+            // FIX 1: INITIATOR JOINS THE CALL
+            await joinCall(true); 
+            
+            // Simulating an outgoing invite
+            const otherUser = Object.keys(USERS).find(u => u !== authUsername);
+
+            if (otherUser) {
+                // SIMULATE INVITE (for the other user)
+                const invitation = {
+                    type: 'call_invite',
+                    from: authUsername,
+                    timestamp: new Date().getTime(),
+                    isOutgoing: true
+                };
+                pendingInvitations.push(invitation);
+
+                // FIX 2: INITIATOR RECEIVES A MESSAGE ABOUT THE INVITATION
+                addMessage('SYSTEM', `Call invitation sent to ${otherUser}. Awaiting response.`, 'var(--highlight-color)');
+                
+            } else {
+                addMessage('SYSTEM', `Call started. No other users online to invite.`, 'var(--prompt-caret)');
+            }
+            callWindow.style.display = 'flex'; // Open the call window
+        }
+
 
         startCallButton.addEventListener('click', startCall);
         endCallButton.addEventListener('click', endCall);
@@ -2010,7 +1458,6 @@
         });
 
         // ⭐ THIS IS THE FIX: Attach the login handler to the form's SUBMIT event.
-        // The handler uses event.preventDefault() to stop the page from refreshing.
         loginForm.addEventListener('submit', handleLoginAttempt); 
 
         window.onload = function() {
@@ -2020,5 +1467,4 @@
             showLoginModal();
         };
     </script>
-
 </body></html>
