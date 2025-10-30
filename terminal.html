@@ -705,51 +705,49 @@
     let isRinging = false;
     let callNotificationTimeout = null;
 
-    // DOM Elements (Updated to match your existing HTML IDs)
-    const loginModal = document.getElementById('login-overlay'); // Corrected ID
+    // DOM Elements (IDs corrected based on your HTML structure)
+    const loginModal = document.getElementById('login-overlay');
     const loginForm = document.getElementById('login-form');
-    const passwordInput = document.getElementById('password'); // Corrected ID
-    const keyInput = document.getElementById('passkey'); // Corrected ID
-    const loginError = document.getElementById('login-status'); // Corrected ID
+    const passwordInput = document.getElementById('password');
+    const keyInput = document.getElementById('passkey');
+    const loginError = document.getElementById('login-status');
     const consoleContainer = document.getElementById('console-container');
-    const consoleOutput = document.getElementById('terminal-output'); // Corrected ID
-    const consoleInput = document.getElementById('command-input'); // Corrected ID
-    const timeDisplay = document.getElementById('console-header'); // Corrected ID (will be updated by the interval)
-    const commandPrompt = document.getElementById('prompt'); // Corrected ID
-    const chatModal = document.getElementById('chat-window'); // Corrected ID
+    const consoleOutput = document.getElementById('terminal-output');
+    const consoleInput = document.getElementById('command-input');
+    const timeDisplay = document.getElementById('console-header'); 
+    const commandPrompt = document.getElementById('prompt');
+    const chatModal = document.getElementById('chat-window');
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const chatButton = document.getElementById('chat-button');
     const userList = document.getElementById('user-list');
-    const lockButton = null; // Removed as there is no ID 'lock-button' in the HTML
-    const callModal = document.getElementById('call-window'); // Corrected ID
+    const callModal = document.getElementById('call-window');
     const callTitle = document.getElementById('call-header').querySelector('span');
-    const callControls = document.getElementById('call-controls');
-    const startCallButton = document.getElementById('start-call-button');
-    const endCallButton = document.getElementById('end-call'); // Corrected ID
-    const leaveCallButton = document.getElementById('leave-call'); // Corrected ID
-    const toggleCameraButton = document.getElementById('toggle-camera'); // Corrected ID
-    const toggleScreenButton = document.getElementById('toggle-screen'); // Corrected ID
-    const showParticipantsButton = document.getElementById('show-participants'); // Corrected ID
+    const endCallButton = document.getElementById('end-call');
+    const leaveCallButton = document.getElementById('leave-call');
+    const toggleCameraButton = document.getElementById('toggle-camera');
+    const toggleScreenButton = document.getElementById('toggle-screen');
+    const showParticipantsButton = document.getElementById('show-participants');
     const callParticipantsList = document.getElementById('call-participants-list');
     const localVideo = document.getElementById('local-video');
     const remoteVideo = document.getElementById('remote-video');
+    const startCallButton = document.getElementById('start-call-button');
 
-    // **NOTE: Missing incoming call notification elements from your HTML, using console output for simulation:**
+    // Mocks for missing Incoming Call UI elements
     const incomingCallNotification = null; 
     const incomingCaller = {textContent: ''}; 
     const acceptCallButton = {addEventListener: (e, callback) => acceptCall = callback};
     const rejectCallButton = {addEventListener: (e, callback) => rejectCall = callback};
 
 
-    // User Data (Using the data structure found in your original file, but fixing the missing 'chatStatus')
+    // User Data 
     const USERS = {
         'ETHANUNLOCKED': { password: 'h4cker', passkey: '1957', role: 'MANAGER', chatStatus: 'TRUE' },
         'BEEF WELLINGTON': { password: 'Eat_me', passkey: '2251', role: 'ADMIN', chatStatus: 'TRUE' },
         'GYATTMODEPLAYS': { password: 'justmyusername', passkey: '0000', role: 'ADMIN', chatStatus: 'TRUE' }
     };
 
-    // Sound Definitions (Using the data structure found in your original file)
+    // Sound Definitions 
     const SOUND_EFFECTS = {
         'SIREN': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/siren.mp3',
         'CONFIRM': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/confirm.mp3',
@@ -766,16 +764,15 @@
         'SUI': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/sui.mp3',
         'JOHN CENA': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/cena.mp3',
         'PUMPKIN': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/kin.mp3',
-        // 'CENSOR': '__SYNTH_CENSOR__', // Synthetic sound not supported in this simple fix
         'B+F': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/b.mp3',
         'BURP': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/burp.mp3',
-        'GD_JUMP': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/geometry_dash.mp3', // Re-mapping for simple commands
-        'GD_DEATH': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/fire_in_the_hole.mp3', // Re-mapping for simple commands
+        'GD_JUMP': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/geometry_dash.mp3',
+        'GD_DEATH': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/fire_in_the_hole.mp3',
         'DASH': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/dash.mp3',
         'DASH_FULL': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/dash_full.mp3',
-        'LOGIN_FAIL': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/alert.mp3', // Use ALARM for fail
-        'LOCKDOWN_START': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/siren.mp3', // Use SIREN for lockdown
-        'CALL_RINGING': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/alert.mp3' // Use ALARM for ringing
+        'LOGIN_FAIL': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/alert.mp3',
+        'LOCKDOWN_START': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/siren.mp3',
+        'CALL_RINGING': './ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/alert.mp3'
     };
     const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
     const MESSAGES_FOR_CHAT = [
@@ -816,9 +813,9 @@
     function hideLoginModal() {
         loginModal.style.display = 'none';
         loginError.textContent = '';
+        document.getElementById('username').value = '';
         passwordInput.value = '';
         keyInput.value = '';
-        document.getElementById('username').value = '';
     }
 
     function loadSound(name) {
@@ -831,7 +828,7 @@
         audioPlayers[name] = new Tone.Player(filePath).toDestination();
 
         audioPlayers[name].load(filePath).then(() => {
-            // writeOutput(`Sound loaded: ${name}`); // Uncomment for debugging
+            // console.log(`Sound loaded: ${name}`); 
         }).catch(err => {
             writeOutput(`Error loading sound ${name}: ${err.message}`, 'var(--error-color)');
         });
@@ -849,7 +846,6 @@
             if (player.state === 'started' && loop) {
                 return;
             }
-            // Stop and start to ensure it plays
             if (player.state === 'started') { player.stop(); }
             player.start();
         } else {
@@ -880,6 +876,8 @@
         hours = hours ? hours.toString().padStart(2, '0') : '12';
         return `${day}, ${date}-${month}-${year} | ${hours}:${minutes}:${seconds} ${ampm} | LOCATION: ${LOCATION}`;
     }
+
+    let timeUpdateInterval = null;
 
     function updateHeaderDisplay() {
         timeDisplay.textContent = `[ ${getCurrentFormattedTime()} | USER: ${authUsername} ]`;
@@ -932,7 +930,12 @@
                 writeOutput('LOCKDOWN <REASON>: Initiate a system-wide lockdown.', 'var(--terminal-color)');
                 writeOutput('INIT AUDIO: Initialize the Web Audio Context.', 'var(--terminal-color)');
                 writeOutput('ECHO <TEXT>: Repeats the text input.', 'var(--terminal-color)');
-                writeOutput(SOUND_COMMAND_NAMES.filter(name => !['LOGIN_FAIL', 'LOCKDOWN_START', 'CALL_RINGING'].includes(name)).join(' | ') + ': Play sound effects.', 'var(--terminal-color)');
+                // --- Reverted Command List ---
+                writeOutput('SIREN | CONFIRM | ALARM: Core Console Sounds.', 'var(--terminal-color)');
+                writeOutput('GD_JUMP | GD_DEATH | DASH: Geometry Dash Sounds.', 'var(--terminal-color)');
+                writeOutput('RIZZ | FART | BRUH | SUI: Meme/Gaming Sound Effects.', 'var(--terminal-color)');
+                writeOutput('Use any listed sound command directly (e.g., SIREN).', 'var(--prompt-caret)');
+                // --- End Reverted Command List ---
                 break;
             case 'CLEAR':
                 clearOutput();
@@ -983,7 +986,6 @@
         writeOutput('ALL ACCESS RESTRICTED. CONTACT SECURITY ADMIN.', 'var(--error-color)');
         writeOutput('----------------------------------------------------', 'var(--error-color)');
         commandPrompt.textContent = 'LOCKED> ';
-        // No lockButton in this version, so skipping the UI update
     }
 
     // --- FIXED: handleLoginAttempt (Contains event.preventDefault() and is correctly mapped) ---
@@ -1007,7 +1009,6 @@
             }
         }
         
-        // This sleep simulates the loading screen from your HTML, even though the JS loading is commented out.
         document.getElementById('loading-screen').style.display = 'flex';
         await new Promise(resolve => setTimeout(resolve, 1500));
         document.getElementById('loading-screen').style.display = 'none';
@@ -1054,7 +1055,6 @@
         messageDiv.className = isIncoming ? 'incoming-message' : 'outgoing-message';
         const senderColor = isIncoming ? 'var(--highlight-color)' : 'var(--prompt-caret)';
         
-        // Simplified content since your HTML style is for a complex reaction system
         messageDiv.innerHTML = `
             <span class="message-timestamp" style="color:var(--prompt-caret);">${new Date().toLocaleTimeString()}</span>
             <span class="message-sender" style="color: ${senderColor};">${sender}:</span>
@@ -1100,7 +1100,7 @@
             const callBtn = document.createElement('button');
             callBtn.textContent = 'Call';
             callBtn.style = 'margin-left: 10px; background-color: var(--highlight-color); color: white; border: none; padding: 3px 6px; cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 0.9rem;';
-            callBtn.onclick = () => startCall(username);
+            callBtn.onclick = () => startCallWithUser(username); 
             listItem.appendChild(callBtn);
 
             userList.appendChild(listItem);
@@ -1144,10 +1144,8 @@
         incomingCaller.textContent = caller;
         playSound('CALL_RINGING', true); 
 
-        // Since you don't have the notification UI, use console and a simple prompt
         writeOutput(`!!! INCOMING CALL FROM ${caller} !!! - Type 'ACCEPT CALL' or 'REJECT CALL'`, 'var(--error-color)');
 
-        // Custom call handling in console for this simulation
         let tempAcceptCall = (cmd) => {
              if (cmd === 'ACCEPT CALL') {
                  acceptCall(caller);
@@ -1192,7 +1190,7 @@
         stopSound('CALL_RINGING');
         isRinging = false;
         writeOutput(`CALL: Connecting to ${caller}...`, 'var(--highlight-color)');
-        joinCall(caller);
+        joinCall([caller]);
     }
 
     // --- Video/Call Logic ---
@@ -1213,13 +1211,22 @@
         endCallButton.style.display = 'block';
     }
 
-    function joinCall(targetUser) {
+    // ⭐ MODIFIED: joinCall now accepts an array of users for group calls
+    function joinCall(targetUsers) { 
         if (currentCall) return;
 
-        showCallModal(`Active Call: ${targetUser}`);
-        currentCall = { user: targetUser, status: 'connecting', participants: [authUsername, targetUser] };
+        const isGroupCall = Array.isArray(targetUsers) && targetUsers.length > 1;
+        const callParticipants = isGroupCall ? [...targetUsers, authUsername] : [targetUsers[0], authUsername];
+        const title = isGroupCall ? `CONFERENCE CALL (${targetUsers.length + 1})` : `Active Call: ${targetUsers[0]}`;
+        
+        showCallModal(title);
+        currentCall = { 
+            users: targetUsers, 
+            status: 'connecting', 
+            participants: callParticipants 
+        };
         updateParticipantsList();
-        writeOutput(`CALL: Initiating secure stream with ${targetUser}...`, 'var(--highlight-color)');
+        writeOutput(`CALL: Initiating secure stream with ${title}...`, 'var(--highlight-color)');
 
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then(stream => {
@@ -1230,8 +1237,7 @@
 
                 setTimeout(() => {
                     currentCall.status = 'active';
-                    writeOutput(`CALL: Connection established with ${targetUser}.`, 'var(--terminal-color)');
-                    // Simulate remote stream
+                    writeOutput(`CALL: Connection established.`, 'var(--terminal-color)');
                     remoteVideo.srcObject = new MediaStream(); 
                     remoteVideo.style.display = 'block';
                 }, 2000);
@@ -1267,22 +1273,38 @@
         writeOutput(`CALL: Call ended.`, 'var(--highlight-color)');
     }
     
-    // Alias for End Call since your HTML only has an End button in the header
     function leaveCall() { 
         endCall();
     }
 
-
-    function startCall(targetUser = null) {
+    // ⭐ NEW: Starts a call with a single specified user (used by the list buttons)
+    function startCallWithUser(targetUser) {
         if (currentCall) {
-            writeOutput('CALL: Already in an active call.', 'var(--error-color)');
+            writeOutput('CALL: Already in an active call. End the current call first.', 'var(--error-color)');
             return;
         }
         if (!targetUser) {
-             writeOutput('CALL ERROR: Please select a user from the chat list to call.', 'var(--error-color)');
+             writeOutput('CALL ERROR: Please select a user to call.', 'var(--error-color)');
              return;
         }
-        joinCall(targetUser);
+        joinCall([targetUser]); // Pass the user as an array
+    }
+
+    // ⭐ NEW: Initiates a call with ALL active users (used by the main Start Call button)
+    function startCall() {
+        if (currentCall) {
+            writeOutput('CALL: Already in an active call. End the current call first.', 'var(--error-color)');
+            return;
+        }
+
+        const targetUsers = Object.keys(USERS).filter(u => u !== authUsername);
+
+        if (targetUsers.length === 0) {
+            writeOutput('CALL ERROR: No other users available for a group call.', 'var(--error-color)');
+            return;
+        }
+
+        joinCall(targetUsers); // Pass the list of all users
     }
 
     function toggleCamera() {
@@ -1370,12 +1392,10 @@
         }
     });
     
-    // Close Chat button listener
     document.getElementById('close-chat-button').addEventListener('click', () => {
          chatModal.style.display = 'none';
     });
 
-    // Handle chat form submission (since your HTML doesn't have a form around the input, we listen to the input itself)
     chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1388,23 +1408,20 @@
 
 
     // Call Controls
-    startCallButton.addEventListener('click', () => startCall());
+    startCallButton.addEventListener('click', startCall); // Calls the GROUP call function
     endCallButton.addEventListener('click', endCall);
-    leaveCallButton.addEventListener('click', leaveCall); // Maps to endCall()
+    leaveCallButton.addEventListener('click', leaveCall); 
     toggleCameraButton.addEventListener('click', toggleCamera);
     toggleScreenButton.addEventListener('click', toggleScreenShare);
     showParticipantsButton.addEventListener('click', () => {
         callParticipantsList.style.display = callParticipantsList.style.display === 'block' ? 'none' : 'block';
     });
 
-
-    // ⭐ THIS IS THE FIX: Attach the login handler to the form's SUBMIT event.
-    // The handler uses event.preventDefault() to stop the page from refreshing.
+    // CRITICAL FIX: Attaches the login handler with preventDefault()
     loginForm.addEventListener('submit', handleLoginAttempt); 
 
     window.onload = function() {
         SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
-        // Tone.js context must be resumed after a user gesture
         document.body.addEventListener('click', () => { Tone.context.resume(); }, { once: true });
         document.body.addEventListener('keydown', () => { Tone.context.resume(); }, { once: true });
         showLoginModal();
