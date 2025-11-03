@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-</script>
-<title>Brawl stars</title>
-  <html>
+<html>
 <head>
- <style> body {
-     margin:0px;
-     background-image: url('webpage-backdrop.jpg');
-    }
-</style>
-  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brawl stars</title>
 <style>
+body {
+  margin: 0px;
+  background-image: url('webpage-backdrop.jpg');
+  font-family: Arial, sans-serif;
+}
+
 ul {
   list-style-type: none;
   margin: 0px;
@@ -34,11 +33,8 @@ li a {
 li a:hover {
   background-color: #111;
 }
-</style>
-</head>
-<body>
-   <style> 
-     .section1 {
+
+.section1 {
   display: flex;
 }
 
@@ -50,403 +46,716 @@ li a:hover {
   width: 200%;
 }
 
-.section2 {
-  display: flex;
+.bouncy-text {
+  font-size: 50px !important;
+  font-weight: bold;
+  text-align: center;
 }
 
-.section2 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
+.bouncy-text span {
+  animation: bounce 0.5s infinite alternate;
+  display: inline-block;
+  background: linear-gradient(to bottom, #ff6600, #ffcc33);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+.bouncy-text span:nth-child(1) { animation-delay: 0s; }
+.bouncy-text span:nth-child(2) { animation-delay: 0.05s; }
+.bouncy-text span:nth-child(3) { animation-delay: 0.1s; }
+.bouncy-text span:nth-child(4) { animation-delay: 0.15s; }
+.bouncy-text span:nth-child(5) { animation-delay: 0.20s; }
+.bouncy-text span:nth-child(6) { animation-delay: 0.25s; }
+.bouncy-text span:nth-child(7) { animation-delay: 0.30s; }
+.bouncy-text span:nth-child(8) { animation-delay: 0.35s; }
+.bouncy-text span:nth-child(9) { animation-delay: 0.40s; }
+.bouncy-text span:nth-child(10) { animation-delay: 0.45s; }
+
+/* User profile setup */
+.profile-setup {
+  background: rgba(0, 51, 102, 0.95);
   padding: 20px;
-  font-size: 30px;
-  width: 200%;
+  margin: 20px;
+  border-radius: 8px;
+  color: white;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.section3 {
+.profile-setup h2 {
+  margin-top: 0;
+  color: #ffcc33;
+}
+
+.profile-input-group {
+  margin-bottom: 15px;
+}
+
+.profile-input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.profile-input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #005588;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.avatar-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.avatar-option {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.3s;
+  object-fit: cover;
+}
+
+.avatar-option:hover {
+  transform: scale(1.1);
+  border-color: #ffcc33;
+}
+
+.avatar-option.selected {
+  border-color: #ff6600;
+  transform: scale(1.1);
+}
+
+.default-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: bold;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.3s;
 }
 
-.section3 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.save-profile-btn {
+  width: 100%;
+  padding: 12px;
+  background: #ff6600;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  margin-top: 10px;
 }
-     .section4 {
+
+.save-profile-btn:hover {
+  background: #ff8833;
+}
+
+.current-user-display {
+  background: rgba(0, 51, 102, 0.95);
+  padding: 10px 20px;
+  margin: 20px;
+  border-radius: 8px;
+  color: white;
   display: flex;
+  align-items: center;
+  gap: 15px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.section4 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.current-user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #ffcc33;
+  object-fit: cover;
 }
 
-.section5 {
+.current-user-avatar.default {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
 }
 
-.section5 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.current-user-info {
+  flex: 1;
 }
 
-.section6 {
+.current-user-name {
+  font-weight: bold;
+  color: #ffcc33;
+  font-size: 18px;
+}
+
+.edit-profile-btn {
+  padding: 8px 15px;
+  background: #005588;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.edit-profile-btn:hover {
+  background: #0077aa;
+}
+
+/* Interactive buttons container */
+.media-container {
+  position: relative;
+  display: inline-block;
+}
+
+.interaction-bar {
+  background: rgba(0, 51, 102, 0.9);
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
   display: flex;
+  gap: 20px;
+  align-items: center;
 }
 
-.section6 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section7 {
+.like-dislike-group {
   display: flex;
+  gap: 15px;
+  align-items: center;
 }
 
-.section7 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section8 {
+.interaction-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
   display: flex;
+  align-items: center;
+  gap: 5px;
+  color: white;
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background 0.3s;
 }
 
-.section8 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.interaction-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
-     .section9 {
+
+.interaction-btn img {
+  width: 24px;
+  height: 24px;
+}
+
+.interaction-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.comment-section {
+  background: rgba(0, 51, 102, 0.95);
+  padding: 15px;
+  margin-top: 10px;
+  border-radius: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.comment-section.hidden {
+  display: none;
+}
+
+.comment-input-area {
   display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: flex-start;
 }
 
-.section9 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.comment-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ffcc33;
+  flex-shrink: 0;
+  object-fit: cover;
 }
-     .section10 {
+
+.comment-user-avatar.default {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.section10 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section11 {
+.comment-input-wrapper {
+  flex: 1;
   display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.section11 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.comment-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #005588;
+  border-radius: 5px;
+  background: white;
+  font-size: 14px;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 60px;
 }
-     .section12 {
+
+.comment-submit {
+  align-self: flex-end;
+  padding: 10px 20px;
+  background: #ff6600;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.comment-submit:hover {
+  background: #ff8833;
+}
+
+.comment-list {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.section12 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section13 {
+.comment-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+  color: white;
   display: flex;
+  gap: 10px;
 }
 
-.section13 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #ffcc33;
+  flex-shrink: 0;
+  object-fit: cover;
 }
-     .section14 {
+
+.comment-avatar.default {
   display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.section14 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section15 {
-  display: flex;
+.comment-content {
+  flex: 1;
 }
 
-.section15 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section16 {
-  display: flex;
+.comment-author {
+  font-weight: bold;
+  color: #ffcc33;
+  margin-bottom: 5px;
 }
 
-.section16 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section17 {
-  display: flex;
+.comment-text {
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
 }
 
-.section17 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section18 {
-  display: flex;
+.comment-time {
+  font-size: 12px;
+  color: #aaaaaa;
+  margin-top: 5px;
 }
 
-.section18 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
+.hidden {
+  display: none;
 }
-     .section19 {
-  display: flex;
-}
-
-.section19 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section20 {
-  display: flex;
-}
-
-.section20 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section21 {
-  display: flex;
-}
-
-.section21 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section22 {
-  display: flex;
-}
-
-.section22 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section23 {
-  display: flex;
-}
-
-.section23 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section24 {
-  display: flex;
-}
-
-.section24 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section25 {
-  display: flex;
-}
-
-.section25 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section26 {
-  display: flex;
-}
-
-.section26 > div {
-  background-image: url('webpage-backdrop.jpg');
-  margin: 10px;
-  padding: 20px;
-  font-size: 30px;
-  width: 200%;
-}
-     .section27 {
-       display: flex;
-}
-     .section27 > div {
-       background-image: url('webpage-backdrop.jpg');
-       margin: 10px;
-       padding: 20px;
-       font-size: 30px;
-       width: 200%;
-}
-     .section28 {
-       display: flex;
-}
-     .section28 > div {
-       background-image: url('webpage-backdrop.jpg');
-       margin: 10px;
-       padding: 20px;
-       font-size: 30px;
-       width: 200%;
-}
-     .section29 {
-       display: flex;
-}
-     .section29 > div {
-       background-image: url('webpage-backdrop.jpg');
-       margin: 10px;
-       padding: 20px;
-       font-size: 30px;
-       width: 200%;
-}
-     .section30 {
-       display: flex;
-}
-     .section30 > div {
-       background-image: url('webpage-backdrop.jpg');
-       margin: 10px;
-       padding: 20px;
-       font-size: 30px;
-       width: 200%;
-}
-
 </style>
-   <ul>
-     <li><a href="turtle.html">Back to others</a></li>
-   </ul>
-  <style>
-    /* This gives a bouncy effect on the letters at the top of the page */
-  .bouncy-text {
-            font-size: 50px !important;
-            font-weight: bold;
-            text-align: center;
-        }
-        .bouncy-text span {
-            animation: bounce 0.5s infinite alternate;
-            display: inline-block;
-            background: linear-gradient(to bottom, #ff6600, #ffcc33);
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-10px); }
-        }
-        .bouncy-text span:nth-child(1) { animation-delay: 0s; }
-        .bouncy-text span:nth-child(2) { animation-delay: 0.05s; }
-        .bouncy-text span:nth-child(3) { animation-delay: 0.1s; }
-        .bouncy-text span:nth-child(4) { animation-delay: 0.15s; }
-        .bouncy-text span:nth-child(5) { animation-delay: 0.20s; }
-        .bouncy-text span:nth-child(6) { animation-delay: 0.25s; }
-        .bouncy-text span:nth-child(7) { animation-delay: 0.30s; }
-        .bouncy-text span:nth-child(8) { animation-delay: 0.35s; }
-        .bouncy-text span:nth-child(9) { animation-delay: 0.40s; }
-        .bouncy-text span:nth-child(10) { animation-delay: 0.45s; }
-        .bouncy-text span:nth-child(11) { animation-delay: 0.50s; }
-        .bouncy-text span:nth-child(12) { animation-delay: 0.55s; }
-        .bouncy-text span:nth-child(13) { animation-delay: 0.60s; }
-        .bouncy-text span:nth-child(14) { animation-delay: 0.65s; }
-    </style>
-  <div style="width:100%">
-<div class="bouncy-text">
-        <span>B</span><span>r</span><span>a</span><span>w</span><span>l</span>
-        <span>S</span><span>t</span><span>a</span><span>r</span><span>s</span>
+</head>
+<body>
+
+<ul>
+  <li><a href="turtle.html">Back to others</a></li>
+</ul>
+
+<div style="width:100%">
+  <div class="bouncy-text">
+    <span>B</span><span>r</span><span>a</span><span>w</span><span>l</span>
+    <span>S</span><span>t</span><span>a</span><span>r</span><span>s</span>
+  </div>
+</div>
+
+<!-- Profile Setup -->
+<div id="profileSetup" class="profile-setup">
+  <h2>👤 Set Up Your Profile</h2>
+  <div class="profile-input-group">
+    <label>Your Name:</label>
+    <input type="text" id="userName" placeholder="Enter your name" maxlength="30">
+  </div>
+  <div class="profile-input-group">
+    <label>Choose Your Avatar:</label>
+    <div class="avatar-selection" id="avatarSelection">
+      <div class="default-avatar" data-avatar="🎮" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🎮</div>
+      <div class="default-avatar" data-avatar="⚔️" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">⚔️</div>
+      <div class="default-avatar" data-avatar="🎯" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🎯</div>
+      <div class="default-avatar" data-avatar="🔥" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">🔥</div>
+      <div class="default-avatar" data-avatar="⭐" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">⭐</div>
+      <div class="default-avatar" data-avatar="💎" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">💎</div>
+      <div class="default-avatar" data-avatar="🎭" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">🎭</div>
+      <div class="default-avatar" data-avatar="🚀" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">🚀</div>
     </div>
   </div>
+  <button class="save-profile-btn" onclick="saveProfile()">Save Profile</button>
+</div>
+
+<!-- Current User Display -->
+<div id="currentUserDisplay" class="current-user-display hidden">
+  <div id="currentUserAvatarDisplay" class="current-user-avatar default"></div>
+  <div class="current-user-info">
+    <div class="current-user-name" id="currentUserNameDisplay"></div>
+  </div>
+  <button class="edit-profile-btn" onclick="editProfile()">Edit Profile</button>
+</div>
 
 <h1 style="color:white;">Brawler concepts (Created by EthanUnlocked)</h1>
-  
-  <div class="section1">
-  <div><img src="brawler.png" alt="Eternatus" width="600" height="450"></div>
+
+<div class="section1">
+  <div>
+    <div class="media-container" id="media-1">
+      <img src="brawler.png" alt="Eternatus" width="600" height="450">
+      
+      <div class="interaction-bar">
+        <div class="like-dislike-group">
+          <button class="interaction-btn like-btn" data-media="media-1">
+            <img src="like.png" alt="Like">
+            <span class="like-count">0</span>
+          </button>
+          <button class="interaction-btn dislike-btn" data-media="media-1">
+            <img src="dis.png" alt="Dislike">
+            <span class="dislike-count">0</span>
+          </button>
+        </div>
+        <button class="interaction-btn comment-toggle-btn" data-media="media-1">
+          <img src="comment.png" alt="Comments">
+          <span class="comment-count">0</span>
+        </button>
+      </div>
+
+      <div class="comment-section hidden" id="comments-media-1">
+        <div class="comment-input-area">
+          <div id="commentUserAvatar-media-1" class="comment-user-avatar default"></div>
+          <div class="comment-input-wrapper">
+            <textarea class="comment-input" placeholder="Add a comment..." maxlength="500"></textarea>
+            <button class="comment-submit">Post</button>
+          </div>
+        </div>
+        <div class="comment-list"></div>
+      </div>
+    </div>
+  </div>
   <div></div>
 </div>
-  <h1 style="color:white;">Make sure to stay tuned every day for more concepts! If you would like me to design: Hypercharge, Hypercharge skin, Rare skin, or others, LET ME KNOW: ethan.unlocked@gmail.com</h1>
-      <html>
-<body>
 
-</body>
-</html>
-    <script>
-function goBack() {
-  window.history.back()
+<h1 style="color:white;">Make sure to stay tuned every day for more concepts! If you would like me to design: Hypercharge, Hypercharge skin, Rare skin, or others, LET ME KNOW: ethan.unlocked@gmail.com</h1>
+
+<div style="padding: 20px;">
+  <input type="button" value="Back" onclick="window.history.back()" style="padding: 10px 20px; margin-right: 10px;">
+  <input type="button" value="Forward" onclick="window.history.forward()" style="padding: 10px 20px;">
+</div>
+
+<script>
+// User profile management
+let currentUser = {
+  name: '',
+  avatar: '🎮',
+  avatarBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+};
+
+// Initialize interaction system
+const mediaInteractions = {};
+
+async function loadUserProfile() {
+  try {
+    const result = await window.storage.get('user-profile');
+    if (result) {
+      currentUser = JSON.parse(result.value);
+      showCurrentUser();
+    } else {
+      document.getElementById('profileSetup').classList.remove('hidden');
+    }
+  } catch (error) {
+    document.getElementById('profileSetup').classList.remove('hidden');
+  }
 }
-</script>
-<body>
 
-<input type="button" value="Back" onclick="goBack()">
-
-</body>
- <script>
-function goForward() {
-  window.history.forward()
-}
-</script>
-<body>
-
-<input type="button" value="Forward" onclick="goForward()">
-
-</body>
-
-
-</body>
-</html>
+async function saveProfile() {
+  const nameInput = document.getElementById('userName');
+  const name = nameInput.value.trim();
   
+  if (!name) {
+    alert('Please enter your name!');
+    return;
+  }
+  
+  currentUser.name = name;
+  
+  try {
+    await window.storage.set('user-profile', JSON.stringify(currentUser));
+    showCurrentUser();
+  } catch (error) {
+    console.error('Error saving profile:', error);
+    alert('Error saving profile. Please try again.');
+  }
+}
+
+function showCurrentUser() {
+  document.getElementById('profileSetup').classList.add('hidden');
+  const display = document.getElementById('currentUserDisplay');
+  display.classList.remove('hidden');
+  
+  const avatarDisplay = document.getElementById('currentUserAvatarDisplay');
+  avatarDisplay.textContent = currentUser.avatar;
+  avatarDisplay.style.background = currentUser.avatarBg;
+  
+  document.getElementById('currentUserNameDisplay').textContent = currentUser.name;
+  
+  // Update all comment input avatars
+  document.querySelectorAll('[id^="commentUserAvatar-"]').forEach(el => {
+    el.textContent = currentUser.avatar;
+    el.style.background = currentUser.avatarBg;
+  });
+}
+
+function editProfile() {
+  document.getElementById('currentUserDisplay').classList.add('hidden');
+  document.getElementById('profileSetup').classList.remove('hidden');
+  document.getElementById('userName').value = currentUser.name;
+}
+
+// Avatar selection
+document.getElementById('avatarSelection').addEventListener('click', (e) => {
+  const avatar = e.target.closest('[data-avatar]');
+  if (avatar) {
+    document.querySelectorAll('.default-avatar').forEach(el => el.classList.remove('selected'));
+    avatar.classList.add('selected');
+    currentUser.avatar = avatar.dataset.avatar;
+    currentUser.avatarBg = avatar.style.background;
+  }
+});
+
+// Select first avatar by default
+document.querySelector('[data-avatar]').classList.add('selected');
+
+async function loadInteractionData(mediaId) {
+  try {
+    const likeResult = await window.storage.get(`${mediaId}-likes`, true);
+    const dislikeResult = await window.storage.get(`${mediaId}-dislikes`, true);
+    const commentsResult = await window.storage.get(`${mediaId}-comments`, true);
+    const userLikeResult = await window.storage.get(`${mediaId}-user-like`);
+    
+    return {
+      likes: likeResult ? parseInt(likeResult.value) : 0,
+      dislikes: dislikeResult ? parseInt(dislikeResult.value) : 0,
+      comments: commentsResult ? JSON.parse(commentsResult.value) : [],
+      userLike: userLikeResult ? userLikeResult.value : null
+    };
+  } catch (error) {
+    return {
+      likes: 0,
+      dislikes: 0,
+      comments: [],
+      userLike: null
+    };
+  }
+}
+
+async function saveInteractionData(mediaId, data) {
+  try {
+    await window.storage.set(`${mediaId}-likes`, data.likes.toString(), true);
+    await window.storage.set(`${mediaId}-dislikes`, data.dislikes.toString(), true);
+    await window.storage.set(`${mediaId}-comments`, JSON.stringify(data.comments), true);
+    if (data.userLike !== null) {
+      await window.storage.set(`${mediaId}-user-like`, data.userLike);
+    }
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+}
+
+function updateDisplay(mediaId) {
+  const data = mediaInteractions[mediaId];
+  const container = document.getElementById(mediaId);
+  
+  container.querySelector('.like-count').textContent = data.likes;
+  container.querySelector('.dislike-count').textContent = data.dislikes;
+  container.querySelector('.comment-count').textContent = data.comments.length;
+  
+  const likeBtn = container.querySelector('.like-btn');
+  const dislikeBtn = container.querySelector('.dislike-btn');
+  
+  likeBtn.classList.toggle('active', data.userLike === 'like');
+  dislikeBtn.classList.toggle('active', data.userLike === 'dislike');
+  
+  renderComments(mediaId);
+}
+
+function renderComments(mediaId) {
+  const data = mediaInteractions[mediaId];
+  const commentList = document.querySelector(`#comments-${mediaId} .comment-list`);
+  
+  if (data.comments.length === 0) {
+    commentList.innerHTML = '<div style="color: #aaa; text-align: center; padding: 20px;">No comments yet. Be the first to comment!</div>';
+    return;
+  }
+  
+  commentList.innerHTML = data.comments.map(comment => {
+    const avatarHtml = `<div class="comment-avatar default" style="background: ${comment.avatarBg}">${comment.avatar}</div>`;
+    
+    return `
+      <div class="comment-item">
+        ${avatarHtml}
+        <div class="comment-content">
+          <div class="comment-author">${escapeHtml(comment.author)}</div>
+          <div class="comment-text">${escapeHtml(comment.text)}</div>
+          <div class="comment-time">${new Date(comment.timestamp).toLocaleString()}</div>
+        </div>
+      </div>
+    `;
+  }).reverse().join('');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Initialize all media containers
+async function initializeMedia() {
+  const containers = document.querySelectorAll('.media-container');
+  
+  for (const container of containers) {
+    const mediaId = container.id;
+    mediaInteractions[mediaId] = await loadInteractionData(mediaId);
+    updateDisplay(mediaId);
+    
+    // Like button
+    container.querySelector('.like-btn').addEventListener('click', async () => {
+      const data = mediaInteractions[mediaId];
+      
+      if (data.userLike === 'like') {
+        data.likes--;
+        data.userLike = null;
+      } else {
+        if (data.userLike === 'dislike') {
+          data.dislikes--;
+        }
+        data.likes++;
+        data.userLike = 'like';
+      }
+      
+      await saveInteractionData(mediaId, data);
+      updateDisplay(mediaId);
+    });
+    
+    // Dislike button
+    container.querySelector('.dislike-btn').addEventListener('click', async () => {
+      const data = mediaInteractions[mediaId];
+      
+      if (data.userLike === 'dislike') {
+        data.dislikes--;
+        data.userLike = null;
+      } else {
+        if (data.userLike === 'like') {
+          data.likes--;
+        }
+        data.dislikes++;
+        data.userLike = 'dislike';
+      }
+      
+      await saveInteractionData(mediaId, data);
+      updateDisplay(mediaId);
+    });
+    
+    // Comment toggle
+    container.querySelector('.comment-toggle-btn').addEventListener('click', () => {
+      const commentSection = document.getElementById(`comments-${mediaId}`);
+      commentSection.classList.toggle('hidden');
+    });
+    
+    // Comment submit
+    const commentSection = document.getElementById(`comments-${mediaId}`);
+    const commentInput = commentSection.querySelector('.comment-input');
+    const commentSubmit = commentSection.querySelector('.comment-submit');
+    
+    commentSubmit.addEventListener('click', async () => {
+      const text = commentInput.value.trim();
+      if (text) {
+        if (!currentUser.name) {
+          alert('Please set up your profile first!');
+          return;
+        }
+        
+        const data = mediaInteractions[mediaId];
+        data.comments.push({
+          text: text,
+          author: currentUser.name,
+          avatar: currentUser.avatar,
+          avatarBg: currentUser.avatarBg,
+          timestamp: Date.now()
+        });
+        
+        await saveInteractionData(mediaId, data);
+        updateDisplay(mediaId);
+        commentInput.value = '';
+      }
+    });
+    
+    commentInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        commentSubmit.click();
+      }
+    });
+  }
+}
+
+// Initialize on page load
+loadUserProfile().then(() => {
+  initializeMedia();
+});
+</script>
+
+</body>
+</html>
