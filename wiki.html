@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrawlWiki - Dynamic Brawler List (API Connected)</title>
+
+    <style>
+        :root {
+            --bs-purple: #7f38ff;
+            --bs-green: #38ff7f;
+            --bs-dark: #1f1f1f;
+            --bs-light: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bs-dark);
+            color: var(--bs-light);
+            padding: 20px;
+        }
+
+        .wiki-container {
+            max-width: 1200px;
+            margin: auto;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 3px solid var(--bs-purple);
+        }
+
+        header h1 {
+            color: var(--bs-green);
+            font-size: 2.5em;
+            text-shadow: 0 0 5px var(--bs-green);
+        }
+        
+        /* Brawler Grid: Advanced CSS Grid Layout */
+        #brawlers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsive grid */
+            gap: 20px;
+            padding-top: 20px;
+        }
+
+        .brawler-card {
+            background-color: #383838;
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .brawler-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            border-color: var(--bs-purple);
+        }
+
+        .brawler-card h3 {
+            margin: 10px 0 5px;
+            color: var(--bs-light);
+            font-size: 1.2em;
+        }
+
+        .brawler-card p {
+            margin: 0 0 10px;
+            font-size: 0.85em;
+            color: #ccc;
+        }
+
+        .brawler-image-placeholder {
+            width: 100%;
+            height: 120px;
+            background-color: var(--bs-purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        /* Dynamic Status Styling */
+        .status-message {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+            color: var(--bs-green);
+            animation: fadeIn 1s;
+        }
+        
+        /* Loading/Error state animation */
+        #loading-indicator {
+            display: none;
+            text-align: center;
+            color: var(--bs-purple);
+            margin-top: 20px;
+            font-size: 1.5em;
+            animation: spin 1.5s linear infinite;
+        }
+        
+        .loading #loading-indicator {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="loading">
+    <div class="wiki-container">
+        <header>
+            <h1>BRAWL STARS DYNAMIC WIKI 🌐</h1>
+            <p>Data automatically fetched from game servers. Last update: <span id="last-update">...</span></p>
+            <button id="refresh-btn" style="padding: 8px 15px; background-color: var(--bs-purple); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Force Refresh Brawlers
+            </button>
+        </header>
+
+        <div id="loading-indicator">🔄 Fetching Live Brawler Data...</div>
+        
+        <div id="brawlers-grid">
+            </div>
+
+        <div id="status-area" class="status-message"></div>
+    </div>
+
+    <script>
+        (function() {
+            // NOTE ON API KEY:
+            // 🚨 The official Brawl Stars API requires a private API Key, which CANNOT be included 
+            //    in client-side code (like this single HTML file) for security reasons.
+            // 
+            // 💡 In a real-world scenario, the `API_ENDPOINT` would point to a secure server 
+            //    that proxies the request and hides the key (e.g., '/api/brawlers').
+            
+            // Using a simulated local data structure for this single-file demonstration.
+            const API_ENDPOINT = 'SIMULATED_API'; 
+            const REFRESH_INTERVAL_MS = 30000; // Auto-refresh every 30 seconds (for demo)
+
+            // SIMULATED DATA (Add a new brawler here to see the "automatic" update!)
+            const MOCK_API_DATA = [
+                { id: 16000000, name: 'SHELLY', rarity: 'Starting' },
+                { id: 16000001, name: 'COLT', rarity: 'Rare' },
+                { id: 16000002, name: 'BULL', rarity: 'Rare' },
+                // 💥 NEW BRAWLER ANNOUNCED! 💥
+                { id: 16000100, name: 'GIGI', rarity: 'Mythic', new: true } 
+            ];
+
+            // 1. Core Data Fetching Function (Simulated)
+            async function fetchBrawlerData() {
+                document.body.classList.add('loading');
+                document.getElementById('status-area').textContent = '';
+                
+                // --- Replace this with a real fetch() call in production ---
+                // const response = await fetch(API_ENDPOINT, { headers: { 'Authorization': 'Bearer YOUR_TOKEN' } });
+                // const data = await response.json();
+                
+                // Simulate network delay and successful response
+                await new Promise(resolve => setTimeout(resolve, 1500)); 
+                const data = { items: MOCK_API_DATA, timestamp: new Date().toLocaleTimeString() };
+                
+                // --- End of Simulation ---
+
+                if (data.items && Array.isArray(data.items)) {
+                    renderBrawlers(data.items);
+                    document.getElementById('last-update').textContent = data.timestamp;
+                    document.getElementById('status-area').textContent = `✅ Successfully loaded ${data.items.length} brawlers.`;
+                } else {
+                    throw new Error("Invalid API response format.");
+                }
+            }
+
+            // 2. DOM Rendering Function
+            function renderBrawlers(brawlers) {
+                const grid = document.getElementById('brawlers-grid');
+                grid.innerHTML = ''; // Clear existing content
+                
+                brawlers.sort((a, b) => a.id - b.id); // Sort by ID
+
+                brawlers.forEach(brawler => {
+                    const card = document.createElement('div');
+                    card.className = 'brawler-card';
+                    
+                    // Highlight new brawlers
+                    if (brawler.new) {
+                        card.style.borderColor = 'var(--bs-green)';
+                        card.style.boxShadow = '0 0 15px var(--bs-green)';
+                    }
+
+                    const tag = brawler.new ? '✨ NEW' : brawler.name.charAt(0);
+
+                    card.innerHTML = `
+                        <div class="brawler-image-placeholder" style="background-color: ${brawler.new ? 'var(--bs-green)' : 'var(--bs-purple)'};">
+                            ${tag}
+                        </div>
+                        <h3>${brawler.name}</h3>
+                        <p>Rarity: ${brawler.rarity}</p>
+                        <p>ID: ${brawler.id}</p>
+                    `;
+                    grid.appendChild(card);
+                });
+                document.body.classList.remove('loading');
+            }
+
+            // 3. Error Handling and Initialization
+            async function init() {
+                try {
+                    await fetchBrawlerData();
+                } catch (error) {
+                    console.error("Failed to fetch brawler data:", error);
+                    document.getElementById('status-area').textContent = `❌ ERROR: Could not load data. ${error.message}.`;
+                    document.body.classList.remove('loading');
+                }
+            }
+
+            // 4. Set up Auto-Refresh and Manual Button
+            document.getElementById('refresh-btn').addEventListener('click', init);
+            
+            // Auto-refresh logic (The "automatic" part!)
+            setInterval(init, REFRESH_INTERVAL_MS); 
+
+            // Initial load
+            init();
+
+        })();
+    </script>
+</body>
+</html>
