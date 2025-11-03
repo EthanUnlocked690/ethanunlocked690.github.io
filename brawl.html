@@ -518,7 +518,7 @@ function checkProfileRequired() {
 
 async function loadUserProfile() {
   try {
-    const result = await window.storage.get('user-profile');
+    const result = await window.storage.get('user-profile', false);
     if (result) {
       const loadedProfile = JSON.parse(result.value);
       currentUser = {
@@ -560,12 +560,8 @@ async function saveProfile() {
   try {
     const profileData = JSON.stringify(currentUser);
     console.log('Saving profile:', profileData);
-    const result = await window.storage.set('user-profile', profileData);
-    if (result) {
-      showCurrentUser();
-    } else {
-      alert('Failed to save profile. Please try again.');
-    }
+    await window.storage.set('user-profile', profileData, false);
+    showCurrentUser();
   } catch (error) {
     console.error('Error saving profile:', error);
     alert('Error saving profile: ' + error.message);
@@ -625,7 +621,7 @@ async function loadInteractionData(mediaId) {
     const likeResult = await window.storage.get(`${mediaId}-likes`, true);
     const dislikeResult = await window.storage.get(`${mediaId}-dislikes`, true);
     const commentsResult = await window.storage.get(`${mediaId}-comments`, true);
-    const userLikeResult = await window.storage.get(`${mediaId}-user-like`);
+    const userLikeResult = await window.storage.get(`${mediaId}-user-like`, false);
     
     return {
       likes: likeResult ? parseInt(likeResult.value) : 0,
@@ -649,7 +645,7 @@ async function saveInteractionData(mediaId, data) {
     await window.storage.set(`${mediaId}-dislikes`, data.dislikes.toString(), true);
     await window.storage.set(`${mediaId}-comments`, JSON.stringify(data.comments), true);
     if (data.userLike !== null) {
-      await window.storage.set(`${mediaId}-user-like`, data.userLike);
+      await window.storage.set(`${mediaId}-user-like`, data.userLike, false);
     }
   } catch (error) {
     console.error('Error saving data:', error);
