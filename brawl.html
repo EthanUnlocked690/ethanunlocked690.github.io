@@ -499,22 +499,40 @@ li a:hover {
 let currentUser = {
   name: '',
   avatar: '🎮',
-  avatarBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+  avatarBg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  isAdmin: false
 };
 
 // Initialize interaction system
 const mediaInteractions = {};
 
+function checkProfileRequired() {
+  if (!currentUser.name) {
+    alert('Please set up your profile first!');
+    document.getElementById('currentUserDisplay').classList.add('hidden');
+    document.getElementById('profileSetup').classList.remove('hidden');
+    return false;
+  }
+  return true;
+}
+
 async function loadUserProfile() {
   try {
     const result = await window.storage.get('user-profile');
     if (result) {
-      currentUser = JSON.parse(result.value);
+      const loadedProfile = JSON.parse(result.value);
+      currentUser = {
+        name: loadedProfile.name || '',
+        avatar: loadedProfile.avatar || '🎮',
+        avatarBg: loadedProfile.avatarBg || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        isAdmin: loadedProfile.isAdmin || false
+      };
       showCurrentUser();
     } else {
       document.getElementById('profileSetup').classList.remove('hidden');
     }
   } catch (error) {
+    console.error('Load profile error:', error);
     document.getElementById('profileSetup').classList.remove('hidden');
   }
 }
@@ -530,12 +548,27 @@ async function saveProfile() {
   
   currentUser.name = name;
   
+  // Special admin handling
+  if (name === 'EthanUnlocked') {
+    currentUser.isAdmin = true;
+    currentUser.avatar = null;
+    currentUser.avatarBg = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+  } else {
+    currentUser.isAdmin = false;
+  }
+  
   try {
-    await window.storage.set('user-profile', JSON.stringify(currentUser));
-    showCurrentUser();
+    const profileData = JSON.stringify(currentUser);
+    console.log('Saving profile:', profileData);
+    const result = await window.storage.set('user-profile', profileData);
+    if (result) {
+      showCurrentUser();
+    } else {
+      alert('Failed to save profile. Please try again.');
+    }
   } catch (error) {
     console.error('Error saving profile:', error);
-    alert('Error saving profile. Please try again.');
+    alert('Error saving profile: ' + error.message);
   }
 }
 
@@ -545,15 +578,27 @@ function showCurrentUser() {
   display.classList.remove('hidden');
   
   const avatarDisplay = document.getElementById('currentUserAvatarDisplay');
-  avatarDisplay.textContent = currentUser.avatar;
-  avatarDisplay.style.background = currentUser.avatarBg;
+  
+  if (currentUser.isAdmin) {
+    avatarDisplay.innerHTML = '<img src="i.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
+    avatarDisplay.style.background = currentUser.avatarBg;
+  } else {
+    avatarDisplay.innerHTML = '';
+    avatarDisplay.textContent = currentUser.avatar;
+    avatarDisplay.style.background = currentUser.avatarBg;
+  }
   
   document.getElementById('currentUserNameDisplay').textContent = currentUser.name;
   
-  // Update all comment input avatars
   document.querySelectorAll('[id^="commentUserAvatar-"]').forEach(el => {
-    el.textContent = currentUser.avatar;
-    el.style.background = currentUser.avatarBg;
+    if (currentUser.isAdmin) {
+      el.innerHTML = '<img src="i.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">';
+      el.style.background = currentUser.avatarBg;
+    } else {
+      el.innerHTML = '';
+      el.textContent = currentUser.avatar;
+      el.style.background = currentUser.avatarBg;
+    }
   });
 }
 
@@ -563,7 +608,6 @@ function editProfile() {
   document.getElementById('userName').value = currentUser.name;
 }
 
-// Avatar selection
 document.getElementById('avatarSelection').addEventListener('click', (e) => {
   const avatar = e.target.closest('[data-avatar]');
   if (avatar) {
@@ -574,7 +618,6 @@ document.getElementById('avatarSelection').addEventListener('click', (e) => {
   }
 });
 
-// Select first avatar by default
 document.querySelector('[data-avatar]').classList.add('selected');
 
 async function loadInteractionData(mediaId) {
@@ -640,13 +683,21 @@ function renderComments(mediaId) {
   }
   
   commentList.innerHTML = data.comments.map(comment => {
-    const avatarHtml = `<div class="comment-avatar default" style="background: ${comment.avatarBg}">${comment.avatar}</div>`;
+    let avatarHtml;
+    
+    if (comment.isAdmin) {
+      avatarHtml = `<div class="comment-avatar" style="background: ${comment.avatarBg}; padding: 0;"><img src="i.png" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"></div>`;
+    } else {
+      avatarHtml = `<div class="comment-avatar default" style="background: ${comment.avatarBg}">${comment.avatar}</div>`;
+    }
+    
+    const authorName = comment.isAdmin ? `${escapeHtml(comment.author)} 👑` : escapeHtml(comment.author);
     
     return `
       <div class="comment-item">
         ${avatarHtml}
         <div class="comment-content">
-          <div class="comment-author">${escapeHtml(comment.author)}</div>
+          <div class="comment-author">${authorName}</div>
           <div class="comment-text">${escapeHtml(comment.text)}</div>
           <div class="comment-time">${new Date(comment.timestamp).toLocaleString()}</div>
         </div>
@@ -661,7 +712,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Initialize all media containers
 async function initializeMedia() {
   const containers = document.querySelectorAll('.media-container');
   
@@ -670,8 +720,9 @@ async function initializeMedia() {
     mediaInteractions[mediaId] = await loadInteractionData(mediaId);
     updateDisplay(mediaId);
     
-    // Like button
     container.querySelector('.like-btn').addEventListener('click', async () => {
+      if (!checkProfileRequired()) return;
+      
       const data = mediaInteractions[mediaId];
       
       if (data.userLike === 'like') {
@@ -689,8 +740,9 @@ async function initializeMedia() {
       updateDisplay(mediaId);
     });
     
-    // Dislike button
     container.querySelector('.dislike-btn').addEventListener('click', async () => {
+      if (!checkProfileRequired()) return;
+      
       const data = mediaInteractions[mediaId];
       
       if (data.userLike === 'dislike') {
@@ -708,31 +760,29 @@ async function initializeMedia() {
       updateDisplay(mediaId);
     });
     
-    // Comment toggle
     container.querySelector('.comment-toggle-btn').addEventListener('click', () => {
+      if (!checkProfileRequired()) return;
+      
       const commentSection = document.getElementById(`comments-${mediaId}`);
       commentSection.classList.toggle('hidden');
     });
     
-    // Comment submit
     const commentSection = document.getElementById(`comments-${mediaId}`);
     const commentInput = commentSection.querySelector('.comment-input');
     const commentSubmit = commentSection.querySelector('.comment-submit');
     
     commentSubmit.addEventListener('click', async () => {
+      if (!checkProfileRequired()) return;
+      
       const text = commentInput.value.trim();
       if (text) {
-        if (!currentUser.name) {
-          alert('Please set up your profile first!');
-          return;
-        }
-        
         const data = mediaInteractions[mediaId];
         data.comments.push({
           text: text,
           author: currentUser.name,
           avatar: currentUser.avatar,
           avatarBg: currentUser.avatarBg,
+          isAdmin: currentUser.isAdmin || false,
           timestamp: Date.now()
         });
         
@@ -751,7 +801,6 @@ async function initializeMedia() {
   }
 }
 
-// Initialize on page load
 loadUserProfile().then(() => {
   initializeMedia();
 });
