@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Photo Filter Editor</title>
+    <style>
+        /* --- CSS STYLES --- */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .main-editor {
+            flex-basis: 70%;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .filter-controls {
+            flex-basis: 30%;
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Image Display */
+        .image-display {
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #eee;
+        }
+        
+        #canvas-output {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Filter Previews */
+        .filter-previews {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .preview-item {
+            cursor: pointer;
+            text-align: center;
+            border: 3px solid transparent;
+            padding: 5px;
+            transition: border-color 0.2s;
+            background: #fff;
+            border-radius: 4px;
+        }
+
+        .preview-item:hover, .preview-item.active {
+            border-color: #007bff;
+        }
+
+        .preview-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 2px;
+            display: block;
+        }
+
+        .preview-item p {
+            font-size: 0.8em;
+            margin: 5px 0 0 0;
+            font-weight: bold;
+        }
+
+        /* Custom Controls */
+        .custom-filter-section h3 {
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .range-group {
+            margin-bottom: 15px;
+        }
+
+        .range-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .range-group input[type="range"] {
+            width: 100%;
+        }
+
+        /* Hide the actual canvas used for filtering */
+        #hidden-canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Advanced Photo Editor</h1>
+
+    <div class="container">
+        <div class="main-editor">
+            <h2>Your Image</h2>
+            <input type="file" id="image-upload" accept="image/*">
+
+            <div class="image-display">
+                <canvas id="canvas-output"></canvas>
+            </div>
+            
+            <h3>Filter Previews</h3>
+            <p>Click a preview to apply the filter.</p>
+            <div class="filter-previews" id="preview-container">
+                </div>
+        </div>
+
+        <div class="filter-controls">
+            <div class="custom-filter-section">
+                <h3>🛠️ Custom Filter Edits</h3>
+                <p>These edits use CSS for live, non-destructive preview.</p>
+
+                <div class="range-group">
+                    <label for="brightness">Brightness: <span id="brightness-val">100</span>%</label>
+                    <input type="range" id="brightness" min="0" max="200" value="100" step="1">
+                </div>
+
+                <div class="range-group">
+                    <label for="contrast">Contrast: <span id="contrast-val">100</span>%</label>
+                    <input type="range" id="contrast" min="0" max="200" value="100" step="1">
+                </div>
+
+                <div class="range-group">
+                    <label for="saturation">Saturation: <span id="saturation-val">100</span>%</label>
+                    <input type="range" id="saturation" min="0" max="200" value="100" step="1">
+                </div>
+
+                <button onclick="applyCustomFilter()" style="padding: 10px; width: 100%; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Apply Custom Edits Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="hidden-canvas"></canvas>
+
+    <script>
+        // --- JAVASCRIPT LOGIC ---
+
+        const uploadInput = document.getElementById('image-upload');
+        const outputCanvas = document.getElementById('canvas-output');
+        const outputCtx = outputCanvas.getContext('2d');
+        const hiddenCanvas = document.getElementById('hidden-canvas');
+        const hiddenCtx = hiddenCanvas.getContext('2d');
+        const previewContainer = document.getElementById('preview-container');
+
+        let originalImage = new Image();
+        let currentFilter = 'none';
+
+        // --- CORE FILTER FUNCTIONS (Canvas API) ---
+
+        /**
+         * Applies the selected filter to the image data.
+         * Note: This is where you implement *complex* pixel-level effects.
+         * @param {string} filterName - The name of the filter to apply.
+         */
+        function applyFilter(filterName) {
+            if (!originalImage.src) return;
+
+            // 1. Reset: Draw the original image onto the hidden canvas
+            hiddenCanvas.width = originalImage.width;
+            hiddenCanvas.height = originalImage.height;
+            hiddenCtx.drawImage(originalImage, 0, 0);
+
+            // 2. Get the raw pixel data
+            let imageData = hiddenCtx.getImageData(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+            let data = imageData.data;
+
+            // 3. Apply the filter logic based on the name
+            if (filterName === 'black_and_white') {
+                for (let i = 0; i < data.length; i += 4) {
+                    // Calculate Luminosity (weighted average for human perception)
+                    const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                    data[i] = avg;     // Red
+                    data[i + 1] = avg; // Green
+                    data[i + 2] = avg; // Blue
+                    // data[i + 3] is Alpha (keep as is)
+                }
+            } else if (filterName === 'sepia') {
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+
+                    data[i]     = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189)); // Red
+                    data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168)); // Green
+                    data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131)); // Blue
+                }
+            }
+            // For 'none', the pixel data remains the same as the original draw
+
+            // 4. Put the modified data back
+            hiddenCtx.putImageData(imageData, 0, 0);
+
+            // 5. Draw the result to the main output canvas
+            // We set the output canvas dimensions for display
+            const ratio = originalImage.height / originalImage.width;
+            outputCanvas.width = 600; // Fixed display width
+            outputCanvas.height = 600 * ratio; // Proportional height
+            outputCtx.drawImage(hiddenCanvas, 0, 0, outputCanvas.width, outputCanvas.height);
+            
+            currentFilter = filterName;
+            
+            // Clear any temporary CSS filter applied by the custom editor
+            outputCanvas.style.filter = 'none';
+
+            // Reset custom sliders after a main filter is applied
+            resetCustomControls();
+        }
+
+        // --- PREVIEW LOGIC ---
+
+        const filters = [
+            { name: 'None', id: 'none' },
+            { name: 'B&W', id: 'black_and_white' },
+            { name: 'Sepia', id: 'sepia' }
+        ];
+
+        /**
+         * Generates the preview images/canvases.
+         */
+        function generatePreviews() {
+            previewContainer.innerHTML = ''; // Clear existing
+            
+            filters.forEach(filter => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.setAttribute('data-filter', filter.id);
+                item.onclick = () => {
+                    applyFilter(filter.id);
+                    document.querySelectorAll('.preview-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                };
+
+                const previewImg = document.createElement('img');
+                previewImg.id = `preview-${filter.id}`;
+                previewImg.alt = filter.name;
+
+                const p = document.createElement('p');
+                p.textContent = filter.name;
+
+                item.appendChild(previewImg);
+                item.appendChild(p);
+                previewContainer.appendChild(item);
+
+                // Apply filter to the image element for a simple preview
+                // NOTE: For true accuracy, this should use Canvas, but CSS filters 
+                // on an image element are simpler and faster for previews.
+                if (filter.id === 'black_and_white') {
+                    previewImg.style.filter = 'grayscale(100%)';
+                } else if (filter.id === 'sepia') {
+                    previewImg.style.filter = 'sepia(100%)';
+                }
+                // For 'none', no CSS filter is needed.
+                
+                // Set the preview image source
+                previewImg.src = originalImage.src; 
+            });
+
+            // Select 'None' by default
+            document.querySelector('[data-filter="none"]').classList.add('active');
+        }
+
+
+        // --- CUSTOM FILTER LOGIC (CSS Based) ---
+
+        const brightnessSlider = document.getElementById('brightness');
+        const contrastSlider = document.getElementById('contrast');
+        const saturationSlider = document.getElementById('saturation');
+        
+        const controls = [
+            { slider: brightnessSlider, unit: '%', varName: 'brightness', valueSpan: 'brightness-val' },
+            { slider: contrastSlider, unit: '%', varName: 'contrast', valueSpan: 'contrast-val' },
+            { slider: saturationSlider, unit: '%', varName: 'saturation', valueSpan: 'saturation-val' },
+        ];
+        
+        /**
+         * Updates the CSS filter property on the main canvas for a live preview.
+         */
+        function updateCustomFilter() {
+            const b = brightnessSlider.value;
+            const c = contrastSlider.value;
+            const s = saturationSlider.value;
+
+            // Update the display values
+            document.getElementById('brightness-val').textContent = b;
+            document.getElementById('contrast-val').textContent = c;
+            document.getElementById('saturation-val').textContent = s;
+
+            // Apply CSS filter to the *output* canvas for a non-destructive preview
+            const cssFilter = `
+                brightness(${b}%) 
+                contrast(${c}%) 
+                saturation(${s}%)
+            `;
+            outputCanvas.style.filter = cssFilter.trim();
+        }
+
+        /**
+         * Permanently applies the current custom edits by re-drawing the image
+         * using the Canvas API's built-in filter property.
+         */
+        function applyCustomFilter() {
+            if (!originalImage.src) return;
+
+            const b = brightnessSlider.value / 100; // e.g. 100% -> 1
+            const c = contrastSlider.value / 100;
+            const s = saturationSlider.value / 100;
+
+            // 1. Reset: Draw the last filtered image onto the hidden canvas
+            // The hidden canvas *currently holds* the result of the last "applyFilter" call.
+            // If the user hasn't applied a filter, it holds the original image.
+            
+            // Re-draw the current main canvas content (which has the applied canvas filter)
+            // back onto the hidden canvas *without* the temporary CSS filter.
+            hiddenCtx.drawImage(outputCanvas, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+            
+            // 2. Clear output canvas's temporary CSS filter before drawing the final result
+            outputCanvas.style.filter = 'none';
+
+            // 3. Use Canvas's built-in filter (more accurate but less browser-compatible than CSS filter)
+            // NOTE: This feature is not supported in all browsers yet (e.g., Safari requires a prefix)
+            // For guaranteed accuracy/compatibility, one would manually implement
+            // the brightness/contrast/saturation algorithms in the pixel loop.
+            
+            // For this example, we'll draw it back to the hidden canvas *with* the custom edits applied
+            hiddenCtx.filter = `
+                brightness(${b}) 
+                contrast(${c}) 
+                saturation(${s})
+            `;
+            hiddenCtx.drawImage(hiddenCanvas, 0, 0); // Draw image on itself with filter
+
+            // 4. Update the main display
+            outputCtx.drawImage(hiddenCanvas, 0, 0, outputCanvas.width, outputCanvas.height);
+            
+            // 5. Update the Original Image source for subsequent edits/filters
+            // We turn the *filtered* image into the new "original"
+            originalImage.src = hiddenCanvas.toDataURL();
+            
+            // 6. Reset custom controls and mark 'None' as active filter
+            resetCustomControls();
+            document.querySelectorAll('.preview-item').forEach(el => el.classList.remove('active'));
+            document.querySelector('[data-filter="none"]').classList.add('active');
+        }
+        
+        function resetCustomControls() {
+            brightnessSlider.value = 100;
+            contrastSlider.value = 100;
+            saturationSlider.value = 100;
+            updateCustomFilter(); // To reset the visual display and value spans
+        }
+
+
+        // --- EVENT HANDLERS ---
+
+        // Listen for Image Upload
+        uploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                originalImage.onload = () => {
+                    // Initialize the display with the original image
+                    const ratio = originalImage.height / originalImage.width;
+                    outputCanvas.width = 600;
+                    outputCanvas.height = 600 * ratio;
+                    outputCtx.drawImage(originalImage, 0, 0, outputCanvas.width, outputCanvas.height);
+                    
+                    // Generate and display previews
+                    generatePreviews();
+                    
+                    // Reset custom controls
+                    resetCustomControls();
+                };
+                originalImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        // Listen for Custom Control Changes
+        controls.forEach(control => {
+            control.slider.addEventListener('input', updateCustomFilter);
+        });
+
+        // Initialize on page load (ensure all elements are loaded)
+        window.onload = () => {
+            outputCanvas.width = 600;
+            outputCanvas.height = 400;
+            outputCtx.fillStyle = '#ccc';
+            outputCtx.fillRect(0, 0, 600, 400);
+            outputCtx.fillStyle = '#333';
+            outputCtx.font = '20px Arial';
+            outputCtx.textAlign = 'center';
+            outputCtx.fillText('Upload an image to start!', 300, 200);
+            
+            // Initialize previews with a placeholder until an image is uploaded
+            originalImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // Tiny transparent gif
+            generatePreviews(); 
+        };
+
+    </script>
+</body>
+</html>
