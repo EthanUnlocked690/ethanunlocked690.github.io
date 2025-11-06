@@ -263,7 +263,7 @@
         constructor() {
             this.users = { 
                 'EthanUnlocked': 'h4cker',
-                'Beef Wellington': 'Eat_me',
+                'Beef Wellington': 'EAT_ME',
                 'Gyattmodeplays': 'justmyusername'
             };
             this.currentUser = null;
@@ -299,6 +299,9 @@
 
             // Chat
             document.getElementById('sendBtn').onclick = () => this.sendMessage();
+            document.getElementById('messageInput').onkeypress = (e) => {
+                if (e.key === 'Enter') this.sendMessage();
+            };
             document.getElementById('messageInput').oninput = () => this.handleTyping();
             document.getElementById('backBtn').onclick = () => this.closeChat();
             document.getElementById('navChat').onclick = () => this.closeSidebar();
@@ -328,6 +331,37 @@
         populateUserList() {
             const list = document.getElementById('userList');
             list.innerHTML = '';
+            
+            // Add "Everyone" option at the top
+            const everyoneItem = document.createElement('li');
+            everyoneItem.className = 'user-item';
+            everyoneItem.innerHTML = `
+                <div class="user-info">
+                    <div class="user-name">🌐 Everyone</div>
+                    <div class="user-status">
+                        <div class="status-dot online"></div>
+                        <span>Group Chat</span>
+                    </div>
+                </div>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <span class="unread-badge" id="badge-Everyone" style="display:none;">0</span>
+                    <div class="user-actions">
+                        <button class="action-btn action-msg" data-user="Everyone">Message</button>
+                        <button class="action-btn action-call" data-user="Everyone">Phone</button>
+                    </div>
+                </div>
+            `;
+            everyoneItem.onclick = () => this.selectUser('Everyone');
+            everyoneItem.querySelector('.action-msg').onclick = (e) => {
+                e.stopPropagation();
+                this.selectUser('Everyone');
+            };
+            everyoneItem.querySelector('.action-call').onclick = (e) => {
+                e.stopPropagation();
+                this.selectUser('Everyone', 'call');
+            };
+            list.appendChild(everyoneItem);
+            
             Object.keys(this.users).filter(u => u !== this.currentUser).forEach(user => {
                 const li = document.createElement('li');
                 li.className = 'user-item';
@@ -410,9 +444,20 @@
             this.addMessage(text, true, msg.time);
             this.saveMessage(this.currentPeerId, msg, true);
 
-            const conn = this.connections[this.currentPeerId] || this.peer.connect(this.currentPeerId);
-            if (conn.open) conn.send(msg);
-            this.connections[this.currentPeerId] = conn;
+            // Send to everyone or just one person
+            if (this.currentPeerId === 'Everyone') {
+                Object.keys(this.users).filter(u => u !== this.currentUser).forEach(user => {
+                    const conn = this.connections[user] || this.peer.connect(user);
+                    if (conn.open) conn.send(msg);
+                    else conn.on('open', () => conn.send(msg));
+                    this.connections[user] = conn;
+                });
+            } else {
+                const conn = this.connections[this.currentPeerId] || this.peer.connect(this.currentPeerId);
+                if (conn.open) conn.send(msg);
+                else conn.on('open', () => conn.send(msg));
+                this.connections[this.currentPeerId] = conn;
+            }
 
             input.value = '';
         }
@@ -472,7 +517,11 @@
         }
 
         startCall() {
-            alert('Call feature coming soon!');
+            if (this.currentPeerId === 'Everyone') {
+                alert('Group call feature coming soon!');
+            } else {
+                alert('Call feature coming soon!');
+            }
         }
 
         handleTyping() {
