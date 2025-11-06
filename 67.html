@@ -220,8 +220,8 @@
 
     <div id="chatInput">
         <button class="input-btn" id="attachBtn">Attach</button>
-        <input type="text" id="messageInput" placeholder="Type a message..." disabled>
-        <button class="input-btn" id="sendBtn" disabled>Send</button>
+        <input type="text" id="messageInput" placeholder="Type a message...">
+        <button class="input-btn" id="sendBtn">Send</button>
         <input type="file" id="fileInput" multiple>
     </div>
 
@@ -397,13 +397,11 @@
         selectUser(user, action = 'chat') {
             this.currentPeerId = user;
             document.querySelectorAll('.user-item').forEach(i => i.classList.remove('selected'));
-            const item = [...document.querySelectorAll('.user-item')].find(el => el.querySelector('.user-name').textContent === user);
+            const item = [...document.querySelectorAll('.user-item')].find(el => el.querySelector('.user-name').textContent === user || el.querySelector('.user-name').textContent === '🌐 ' + user);
             if (item) item.classList.add('selected');
 
             document.getElementById('chatWith').textContent = user;
-            document.getElementById('chatAvatar').textContent = user[0];
-            document.getElementById('messageInput').disabled = false;
-            document.getElementById('sendBtn').disabled = false;
+            document.getElementById('chatAvatar').textContent = user === 'Everyone' ? '🌐' : user[0];
 
             this.unreadCounts[user] = 0;
             this.updateBadge(user, 0);
@@ -418,8 +416,6 @@
             this.currentPeerId = null;
             document.getElementById('chatWith').textContent = 'Select a user';
             document.getElementById('chatAvatar').textContent = '?';
-            document.getElementById('messageInput').disabled = true;
-            document.getElementById('sendBtn').disabled = true;
             this.closeSidebar();
         }
 
