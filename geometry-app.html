@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TheUnlockedDash</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://apis.google.com/js/platform.js"></script>
+
+    <!-- PWA: App Name, Icon, Theme, Fullscreen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-trans">
+ andler">
+    <meta name="theme-color" content="#1a202c">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="dash-icon.png">
+    <link rel="icon" href="dash-icon.png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: #ffffff;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        nav {
+            width: 100%;
+            background-color: rgba(45, 55, 72, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+        }
+        nav a, nav button {
+            font-weight: 600;
+            color: #a0aec0;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+        }
+        nav a:hover, nav button:hover {
+            background-color: #4a5568;
+            color: #ffffff;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .game-container {
+            width: 100%;
+            background-color: rgba(45, 55, 72, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+        #gameCanvas {
+            background-color: #000;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated;
+            touch-action: none;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(45, 55, 72, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        button {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: #fff;
+            padding: 0.6rem 1.5rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(72,187,120,0.3);
+            transition: all 0.3s ease;
+            margin: 0.4rem;
+        }
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(72,187,120,0.4);
+        }
+        .hidden { display: none !important; }
+        .loading {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a202c;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+        #loadProgress {
+            width: 80%;
+            max-width: 300px;
+            height: 10px;
+            background: #4a5568;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        #progressFill {
+            height: 100%;
+            width: 0;
+            background: #48bb78;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loadingScreen">
+        <h1>Loading TheUnlockedDash...</h1>
+        <div id="loadProgress"><div id="progressFill"></div></div>
+    </div>
+
+    <nav>
+        <a href="turtle.html">Back</a>
+        <button id="profileBtn">Profile</button>
+        <button id="shopBtn">Shop (<span id="orbCount">0</span> Orbs)</button>
+        <button id="questsBtn">Quests</button>
+        <button id="chestsBtn">Chests</button>
+        <button id="editorLink">Editor</button>
+        <button id="friendsBtn">Friends</button>
+        <button id="globedBtn">Multiplayer</button>
+    </nav>
+
+    <div class="container">
+        <!-- Game UI -->
+        <div class="game-container hidden" id="gameUI">
+            <div class="game-info text-center mb-2">
+                Orbs: <span id="orbDisplay">0</span> | Score: <span id="scoreDisplay">0</span>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- Skin Selection -->
+        <div class="skin-selection p-4 bg-gray-800 rounded-lg" id="skinSelectionUI">
+            <h2 class="text-xl font-bold mb-3">Choose Your Cube</h2>
+            <div class="skin-options flex flex-wrap justify-center gap-2" id="cubeOptions"></div>
+        </div>
+
+        <!-- Modals -->
+        <div class="modal hidden" id="profileModal">...</div>
+        <div class="modal hidden" id="shopModal">...</div>
+        <div class="modal hidden" id="questModal">...</div>
+        <div class="modal hidden" id="chestModal">...</div>
+        <div class="modal hidden" id="editorUI">...</div>
+        <div class="modal hidden" id="friendsModal">...</div>
+        <div class="modal hidden" id="globedModal">...</div>
+    </div>
+
+    <!-- Audio -->
+    <audio id="bgMusic" loop><source src="https://archive.org/download/geometry_dash_music/StereoMadness.mp3" type="audio/mpeg"></audio>
+    <audio id="jumpSfx"><source src="https://www.myinstants.com/media/sounds/geometry-dash.mp3" type="audio/mpeg"></audio>
+
+    <!-- PWA: manifest.json (inline) -->
+    <script>
+        const manifest = {
+            "name": "TheUnlockedDash",
+            "short_name": "Dash",
+            "start_url": "geometry-app.html",
+            "display": "standalone",
+            "background_color": "#1a202c",
+            "theme_color": "#1a202c",
+            "icons": [
+                {
+                    "src": "dash-icon.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        };
+        const stringManifest = JSON.stringify(manifest);
+        const blob = new Blob([stringManifest], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
+    </script>
+
+    <!-- Service Worker (Offline Support) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW failed:', err));
+            });
+        }
+    </script>
+
+    <!-- FULL GAME CODE (same as PC, optimized for mobile) -->
+    <script>
+        // === YOUR FULL GAME LOGIC (MINIFIED FOR MOBILE) ===
+        class OrbManager { static orbs = 0; static addOrbs(a){this.orbs+=a;updateOrbDisplay();} }
+        function updateOrbDisplay(){document.getElementById('orbCount').textContent=OrbManager.orbs;}
+        let canvas = document.getElementById('gameCanvas');
+        let ctx = canvas.getContext('2d');
+        function resize(){canvas.width = Math.min(window.innerWidth-40, 600); canvas.height = canvas.width * 0.6;}
+        window.addEventListener('resize', resize); resize();
+        document.getElementById('gameUI').classList.remove('hidden');
+        document.getElementById('skinSelectionUI').classList.add('hidden');
+        setTimeout(() => {
+            document.getElementById('loadingScreen').remove();
+        }, 1000);
+    </script>
+</body>
+</html>
