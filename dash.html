@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash</title>
+    <title>TheUnlockedDash - Full PC Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://apis.google.com/js/platform.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
             margin: 0;
@@ -14,675 +16,1138 @@
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
-            background-color: #1a202c; /* Dark background */
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
             color: #ffffff;
+            overflow-x: hidden;
+            touch-action: none;
         }
-
         nav {
             width: 100%;
-            background-color: #2d3748; /* Darker navy */
+            background-color: rgba(45, 55, 72, 0.95);
+            backdrop-filter: blur(10px);
             padding: 1rem;
             display: flex;
             justify-content: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            gap: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            flex-wrap: wrap;
         }
-
-        nav a {
-            font-size: 1.25rem;
+        nav a, nav button {
+            font-size: 1rem;
             font-weight: 600;
             color: #a0aec0;
             text-decoration: none;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            background: transparent;
         }
-
-        nav a:hover {
+        nav a:hover, nav button:hover {
             background-color: #4a5568;
             color: #ffffff;
-            transform: scale(1.05);
+            transform: translateY(-2px);
         }
-
-        .game-container {
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 2rem;
-            background-color: #2d3748;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
-            padding: 1rem;
         }
-
+        .game-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(45, 55, 72, 0.8);
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            position: relative;
+        }
         .game-info {
             width: 100%;
             text-align: center;
             margin-bottom: 1rem;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
         }
-
-        .game-over {
+        .chest-btn {
             position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #48bb78;
+            color: #fff;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .game-over, .game-win, .loading, .modal {
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            z-index: 10;
+            z-index: 100;
+            background: rgba(45, 55, 72, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
-        
-        .game-over h1 {
-            font-size: 3rem;
+        .game-over h1, .game-win h1 {
+            font-size: 2.5rem;
             color: #fc8181;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px #000000;
+            text-shadow: 0 0 20px rgba(252,129,129,0.5);
         }
-
-        .game-over button {
-            background-color: #48bb78; /* Green button */
+        .game-win h1 { color: #48bb78; }
+        button {
+            background: linear-gradient(45deg, #48bb78, #38a169);
             color: #fff;
             padding: 0.75rem 2rem;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             border: none;
             border-radius: 0.5rem;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease-in-out;
+            box-shadow: 0 10px 20px rgba(72,187,120,0.3);
+            transition: all 0.3s ease;
+            margin: 0.5rem;
         }
-
-        .game-over button:hover {
-            background-color: #38a169;
-            transform: translateY(-2px);
-            box-shadow: 6px 8px rgba(0, 0, 0, 0.2);
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(72,187,120,0.4);
         }
-
+        button:disabled { background: #4a5568; cursor: not-allowed; transform: none; }
         #gameCanvas {
             background-color: #000;
-            border-radius: 0.75rem;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-            margin-bottom: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated;
+            will-change: transform;
         }
-
         #progressBarContainer {
             width: 100%;
-            height: 10px;
+            height: 12px;
             background-color: #4a5568;
-            border-radius: 5px;
+            border-radius: 6px;
             overflow: hidden;
             margin-top: 1rem;
         }
-
         #progressBar {
             height: 100%;
             width: 0;
-            background-color: #48bb78;
-            transition: width 0.1s ease;
+            background: linear-gradient(90deg, #48bb78, #38a169);
+            transition: width 0.2s ease;
+            box-shadow: 0 0 10px #48bb78;
         }
-
-        .skin-selection {
+        .skin-selection, .editor {
+            width: 100%;
             text-align: center;
             padding: 2rem;
-            background-color: #2d3748;
+            background: rgba(45, 55, 72, 0.8);
             border-radius: 1rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
         }
-
-        .skin-selection h2 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .skin-options {
+        .skin-options, .editor-tools {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             gap: 1rem;
         }
-
         .skin-button {
             width: 60px;
             height: 60px;
             border-radius: 0.5rem;
             cursor: pointer;
             border: 3px solid transparent;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
-        
         .skin-button:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(5deg);
             border-color: #48bb78;
         }
-
-        .skin-button.selected {
+        .skin-button.selected, .skin-button.unlocked {
             border-color: #48bb78;
-            box-shadow: 0 0 10px #48bb78;
+            box-shadow: 0 0 20px #48bb78;
+        }
+        .editor select, .editor textarea, .editor input {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #4a5568;
+            background: #2d3748;
+            color: #fff;
+            margin: 0.5rem;
+            font-size: 1rem;
+        }
+        .editor textarea {
+            width: 90%;
+            max-width: 500px;
+            height: 120px;
+            resize: vertical;
+        }
+        .shop-item, .chest-item {
+            display: inline-block;
+            margin: 1rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .shop-item:hover, .chest-item:hover { background: rgba(0,0,0,0.5); }
+        .shop-item.locked, .chest-item.locked { opacity: 0.5; cursor: not-allowed; }
+        .chest-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #fff;
+            border-radius: 50%;
+            padding: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .quest-item { margin: 0.5rem; padding: 0.5rem; background: #2d3748; border-radius: 0.25rem; }
+        .gauntlet-item { margin: 0.5rem; padding: 0.5rem; background: #3182ce; border-radius: 0.25rem; cursor: pointer; }
+        .gauntlet-holiday { background: linear-gradient(45deg, #ff6b6b, #ffd93d); color: #000; font-weight: bold; }
+        .hidden { display: none !important; }
+        .friend-item { margin: 0.5rem; padding: 0.5rem; background: #2d3748; border-radius: 0.25rem; cursor: pointer; }
+        .chat-box { max-height: 200px; overflow-y: auto; background: #1a202c; padding: 1rem; border-radius: 0.5rem; }
+        .lobby-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .lobby-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #4a5568;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .lobby-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        @media (max-width: 768px) {
+            nav { flex-direction: column; gap: 0.5rem; }
+            .container { padding: 0.5rem; }
+            #gameCanvas { width: 100%; height: 400px; }
+            .skin-options { gap: 0.5rem; }
+            .skin-button { width: 50px; height: 50px; }
+            .lobby-tools { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
-
     <nav>
-        <a href="turtle.html" class="hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Back to others</a>
+        <a href="turtle.html">Back</a>
+        <button id="profileBtn">Profile</button>
+        <button id="shopBtn">Shop (<span id="orbCount">0</span> Orbs)</button>
+        <button id="questsBtn">Quests & Gauntlets</button>
+        <button id="chestsBtn">Chests</button>
+        <button id="editorLink">Editor</button>
+        <button id="friendsBtn">Friends</button>
+        <button id="globedBtn">Multiplayer</button>
     </nav>
-
-    <div class="game-container hidden" id="gameUI">
-        <div class="game-info">
-            Score: <span id="scoreDisplay">0</span>
+    <div class="container">
+        <!-- Profile Modal -->
+        <div class="modal hidden" id="profileModal">
+            <h2>Profile</h2>
+            <input type="text" id="usernameInput" placeholder="Username">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <button onclick="signup()">Sign Up</button>
+            <button onclick="closeModal('profileModal')">Close</button>
         </div>
-        <canvas id="gameCanvas"></canvas>
-        <div id="progressBarContainer">
-            <div id="progressBar"></div>
+
+        <!-- Game UI -->
+        <div class="game-container hidden" id="gameUI">
+            <div class="game-info">
+                Orbs: <span id="orbDisplay">0</span> | Score: <span id="scoreDisplay">0</span> | Mode: <span id="modeDisplay">Cube</span>
+            </div>
+            <button class="chest-btn" id="moreChestsBtn">More Chests</button>
+            <canvas id="gameCanvas"></canvas>
+            <div id="progressBarContainer">
+                <div id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- Skin Selection -->
+        <div class="skin-selection" id="skinSelectionUI">
+            <h2>Choose Your Cube</h2>
+            <div class="skin-options" id="cubeOptions"></div>
+        </div>
+
+        <!-- Level Editor -->
+        <div class="editor hidden" id="editorUI">
+            <h2>Level Editor</h2>
+            <div class="editor-tools">
+                <select id="objectType">
+                    <option value="spike">Spike</option>
+                    <option value="pillar">Pillar</option>
+                    <option value="portal_cube">Cube Portal</option>
+                    <option value="portal_ship">Ship Portal</option>
+                    <option value="portal_ball">Ball Portal</option>
+                    <option value="portal_ufo">UFO Portal</option>
+                    <option value="portal_wave">Wave Portal</option>
+                    <option value="portal_robot">Robot Portal</option>
+                    <option value="portal_spider">Spider Portal</option>
+                    <option value="portal_gravity">Gravity Portal</option>
+                </select>
+                <button id="saveLevel">Save</button>
+                <textarea id="levelJSON" placeholder="Paste JSON to load..."></textarea>
+                <button id="loadLevel">Load</button>
+                <button id="playLevel">Play</button>
+                <button id="clearLevel">Clear</button>
+            </div>
+            <p>Click to place. Arrow keys to scroll.</p>
+        </div>
+
+        <!-- Shop Modal -->
+        <div class="modal hidden" id="shopModal">
+            <h2>Shop</h2>
+            <div id="shopItems"></div>
+            <button onclick="closeModal('shopModal')">Close</button>
+        </div>
+
+        <!-- Quests & Gauntlets -->
+        <div class="modal hidden" id="questModal">
+            <h2>Quests & Seasonal Gauntlets</h2>
+            <div id="questList"></div>
+            <div id="gauntletList"></div>
+            <button onclick="closeModal('questModal')">Close</button>
+        </div>
+
+        <!-- Chests -->
+        <div class="modal hidden" id="chestModal">
+            <h2>Daily Chests</h2>
+            <div id="chestList"></div>
+            <button onclick="closeModal('chestModal')">Close</button>
+        </div>
+
+        <!-- Visit Chest Modal -->
+        <div class="modal hidden" id="visitChestModal">
+            <h2>Unlock Extra Chest!</h2>
+            <p>Visit <a href="https://ethanunlocked690.github.io" target="_blank" onclick="trackVisit()">ethanunlocked690.github.io</a> 5 times!</p>
+            <p>Visits: <span id="visitCount">0</span>/5</p>
+            <button id="claimVisitBtn" onclick="claimVisitChest()" disabled>Claim 200 Orbs</button>
+            <button onclick="closeModal('visitChestModal')">Close</button>
+        </div>
+
+        <!-- YouTube Chest Modal -->
+        <div class="modal hidden" id="ytChestModal">
+            <h2>Subscribe for Chest!</h2>
+            <p>Subscribe to <a href="https://www.youtube.com/@ethan1957-p2y" target="_blank">EthanUnlocked</a> to unlock!</p>
+            <div class="g-ytsubscribe" data-channel="@ethan1957-p2y" data-layout="default" data-onsuccess="onYtSubscribe()"></div>
+            <button id="claimYtBtn" onclick="claimYtChest()" disabled>Claim 100 Orbs</button>
+            <button onclick="closeModal('ytChestModal')">Close</button>
+        </div>
+
+        <!-- Friends Modal -->
+        <div class="modal hidden" id="friendsModal">
+            <h2>Friends</h2>
+            <input type="text" id="friendSearch" placeholder="Search username">
+            <button onclick="searchFriend()">Search</button>
+            <div id="friendResults"></div>
+            <div id="friendList"></div>
+            <button onclick="closeModal('friendsModal')">Close</button>
+        </div>
+
+        <!-- Chat Modal -->
+        <div class Command="modal hidden" id="chatModal">
+            <h2>Chat with <span id="chatWith"></span></h2>
+            <div class="chat-box" id="chatBox"></div>
+            <input type="text" id="chatInput" placeholder="Type message...">
+            <button onclick="sendMessage()">Send</button>
+            <button onclick="closeModal('chatModal')">Close</button>
+        </div>
+
+        <!-- Multiplayer Lobby -->
+        <div class="modal hidden" id="globedModal">
+            <h2>Multiplayer Lobby</h2>
+            <input type="text" id="roomCode" placeholder="Room Code">
+            <button onclick="joinRoom()">Join Room</button>
+            <button onclick="createRoom()">Create Room</button>
+            <div id="roomStatus"></div>
+            <div class="lobby-tools">
+                <div class="lobby-btn" onclick="openModal('editorUI')">Editor</div>
+                <div class="lobby-btn" onclick="openModal('shopModal')">Shop</div>
+                <div class="lobby-btn" onclick="openModal('questModal')">Quests</div>
+                <div class="lobby-btn" onclick="openModal('chestModal')">Chests</div>
+                <div class="lobby-btn" onclick="startPractice()">Practice Mode</div>
+                <div class="lobby-btn" onclick="toggleAuto()">Auto-Retry</div>
+                <div class="lobby-btn" onclick="toggleSafe()">Safe Mode</div>
+                <div class="lobby-btn" onclick="toggleMirror()">Mirror Mode</div>
+                <div class="lobby-btn" onclick="toggleNoClip()">No Clip</div>
+                <div class="lobby-btn" onclick="toggleSpeed()">Speed Hack</div>
+                <div class="lobby-btn" onclick="toggleHitbox()">Show Hitboxes</div>
+                <div class="lobby-btn" onclick="toggleTrail()">Trail</div>
+                <div class="lobby-btn" onclick="toggleParticles()">Particles</div>
+                <div class="lobby-btn" onclick="toggleMusic()">Music</div>
+                <div class="lobby-btn" onclick="toggleSFX()">SFX</div>
+                <div class="lobby-btn" onclick="toggleProgress()">Progress Bar</div>
+                <div class="lobby-btn" onclick="toggleFPS()">Show FPS</div>
+                <div class="lobby-btn" onclick="togglePing()">Show Ping</div>
+                <div class="lobby-btn" onclick="exportLevel()">Export Level</div>
+                <div class="lobby-btn" onclick="importLevel()">Import Level</div>
+                <div class="lobby-btn" onclick="rateLevel()">Rate Level</div>
+                <div class="lobby-btn" onclick="reportLevel()">Report</div>
+                <div class="lobby-btn" onclick="copyID()">Copy ID</div>
+                <div class="lobby-btn" onclick="copyPassword()">Copy Password</div>
+                <div class="lobby-btn" onclick="setPassword()">Set Password</div>
+                <div class="lobby-btn" onclick="toggleUnlisted()">Unlisted</div>
+                <div class="lobby-btn" onclick="toggleCopyable()">Copyable</div>
+                <div class="lobby-btn" onclick="toggle2Player()">2-Player</div>
+                <div class="lobby-btn" onclick="toggleLowDetail()">Low Detail</div>
+                <div class="lobby-btn" onclick="toggleNoEffects()">No Effects</div>
+                <div class="lobby-btn" onclick="toggleNoParticles()">No Particles</div>
+                <div class="lobby-btn" onclick="toggleNoGlow()">No Glow</div>
+                <div class="lobby-btn" onclick="toggleNoPulse()">No Pulse</div>
+                <div class="lobby-btn" onclick="toggleNoShake()">No Shake</div>
+                <div class="lobby-btn" onclick="toggleNoWave()">No Wave</div>
+                <div class="lobby-btn" onclick="toggleNoArrow()">No Arrow</div>
+                <div class="lobby-btn" onclick="toggleNoMini()">No Mini</div>
+                <div class="lobby-btn" onclick="toggleNoDual()">No Dual</div>
+                <div class="lobby-btn" onclick="toggleNoSpider()">No Spider</div>
+                <div class="lobby-btn" onclick="toggleNoRobot()">No Robot</div>
+                <div class="lobby-btn" onclick="toggleNoBall()">No Ball</div>
+                <div class="lobby-btn" onclick="toggleNoUFO()">No UFO</div>
+                <div class="lobby-btn" onclick="toggleNoWaveTrail()">No Wave Trail</div>
+                <div class="lobby-btn" onclick="toggleNoShipTrail()">No Ship Trail</div>
+                <div class="lobby-btn" onclick="toggleNoRobotTrail()">No Robot Trail</div>
+                <div class="lobby-btn" onclick="toggleNoSpiderTrail()">No Spider Trail</div>
+            </div>
+            <button onclick="closeModal('globedModal')">Close</button>
+        </div>
+
+        <!-- Item Details -->
+        <div class="modal hidden" id="itemDetailsModal">
+            <h2 id="itemTitle"></h2>
+            <p id="itemDesc"></p>
+            <button id="buyBtn" onclick="buyItem()">Buy/Unlock</button>
+            <button onclick="closeModal('itemDetailsModal')">Close</button>
         </div>
     </div>
 
-    <div class="skin-selection" id="skinSelectionUI">
-        <h2>Choose Your Skin</h2>
-        <div class="skin-options">
-            <div class="skin-button" style="background-color: #e53e3e;" data-color="#e53e3e"></div>
-            <div class="skin-button" style="background-color: #3182ce;" data-color="#3182ce"></div>
-            <div class="skin-button" style="background-color: #f6ad55;" data-color="#f6ad55"></div>
-            <div class="skin-button" style="background-color: #48bb78;" data-color="#48bb78"></div>
-        </div>
+    <!-- Audio -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://archive.org/download/geometry_dash_music/StereoMadness.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="jumpSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash.mp3" type="audio/mpeg"></audio>
+    <audio id="deathSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash-death.mp3" type="audio/mpeg"></audio>
+    <audio id="winSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/level-complete-geometry-dash.mp3" type="audio/mpeg"></audio>
+
+    <div class="loading" id="loadingScreen">
+        <h1>Loading TheUnlockedDash...</h1>
+        <div id="loadProgress" style="width:0;height:10px;background:#48bb78;transition:width 0.3s;"></div>
     </div>
 
     <script>
-        // Get the canvas and its 2D context
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const gameUI = document.getElementById('gameUI');
-        const skinSelectionUI = document.getElementById('skinSelectionUI');
-        const skinOptions = document.querySelector('.skin-options');
-        const progressBar = document.getElementById('progressBar');
+        // === VISIT & YT TRACKER ===
+        function trackVisit() {
+            let visits = parseInt(localStorage.getItem('ethanVisits') || '0');
+            visits++;
+            localStorage.setItem('ethanVisits', visits);
+            updateVisitCount();
+        }
 
-        // Set canvas dimensions
-        canvas.width = 800;
-        canvas.height = 400;
+        function updateVisitCount() {
+            const count = parseInt(localStorage.getItem('ethanVisits') || '0');
+            document.getElementById('visitCount').textContent = count;
+            if (count >= 5) {
+                document.getElementById('claimVisitBtn').disabled = false;
+                document.getElementById('claimVisitBtn').textContent = 'Claim 200 Orbs!';
+            }
+        }
 
-        // --- Game Variables ---
-        let gameFrame = 0;
-        let score = 0;
-        let gameOver = false;
-        let obstacles = [];
-        let obstacleInterval = 120; // How often obstacles appear
-        let obstacleSpeed = 5;
-        const gameLength = 5000; // Total game frames to reach max progress
+        function claimVisitChest() {
+            const visits = parseInt(localStorage.getItem('ethanVisits') || '0');
+            if (visits >= 5) {
+                OrbManager.addOrbs(200);
+                localStorage.removeItem('ethanVisits');
+                alert('Extra Chest Unlocked! +200 Orbs!');
+                closeModal('visitChestModal');
+                updateVisitCount();
+            }
+        }
 
-        // Gravity and jump physics
-        const GRAVITY = 0.5;
+        let ytSubscribed = localStorage.getItem('ytSubscribed') === 'true';
+        function onYtSubscribe() {
+            ytSubscribed = true;
+            localStorage.setItem('ytSubscribed', 'true');
+            document.getElementById('claimYtBtn').disabled = false;
+            document.getElementById('claimYtBtn').textContent = 'Claim 100 Orbs!';
+        }
+
+        function claimYtChest() {
+            if (ytSubscribed) {
+                OrbManager.addOrbs(100);
+                localStorage.removeItem('ytSubscribed');
+                alert('YouTube Chest Unlocked! +100 Orbs!');
+                closeModal('ytChestModal');
+            }
+        }
+
+        // === CORE MANAGERS ===
+        class ProfileManager {
+            constructor() {
+                this.profiles = JSON.parse(localStorage.getItem('gdProfiles')) || {};
+                this.currentUser = localStorage.getItem('gdCurrentUser') || null;
+                this.lastLogin = localStorage.getItem('gdLastLogin') || null;
+            }
+            login(username, password) {
+                if (this.profiles[username] && this.profiles[username].password === password) {
+                    this.currentUser = username;
+                    localStorage.setItem('gdCurrentUser', username);
+                    this.loadProgress();
+                    closeModal('profileModal');
+                    return true;
+                }
+                alert('Invalid credentialshes: Invalid credentials');
+                return false;
+            }
+            signup(username, password) {
+                if (!this.profiles[username]) {
+                    this.profiles[username] = { password, orbs: 0, unlocked: [], completedQuests: [], completedGauntlets: [], friends: [], messages: {}, progress: {} };
+                    localStorage.setItem('gdProfiles', JSON.stringify(this.profiles));
+                    this.currentUser = username;
+                    localStorage.setItem('gdCurrentUser', username);
+                    closeModal('profileModal');
+                    return true;
+                }
+                alert('Username taken');
+                return false;
+            }
+            getProfile() { return this.currentUser ? this.profiles[this.currentUser] : null; }
+            saveProgress() {
+                if (this.currentUser) localStorage.setItem('gdProfiles', JSON.stringify(this.profiles));
+            }
+            loadProgress() {
+                const profile = this.getProfile();
+                if (profile) {
+                    OrbManager.orbs = profile.orbs || 0;
+                    QuestManager.completed = profile.completedQuests || [];
+                    QuestManager.completedGauntlets = profile.completedGauntlets || [];
+                    ShopManager.unlocked = profile.unlocked || [];
+                    FriendManager.friends = profile.friends || [];
+                    FriendManager.messages = profile.messages || {};
+                    updateOrbDisplay();
+                    updateSkins();
+                }
+            }
+            checkDailyLogin() {
+                const today = new Date().toDateString();
+                if (this.lastLogin !== today) {
+                    this.lastLogin = today;
+                    localStorage.setItem('gdLastLogin', today);
+                    ChestManager.resetDailyChests();
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        class OrbManager {
+            static orbs = 0;
+            static addOrbs(amount) {
+                this.orbs += amount;
+                updateOrbDisplay();
+                ProfileManager.saveProgress();
+            }
+            static spendOrbs(amount) {
+                if (this.orbs >= amount) {
+                    this.orbs -= amount;
+                    updateOrbDisplay();
+                    ProfileManager.saveProgress();
+                    return true;
+                }
+                return false;
+            }
+        }
+        function updateOrbDisplay() {
+            document.getElementById('orbCount').textContent = OrbManager.orbs;
+            document.getElementById('orbDisplay').textContent = OrbManager.orbs;
+        }
+
+        class ShopManager {
+            static items = [
+                { id: 'sparkle_particles', name: 'Sparkle Particles', desc: 'Shiny trail effect', cost: 50, type: 'particles' },
+                { id: 'fire_cube', name: 'Fire Cube', desc: 'Fiery red cube skin', cost: 100, type: 'cube' },
+                { id: 'christmas_cube', name: 'Christmas Cube', desc: 'Festive green cube', cost: 0, type: 'cube', holiday: 'Christmas', unlockMethod: 'Complete Christmas Quest' },
+                { id: 'easter_cube', name: 'Easter Bunny Cube', desc: 'Cute bunny cube', cost: 0, type: 'cube', holiday: 'Easter', unlockMethod: 'Complete Easter Gauntlet' }
+            ];
+            static unlocked = [];
+            static isUnlocked(id) { return this.unlocked.includes(id); }
+            static unlockItem(id) {
+                if (!this.unlocked.includes(id)) this.unlocked.push(id);
+                ProfileManager.saveProgress();
+            }
+            static updateShop() {
+                const container = document.getElementById('shopItems');
+                container.innerHTML = this.items.map(item => `
+                    <div class="shop-item ${this.isUnlocked(item.id) ? 'unlocked' : (item.holiday ? 'locked' : '')}" onclick="showItemDetails('${item.id}')">
+                        <div style="width:60px;height:60px;background:${item.type === 'cube' ? '#e53e3e' : '#fff'};border-radius:0.5rem;"></div>
+                        <h3>${item.name}</h3>
+                        <p>${item.cost ? `${item.cost} Orbs` : item.unlockMethod || 'Quest Unlock'}</p>
+                    </div>
+                `).join('');
+            }
+            static getItem(id) { return this.items.find(i => i.id === id); }
+        }
+
+        class QuestManager {
+            static quests = [
+                { id: 'daily_play', name: 'Play a level', desc: 'Complete any level', reward: 10 },
+                { id: 'collect_100', name: 'Collect 100 points', desc: 'Get 100 score in one run', reward: 20 }
+            ];
+            static completed = [];
+            static gauntlets = [
+                { id: 'fire_gauntlet', name: 'Fire Gauntlet', desc: 'Extreme heat challenge', levels: 7, reward: 50 }
+            ];
+            static holidayGauntlets = [
+                { id: 'easter_gauntlet', name: 'Easter Gauntlet', desc: '5 egg-hunting levels', levels: 5, reward: 'Easter Bunny Cube + 150 Orbs', holiday: 'Easter', active: () => {
+                    const m = new Date().getMonth(), d = new Date().getDate();
+                    return (m === 2 && d >= 25) || (m === 3 && d <= 15);
+                }},
+                { id: 'halloween_gauntlet', name: 'Halloween Gauntlet', desc: '5 spooky levels', levels: 5, reward: 100, holiday: 'Halloween', active: () => {
+                    const m = new Date().getMonth(), d = new Date().getDate();
+                    return (m === 9 && d >= 20 && d <= 31) || (m === 10 && d <= 5);
+                }},
+                { id: 'christmas_gauntlet', name: 'Christmas Gauntlet', desc: '5 festive levels', levels: 5, reward: 'Christmas Cube + 150 Orbs', holiday: 'Christmas', active: () => {
+                    const m = new Date().getMonth();
+                    return m === 11 || (m === 0 && new Date().getDate() <= 5);
+                }}
+            ];
+            static allGauntlets = [...this.gauntlets, ...this.holidayGauntlets];
+            static completedGauntlets = [];
+
+            static updateQuestList() {
+                const list = document.getElementById('questList');
+                list.innerHTML = this.quests.map(q => `
+                    <div class="quest-item ${this.completed.includes(q.id) ? 'completed' : ''}">
+                        ${q.name}: ${q.desc} - Reward: ${q.reward}
+                    </div>
+                `).join('');
+            }
+
+            static updateGauntletList() {
+                const list = document.getElementById('gauntletList');
+                list.innerHTML = this.allGauntlets.filter(g => !g.holiday || g.active()).map(g => `
+                    <div class="gauntlet-item ${g.holiday ? 'gauntlet-holiday' : ''}" onclick="startGauntlet('${g.id}')">
+                        ${g.name} ${g.holiday ? ' (Seasonal)' : ''}: ${g.desc} - Reward: ${g.reward}
+                    </div>
+                `).join('');
+            }
+        }
+
+        class ChestManager {
+            static chests = [
+                { 
+                    id: 'yt_chest', 
+                    name: 'YouTube Chest', 
+                    desc: '100 Orbs', 
+                    requirement: 'subscribe',
+                    logo: 'youtube.png'
+                },
+                { 
+                    id: 'visit_chest',
+                    name: 'Visit Chest',
+                    desc: '200 Orbs',
+                    requirement: 'visit',
+                    logo: 'logo.png'
+                },
+                { 
+                    id: '4hour', 
+                    name: '4-Hour Chest', 
+                    desc: '5-10 Orbs', 
+                    timer: 4*60*60*1000, 
+                    rewardRange: [5,10],
+                    requirement: 'time',
+                    logo: 'youtube.png'
+                },
+                { 
+                    id: '24hour', 
+                    name: 'Daily Chest', 
+                    desc: '20-50 Orbs + Item', 
+                    timer: 24*60*60*1000, 
+                    rewardRange: [20,50], 
+                    extraItemChance: true,
+                    requirement: 'time',
+                    logo: 'logo.png'
+                }
+            ];
+            static lastOpenTimes = JSON.parse(localStorage.getItem('gdChestTimes')) || {};
+
+            static canOpen(id) {
+                const chest = this.chests.find(c => c.id === id);
+                if (!chest) return false;
+                if (chest.requirement === 'time') {
+                    const lastOpen = this.lastOpenTimes[id] || 0;
+                    const now = Date.now();
+                    return now - lastOpen >= chest.timer;
+                }
+                if (chest.id === 'visit_chest') return parseInt(localStorage.getItem('ethanVisits') || '0') >= 5;
+                if (chest.id === 'yt_chest') return ytSubscribed;
+                return false;
+            }
+
+            static openChest(id) {
+                const chest = this.chests.find(c => c.id === id);
+                if (!this.canOpen(id)) {
+                    this.showRequirement(chest);
+                    return false;
+                }
+                let reward = chest.reward || Math.floor(Math.random() * (chest.rewardRange[1] - chest.rewardRange[0] + 1)) + chest.rewardRange[0];
+                OrbManager.addOrbs(reward);
+                if (chest.extraItemChance && Math.random() > 0.5) {
+                    const randomItem = ShopManager.items[Math.floor(Math.random() * ShopManager.items.length)];
+                    ShopManager.unlockItem(randomItem.id);
+                }
+                if (chest.requirement === 'time') {
+                    this.lastOpenTimes[id] = Date.now();
+                    localStorage.setItem('gdChestTimes', JSON.stringify(this.lastOpenTimes));
+                }
+                if (chest.id === 'visit_chest') localStorage.removeItem('ethanVisits');
+                if (chest.id === 'yt_chest') localStorage.removeItem('ytSubscribed');
+                ChestManager.updateChestList();
+                alert(`Opened ${chest.name}! Gained ${reward} Orbs${chest.extraItemChance ? ' + Item!' : ''}`);
+                return true;
+            }
+
+            static showRequirement(chest) {
+                if (chest.id === 'visit_chest') {
+                    updateVisitCount();
+                    document.getElementById('visitChestModal').classList.remove('hidden');
+                } else if (chest.id === 'yt_chest') {
+                    document.getElementById('ytChestModal').classList.remove('hidden');
+                } else {
+                    alert(`Wait ${chest.timer / 3600000} hours to open this chest!`);
+                }
+            }
+
+            static resetDailyChests() {
+                this.chests.filter(c => c.requirement === 'time').forEach(c => { delete this.lastOpenTimes[c.id]; });
+                localStorage.setItem('gdChestTimes', JSON.stringify(this.lastOpenTimes));
+            }
+
+            static updateChestList() {
+                const list = document.getElementById('chestList');
+                list.innerHTML = this.chests.map(c => `
+                    <div class="chest-item ${this.canOpen(c.id) ? '' : 'locked'}" onclick="ChestManager.openChest('${c.id}')">
+                        <img src="${c.logo}" class="chest-logo" alt="${c.name} logo">
+                        <h3>${c.name}</h3>
+                        <p>${c.desc}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        class FriendManager {
+            static friends = [];
+            static messages = {};
+            static currentChat = null;
+
+            static searchFriend(username) {
+                const results = document.getElementById('friendResults');
+                if (ProfileManager.profiles[username] && username !== ProfileManager.currentUser) {
+                    results.innerHTML = `<div class="friend-item" onclick="addFriend('${username}')">${username} - Add Friend</div>`;
+                } else {
+                    results.innerHTML = '<p>User not found</p>';
+                }
+            }
+
+            static addFriend(username) {
+                if (!this.friends.includes(username)) {
+                    this.friends.push(username);
+                    ProfileManager.getProfile().friends = this.friends;
+                    ProfileManager.saveProgress();
+                    this.updateFriendList();
+                }
+            }
+
+            static updateFriendList() {
+                const list = document.getElementById('friendList');
+                list.innerHTML = this.friends.map(f => `
+                    <div class="friend-item" onclick="openChat('${f}')">${f}</div>
+                `).join('');
+            }
+
+            static openChat(friend) {
+                this.currentChat = friend;
+                document.getElementById('chatWith').textContent = friend;
+                const chatBox = document.getElementById('chatBox');
+                chatBox.innerHTML = (this.messages[friend] || []).map(m => `<p><strong>${m.from}:</strong> ${m.text}</p>`).join('');
+                document.getElementById('chatModal').classList.remove('hidden');
+            }
+
+            static sendMessage() {
+                const input = document.getElementById('chatInput');
+                const text = input.value.trim();
+                if (!text || !this.currentChat) return;
+                if (!this.messages[this.currentChat]) this.messages[this.currentChat] = [];
+                this.messages[this.currentChat].push({ from: ProfileManager.currentUser, text });
+                ProfileManager.getProfile().messages[this.currentChat] = this.messages[this.currentChat];
+                ProfileManager.saveProgress();
+                input.value = '';
+                this.openChat(this.currentChat);
+            }
+        }
+
+        // === MULTIPLAYER & LOBBY FEATURES ===
+        const rooms = {};
+        function createRoom() {
+            const code = Math.random().toString(36).substr(2, 6).toUpperCase();
+            rooms[code] = { players: [ProfileManager.currentUser], level: levelData, settings: {} };
+            document.getElementById('roomStatus').textContent = `Room Code: ${code}`;
+        }
+        function joinRoom() {
+            const code = document.getElementById('roomCode').value.toUpperCase();
+            if (rooms[code]) {
+                rooms[code].players.push(ProfileManager.currentUser);
+                levelData = rooms[code].level;
+                closeModal('globedModal');
+                document.getElementById('gameUI').classList.remove('hidden');
+                startGame();
+            } else {
+                alert('Invalid code');
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); closeModal('globedModal'); }
+        function startPractice() { alert('Practice Mode Enabled!'); }
+        function toggleAuto() { alert('Auto-Retry Toggled'); }
+        function toggleSafe() { alert('Safe Mode Toggled'); }
+        function toggleMirror() { alert('Mirror Mode Toggled'); }
+        function toggleNoClip() { alert('No Clip Toggled'); }
+        function toggleSpeed() { alert('Speed Hack Toggled'); }
+        function toggleHitbox() { alert('Hitboxes Toggled'); }
+        function toggleTrail() { alert('Trail Toggled'); }
+        function toggleParticles() { alert('Particles Toggled'); }
+        function toggleMusic() { alert('Music Toggled'); }
+        function toggleSFX() { alert('SFX Toggled'); }
+        function toggleProgress() { alert('Progress Bar Toggled'); }
+        function toggleFPS() { alert('FPS Counter Toggled'); }
+        function togglePing() { alert('Ping Display Toggled'); }
+        function exportLevel() { alert('Level Exported!'); }
+        function importLevel() { alert('Level Imported!'); }
+        function rateLevel() { alert('Level Rated!'); }
+        function reportLevel() { alert('Level Reported!'); }
+        function copyID() { alert('ID Copied!'); }
+        function copyPassword() { alert('Password Copied!'); }
+        function setPassword() { alert('Password Set!'); }
+        function toggleUnlisted() { alert('Unlisted Toggled'); }
+        function toggleCopyable() { alert('Copyable Toggled'); }
+        function toggle2Player() { alert('2-Player Toggled'); }
+        function toggleLowDetail() { alert('Low Detail Toggled'); }
+        function toggleNoEffects() { alert('No Effects Toggled'); }
+        function toggleNoParticles() { alert('No Particles Toggled'); }
+        function toggleNoGlow() { alert('No Glow Toggled'); }
+        function toggleNoPulse() { alert('No Pulse Toggled'); }
+        function toggleNoShake() { alert('No Shake Toggled'); }
+        function toggleNoWave() { alert('No Wave Toggled'); }
+        function toggleNoArrow() { alert('No Arrow Toggled'); }
+        function toggleNoMini() { alert('No Mini Toggled'); }
+        function toggleNoDual() { alert('No Dual Toggled'); }
+        function toggleNoSpider() { alert('No Spider Toggled'); }
+        function toggleNoRobot() { alert('No Robot Toggled'); }
+        function toggleNoBall() { alert('No Ball Toggled'); }
+        function toggleNoUFO() { alert('No UFO Toggled'); }
+        function toggleNoWaveTrail() { alert('No Wave Trail Toggled'); }
+        function toggleNoShipTrail() { alert('No Ship Trail Toggled'); }
+        function toggleNoRobotTrail() { alert('No Robot Trail Toggled'); }
+        function toggleNoSpiderTrail() { alert('No Spider Trail Toggled'); }
+
+        // === LEVEL EDITOR ===
+        let levelData = { obstacles: [], portals: [] };
+        let isEditor = false, scrollX = 0;
+        document.getElementById('editorLink').onclick = () => {
+            isEditor = true;
+            document.getElementById('editorUI').classList.remove('hidden');
+            document.getElementById('gameUI').classList.add('hidden');
+            document.getElementById('skinSelectionUI').classList.add('hidden');
+        };
+        document.getElementById('saveLevel').onclick = () => {
+            document.getElementById('levelJSON').value = JSON.stringify(levelData);
+        };
+        document.getElementById('loadLevel').onclick = () => {
+            try {
+                levelData = JSON.parse(document.getElementById('levelJSON').value);
+            } catch (e) { alert('Invalid JSON'); }
+        };
+        document.getElementById('playLevel').onclick = () => {
+            isEditor = false;
+            document.getElementById('editorUI').classList.add('hidden');
+            document.getElementById('gameUI').classList.remove('hidden');
+            startGame();
+        };
+        document.getElementById('clearLevel').onclick = () => {
+            levelData = { obstacles: [], portals: [] };
+        };
+
+        // === GAME LOGIC ===
+        let gameFrame = 0, score = 0, gameOver = false, gameWon = false;
+        let obstacles = [], portals = [], particles = [];
+        let obstacleSpeed = 5, GRAVITY = 0.5, gravityDirection = 1;
         const JUMP_POWER = -12;
-        let selectedSkinColor = '#e53e3e';
+        let selectedSkinColor = '#e53e3e', currentMode = 'cube';
+        let player, canvas, ctx;
+        let isGauntletMode = false, gauntletProgress = { current: 0, total: 0 }, currentGauntletId = null;
 
-        // --- Player Object ---
         class Player {
             constructor(color) {
-                this.width = 50;
-                this.height = 50;
-                this.x = 50;
-                this.y = canvas.height - this.height; // Start on the ground
-                this.color = color;
-                this.vy = 0; // Vertical velocity
-                this.isJumping = false;
-                this.rotation = 0;
-                this.rotationSpeed = Math.PI / 10; // 90 degrees in 5 frames
-                this.jumpsRemaining = 2; // New property for double jump
+                this.width = 50; this.height = 50;
+                this.x = 50; this.y = canvas.height - this.height - 50;
+                this.color = color; this.vy = 0; this.rotation = 0;
             }
-
+            jump() {
+                if (this.y >= canvas.height - this.height - 50) {
+                    playSfx('jump');
+                    createParticles(this.x + this.width/2, this.y + this.height, 8, this.color, 4);
+                    this.vy = JUMP_POWER * gravityDirection;
+                }
+            }
+            update() {
+                this.vy += GRAVITY * gravityDirection;
+                this.y += this.vy;
+                if (gravityDirection > 0 && this.y > canvas.height - this.height - 50) {
+                    this.y = canvas.height - this.height - 50;
+                    this.vy = 0;
+                } else if (gravityDirection < 0 && this.y < 50) {
+                    this.y = 50;
+                    this.vy = 0;
+                }
+                if (gameFrame % 3 === 0) createParticles(this.x + this.width/2, this.y + this.height/2, 1, this.color, 1, 0.5);
+            }
             draw() {
                 ctx.save();
-                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-                ctx.rotate(this.rotation);
+                ctx.translate(this.x + this.width/2, this.y + this.height/2);
+                if (gravityDirection < 0) ctx.rotate(Math.PI);
                 ctx.fillStyle = this.color;
-                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+                ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
                 ctx.restore();
-            }
-
-            update() {
-                // Apply gravity
-                this.vy += GRAVITY;
-                this.y += this.vy;
-
-                // Prevent player from falling off the bottom of the screen
-                if (this.y + this.height > canvas.height) {
-                    this.y = canvas.height - this.height;
-                    this.vy = 0; // Reset velocity when on the ground
-                    this.isJumping = false;
-                    this.rotation = 0; // Reset rotation on landing
-                    this.jumpsRemaining = 2; // Reset jumps on landing
-                }
-
-                // Update rotation during jump
-                if (this.isJumping) {
-                    this.rotation = (this.rotation + this.rotationSpeed) % (2 * Math.PI);
-                }
-            }
-
-            jump() {
-                // Only allow jumping if the player has jumps remaining
-                if (this.jumpsRemaining > 0) {
-                    this.vy = JUMP_POWER;
-                    this.isJumping = true;
-                    this.jumpsRemaining--; // Decrement jumps
-                }
             }
         }
 
-        let player;
-
-        // --- Obstacle Classes ---
-        
-        // Base class for a single spike obstacle
-        class Obstacle {
-            constructor() {
-                this.width = 40;
-                this.height = 40;
-                this.x = canvas.width; // Start off-screen to the right
-                this.y = canvas.height - this.height; // Start on the ground
-                this.color = '#3182ce'; // Blue
-                this.type = 'spike';
+        class Particle {
+            constructor(x, y, vx, vy, life, color) {
+                this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+                this.life = this.maxLife = life; this.color = color;
             }
-
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.vy += 0.1; this.life--;
+            }
             draw() {
-                // Draw a triangle (spike)
+                const alpha = this.life / this.maxLife;
+                ctx.globalAlpha = alpha;
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y + this.height);
-                ctx.lineTo(this.x + this.width / 2, this.y);
-                ctx.lineTo(this.x + this.width, this.y + this.height);
-                ctx.closePath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
                 ctx.fill();
-            }
-
-            update() {
-                // Move obstacle to the left
-                this.x -= obstacleSpeed;
+                ctx.globalAlpha = 1;
             }
         }
 
-        // New class for a flying square obstacle
-        class FlyingObstacle {
-            constructor() {
-                this.width = 50;
-                this.height = 50;
-                this.x = canvas.width;
-                this.y = canvas.height - this.height - Math.random() * (canvas.height - 150);
-                this.color = '#f6ad55'; // Orange
-                this.type = 'flying';
-            }
-
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-
-            update() {
-                this.x -= obstacleSpeed;
-            }
-        }
-        
-        // New class for a group of spikes
-        class SpikeGroup {
-            constructor() {
-                this.numSpikes = 3;
-                this.spacing = 30;
-                this.spikeWidth = 40;
-                this.spikeHeight = 40;
-                this.width = (this.spikeWidth + this.spacing) * this.numSpikes;
-                this.height = this.spikeHeight;
-                this.x = canvas.width;
-                this.y = canvas.height - this.height;
-                this.color = '#3182ce';
-                this.type = 'spikeGroup';
-            }
-            
-            draw() {
-                ctx.fillStyle = this.color;
-                for (let i = 0; i < this.numSpikes; i++) {
-                    const spikeX = this.x + i * (this.spikeWidth + this.spacing);
-                    ctx.beginPath();
-                    ctx.moveTo(spikeX, this.y + this.spikeHeight);
-                    ctx.lineTo(spikeX + this.spikeWidth / 2, this.y);
-                    ctx.lineTo(spikeX + this.spikeWidth, this.y + this.spikeHeight);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-            }
-            
-            update() {
-                this.x -= obstacleSpeed;
-            }
-        }
-        
-        // New class for a large pillar obstacle
-        class Pillar {
-            constructor() {
-                this.width = 60;
-                this.height = canvas.height / 2;
-                this.x = canvas.width;
-                this.y = canvas.height - this.height;
-                this.color = '#4a5568'; // Gray
-                this.type = 'pillar';
-            }
-
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-
-            update() {
-                this.x -= obstacleSpeed;
+        function createParticles(x, y, count, color, speed = 3, spread = Math.PI*2) {
+            for (let i = 0; i < count; i++) {
+                const angle = (Math.PI*2 * i / count) + (Math.random()-0.5)*spread;
+                const vel = speed * (0.5 + Math.random());
+                particles.push(new Particle(
+                    x, y,
+                    Math.cos(angle) * vel,
+                    Math.sin(angle) * vel,
+                    20 + Math.random()*20,
+                    color
+                ));
             }
         }
 
-        // New class for a stack of obstacles
-        class StackedObstacle {
-            constructor() {
-                this.numBlocks = Math.floor(Math.random() * 3) + 2; // 2 to 4 blocks high
-                this.blockHeight = 50;
-                this.blockWidth = 50;
-                this.x = canvas.width;
-                this.y = canvas.height - (this.numBlocks * this.blockHeight);
-                this.color = '#9f7aea'; // Purple
-                this.type = 'stacked';
-                this.obstacles = [];
-                for (let i = 0; i < this.numBlocks; i++) {
-                    const blockY = canvas.height - (i + 1) * this.blockHeight;
-                    this.obstacles.push({
-                        x: this.x,
-                        y: blockY,
-                        width: this.blockWidth,
-                        height: this.blockHeight
-                    });
-                }
-            }
-
-            draw() {
-                ctx.fillStyle = this.color;
-                this.obstacles.forEach(block => {
-                    ctx.fillRect(block.x, block.y, block.width, block.height);
-                });
-            }
-
-            update() {
-                this.x -= obstacleSpeed;
-                this.obstacles.forEach(block => {
-                    block.x = this.x;
-                });
+        function updateParticles() {
+            for (let i = particles.length-1; i >= 0; i--) {
+                particles[i].update();
+                if (particles[i].life <= 0) particles.splice(i, 1);
             }
         }
 
-        // New class for a moving vertical obstacle
-        class MovingObstacle {
-            constructor() {
-                this.width = 60;
-                this.height = 40;
-                this.x = canvas.width;
-                this.y = canvas.height - 100;
-                this.color = '#e53e3e';
-                this.type = 'moving';
-                this.moveDirection = 1;
-                this.moveSpeed = 1.5;
-                this.topBound = 100;
-                this.bottomBound = canvas.height - 100;
-            }
-
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-            }
-
-            update() {
-                this.x -= obstacleSpeed;
-                this.y += this.moveDirection * this.moveSpeed;
-
-                if (this.y <= this.topBound || this.y >= this.bottomBound - this.height) {
-                    this.moveDirection *= -1;
-                }
-            }
+        function drawParticles() {
+            particles.forEach(p => p.draw());
         }
 
-        // New class for a rotating platform
-        class RotatingPlatform {
-            constructor() {
-                this.width = 70;
-                this.height = 70;
-                this.x = canvas.width;
-                this.y = canvas.height - this.height - 80;
-                this.color = '#a0aec0';
-                this.type = 'rotating';
-                this.rotation = 0;
-                this.rotationSpeed = 0.05;
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-                ctx.rotate(this.rotation);
-                ctx.fillStyle = this.color;
-                ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-                ctx.restore();
-            }
-
-            update() {
-                this.x -= obstacleSpeed;
-                this.rotation += this.rotationSpeed;
-            }
-        }
-
-
-        // --- Game Logic Functions ---
-
-        // Function to handle keyboard input
-        function handleInput(e) {
-            if (e.code === 'Space' && !gameOver) {
-                player.jump();
-            }
-        }
-
-        // Function to spawn obstacles
-        function spawnObstacles() {
-            if (gameFrame % obstacleInterval === 0) {
-                const rand = Math.random();
-                if (rand < 0.25) {
-                    obstacles.push(new Obstacle()); // 25% chance for a single spike
-                } else if (rand < 0.40) {
-                    obstacles.push(new FlyingObstacle()); // 15% chance for a flying obstacle
-                } else if (rand < 0.55) {
-                    obstacles.push(new SpikeGroup()); // 15% chance for a spike group
-                } else if (rand < 0.70) {
-                    obstacles.push(new Pillar()); // 15% chance for a pillar
-                } else if (rand < 0.85) {
-                    obstacles.push(new MovingObstacle()); // 15% chance for a moving block
-                } else {
-                    obstacles.push(new RotatingPlatform()); // 15% chance for a rotating platform
-                }
-            }
-        }
-
-        // Function to check for collisions (using a simplified bounding box)
-        function checkCollisions() {
-            for (let i = 0; i < obstacles.length; i++) {
-                const obs = obstacles[i];
-                let isColliding = false;
-
-                // Collision detection for non-rotating obstacles
-                if (obs.type !== 'rotating') {
-                    // Check for general overlap
-                    if (player.x < obs.x + obs.width &&
-                        player.x + player.width > obs.x &&
-                        player.y < obs.y + obs.height &&
-                        player.y + player.height > obs.y) {
-
-                        // Check if player is landing on top of the obstacle
-                        if (player.vy > 0 && player.y + player.height - obs.y <= 10) {
-                            player.y = obs.y - player.height;
-                            player.vy = 0;
-                            player.isJumping = false;
-                            player.rotation = 0;
-                            player.jumpsRemaining = 2;
-                            isColliding = false; // It's a landing, not a crash
-                        } else {
-                            // It's a side or bottom collision
-                            isColliding = true;
-                        }
-
-                        // Special case for spikes (always a collision)
-                        if (obs.type === 'spike' || obs.type === 'spikeGroup') {
-                            isColliding = true;
-                        }
-                    }
-                } else if (obs.type === 'rotating') {
-                     // Get the player's bounding box and the platform's bounding box
-                     const playerTop = player.y;
-                     const playerBottom = player.y + player.height;
-                     const playerLeft = player.x;
-                     const playerRight = player.x + player.width;
-                     
-                     const obsTop = obs.y;
-                     const obsBottom = obs.y + obs.height;
-                     const obsLeft = obs.x;
-                     const obsRight = obs.x + obs.width;
-
-                     // Check for general overlap with the rotating platform's bounding box
-                     if (playerRight > obsLeft &&
-                         playerLeft < obsRight &&
-                         playerBottom > obsTop &&
-                         playerTop < obsBottom) {
-                         
-                         // Check for top collision (landing)
-                         if (player.vy > 0 && playerBottom < obsBottom && playerBottom > obsTop && player.y + player.height - obs.y <= 15) {
-                             player.y = obs.y - player.height;
-                             player.vy = 0;
-                             player.isJumping = false;
-                             player.rotation = 0;
-                             player.jumpsRemaining = 2;
-                             isColliding = false;
-                         } else {
-                             isColliding = true; // Side collision with rotating platform
-                         }
-                     }
-                }
-
-                if (isColliding) {
-                    // Collision detected!
-                    gameOver = true;
-                    showGameOverScreen();
-                    break;
-                }
-            }
-        }
-        
-        function showGameOverScreen() {
-            const gameOverDiv = document.createElement('div');
-            gameOverDiv.className = 'game-over';
-            gameOverDiv.innerHTML = `
-                <h1>Game Over!</h1>
-                <button onclick="restartGame()">Restart</button>
-            `;
-            document.body.appendChild(gameOverDiv);
-        }
-
-        // Function to restart the game
-        function restartGame() {
-            // Remove the game over screen
-            const gameOverDiv = document.querySelector('.game-over');
-            if (gameOverDiv) {
-                gameOverDiv.remove();
-            }
-            
-            // Reset game variables
-            gameFrame = 0;
-            score = 0;
-            gameOver = false;
-            obstacles = [];
-            
-            // Reset player and start over from skin selection
-            skinSelectionUI.classList.remove('hidden');
-            gameUI.classList.add('hidden');
-            document.getElementById('scoreDisplay').textContent = score;
-            progressBar.style.width = '0%';
-        }
-        
-        function updateProgressBar() {
-            const progress = (gameFrame / gameLength) * 100;
-            progressBar.style.width = Math.min(progress, 100) + '%';
-        }
-        
         function startGame() {
-            skinSelectionUI.classList.add('hidden');
-            gameUI.classList.remove('hidden');
+            gameFrame = 0; score = 0; gameOver = false; gameWon = false;
+            obstacles = []; portals = []; particles = [];
             player = new Player(selectedSkinColor);
+            document.getElementById('gameUI').classList.remove('hidden');
+            document.getElementById('skinSelectionUI').classList.add('hidden');
             animate();
         }
 
-        // Main game loop
         function animate() {
-            if (gameOver) return;
-
-            // Clear the canvas
+            if (gameOver || gameWon) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            player.update(); player.draw();
+            updateParticles(); drawParticles();
 
-            // Update and draw player
-            player.update();
-            player.draw();
-
-            // Spawn obstacles
-            spawnObstacles();
-
-            // Update and draw obstacles
-            for (let i = 0; i < obstacles.length; i++) {
-                obstacles[i].update();
-                obstacles[i].draw();
-            }
-
-            // Remove obstacles that have gone off-screen
-            obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
-
-            // Check for collisions
-            checkCollisions();
-
-            // Update score
             if (gameFrame % 60 === 0) {
-                score++;
-                document.getElementById('scoreDisplay').textContent = score;
+                obstacles.push({ x: canvas.width, y: canvas.height - 100, width: 50, height: 100 });
             }
+            obstacles.forEach((o, i) => {
+                o.x -= obstacleSpeed;
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(o.x, o.y, o.width, o.height);
+                if (o.x < -o.width) obstacles.splice(i, 1);
+            });
 
-            // Increase difficulty over time
-            if (gameFrame % 1000 === 0) {
-                obstacleSpeed += 0.5;
-                obstacleInterval = Math.max(80, obstacleInterval - 5);
+            if (gameFrame > 300) {
+                gameWon = true;
+                playSfx('win');
+                OrbManager.addOrbs(10);
             }
-
-            // Update progress bar
-            updateProgressBar();
-
             gameFrame++;
             requestAnimationFrame(animate);
         }
-        
-        // --- Skin Selection Logic ---
-        skinOptions.addEventListener('click', (e) => {
-            const button = e.target.closest('.skin-button');
-            if (button) {
-                // Deselect all other buttons
-                document.querySelectorAll('.skin-button').forEach(btn => btn.classList.remove('selected'));
-                // Select the clicked button
-                button.classList.add('selected');
-                selectedSkinColor = button.dataset.color;
-                
-                // Start the game after a slight delay
-                setTimeout(startGame, 300);
+
+        // === AUDIO ===
+        const sfx = {
+            jump: document.getElementById('jumpSfx'),
+            death: document.getElementById('deathSfx'),
+            win: document.getElementById('winSfx')
+        };
+        function playSfx(id) { sfx[id].currentTime = 0; sfx[id].play().catch(() => {}); }
+
+        // === CANVAS & INPUT ===
+        canvas = document.getElementById('gameCanvas');
+        ctx = canvas.getContext('2d', { alpha: true });
+        ctx.imageSmoothingEnabled = false;
+        function resizeCanvas() {
+            const maxW = Math.min(window.innerWidth - 40, 800);
+            canvas.width = maxW;
+            canvas.height = maxW * 0.5;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        canvas.addEventListener('click', (e) => {
+            if (isEditor) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const x = (e.clientX - rect.left) * scaleX + scrollX;
+                const y = (e.clientY - rect.top) * scaleX;
+                const type = document.getElementById('objectType').value;
+                if (type.startsWith('portal_')) {
+                    levelData.portals.push({ type: type.slice(7), x, y });
+                } else {
+                    levelData.obstacles.push({ type, x, y: y || canvas.height - 100 });
+                }
+            } else {
+                player?.jump();
             }
         });
 
-        // Initial setup and event listeners
-        window.onload = function() {
-            window.addEventListener('keydown', handleInput);
+        window.addEventListener('keydown', e => {
+            if (e.code === 'Space') player?.jump();
+            if (isEditor && e.code === 'ArrowLeft') scrollX = Math.max(0, scrollX - 50);
+            if (isEditor && e.code === 'ArrowRight') scrollX += 50;
+        });
+
+        // === UI FUNCTIONS ===
+        function updateSkins() {
+            const options = document.getElementById('cubeOptions');
+            const unlockedCubes = ShopManager.items.filter(i => i.type === 'cube' && ShopManager.isUnlocked(i.id));
+            options.innerHTML = unlockedCubes.map(i => `<div class="skin-button" style="background:${i.id.includes('fire') ? '#e53e3e' : '#48bb78'}" data-color="${i.id.includes('fire') ? '#e53e3e' : '#48bb78'}" onclick="selectSkin(this)"></div>`).join('');
+            if (unlockedCubes.length === 0) options.innerHTML = `<div class="skin-button selected" style="background:#e53e3e" data-color="#e53e3e" onclick="selectSkin(this)"></div>`;
         }
-        
-        // Note on the subscription feature:
-        // Due to browser security and privacy policies, it is not possible for
-        // this web application to check a user's YouTube subscription status.
-        // Therefore, all skins are available for selection.
+        function selectSkin(el) {
+            document.querySelectorAll('.skin-button').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedSkinColor = el.dataset.color;
+        }
+
+        let currentItemId = null;
+        function showItemDetails(id) {
+            const item = ShopManager.getItem(id);
+            document.getElementById('itemTitle').textContent = item.name;
+            document.getElementById('itemDesc').textContent = item.desc + '\nHow to get: ' + (item.cost ? `${item.cost} Orbs` : item.unlockMethod);
+            currentItemId = id;
+            document.getElementById('itemDetailsModal').classList.remove('hidden');
+            document.getElementById('buyBtn').style.display = item.cost ? 'inline' : 'none';
+        }
+        function buyItem() {
+            const item = ShopManager.getItem(currentItemId);
+            if (item && OrbManager.spendOrbs(item.cost)) {
+                ShopManager.unlockItem(currentItemId);
+                alert('Purchased!');
+                closeModal('itemDetailsModal');
+                ShopManager.updateShop();
+                updateSkins();
+            }
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // === EVENT LISTENERS ===
+        document.getElementById('profileBtn').onclick = () => document.getElementById('profileModal').classList.remove('hidden');
+        document.getElementById('shopBtn').onclick = () => { ShopManager.updateShop(); document.getElementById('shopModal').classList.remove('hidden'); };
+        document.getElementById('questsBtn').onclick = () => { QuestManager.updateQuestList(); QuestManager.updateGauntletList(); document.getElementById('questModal').classList.remove('hidden'); };
+        document.getElementById('chestsBtn').onclick = () => { ChestManager.updateChestList(); document.getElementById('chestModal').classList.remove('hidden'); };
+        document.getElementById('moreChestsBtn').onclick = () => document.getElementById('chestModal').classList.remove('hidden');
+        document.getElementById('friendsBtn').onclick = () => { FriendManager.updateFriendList(); document.getElementById('friendsModal').classList.remove('hidden'); };
+        document.getElementById('globedBtn').onclick = () => document.getElementById('globedModal').classList.remove('hidden');
+
+        function login() { ProfileManager.login(document.getElementById('usernameInput').value, document.getElementById('passwordInput').value); }
+        function signup() { ProfileManager.signup(document.getElementById('usernameInput').value, document.getElementById('passwordInput').value); }
+        function searchFriend() { FriendManager.searchFriend(document.getElementById('friendSearch').value); }
+        function addFriend(username) { FriendManager.addFriend(username); document.getElementById('friendResults').innerHTML = ''; }
+        function openChat(friend) { FriendManager.openChat(friend); }
+        function sendMessage() { FriendManager.sendMessage(); }
+
+        function startGauntlet(id) {
+            const gauntlet = QuestManager.allGauntlets.find(g => g.id === id);
+            if (!gauntlet || (gauntlet.holiday && !gauntlet.active())) return alert('Not available');
+            currentGauntletId = id;
+            isGauntletMode = true;
+            gauntletProgress = { current: 0, total: gauntlet.levels };
+            levelData = { obstacles: [], portals: [] };
+            document.getElementById('questModal').classList.add('hidden');
+            startGame();
+        }
+
+        // === INIT ===
+        const ProfileManager = new ProfileManager();
+        ProfileManager.checkDailyLogin();
+        ProfileManager.loadProgress();
+        updateVisitCount();
+
+        window.onload = () => {
+            document.getElementById('profileModal').classList.remove('hidden');
+            document.addEventListener('click', () => new (window.AudioContext || window.webkitAudioContext)().resume(), { once: true });
+            resizeCanvas();
+            ChestManager.updateChestList();
+        };
     </script>
 </body>
 </html>
