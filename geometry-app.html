@@ -9,211 +9,196 @@
 
     <!-- PWA: App Name, Icon, Theme, Fullscreen -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-trans">
- andler">
-    <meta name="theme-color" content="#1a202c">
-    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVGhlVW5sb2NrZWREYXNoIiwic2hvcnRfbmFtZSI6IkRhc2giLCJzdGFydF91cmwiOiJnZW9tZXRyeS1hcHAuaHRtbCIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwMDAwMDAiLCJ0aGVtZV9jb2xvciI6IiMwMDAwMDAiLCJpY29ucyI6W3sic3JjIjoiZGFzaC1pY29uLnBuZyIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
     <link rel="apple-touch-icon" href="dash-icon.png">
     <link rel="icon" href="dash-icon.png">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-            color: #ffffff;
+            font-family: 'Orbitron', sans-serif;
+            background: #000;
+            color: #fff;
             overflow: hidden;
-            touch-action: manipulation;
+            touch-action: none;
+            user-select: none;
         }
-        nav {
-            width: 100%;
-            background-color: rgba(45, 55, 72, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 0.5rem;
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            flex-wrap: wrap;
-            font-size: 0.9rem;
-        }
-        nav a, nav button {
-            font-weight: 600;
-            color: #a0aec0;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-        }
-        nav a:hover, nav button:hover {
-            background-color: #4a5568;
-            color: #ffffff;
-        }
-        .container {
-            width: 100%;
-            max-width: 900px;
-            padding: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .game-container {
-            width: 100%;
-            background-color: rgba(45, 55, 72, 0.8);
-            border-radius: 1rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            padding: 1rem;
-            margin-top: 0.5rem;
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #000, #111);
+            overflow: hidden;
         }
         #gameCanvas {
-            background-color: #000;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 100%;
-            height: auto;
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             image-rendering: pixelated;
-            touch-action: none;
+        }
+        .ui {
+            position: absolute;
+            z-index: 10;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+            letter-spacing: 1px;
+        }
+        #scoreDisplay { top: 20px; left: 20px; font-size: 2rem; color: #00ffff; }
+        #progressBarContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 8px;
+            background: rgba(0,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 0 15px #00ffff;
+        }
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00ffff, #00ff00);
+            transition: width 0.1s ease;
+            box-shadow: 0 0 20px #00ffff;
+        }
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            box-shadow: 0 0 10px currentColor;
+        }
+        .spike {
+            position: absolute;
+            width: 0; height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid #ff3300;
+            filter: drop-shadow(0 0 8px #ff3300);
+        }
+        .portal {
+            position: absolute;
+            width: 60px; height: 120px;
+            border: 6px solid;
+            border-radius: 10px;
+            box-shadow: 0 0 20px currentColor, inset 0 0 20px currentColor;
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        .portal.cube { border-color: #00ffff; }
+        .portal.ship { border-color: #ff00ff; }
+        .portal.ball { border-color: #ffff00; }
+        .portal.ufo { border-color: #00ff00; }
+        .portal.wave { border-color: #ff6600; }
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(to top, #222, #111);
+            box-shadow: 0 0 20px #00ffff inset;
+        }
+        .grid-line {
+            position: absolute;
+            background: rgba(0,255,255,0.1);
+            pointer-events: none;
+        }
+        .grid-line.horizontal { height: 1px; width: 100%; }
+        .grid-line.vertical { width: 1px; height: 100%; }
+        .glow { filter: drop-shadow(0 0 10px currentColor); }
+        .neon-btn {
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px #00ffff;
+            transition: all 0.3s;
+        }
+        .neon-btn:hover {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 25px #00ffff;
         }
         .modal {
             position: fixed;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(45, 55, 72, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 1.5rem;
-            border-radius: 1rem;
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
             max-width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
             z-index: 100;
-        }
-        button {
-            background: linear-gradient(45deg, #48bb78, #38a169);
-            color: #fff;
-            padding: 0.6rem 1.5rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(72,187,120,0.3);
-            transition: all 0.3s ease;
-            margin: 0.4rem;
-        }
-        button:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(72,187,120,0.4);
+            box-shadow: 0 0 30px #00ffff;
+            backdrop-filter: blur(10px);
         }
         .hidden { display: none !important; }
         .loading {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #1a202c;
+            background: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 200;
+            color: #00ffff;
+            font-size: 2rem;
+            text-shadow: 0 0 20px #00ffff;
         }
         #loadProgress {
             width: 80%;
-            max-width: 300px;
+            max-width: 400px;
             height: 10px;
-            background: #4a5568;
+            background: rgba(0,255,255,0.2);
             border-radius: 5px;
             overflow: hidden;
-            margin-top: 1rem;
+            margin-top: 20px;
+            box-shadow: 0 0 15px #00ffff;
         }
         #progressFill {
             height: 100%;
             width: 0;
-            background: #48bb78;
+            background: linear-gradient(90deg, #00ffff, #00ff00);
             transition: width 0.3s ease;
+            box-shadow: 0 0 20px #00ffff;
         }
     </style>
 </head>
 <body>
     <div class="loading" id="loadingScreen">
-        <h1>Loading TheUnlockedDash...</h1>
+        <h1>THEUNLOCKEDDASH</h1>
         <div id="loadProgress"><div id="progressFill"></div></div>
     </div>
 
-    <nav>
-        <a href="turtle.html">Back</a>
-        <button id="profileBtn">Profile</button>
-        <button id="shopBtn">Shop (<span id="orbCount">0</span> Orbs)</button>
-        <button id="questsBtn">Quests</button>
-        <button id="chestsBtn">Chests</button>
-        <button id="editorLink">Editor</button>
-        <button id="friendsBtn">Friends</button>
-        <button id="globedBtn">Multiplayer</button>
-    </nav>
-
-    <div class="container">
-        <!-- Game UI -->
-        <div class="game-container hidden" id="gameUI">
-            <div class="game-info text-center mb-2">
-                Orbs: <span id="orbDisplay">0</span> | Score: <span id="scoreDisplay">0</span>
-            </div>
-            <canvas id="gameCanvas"></canvas>
-        </div>
-
-        <!-- Skin Selection -->
-        <div class="skin-selection p-4 bg-gray-800 rounded-lg" id="skinSelectionUI">
-            <h2 class="text-xl font-bold mb-3">Choose Your Cube</h2>
-            <div class="skin-options flex flex-wrap justify-center gap-2" id="cubeOptions"></div>
-        </div>
-
-        <!-- Modals -->
-        <div class="modal hidden" id="profileModal">...</div>
-        <div class="modal hidden" id="shopModal">...</div>
-        <div class="modal hidden" id="questModal">...</div>
-        <div class="modal hidden" id="chestModal">...</div>
-        <div class="modal hidden" id="editorUI">...</div>
-        <div class="modal hidden" id="friendsModal">...</div>
-        <div class="modal hidden" id="globedModal">...</div>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div class="ui" id="scoreDisplay">0%</div>
+        <div id="progressBarContainer"><div id="progressBar"></div></div>
+        <div class="ground"></div>
     </div>
 
     <!-- Audio -->
-    <audio id="bgMusic" loop><source src="https://archive.org/download/geometry_dash_music/StereoMadness.mp3" type="audio/mpeg"></audio>
-    <audio id="jumpSfx"><source src="https://www.myinstants.com/media/sounds/geometry-dash.mp3" type="audio/mpeg"></audio>
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://archive.org/download/geometry_dash_music/StereoMadness.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="jumpSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash.mp3" type="audio/mpeg"></audio>
+    <audio id="deathSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash-death.mp3" type="audio/mpeg"></audio>
+    <audio id="portalSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash-portal.mp3" type="audio/mpeg"></audio>
 
-    <!-- PWA: manifest.json (inline) -->
-    <script>
-        const manifest = {
-            "name": "TheUnlockedDash",
-            "short_name": "Dash",
-            "start_url": "geometry-app.html",
-            "display": "standalone",
-            "background_color": "#1a202c",
-            "theme_color": "#1a202c",
-            "icons": [
-                {
-                    "src": "dash-icon.png",
-                    "sizes": "192x192",
-                    "type": "image/png"
-                }
-            ]
-        };
-        const stringManifest = JSON.stringify(manifest);
-        const blob = new Blob([stringManifest], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(blob);
-        document.querySelector('link[rel="manifest"]').setAttribute('href', manifestURL);
-    </script>
-
-    <!-- Service Worker (Offline Support) -->
+    <!-- PWA Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -224,20 +209,323 @@
         }
     </script>
 
-    <!-- FULL GAME CODE (same as PC, optimized for mobile) -->
     <script>
-        // === YOUR FULL GAME LOGIC (MINIFIED FOR MOBILE) ===
-        class OrbManager { static orbs = 0; static addOrbs(a){this.orbs+=a;updateOrbDisplay();} }
-        function updateOrbDisplay(){document.getElementById('orbCount').textContent=OrbManager.orbs;}
-        let canvas = document.getElementById('gameCanvas');
-        let ctx = canvas.getContext('2d');
-        function resize(){canvas.width = Math.min(window.innerWidth-40, 600); canvas.height = canvas.width * 0.6;}
-        window.addEventListener('resize', resize); resize();
-        document.getElementById('gameUI').classList.remove('hidden');
-        document.getElementById('skinSelectionUI').classList.add('hidden');
-        setTimeout(() => {
-            document.getElementById('loadingScreen').remove();
-        }, 1000);
+        // === EXACT GEOMETRY DASH CLONE LOGIC ===
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d', { alpha: true });
+        ctx.imageSmoothingEnabled = false;
+
+        // Resize
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            groundY = canvas.height - 80;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Game State
+        let player = {
+            x: 100, y: 0, vy: 0, size: 40, color: '#00ffff',
+            mode: 'cube', rotation: 0, onGround: false,
+            trail: [], wavePhase: 0
+        };
+        let obstacles = [], portals = [], particles = [], gridLines = [];
+        let cameraX = 0, gameSpeed = 8, score = 0, progress = 0;
+        let groundY = canvas.height - 80;
+        let isDead = false, isStarted = false;
+        const GRAVITY = 1.2, JUMP = -18;
+        const MODES = ['cube', 'ship', 'ball', 'ufo', 'wave'];
+
+        // Audio
+        const bgMusic = document.getElementById('bgMusic');
+        const jumpSfx = document.getElementById('jumpSfx');
+        const deathSfx = document.getElementById('deathSfx');
+        const portalSfx = document.getElementById('portalSfx');
+
+        // Grid Background
+        function initGrid() {
+            gridLines = [];
+            for (let x = 0; x < canvas.width * 3; x += 60) {
+                gridLines.push({ x, y: 0, w: 1, h: canvas.height, type: 'v' });
+            }
+            for (let y = 0; y < canvas.height; y += 60) {
+                gridLines.push({ x: 0, y, w: canvas.width * 3, h: 1, type: 'h' });
+            }
+        }
+
+        // Player Trail
+        function addTrail() {
+            player.trail.push({ x: player.x, y: player.y, color: player.color, life: 15 });
+            if (player.trail.length > 20) player.trail.shift();
+        }
+
+        // Particles
+        function createParticles(x, y, count, color) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 5;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 20 + Math.random() * 20,
+                    color
+                });
+            }
+        }
+
+        // Obstacles & Portals
+        function spawnObstacle() {
+            const types = ['spike', 'pillar', 'saw'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const x = canvas.width + cameraX + 200;
+            if (type === 'spike') {
+                obstacles.push({ type, x, y: groundY - 40, w: 40, h: 40 });
+            } else if (type === 'pillar') {
+                obstacles.push({ type, x, y: groundY - 200, w: 60, h: 200 });
+            }
+        }
+
+        function spawnPortal() {
+            if (Math.random() < 0.3) {
+                const mode = MODES[Math.floor(Math.random() * MODES.length)];
+                portals.push({ x: canvas.width + cameraX + 300, mode });
+            }
+        }
+
+        // Collision
+        function checkCollision(a, b) {
+            return a.x < b.x + b.w && a.x + a.size > b.x &&
+                   a.y < b.y + b.h && a.y + a.size > b.y;
+        }
+
+        // Game Loop
+        function gameLoop() {
+            if (isDead || !isStarted) return;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Camera
+            cameraX += gameSpeed;
+            if (cameraX > 1000 && gameSpeed < 15) gameSpeed += 0.1;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(0,255,255,0.1)';
+            ctx.lineWidth = 1;
+            gridLines.forEach(line => {
+                if (line.type === 'v') {
+                    const x = line.x - cameraX % 60;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                } else {
+                    const y = line.y;
+                    if (y > 0 && y < canvas.height) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            // Ground
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, groundY, canvas.width, 80);
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(canvas.width, groundY);
+            ctx.stroke();
+
+            // Player Physics
+            player.vy += GRAVITY;
+            player.y += player.vy;
+
+            if (player.mode === 'cube' || player.mode === 'ball') {
+                if (player.y >= groundY - player.size) {
+                    player.y = groundY - player.size;
+                    player.vy = 0;
+                    player.onGround = true;
+                } else {
+                    player.onGround = false;
+                }
+            }
+
+            if (player.mode === 'ship') {
+                player.vy = Math.max(-8, Math.min(8, player.vy));
+            }
+
+            if (player.mode === 'wave') {
+                player.wavePhase += 0.3;
+                player.y = groundY - player.size - Math.sin(player.wavePhase) * 60;
+            }
+
+            // Rotation
+            if (player.mode === 'cube') player.rotation += player.onGround ? 0.2 : 0.1;
+            if (player.mode === 'ball') player.rotation += 0.3;
+
+            // Trail
+            if (gameSpeed > 0) addTrail();
+            player.trail.forEach((t, i) => {
+                t.life--;
+                if (t.life <= 0) player.trail.splice(i, 1);
+            });
+
+            // Portals
+            portals = portals.filter(p => {
+                const px = p.x - cameraX;
+                if (px < -100) return false;
+                ctx.strokeStyle = {
+                    cube: '#00ffff', ship: '#ff00ff', ball: '#ffff00',
+                    ufo: '#00ff00', wave: '#ff6600'
+                }[p.mode];
+                ctx.lineWidth = 6;
+                ctx.strokeRect(px, groundY - 120, 60, 120);
+                if (checkCollision(player, { x: px, y: groundY - 120, w: 60, h: 120 })) {
+                    player.mode = p.mode;
+                    player.color = ctx.strokeStyle;
+                    portalSfx.currentTime = 0; portalSfx.play();
+                    createParticles(player.x + player.size/2, player.y + player.size/2, 20, player.color);
+                    return false;
+                }
+                return true;
+            });
+
+            // Obstacles
+            obstacles = obstacles.filter(o => {
+                const ox = o.x - cameraX;
+                if (ox < -100) return false;
+
+                if (o.type === 'spike') {
+                    ctx.beginPath();
+                    ctx.moveTo(ox + 20, groundY);
+                    ctx.lineTo(ox, groundY - 40);
+                    ctx.lineTo(ox + 40, groundY - 40);
+                    ctx.closePath();
+                    ctx.fillStyle = '#ff3300';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ff6600';
+                    ctx.stroke();
+                }
+
+                if (checkCollision(player, { x: ox, y: o.y, w: o.w, h: o.h })) {
+                    isDead = true;
+                    deathSfx.currentTime = 0; deathSfx.play();
+                    createParticles(player.x + player.size/2, player.y + player.size/2, 50, '#ff0000');
+                }
+
+                return true;
+            });
+
+            // Spawn
+            if (Math.random() < 0.02) spawnObstacle();
+            if (Math.random() < 0.01) spawnPortal();
+
+            // Draw Player
+            ctx.save();
+            ctx.translate(player.x + player.size/2, player.y + player.size/2);
+            ctx.rotate(player.rotation);
+            ctx.fillStyle = player.color;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            if (player.mode === 'cube' || player.mode === 'ball') {
+                ctx.fillRect(-player.size/2, -player.size/2, player.size, player.size);
+                ctx.strokeRect(-player.size/2, -player.size/2, player.size, player.size);
+            } else if (player.mode === 'ship') {
+                ctx.beginPath();
+                ctx.moveTo(-player.size/2, 0);
+                ctx.lineTo(player.size/2, -player.size/3);
+                ctx.lineTo(player.size/2, player.size/3);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Trail
+            player.trail.forEach(t => {
+                ctx.globalAlpha = t.life / 15;
+                ctx.fillStyle = t.color;
+                ctx.fillRect(t.x, t.y, player.size, player.size);
+            });
+            ctx.globalAlpha = 1;
+
+            // Particles
+            particles = particles.filter(p => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life--;
+                ctx.globalAlpha = p.life / 30;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x - cameraX, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                return p.life > 0;
+            });
+            ctx.globalAlpha = 1;
+
+            // Progress
+            progress = (cameraX / 10000) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('scoreDisplay').textContent = Math.floor(progress) + '%';
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Input
+        function jump() {
+            if (isDead || !isStarted) {
+                if (isDead) {
+                    // Reset
+                    cameraX = 0; obstacles = []; portals = []; particles = [];
+                    player = { x: 100, y: groundY - 40, vy: 0, size: 40, color: '#00ffff', mode: 'cube', rotation: 0, onGround: true, trail: [], wavePhase: 0 };
+                    isDead = false; isStarted = true;
+                    bgMusic.play();
+                } else {
+                    isStarted = true;
+                    bgMusic.play();
+                    player.y = groundY - player.size;
+                }
+                gameLoop();
+                return;
+            }
+
+            if (player.mode === 'cube' || player.mode === 'ball') {
+                if (player.onGround) {
+                    player.vy = JUMP;
+                    jumpSfx.currentTime = 0; jumpSfx.play();
+                    createParticles(player.x + player.size/2, player.y + player.size, 10, player.color);
+                }
+            } else if (player.mode === 'ship' || player.mode === 'ufo') {
+                player.vy = JUMP * 0.7;
+                jumpSfx.currentTime = 0; jumpSfx.play();
+            } else if (player.mode === 'wave') {
+                player.vy = JUMP * 1.5;
+            }
+        }
+
+        canvas.addEventListener('click', jump);
+        canvas.addEventListener('touchstart', e => { e.preventDefault(); jump(); });
+        window.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); jump(); } });
+
+        // Init
+        initGrid();
+        document.getElementById('loadingScreen').addEventListener('click', () => {
+            document.getElementById('loadingScreen').style.opacity = '0';
+            setTimeout(() => document.getElementById('loadingScreen').remove(), 500);
+            jump();
+        });
+
+        // Loading
+        let load = 0;
+        const loadInterval = setInterval(() => {
+            load += 10;
+            document.getElementById('progressFill').style.width = load + '%';
+            if (load >= 100) clearInterval(loadInterval);
+        }, 100);
     </script>
 </body>
 </html>
