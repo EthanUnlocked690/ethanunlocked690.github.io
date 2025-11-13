@@ -1,1153 +1,641 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TheUnlockedDash - Full PC Version</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://apis.google.com/js/platform.js"></script>
+    <script src="./TheUnlockedDash_files/saved_resource"></script>
+    <script src="./TheUnlockedDash_files/platform.js.download" gapi_processed="true"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-            color: #ffffff;
-            overflow-x: hidden;
-            touch-action: none;
-        }
-        nav {
-            width: 100%;
-            background-color: rgba(45, 55, 72, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            flex-wrap: wrap;
-        }
-        nav a, nav button {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #a0aec0;
-            text-decoration: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            background: transparent;
-        }
-        nav a:hover, nav button:hover {
-            background-color: #4a5568;
-            color: #ffffff;
-            transform: translateY(-2px);
-        }
-        .container {
-            width: 100%;
-            max-width: 900px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .game-container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: rgba(45, 55, 72, 0.8);
-            border-radius: 1rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            padding: 1.5rem;
-            margin-top: 1rem;
-            position: relative;
-        }
-        .game-info {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-        .chest-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #48bb78;
+            font-family: 'Orbitron', sans-serif;
+            background: #000;
             color: #fff;
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            z-index: 10;
-        }
-        .game-over, .game-win, .loading, .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 100;
-            background: rgba(45, 55, 72, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            max-width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .game-over h1, .game-win h1 {
-            font-size: 2.5rem;
-            color: #fc8181;
-            margin-bottom: 1rem;
-            text-shadow: 0 0 20px rgba(252,129,129,0.5);
-        }
-        .game-win h1 { color: #48bb78; }
-        button {
-            background: linear-gradient(45deg, #48bb78, #38a169);
-            color: #fff;
-            padding: 0.75rem 2rem;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(72,187,120,0.3);
-            transition: all 0.3s ease;
-            margin: 0.5rem;
-        }
-        button:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(72,187,120,0.4);
-        }
-        button:disabled { background: #4a5568; cursor: not-allowed; transform: none; }
-        #gameCanvas {
-            background-color: #000;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 100%;
-            height: auto;
-            image-rendering: pixelated;
-            will-change: transform;
-        }
-        #progressBarContainer {
-            width: 100%;
-            height: 12px;
-            background-color: #4a5568;
-            border-radius: 6px;
             overflow: hidden;
-            margin-top: 1rem;
+            user-select: none;
+        }
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #000, #111);
+            overflow: hidden;
+        }
+        #gameCanvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            image-rendering: pixelated;
+        }
+        .ui {
+            position: absolute;
+            z-index: 10;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+            letter-spacing: 1px;
+        }
+        #scoreDisplay { top: 20px; left: 20px; font-size: 2rem; color: #00ffff; }
+        #progressBarContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 8px;
+            background: rgba(0,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 0 15px #00ffff;
         }
         #progressBar {
             height: 100%;
-            width: 0;
-            background: linear-gradient(90deg, #48bb78, #38a169);
-            transition: width 0.2s ease;
-            box-shadow: 0 0 10px #48bb78;
+            width: 0%;
+            background: linear-gradient(90deg, #00ffff, #00ff00);
+            transition: width 0.1s ease;
+            box-shadow: 0 0 20px #00ffff;
         }
-        .skin-selection, .editor {
-            width: 100%;
-            text-align: center;
-            padding: 2rem;
-            background: rgba(45, 55, 72, 0.8);
-            border-radius: 1rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            margin-bottom: 1rem;
-        }
-        .skin-options, .editor-tools {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1rem;
-        }
-        .skin-button {
-            width: 60px;
-            height: 60px;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
-        .skin-button:hover {
-            transform: scale(1.1) rotate(5deg);
-            border-color: #48bb78;
-        }
-        .skin-button.selected, .skin-button.unlocked {
-            border-color: #48bb78;
-            box-shadow: 0 0 20px #48bb78;
-        }
-        .editor select, .editor textarea, .editor input {
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border: 1px solid #4a5568;
-            background: #2d3748;
-            color: #fff;
-            margin: 0.5rem;
-            font-size: 1rem;
-        }
-        .editor textarea {
-            width: 90%;
-            max-width: 500px;
-            height: 120px;
-            resize: vertical;
-        }
-        .shop-item, .chest-item {
-            display: inline-block;
-            margin: 1rem;
-            padding: 1rem;
-            background: rgba(0,0,0,0.3);
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-        .shop-item:hover, .chest-item:hover { background: rgba(0,0,0,0.5); }
-        .shop-item.locked, .chest-item.locked { opacity: 0.5; cursor: not-allowed; }
-        .chest-logo {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
+        .controls {
             position: absolute;
-            top: -15px;
-            right: -15px;
-            background: #fff;
+            bottom: 120px;
+            right: 20px;
+            font-size: 1rem;
+            color: #00ffff;
+            text-align: right;
+        }
+        .particle {
+            position: absolute;
+            pointer-events: none;
             border-radius: 50%;
-            padding: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-shadow: 0 0 10px currentColor;
         }
-        .quest-item { margin: 0.5rem; padding: 0.5rem; background: #2d3748; border-radius: 0.25rem; }
-        .gauntlet-item { margin: 0.5rem; padding: 0.5rem; background: #3182ce; border-radius: 0.25rem; cursor: pointer; }
-        .gauntlet-holiday { background: linear-gradient(45deg, #ff6b6b, #ffd93d); color: #000; font-weight: bold; }
-        .hidden { display: none !important; }
-        .friend-item { margin: 0.5rem; padding: 0.5rem; background: #2d3748; border-radius: 0.25rem; cursor: pointer; }
-        .chat-box { max-height: 200px; overflow-y: auto; background: #1a202c; padding: 1rem; border-radius: 0.5rem; }
-        .lobby-tools {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+        .spike {
+            position: absolute;
+            width: 0; height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid #ff3300;
+            filter: drop-shadow(0 0 8px #ff3300);
         }
-        .lobby-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid #4a5568;
-            color: #fff;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            cursor: pointer;
+        .portal {
+            position: absolute;
+            width: 60px; height: 120px;
+            border: 6px solid;
+            border-radius: 10px;
+            box-shadow: 0 0 20px currentColor, inset 0 0 20px currentColor;
+            animation: pulse 1s infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        .portal.cube { border-color: #00ffff; }
+        .portal.ship { border-color: #ff00ff; }
+        .portal.ball { border-color: #ffff00; }
+        .portal.ufo { border-color: #00ff00; }
+        .portal.wave { border-color: #ff6600; }
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(to top, #222, #111);
+            box-shadow: 0 0 20px #00ffff inset;
+        }
+        .grid-line {
+            position: absolute;
+            background: rgba(0,255,255,0.1);
+            pointer-events: none;
+        }
+        .grid-line.horizontal { height: 1px; width: 100%; }
+        .grid-line.vertical { width: 1px; height: 100%; }
+        .glow { filter: drop-shadow(0 0 10px currentColor); }
+        .neon-btn {
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px #00ffff;
             transition: all 0.3s;
-            font-size: 0.9rem;
         }
-        .lobby-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
-        @media (max-width: 768px) {
-            nav { flex-direction: column; gap: 0.5rem; }
-            .container { padding: 0.5rem; }
-            #gameCanvas { width: 100%; height: 400px; }
-            .skin-options { gap: 0.5rem; }
-            .skin-button { width: 50px; height: 50px; }
-            .lobby-tools { grid-template-columns: 1fr 1fr; }
+        .neon-btn:hover {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 25px #00ffff;
+        }
+        .modal {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #00ffff;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 90%;
+            z-index: 100;
+            box-shadow: 0 0 30px #00ffff;
+            backdrop-filter: blur(10px);
+        }
+        .hidden { display: none !important; }
+        .loading {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: #00ffff;
+            font-size: 2rem;
+            text-shadow: 0 0 20px #00ffff;
+        }
+        #loadProgress {
+            width: 80%;
+            max-width: 400px;
+            height: 10px;
+            background: rgba(0,255,255,0.2);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+            box-shadow: 0 0 15px #00ffff;
+        }
+        #progressFill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #00ffff, #00ff00);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px #00ffff;
         }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="turtle.html">Back</a>
-        <button id="profileBtn">Profile</button>
-        <button id="shopBtn">Shop (<span id="orbCount">0</span> Orbs)</button>
-        <button id="questsBtn">Quests & Gauntlets</button>
-        <button id="chestsBtn">Chests</button>
-        <button id="editorLink">Editor</button>
-        <button id="friendsBtn">Friends</button>
-        <button id="globedBtn">Multiplayer</button>
-    </nav>
-    <div class="container">
-        <!-- Profile Modal -->
-        <div class="modal hidden" id="profileModal">
-            <h2>Profile</h2>
-            <input type="text" id="usernameInput" placeholder="Username">
-            <input type="password" id="passwordInput" placeholder="Password">
-            <button onclick="login()">Login</button>
-            <button onclick="signup()">Sign Up</button>
-            <button onclick="closeModal('profileModal')">Close</button>
-        </div>
+    <div class="loading" id="loadingScreen">
+        <h1>THEUNLOCKEDDASH</h1>
+        <p>Click to Start • Space/Enter: Jump • Arrows: Scroll Levels</p>
+        <div id="loadProgress"><div id="progressFill"></div></div>
+    </div>
 
-        <!-- Game UI -->
-        <div class="game-container hidden" id="gameUI">
-            <div class="game-info">
-                Orbs: <span id="orbDisplay">0</span> | Score: <span id="scoreDisplay">0</span> | Mode: <span id="modeDisplay">Cube</span>
-            </div>
-            <button class="chest-btn" id="moreChestsBtn">More Chests</button>
-            <canvas id="gameCanvas"></canvas>
-            <div id="progressBarContainer">
-                <div id="progressBar"></div>
-            </div>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1440" height="797"></canvas>
+        <div class="ui" id="scoreDisplay">0%</div>
+        <div id="progressBarContainer"><div id="progressBar"></div></div>
+        <div class="controls">
+            ← → Scroll Levels<br>
+            Space / Enter Jump
         </div>
-
-        <!-- Skin Selection -->
-        <div class="skin-selection" id="skinSelectionUI">
-            <h2>Choose Your Cube</h2>
-            <div class="skin-options" id="cubeOptions"></div>
-        </div>
-
-        <!-- Level Editor -->
-        <div class="editor hidden" id="editorUI">
-            <h2>Level Editor</h2>
-            <div class="editor-tools">
-                <select id="objectType">
-                    <option value="spike">Spike</option>
-                    <option value="pillar">Pillar</option>
-                    <option value="portal_cube">Cube Portal</option>
-                    <option value="portal_ship">Ship Portal</option>
-                    <option value="portal_ball">Ball Portal</option>
-                    <option value="portal_ufo">UFO Portal</option>
-                    <option value="portal_wave">Wave Portal</option>
-                    <option value="portal_robot">Robot Portal</option>
-                    <option value="portal_spider">Spider Portal</option>
-                    <option value="portal_gravity">Gravity Portal</option>
-                </select>
-                <button id="saveLevel">Save</button>
-                <textarea id="levelJSON" placeholder="Paste JSON to load..."></textarea>
-                <button id="loadLevel">Load</button>
-                <button id="playLevel">Play</button>
-                <button id="clearLevel">Clear</button>
-            </div>
-            <p>Click to place. Arrow keys to scroll.</p>
-        </div>
-
-        <!-- Shop Modal -->
-        <div class="modal hidden" id="shopModal">
-            <h2>Shop</h2>
-            <div id="shopItems"></div>
-            <button onclick="closeModal('shopModal')">Close</button>
-        </div>
-
-        <!-- Quests & Gauntlets -->
-        <div class="modal hidden" id="questModal">
-            <h2>Quests & Seasonal Gauntlets</h2>
-            <div id="questList"></div>
-            <div id="gauntletList"></div>
-            <button onclick="closeModal('questModal')">Close</button>
-        </div>
-
-        <!-- Chests -->
-        <div class="modal hidden" id="chestModal">
-            <h2>Daily Chests</h2>
-            <div id="chestList"></div>
-            <button onclick="closeModal('chestModal')">Close</button>
-        </div>
-
-        <!-- Visit Chest Modal -->
-        <div class="modal hidden" id="visitChestModal">
-            <h2>Unlock Extra Chest!</h2>
-            <p>Visit <a href="https://ethanunlocked690.github.io" target="_blank" onclick="trackVisit()">ethanunlocked690.github.io</a> 5 times!</p>
-            <p>Visits: <span id="visitCount">0</span>/5</p>
-            <button id="claimVisitBtn" onclick="claimVisitChest()" disabled>Claim 200 Orbs</button>
-            <button onclick="closeModal('visitChestModal')">Close</button>
-        </div>
-
-        <!-- YouTube Chest Modal -->
-        <div class="modal hidden" id="ytChestModal">
-            <h2>Subscribe for Chest!</h2>
-            <p>Subscribe to <a href="https://www.youtube.com/@ethan1957-p2y" target="_blank">EthanUnlocked</a> to unlock!</p>
-            <div class="g-ytsubscribe" data-channel="@ethan1957-p2y" data-layout="default" data-onsuccess="onYtSubscribe()"></div>
-            <button id="claimYtBtn" onclick="claimYtChest()" disabled>Claim 100 Orbs</button>
-            <button onclick="closeModal('ytChestModal')">Close</button>
-        </div>
-
-        <!-- Friends Modal -->
-        <div class="modal hidden" id="friendsModal">
-            <h2>Friends</h2>
-            <input type="text" id="friendSearch" placeholder="Search username">
-            <button onclick="searchFriend()">Search</button>
-            <div id="friendResults"></div>
-            <div id="friendList"></div>
-            <button onclick="closeModal('friendsModal')">Close</button>
-        </div>
-
-        <!-- Chat Modal -->
-        <div class Command="modal hidden" id="chatModal">
-            <h2>Chat with <span id="chatWith"></span></h2>
-            <div class="chat-box" id="chatBox"></div>
-            <input type="text" id="chatInput" placeholder="Type message...">
-            <button onclick="sendMessage()">Send</button>
-            <button onclick="closeModal('chatModal')">Close</button>
-        </div>
-
-        <!-- Multiplayer Lobby -->
-        <div class="modal hidden" id="globedModal">
-            <h2>Multiplayer Lobby</h2>
-            <input type="text" id="roomCode" placeholder="Room Code">
-            <button onclick="joinRoom()">Join Room</button>
-            <button onclick="createRoom()">Create Room</button>
-            <div id="roomStatus"></div>
-            <div class="lobby-tools">
-                <div class="lobby-btn" onclick="openModal('editorUI')">Editor</div>
-                <div class="lobby-btn" onclick="openModal('shopModal')">Shop</div>
-                <div class="lobby-btn" onclick="openModal('questModal')">Quests</div>
-                <div class="lobby-btn" onclick="openModal('chestModal')">Chests</div>
-                <div class="lobby-btn" onclick="startPractice()">Practice Mode</div>
-                <div class="lobby-btn" onclick="toggleAuto()">Auto-Retry</div>
-                <div class="lobby-btn" onclick="toggleSafe()">Safe Mode</div>
-                <div class="lobby-btn" onclick="toggleMirror()">Mirror Mode</div>
-                <div class="lobby-btn" onclick="toggleNoClip()">No Clip</div>
-                <div class="lobby-btn" onclick="toggleSpeed()">Speed Hack</div>
-                <div class="lobby-btn" onclick="toggleHitbox()">Show Hitboxes</div>
-                <div class="lobby-btn" onclick="toggleTrail()">Trail</div>
-                <div class="lobby-btn" onclick="toggleParticles()">Particles</div>
-                <div class="lobby-btn" onclick="toggleMusic()">Music</div>
-                <div class="lobby-btn" onclick="toggleSFX()">SFX</div>
-                <div class="lobby-btn" onclick="toggleProgress()">Progress Bar</div>
-                <div class="lobby-btn" onclick="toggleFPS()">Show FPS</div>
-                <div class="lobby-btn" onclick="togglePing()">Show Ping</div>
-                <div class="lobby-btn" onclick="exportLevel()">Export Level</div>
-                <div class="lobby-btn" onclick="importLevel()">Import Level</div>
-                <div class="lobby-btn" onclick="rateLevel()">Rate Level</div>
-                <div class="lobby-btn" onclick="reportLevel()">Report</div>
-                <div class="lobby-btn" onclick="copyID()">Copy ID</div>
-                <div class="lobby-btn" onclick="copyPassword()">Copy Password</div>
-                <div class="lobby-btn" onclick="setPassword()">Set Password</div>
-                <div class="lobby-btn" onclick="toggleUnlisted()">Unlisted</div>
-                <div class="lobby-btn" onclick="toggleCopyable()">Copyable</div>
-                <div class="lobby-btn" onclick="toggle2Player()">2-Player</div>
-                <div class="lobby-btn" onclick="toggleLowDetail()">Low Detail</div>
-                <div class="lobby-btn" onclick="toggleNoEffects()">No Effects</div>
-                <div class="lobby-btn" onclick="toggleNoParticles()">No Particles</div>
-                <div class="lobby-btn" onclick="toggleNoGlow()">No Glow</div>
-                <div class="lobby-btn" onclick="toggleNoPulse()">No Pulse</div>
-                <div class="lobby-btn" onclick="toggleNoShake()">No Shake</div>
-                <div class="lobby-btn" onclick="toggleNoWave()">No Wave</div>
-                <div class="lobby-btn" onclick="toggleNoArrow()">No Arrow</div>
-                <div class="lobby-btn" onclick="toggleNoMini()">No Mini</div>
-                <div class="lobby-btn" onclick="toggleNoDual()">No Dual</div>
-                <div class="lobby-btn" onclick="toggleNoSpider()">No Spider</div>
-                <div class="lobby-btn" onclick="toggleNoRobot()">No Robot</div>
-                <div class="lobby-btn" onclick="toggleNoBall()">No Ball</div>
-                <div class="lobby-btn" onclick="toggleNoUFO()">No UFO</div>
-                <div class="lobby-btn" onclick="toggleNoWaveTrail()">No Wave Trail</div>
-                <div class="lobby-btn" onclick="toggleNoShipTrail()">No Ship Trail</div>
-                <div class="lobby-btn" onclick="toggleNoRobotTrail()">No Robot Trail</div>
-                <div class="lobby-btn" onclick="toggleNoSpiderTrail()">No Spider Trail</div>
-            </div>
-            <button onclick="closeModal('globedModal')">Close</button>
-        </div>
-
-        <!-- Item Details -->
-        <div class="modal hidden" id="itemDetailsModal">
-            <h2 id="itemTitle"></h2>
-            <p id="itemDesc"></p>
-            <button id="buyBtn" onclick="buyItem()">Buy/Unlock</button>
-            <button onclick="closeModal('itemDetailsModal')">Close</button>
-        </div>
+        <div class="ground"></div>
     </div>
 
     <!-- Audio -->
-    <audio id="bgMusic" loop preload="auto">
+    <audio id="bgMusic" loop="" preload="auto">
         <source src="https://archive.org/download/geometry_dash_music/StereoMadness.mp3" type="audio/mpeg">
     </audio>
     <audio id="jumpSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash.mp3" type="audio/mpeg"></audio>
     <audio id="deathSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash-death.mp3" type="audio/mpeg"></audio>
-    <audio id="winSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/level-complete-geometry-dash.mp3" type="audio/mpeg"></audio>
-
-    <div class="loading" id="loadingScreen">
-        <h1>Loading TheUnlockedDash...</h1>
-        <div id="loadProgress" style="width:0;height:10px;background:#48bb78;transition:width 0.3s;"></div>
-    </div>
+    <audio id="portalSfx" preload="auto"><source src="https://www.myinstants.com/media/sounds/geometry-dash-portal.mp3" type="audio/mpeg"></audio>
 
     <script>
-        // === VISIT & YT TRACKER ===
-        function trackVisit() {
-            let visits = parseInt(localStorage.getItem('ethanVisits') || '0');
-            visits++;
-            localStorage.setItem('ethanVisits', visits);
-            updateVisitCount();
+        // === EXACT GEOMETRY DASH CLONE LOGIC ===
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d', { alpha: true });
+        ctx.imageSmoothingEnabled = false;
+
+        // Resize
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            groundY = canvas.height - 80;
         }
+        window.addEventListener('resize', resize);
+        resize();
 
-        function updateVisitCount() {
-            const count = parseInt(localStorage.getItem('ethanVisits') || '0');
-            document.getElementById('visitCount').textContent = count;
-            if (count >= 5) {
-                document.getElementById('claimVisitBtn').disabled = false;
-                document.getElementById('claimVisitBtn').textContent = 'Claim 200 Orbs!';
-            }
-        }
-
-        function claimVisitChest() {
-            const visits = parseInt(localStorage.getItem('ethanVisits') || '0');
-            if (visits >= 5) {
-                OrbManager.addOrbs(200);
-                localStorage.removeItem('ethanVisits');
-                alert('Extra Chest Unlocked! +200 Orbs!');
-                closeModal('visitChestModal');
-                updateVisitCount();
-            }
-        }
-
-        let ytSubscribed = localStorage.getItem('ytSubscribed') === 'true';
-        function onYtSubscribe() {
-            ytSubscribed = true;
-            localStorage.setItem('ytSubscribed', 'true');
-            document.getElementById('claimYtBtn').disabled = false;
-            document.getElementById('claimYtBtn').textContent = 'Claim 100 Orbs!';
-        }
-
-        function claimYtChest() {
-            if (ytSubscribed) {
-                OrbManager.addOrbs(100);
-                localStorage.removeItem('ytSubscribed');
-                alert('YouTube Chest Unlocked! +100 Orbs!');
-                closeModal('ytChestModal');
-            }
-        }
-
-        // === CORE MANAGERS ===
-        class ProfileManager {
-            constructor() {
-                this.profiles = JSON.parse(localStorage.getItem('gdProfiles')) || {};
-                this.currentUser = localStorage.getItem('gdCurrentUser') || null;
-                this.lastLogin = localStorage.getItem('gdLastLogin') || null;
-            }
-            login(username, password) {
-                if (this.profiles[username] && this.profiles[username].password === password) {
-                    this.currentUser = username;
-                    localStorage.setItem('gdCurrentUser', username);
-                    this.loadProgress();
-                    closeModal('profileModal');
-                    return true;
-                }
-                alert('Invalid credentialshes: Invalid credentials');
-                return false;
-            }
-            signup(username, password) {
-                if (!this.profiles[username]) {
-                    this.profiles[username] = { password, orbs: 0, unlocked: [], completedQuests: [], completedGauntlets: [], friends: [], messages: {}, progress: {} };
-                    localStorage.setItem('gdProfiles', JSON.stringify(this.profiles));
-                    this.currentUser = username;
-                    localStorage.setItem('gdCurrentUser', username);
-                    closeModal('profileModal');
-                    return true;
-                }
-                alert('Username taken');
-                return false;
-            }
-            getProfile() { return this.currentUser ? this.profiles[this.currentUser] : null; }
-            saveProgress() {
-                if (this.currentUser) localStorage.setItem('gdProfiles', JSON.stringify(this.profiles));
-            }
-            loadProgress() {
-                const profile = this.getProfile();
-                if (profile) {
-                    OrbManager.orbs = profile.orbs || 0;
-                    QuestManager.completed = profile.completedQuests || [];
-                    QuestManager.completedGauntlets = profile.completedGauntlets || [];
-                    ShopManager.unlocked = profile.unlocked || [];
-                    FriendManager.friends = profile.friends || [];
-                    FriendManager.messages = profile.messages || {};
-                    updateOrbDisplay();
-                    updateSkins();
-                }
-            }
-            checkDailyLogin() {
-                const today = new Date().toDateString();
-                if (this.lastLogin !== today) {
-                    this.lastLogin = today;
-                    localStorage.setItem('gdLastLogin', today);
-                    ChestManager.resetDailyChests();
-                    return true;
-                }
-                return false;
-            }
-        }
-
-        class OrbManager {
-            static orbs = 0;
-            static addOrbs(amount) {
-                this.orbs += amount;
-                updateOrbDisplay();
-                ProfileManager.saveProgress();
-            }
-            static spendOrbs(amount) {
-                if (this.orbs >= amount) {
-                    this.orbs -= amount;
-                    updateOrbDisplay();
-                    ProfileManager.saveProgress();
-                    return true;
-                }
-                return false;
-            }
-        }
-        function updateOrbDisplay() {
-            document.getElementById('orbCount').textContent = OrbManager.orbs;
-            document.getElementById('orbDisplay').textContent = OrbManager.orbs;
-        }
-
-        class ShopManager {
-            static items = [
-                { id: 'sparkle_particles', name: 'Sparkle Particles', desc: 'Shiny trail effect', cost: 50, type: 'particles' },
-                { id: 'fire_cube', name: 'Fire Cube', desc: 'Fiery red cube skin', cost: 100, type: 'cube' },
-                { id: 'christmas_cube', name: 'Christmas Cube', desc: 'Festive green cube', cost: 0, type: 'cube', holiday: 'Christmas', unlockMethod: 'Complete Christmas Quest' },
-                { id: 'easter_cube', name: 'Easter Bunny Cube', desc: 'Cute bunny cube', cost: 0, type: 'cube', holiday: 'Easter', unlockMethod: 'Complete Easter Gauntlet' }
-            ];
-            static unlocked = [];
-            static isUnlocked(id) { return this.unlocked.includes(id); }
-            static unlockItem(id) {
-                if (!this.unlocked.includes(id)) this.unlocked.push(id);
-                ProfileManager.saveProgress();
-            }
-            static updateShop() {
-                const container = document.getElementById('shopItems');
-                container.innerHTML = this.items.map(item => `
-                    <div class="shop-item ${this.isUnlocked(item.id) ? 'unlocked' : (item.holiday ? 'locked' : '')}" onclick="showItemDetails('${item.id}')">
-                        <div style="width:60px;height:60px;background:${item.type === 'cube' ? '#e53e3e' : '#fff'};border-radius:0.5rem;"></div>
-                        <h3>${item.name}</h3>
-                        <p>${item.cost ? `${item.cost} Orbs` : item.unlockMethod || 'Quest Unlock'}</p>
-                    </div>
-                `).join('');
-            }
-            static getItem(id) { return this.items.find(i => i.id === id); }
-        }
-
-        class QuestManager {
-            static quests = [
-                { id: 'daily_play', name: 'Play a level', desc: 'Complete any level', reward: 10 },
-                { id: 'collect_100', name: 'Collect 100 points', desc: 'Get 100 score in one run', reward: 20 }
-            ];
-            static completed = [];
-            static gauntlets = [
-                { id: 'fire_gauntlet', name: 'Fire Gauntlet', desc: 'Extreme heat challenge', levels: 7, reward: 50 }
-            ];
-            static holidayGauntlets = [
-                { id: 'easter_gauntlet', name: 'Easter Gauntlet', desc: '5 egg-hunting levels', levels: 5, reward: 'Easter Bunny Cube + 150 Orbs', holiday: 'Easter', active: () => {
-                    const m = new Date().getMonth(), d = new Date().getDate();
-                    return (m === 2 && d >= 25) || (m === 3 && d <= 15);
-                }},
-                { id: 'halloween_gauntlet', name: 'Halloween Gauntlet', desc: '5 spooky levels', levels: 5, reward: 100, holiday: 'Halloween', active: () => {
-                    const m = new Date().getMonth(), d = new Date().getDate();
-                    return (m === 9 && d >= 20 && d <= 31) || (m === 10 && d <= 5);
-                }},
-                { id: 'christmas_gauntlet', name: 'Christmas Gauntlet', desc: '5 festive levels', levels: 5, reward: 'Christmas Cube + 150 Orbs', holiday: 'Christmas', active: () => {
-                    const m = new Date().getMonth();
-                    return m === 11 || (m === 0 && new Date().getDate() <= 5);
-                }}
-            ];
-            static allGauntlets = [...this.gauntlets, ...this.holidayGauntlets];
-            static completedGauntlets = [];
-
-            static updateQuestList() {
-                const list = document.getElementById('questList');
-                list.innerHTML = this.quests.map(q => `
-                    <div class="quest-item ${this.completed.includes(q.id) ? 'completed' : ''}">
-                        ${q.name}: ${q.desc} - Reward: ${q.reward}
-                    </div>
-                `).join('');
-            }
-
-            static updateGauntletList() {
-                const list = document.getElementById('gauntletList');
-                list.innerHTML = this.allGauntlets.filter(g => !g.holiday || g.active()).map(g => `
-                    <div class="gauntlet-item ${g.holiday ? 'gauntlet-holiday' : ''}" onclick="startGauntlet('${g.id}')">
-                        ${g.name} ${g.holiday ? ' (Seasonal)' : ''}: ${g.desc} - Reward: ${g.reward}
-                    </div>
-                `).join('');
-            }
-        }
-
-        class ChestManager {
-            static chests = [
-                { 
-                    id: 'yt_chest', 
-                    name: 'YouTube Chest', 
-                    desc: '100 Orbs', 
-                    requirement: 'subscribe',
-                    logo: 'youtube.png'
-                },
-                { 
-                    id: 'visit_chest',
-                    name: 'Visit Chest',
-                    desc: '200 Orbs',
-                    requirement: 'visit',
-                    logo: 'logo.png'
-                },
-                { 
-                    id: '4hour', 
-                    name: '4-Hour Chest', 
-                    desc: '5-10 Orbs', 
-                    timer: 4*60*60*1000, 
-                    rewardRange: [5,10],
-                    requirement: 'time',
-                    logo: 'youtube.png'
-                },
-                { 
-                    id: '24hour', 
-                    name: 'Daily Chest', 
-                    desc: '20-50 Orbs + Item', 
-                    timer: 24*60*60*1000, 
-                    rewardRange: [20,50], 
-                    extraItemChance: true,
-                    requirement: 'time',
-                    logo: 'logo.png'
-                }
-            ];
-            static lastOpenTimes = JSON.parse(localStorage.getItem('gdChestTimes')) || {};
-
-            static canOpen(id) {
-                const chest = this.chests.find(c => c.id === id);
-                if (!chest) return false;
-                if (chest.requirement === 'time') {
-                    const lastOpen = this.lastOpenTimes[id] || 0;
-                    const now = Date.now();
-                    return now - lastOpen >= chest.timer;
-                }
-                if (chest.id === 'visit_chest') return parseInt(localStorage.getItem('ethanVisits') || '0') >= 5;
-                if (chest.id === 'yt_chest') return ytSubscribed;
-                return false;
-            }
-
-            static openChest(id) {
-                const chest = this.chests.find(c => c.id === id);
-                if (!this.canOpen(id)) {
-                    this.showRequirement(chest);
-                    return false;
-                }
-                let reward = chest.reward || Math.floor(Math.random() * (chest.rewardRange[1] - chest.rewardRange[0] + 1)) + chest.rewardRange[0];
-                OrbManager.addOrbs(reward);
-                if (chest.extraItemChance && Math.random() > 0.5) {
-                    const randomItem = ShopManager.items[Math.floor(Math.random() * ShopManager.items.length)];
-                    ShopManager.unlockItem(randomItem.id);
-                }
-                if (chest.requirement === 'time') {
-                    this.lastOpenTimes[id] = Date.now();
-                    localStorage.setItem('gdChestTimes', JSON.stringify(this.lastOpenTimes));
-                }
-                if (chest.id === 'visit_chest') localStorage.removeItem('ethanVisits');
-                if (chest.id === 'yt_chest') localStorage.removeItem('ytSubscribed');
-                ChestManager.updateChestList();
-                alert(`Opened ${chest.name}! Gained ${reward} Orbs${chest.extraItemChance ? ' + Item!' : ''}`);
-                return true;
-            }
-
-            static showRequirement(chest) {
-                if (chest.id === 'visit_chest') {
-                    updateVisitCount();
-                    document.getElementById('visitChestModal').classList.remove('hidden');
-                } else if (chest.id === 'yt_chest') {
-                    document.getElementById('ytChestModal').classList.remove('hidden');
-                } else {
-                    alert(`Wait ${chest.timer / 3600000} hours to open this chest!`);
-                }
-            }
-
-            static resetDailyChests() {
-                this.chests.filter(c => c.requirement === 'time').forEach(c => { delete this.lastOpenTimes[c.id]; });
-                localStorage.setItem('gdChestTimes', JSON.stringify(this.lastOpenTimes));
-            }
-
-            static updateChestList() {
-                const list = document.getElementById('chestList');
-                list.innerHTML = this.chests.map(c => `
-                    <div class="chest-item ${this.canOpen(c.id) ? '' : 'locked'}" onclick="ChestManager.openChest('${c.id}')">
-                        <img src="${c.logo}" class="chest-logo" alt="${c.name} logo">
-                        <h3>${c.name}</h3>
-                        <p>${c.desc}</p>
-                    </div>
-                `).join('');
-            }
-        }
-
-        class FriendManager {
-            static friends = [];
-            static messages = {};
-            static currentChat = null;
-
-            static searchFriend(username) {
-                const results = document.getElementById('friendResults');
-                if (ProfileManager.profiles[username] && username !== ProfileManager.currentUser) {
-                    results.innerHTML = `<div class="friend-item" onclick="addFriend('${username}')">${username} - Add Friend</div>`;
-                } else {
-                    results.innerHTML = '<p>User not found</p>';
-                }
-            }
-
-            static addFriend(username) {
-                if (!this.friends.includes(username)) {
-                    this.friends.push(username);
-                    ProfileManager.getProfile().friends = this.friends;
-                    ProfileManager.saveProgress();
-                    this.updateFriendList();
-                }
-            }
-
-            static updateFriendList() {
-                const list = document.getElementById('friendList');
-                list.innerHTML = this.friends.map(f => `
-                    <div class="friend-item" onclick="openChat('${f}')">${f}</div>
-                `).join('');
-            }
-
-            static openChat(friend) {
-                this.currentChat = friend;
-                document.getElementById('chatWith').textContent = friend;
-                const chatBox = document.getElementById('chatBox');
-                chatBox.innerHTML = (this.messages[friend] || []).map(m => `<p><strong>${m.from}:</strong> ${m.text}</p>`).join('');
-                document.getElementById('chatModal').classList.remove('hidden');
-            }
-
-            static sendMessage() {
-                const input = document.getElementById('chatInput');
-                const text = input.value.trim();
-                if (!text || !this.currentChat) return;
-                if (!this.messages[this.currentChat]) this.messages[this.currentChat] = [];
-                this.messages[this.currentChat].push({ from: ProfileManager.currentUser, text });
-                ProfileManager.getProfile().messages[this.currentChat] = this.messages[this.currentChat];
-                ProfileManager.saveProgress();
-                input.value = '';
-                this.openChat(this.currentChat);
-            }
-        }
-
-        // === MULTIPLAYER & LOBBY FEATURES ===
-        const rooms = {};
-        function createRoom() {
-            const code = Math.random().toString(36).substr(2, 6).toUpperCase();
-            rooms[code] = { players: [ProfileManager.currentUser], level: levelData, settings: {} };
-            document.getElementById('roomStatus').textContent = `Room Code: ${code}`;
-        }
-        function joinRoom() {
-            const code = document.getElementById('roomCode').value.toUpperCase();
-            if (rooms[code]) {
-                rooms[code].players.push(ProfileManager.currentUser);
-                levelData = rooms[code].level;
-                closeModal('globedModal');
-                document.getElementById('gameUI').classList.remove('hidden');
-                startGame();
-            } else {
-                alert('Invalid code');
-            }
-        }
-
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); closeModal('globedModal'); }
-        function startPractice() { alert('Practice Mode Enabled!'); }
-        function toggleAuto() { alert('Auto-Retry Toggled'); }
-        function toggleSafe() { alert('Safe Mode Toggled'); }
-        function toggleMirror() { alert('Mirror Mode Toggled'); }
-        function toggleNoClip() { alert('No Clip Toggled'); }
-        function toggleSpeed() { alert('Speed Hack Toggled'); }
-        function toggleHitbox() { alert('Hitboxes Toggled'); }
-        function toggleTrail() { alert('Trail Toggled'); }
-        function toggleParticles() { alert('Particles Toggled'); }
-        function toggleMusic() { alert('Music Toggled'); }
-        function toggleSFX() { alert('SFX Toggled'); }
-        function toggleProgress() { alert('Progress Bar Toggled'); }
-        function toggleFPS() { alert('FPS Counter Toggled'); }
-        function togglePing() { alert('Ping Display Toggled'); }
-        function exportLevel() { alert('Level Exported!'); }
-        function importLevel() { alert('Level Imported!'); }
-        function rateLevel() { alert('Level Rated!'); }
-        function reportLevel() { alert('Level Reported!'); }
-        function copyID() { alert('ID Copied!'); }
-        function copyPassword() { alert('Password Copied!'); }
-        function setPassword() { alert('Password Set!'); }
-        function toggleUnlisted() { alert('Unlisted Toggled'); }
-        function toggleCopyable() { alert('Copyable Toggled'); }
-        function toggle2Player() { alert('2-Player Toggled'); }
-        function toggleLowDetail() { alert('Low Detail Toggled'); }
-        function toggleNoEffects() { alert('No Effects Toggled'); }
-        function toggleNoParticles() { alert('No Particles Toggled'); }
-        function toggleNoGlow() { alert('No Glow Toggled'); }
-        function toggleNoPulse() { alert('No Pulse Toggled'); }
-        function toggleNoShake() { alert('No Shake Toggled'); }
-        function toggleNoWave() { alert('No Wave Toggled'); }
-        function toggleNoArrow() { alert('No Arrow Toggled'); }
-        function toggleNoMini() { alert('No Mini Toggled'); }
-        function toggleNoDual() { alert('No Dual Toggled'); }
-        function toggleNoSpider() { alert('No Spider Toggled'); }
-        function toggleNoRobot() { alert('No Robot Toggled'); }
-        function toggleNoBall() { alert('No Ball Toggled'); }
-        function toggleNoUFO() { alert('No UFO Toggled'); }
-        function toggleNoWaveTrail() { alert('No Wave Trail Toggled'); }
-        function toggleNoShipTrail() { alert('No Ship Trail Toggled'); }
-        function toggleNoRobotTrail() { alert('No Robot Trail Toggled'); }
-        function toggleNoSpiderTrail() { alert('No Spider Trail Toggled'); }
-
-        // === LEVEL EDITOR ===
-        let levelData = { obstacles: [], portals: [] };
-        let isEditor = false, scrollX = 0;
-        document.getElementById('editorLink').onclick = () => {
-            isEditor = true;
-            document.getElementById('editorUI').classList.remove('hidden');
-            document.getElementById('gameUI').classList.add('hidden');
-            document.getElementById('skinSelectionUI').classList.add('hidden');
+        // Game State
+        let player = {
+            x: 100, y: 0, vy: 0, size: 40, color: '#00ffff',
+            mode: 'cube', rotation: 0, onGround: false,
+            trail: [], wavePhase: 0
         };
-        document.getElementById('saveLevel').onclick = () => {
-            document.getElementById('levelJSON').value = JSON.stringify(levelData);
-        };
-        document.getElementById('loadLevel').onclick = () => {
-            try {
-                levelData = JSON.parse(document.getElementById('levelJSON').value);
-            } catch (e) { alert('Invalid JSON'); }
-        };
-        document.getElementById('playLevel').onclick = () => {
-            isEditor = false;
-            document.getElementById('editorUI').classList.add('hidden');
-            document.getElementById('gameUI').classList.remove('hidden');
-            startGame();
-        };
-        document.getElementById('clearLevel').onclick = () => {
-            levelData = { obstacles: [], portals: [] };
-        };
+        let obstacles = [], portals = [], particles = [], gridLines = [];
+        let cameraX = 0, gameSpeed = 8, score = 0, progress = 0;
+        let groundY = canvas.height - 80;
+        let isDead = false, isStarted = false;
+        const GRAVITY = 1.2, JUMP = -18;
+        const MODES = ['cube', 'ship', 'ball', 'ufo', 'wave'];
 
-        // === GAME LOGIC ===
-        let gameFrame = 0, score = 0, gameOver = false, gameWon = false;
-        let obstacles = [], portals = [], particles = [];
-        let obstacleSpeed = 5, GRAVITY = 0.5, gravityDirection = 1;
-        const JUMP_POWER = -12;
-        let selectedSkinColor = '#e53e3e', currentMode = 'cube';
-        let player, canvas, ctx;
-        let isGauntletMode = false, gauntletProgress = { current: 0, total: 0 }, currentGauntletId = null;
+        // Level scrolling
+        let currentLevel = 0;
+        const levels = [
+            { name: 'Stereo Madness', length: 10000, difficulty: 'Easy' },
+            { name: 'Back on Track', length: 12000, difficulty: 'Easy' },
+            { name: 'Polargeist', length: 15000, difficulty: 'Normal' },
+            { name: 'Dry Out', length: 18000, difficulty: 'Normal' },
+            { name: 'Base After Base', length: 20000, difficulty: 'Hard' },
+            { name: 'Cant Let Go', length: 22000, difficulty: 'Hard' },
+            { name: 'Jumper', length: 25000, difficulty: 'Harder' },
+            { name: 'Time Machine', length: 28000, difficulty: 'Harder' },
+            { name: 'Cycles', length: 30000, difficulty: 'Insane' },
+            { name: 'xStep', length: 35000, difficulty: 'Insane' },
+            { name: 'Clutterfunk', length: 40000, difficulty: 'Demon' },
+            { name: 'Hexagon Force', length: 45000, difficulty: 'Demon' },
+            { name: 'Blast Processing', length: 50000, difficulty: 'Demon' },
+            { name: 'Theory of Everything', length: 55000, difficulty: 'Demon' },
+            { name: 'Electroman Adventures', length: 60000, difficulty: 'Demon' },
+            { name: 'Clubstep', length: 65000, difficulty: 'Demon' },
+            { name: 'Electrodynamix', length: 70000, difficulty: 'Demon' },
+            { name: 'Hexagon Force', length: 75000, difficulty: 'Demon' },
+            { name: 'Blast Processing', length: 80000, difficulty: 'Demon' },
+            { name: 'Theory of Everything 2', length: 85000, difficulty: 'Demon' },
+            { name: 'Geometrical Dominator', length: 90000, difficulty: 'Demon' },
+            { name: 'Deadlocked', length: 100000, difficulty: 'Demon' }
+        ];
 
-        class Player {
-            constructor(color) {
-                this.width = 50; this.height = 50;
-                this.x = 50; this.y = canvas.height - this.height - 50;
-                this.color = color; this.vy = 0; this.rotation = 0;
+        // Audio
+        const bgMusic = document.getElementById('bgMusic');
+        const jumpSfx = document.getElementById('jumpSfx');
+        const deathSfx = document.getElementById('deathSfx');
+        const portalSfx = document.getElementById('portalSfx');
+
+        // Grid Background
+        function initGrid() {
+            gridLines = [];
+            for (let x = 0; x < canvas.width * 3; x += 60) {
+                gridLines.push({ x, y: 0, w: 1, h: canvas.height, type: 'v' });
             }
-            jump() {
-                if (this.y >= canvas.height - this.height - 50) {
-                    playSfx('jump');
-                    createParticles(this.x + this.width/2, this.y + this.height, 8, this.color, 4);
-                    this.vy = JUMP_POWER * gravityDirection;
-                }
-            }
-            update() {
-                this.vy += GRAVITY * gravityDirection;
-                this.y += this.vy;
-                if (gravityDirection > 0 && this.y > canvas.height - this.height - 50) {
-                    this.y = canvas.height - this.height - 50;
-                    this.vy = 0;
-                } else if (gravityDirection < 0 && this.y < 50) {
-                    this.y = 50;
-                    this.vy = 0;
-                }
-                if (gameFrame % 3 === 0) createParticles(this.x + this.width/2, this.y + this.height/2, 1, this.color, 1, 0.5);
-            }
-            draw() {
-                ctx.save();
-                ctx.translate(this.x + this.width/2, this.y + this.height/2);
-                if (gravityDirection < 0) ctx.rotate(Math.PI);
-                ctx.fillStyle = this.color;
-                ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
-                ctx.restore();
+            for (let y = 0; y < canvas.height; y += 60) {
+                gridLines.push({ x: 0, y, w: canvas.width * 3, h: 1, type: 'h' });
             }
         }
 
-        class Particle {
-            constructor(x, y, vx, vy, life, color) {
-                this.x = x; this.y = y; this.vx = vx; this.vy = vy;
-                this.life = this.maxLife = life; this.color = color;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                this.vy += 0.1; this.life--;
-            }
-            draw() {
-                const alpha = this.life / this.maxLife;
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 3, 0, Math.PI*2);
-                ctx.fill();
-                ctx.globalAlpha = 1;
-            }
+        // Player Trail
+        function addTrail() {
+            player.trail.push({ x: player.x, y: player.y, color: player.color, life: 15 });
+            if (player.trail.length > 20) player.trail.shift();
         }
 
-        function createParticles(x, y, count, color, speed = 3, spread = Math.PI*2) {
+        // Particles
+        function createParticles(x, y, count, color) {
             for (let i = 0; i < count; i++) {
-                const angle = (Math.PI*2 * i / count) + (Math.random()-0.5)*spread;
-                const vel = speed * (0.5 + Math.random());
-                particles.push(new Particle(
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 5;
+                particles.push({
                     x, y,
-                    Math.cos(angle) * vel,
-                    Math.sin(angle) * vel,
-                    20 + Math.random()*20,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 20 + Math.random() * 20,
                     color
-                ));
+                });
             }
         }
 
-        function updateParticles() {
-            for (let i = particles.length-1; i >= 0; i--) {
-                particles[i].update();
-                if (particles[i].life <= 0) particles.splice(i, 1);
+        // Obstacles & Portals (level-aware spawning)
+        function spawnObstacle() {
+            const types = ['spike', 'pillar', 'saw'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const x = canvas.width + cameraX + 200;
+            if (type === 'spike') {
+                obstacles.push({ type, x, y: groundY - 40, w: 40, h: 40 });
+            } else if (type === 'pillar') {
+                obstacles.push({ type, x, y: groundY - 200, w: 60, h: 200 });
             }
         }
 
-        function drawParticles() {
-            particles.forEach(p => p.draw());
-        }
-
-        function startGame() {
-            gameFrame = 0; score = 0; gameOver = false; gameWon = false;
-            obstacles = []; portals = []; particles = [];
-            player = new Player(selectedSkinColor);
-            document.getElementById('gameUI').classList.remove('hidden');
-            document.getElementById('skinSelectionUI').classList.add('hidden');
-            animate();
-        }
-
-        function animate() {
-            if (gameOver || gameWon) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            player.update(); player.draw();
-            updateParticles(); drawParticles();
-
-            if (gameFrame % 60 === 0) {
-                obstacles.push({ x: canvas.width, y: canvas.height - 100, width: 50, height: 100 });
+        function spawnPortal() {
+            if (Math.random() < 0.3) {
+                const mode = MODES[Math.floor(Math.random() * MODES.length)];
+                portals.push({ x: canvas.width + cameraX + 300, mode });
             }
-            obstacles.forEach((o, i) => {
-                o.x -= obstacleSpeed;
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(o.x, o.y, o.width, o.height);
-                if (o.x < -o.width) obstacles.splice(i, 1);
+        }
+
+        // Collision
+        function checkCollision(a, b) {
+            return a.x < b.x + b.w && a.x + a.size > b.x &&
+                   a.y < b.y + b.h && a.y + a.size > b.y;
+        }
+
+        // Switch Level
+        function switchLevel(direction) {
+            const oldLevel = currentLevel;
+            currentLevel = Math.max(0, Math.min(levels.length - 1, currentLevel + direction));
+            
+            if (oldLevel !== currentLevel) {
+                // Reset for new level
+                cameraX = 0;
+                obstacles = [];
+                portals = [];
+                particles = [];
+                player = { 
+                    x: 100, y: groundY - 40, vy: 0, size: 40, color: '#00ffff', 
+                    mode: 'cube', rotation: 0, onGround: true, trail: [], wavePhase: 0 
+                };
+                gameSpeed = 8;
+                isDead = false;
+                isStarted = true;
+                bgMusic.currentTime = 0;
+                bgMusic.play();
+                document.getElementById('scoreDisplay').textContent = `${levels[currentLevel].name} - 0%`;
+            }
+        }
+
+        // Game Loop
+        function gameLoop() {
+            if (!isStarted) return;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Camera
+            cameraX += gameSpeed;
+            if (cameraX > 1000 && gameSpeed < 15) gameSpeed += 0.1;
+
+            // Grid
+            ctx.strokeStyle = 'rgba(0,255,255,0.1)';
+            ctx.lineWidth = 1;
+            gridLines.forEach(line => {
+                if (line.type === 'v') {
+                    const x = line.x - cameraX % 60;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                } else {
+                    const y = line.y;
+                    if (y > 0 && y < canvas.height) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y);
+                        ctx.lineTo(canvas.width, y);
+                        ctx.stroke();
+                    }
+                }
             });
 
-            if (gameFrame > 300) {
-                gameWon = true;
-                playSfx('win');
-                OrbManager.addOrbs(10);
-            }
-            gameFrame++;
-            requestAnimationFrame(animate);
-        }
+            // Ground
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, groundY, canvas.width, 80);
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(canvas.width, groundY);
+            ctx.stroke();
 
-        // === AUDIO ===
-        const sfx = {
-            jump: document.getElementById('jumpSfx'),
-            death: document.getElementById('deathSfx'),
-            win: document.getElementById('winSfx')
-        };
-        function playSfx(id) { sfx[id].currentTime = 0; sfx[id].play().catch(() => {}); }
+            // Player Physics
+            player.vy += GRAVITY;
+            player.y += player.vy;
 
-        // === CANVAS & INPUT ===
-        canvas = document.getElementById('gameCanvas');
-        ctx = canvas.getContext('2d', { alpha: true });
-        ctx.imageSmoothingEnabled = false;
-        function resizeCanvas() {
-            const maxW = Math.min(window.innerWidth - 40, 800);
-            canvas.width = maxW;
-            canvas.height = maxW * 0.5;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        canvas.addEventListener('click', (e) => {
-            if (isEditor) {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const x = (e.clientX - rect.left) * scaleX + scrollX;
-                const y = (e.clientY - rect.top) * scaleX;
-                const type = document.getElementById('objectType').value;
-                if (type.startsWith('portal_')) {
-                    levelData.portals.push({ type: type.slice(7), x, y });
+            if (player.mode === 'cube' || player.mode === 'ball') {
+                if (player.y >= groundY - player.size) {
+                    player.y = groundY - player.size;
+                    player.vy = 0;
+                    player.onGround = true;
                 } else {
-                    levelData.obstacles.push({ type, x, y: y || canvas.height - 100 });
+                    player.onGround = false;
                 }
-            } else {
-                player?.jump();
             }
-        });
 
+            if (player.mode === 'ship') {
+                player.vy = Math.max(-8, Math.min(8, player.vy));
+            }
+
+            if (player.mode === 'wave') {
+                player.wavePhase += 0.3;
+                player.y = groundY - player.size - Math.sin(player.wavePhase) * 60;
+            }
+
+            // Rotation
+            if (player.mode === 'cube') player.rotation += player.onGround ? 0.2 : 0.1;
+            if (player.mode === 'ball') player.rotation += 0.3;
+
+            // Trail
+            if (gameSpeed > 0) addTrail();
+            player.trail.forEach((t, i) => {
+                t.life--;
+                if (t.life <= 0) player.trail.splice(i, 1);
+            });
+
+            // Portals
+            portals = portals.filter(p => {
+                const px = p.x - cameraX;
+                if (px < -100) return false;
+                ctx.strokeStyle = {
+                    cube: '#00ffff', ship: '#ff00ff', ball: '#ffff00',
+                    ufo: '#00ff00', wave: '#ff6600'
+                }[p.mode];
+                ctx.lineWidth = 6;
+                ctx.strokeRect(px, groundY - 120, 60, 120);
+                if (checkCollision(player, { x: px, y: groundY - 120, w: 60, h: 120 })) {
+                    player.mode = p.mode;
+                    player.color = ctx.strokeStyle;
+                    portalSfx.currentTime = 0; portalSfx.play();
+                    createParticles(player.x + player.size/2, player.y + player.size/2, 20, player.color);
+                    return false;
+                }
+                return true;
+            });
+
+            // Obstacles
+            obstacles = obstacles.filter(o => {
+                const ox = o.x - cameraX;
+                if (ox < -100) return false;
+
+                if (o.type === 'spike') {
+                    ctx.beginPath();
+                    ctx.moveTo(ox + 20, groundY);
+                    ctx.lineTo(ox, groundY - 40);
+                    ctx.lineTo(ox + 40, groundY - 40);
+                    ctx.closePath();
+                    ctx.fillStyle = '#ff3300';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ff6600';
+                    ctx.stroke();
+                } else if (o.type === 'pillar') {
+                    ctx.fillStyle = '#ff3300';
+                    ctx.fillRect(ox, o.y, o.w, o.h);
+                    ctx.strokeStyle = '#ff6600';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(ox, o.y, o.w, o.h);
+                }
+
+                if (checkCollision(player, { x: ox, y: o.y, w: o.w, h: o.h })) {
+                    isDead = true;
+                    deathSfx.currentTime = 0; deathSfx.play();
+                    createParticles(player.x + player.size/2, player.y + player.size/2, 50, '#ff0000');
+                }
+
+                return true;
+            });
+
+            // Spawn (more obstacles on harder levels)
+            const spawnRate = 0.02 + (currentLevel * 0.001);
+            if (Math.random() < spawnRate) spawnObstacle();
+            if (Math.random() < 0.01) spawnPortal();
+
+            // Draw Player
+            ctx.save();
+            ctx.translate(player.x + player.size/2, player.y + player.size/2);
+            ctx.rotate(player.rotation);
+            ctx.fillStyle = player.color;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            if (player.mode === 'cube' || player.mode === 'ball') {
+                ctx.fillRect(-player.size/2, -player.size/2, player.size, player.size);
+                ctx.strokeRect(-player.size/2, -player.size/2, player.size, player.size);
+            } else if (player.mode === 'ship') {
+                ctx.beginPath();
+                ctx.moveTo(-player.size/2, 0);
+                ctx.lineTo(player.size/2, -player.size/3);
+                ctx.lineTo(player.size/2, player.size/3);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            } else if (player.mode === 'ufo') {
+                ctx.beginPath();
+                ctx.arc(0, -player.size/4, player.size/2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(0, player.size/4, player.size/3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // Trail
+            player.trail.forEach(t => {
+                ctx.globalAlpha = t.life / 15;
+                ctx.fillStyle = t.color;
+                ctx.fillRect(t.x, t.y, player.size, player.size);
+            });
+            ctx.globalAlpha = 1;
+
+            // Particles
+            particles = particles.filter(p => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life--;
+                ctx.globalAlpha = p.life / 30;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x - cameraX, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                return p.life > 0;
+            });
+            ctx.globalAlpha = 1;
+
+            // Level Progress
+            const levelLength = levels[currentLevel].length;
+            progress = Math.min(100, (cameraX / levelLength) * 100);
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('scoreDisplay').textContent = 
+                `${levels[currentLevel].name} - ${Math.floor(progress)}%`;
+
+            // Level Complete
+            if (progress >= 100 && !isDead) {
+                ctx.fillStyle = 'rgba(0,255,0,0.8)';
+                ctx.font = 'bold 4rem Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText('LEVEL COMPLETE!', canvas.width/2, canvas.height/2);
+                ctx.font = '2rem Orbitron';
+                ctx.fillText('← → Next Level', canvas.width/2, canvas.height/2 + 60);
+            }
+
+            if (isDead) {
+                ctx.fillStyle = 'rgba(255,0,0,0.8)';
+                ctx.font = 'bold 4rem Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2);
+                ctx.font = '2rem Orbitron';
+                ctx.fillText('Space/Enter to Restart', canvas.width/2, canvas.height/2 + 60);
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Input - PC Optimized
+        function jump() {
+            if (!isStarted) {
+                isStarted = true;
+                bgMusic.play();
+                player.y = groundY - player.size;
+                gameLoop();
+                return;
+            }
+
+            if (isDead) {
+                // Restart current level
+                cameraX = 0; obstacles = []; portals = []; particles = [];
+                player = { x: 100, y: groundY - 40, vy: 0, size: 40, color: '#00ffff', mode: 'cube', rotation: 0, onGround: true, trail: [], wavePhase: 0 };
+                gameSpeed = 8;
+                isDead = false;
+                bgMusic.currentTime = 0;
+                bgMusic.play();
+                return;
+            }
+
+            if (player.mode === 'cube' || player.mode === 'ball') {
+                if (player.onGround) {
+                    player.vy = JUMP;
+                    jumpSfx.currentTime = 0; jumpSfx.play();
+                    createParticles(player.x + player.size/2, player.y + player.size, 10, player.color);
+                }
+            } else if (player.mode === 'ship' || player.mode === 'ufo') {
+                player.vy = JUMP * 0.7;
+                jumpSfx.currentTime = 0; jumpSfx.play();
+            } else if (player.mode === 'wave') {
+                player.vy = JUMP * 1.5;
+            }
+        }
+
+        // Mouse/Touch
+        canvas.addEventListener('click', jump);
+        canvas.addEventListener('touchstart', e => { e.preventDefault(); jump(); });
+
+        // Keyboard - PC Controls
         window.addEventListener('keydown', e => {
-            if (e.code === 'Space') player?.jump();
-            if (isEditor && e.code === 'ArrowLeft') scrollX = Math.max(0, scrollX - 50);
-            if (isEditor && e.code === 'ArrowRight') scrollX += 50;
+            e.preventDefault();
+            switch(e.code) {
+                case 'Space':
+                case 'Enter':
+                case 'NumpadEnter':
+                    jump();
+                    break;
+                case 'ArrowLeft':
+                    switchLevel(-1);
+                    break;
+                case 'ArrowRight':
+                    switchLevel(1);
+                    break;
+            }
         });
 
-        // === UI FUNCTIONS ===
-        function updateSkins() {
-            const options = document.getElementById('cubeOptions');
-            const unlockedCubes = ShopManager.items.filter(i => i.type === 'cube' && ShopManager.isUnlocked(i.id));
-            options.innerHTML = unlockedCubes.map(i => `<div class="skin-button" style="background:${i.id.includes('fire') ? '#e53e3e' : '#48bb78'}" data-color="${i.id.includes('fire') ? '#e53e3e' : '#48bb78'}" onclick="selectSkin(this)"></div>`).join('');
-            if (unlockedCubes.length === 0) options.innerHTML = `<div class="skin-button selected" style="background:#e53e3e" data-color="#e53e3e" onclick="selectSkin(this)"></div>`;
-        }
-        function selectSkin(el) {
-            document.querySelectorAll('.skin-button').forEach(b => b.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedSkinColor = el.dataset.color;
-        }
+        // Init
+        initGrid();
+        document.getElementById('loadingScreen').addEventListener('click', () => {
+            document.getElementById('loadingScreen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loadingScreen').remove();
+                isStarted = true;
+                bgMusic.play();
+                gameLoop();
+            }, 500);
+        });
 
-        let currentItemId = null;
-        function showItemDetails(id) {
-            const item = ShopManager.getItem(id);
-            document.getElementById('itemTitle').textContent = item.name;
-            document.getElementById('itemDesc').textContent = item.desc + '\nHow to get: ' + (item.cost ? `${item.cost} Orbs` : item.unlockMethod);
-            currentItemId = id;
-            document.getElementById('itemDetailsModal').classList.remove('hidden');
-            document.getElementById('buyBtn').style.display = item.cost ? 'inline' : 'none';
-        }
-        function buyItem() {
-            const item = ShopManager.getItem(currentItemId);
-            if (item && OrbManager.spendOrbs(item.cost)) {
-                ShopManager.unlockItem(currentItemId);
-                alert('Purchased!');
-                closeModal('itemDetailsModal');
-                ShopManager.updateShop();
-                updateSkins();
-            }
-        }
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
+        // Loading Animation
+        let load = 0;
+        const loadInterval = setInterval(() => {
+            load += 10;
+            document.getElementById('progressFill').style.width = load + '%';
+            if (load >= 100) clearInterval(loadInterval);
+        }, 100);
 
-        // === EVENT LISTENERS ===
-        document.getElementById('profileBtn').onclick = () => document.getElementById('profileModal').classList.remove('hidden');
-        document.getElementById('shopBtn').onclick = () => { ShopManager.updateShop(); document.getElementById('shopModal').classList.remove('hidden'); };
-        document.getElementById('questsBtn').onclick = () => { QuestManager.updateQuestList(); QuestManager.updateGauntletList(); document.getElementById('questModal').classList.remove('hidden'); };
-        document.getElementById('chestsBtn').onclick = () => { ChestManager.updateChestList(); document.getElementById('chestModal').classList.remove('hidden'); };
-        document.getElementById('moreChestsBtn').onclick = () => document.getElementById('chestModal').classList.remove('hidden');
-        document.getElementById('friendsBtn').onclick = () => { FriendManager.updateFriendList(); document.getElementById('friendsModal').classList.remove('hidden'); };
-        document.getElementById('globedBtn').onclick = () => document.getElementById('globedModal').classList.remove('hidden');
-
-        function login() { ProfileManager.login(document.getElementById('usernameInput').value, document.getElementById('passwordInput').value); }
-        function signup() { ProfileManager.signup(document.getElementById('usernameInput').value, document.getElementById('passwordInput').value); }
-        function searchFriend() { FriendManager.searchFriend(document.getElementById('friendSearch').value); }
-        function addFriend(username) { FriendManager.addFriend(username); document.getElementById('friendResults').innerHTML = ''; }
-        function openChat(friend) { FriendManager.openChat(friend); }
-        function sendMessage() { FriendManager.sendMessage(); }
-
-        function startGauntlet(id) {
-            const gauntlet = QuestManager.allGauntlets.find(g => g.id === id);
-            if (!gauntlet || (gauntlet.holiday && !gauntlet.active())) return alert('Not available');
-            currentGauntletId = id;
-            isGauntletMode = true;
-            gauntletProgress = { current: 0, total: gauntlet.levels };
-            levelData = { obstacles: [], portals: [] };
-            document.getElementById('questModal').classList.add('hidden');
-            startGame();
-        }
-
-        // === INIT ===
-        const ProfileManager = new ProfileManager();
-        ProfileManager.checkDailyLogin();
-        ProfileManager.loadProgress();
-        updateVisitCount();
-
-        window.onload = () => {
-            document.getElementById('profileModal').classList.remove('hidden');
-            document.addEventListener('click', () => new (window.AudioContext || window.webkitAudioContext)().resume(), { once: true });
-            resizeCanvas();
-            ChestManager.updateChestList();
-        };
+        // Set initial level display
+        document.getElementById('scoreDisplay').textContent = `${levels[0].name} - 0%`;
     </script>
+
 </body>
 </html>
