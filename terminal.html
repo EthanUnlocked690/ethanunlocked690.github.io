@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v8.3 (Security & Gaming)</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <title>ATLAS: DATA FLOW CONSOLE v8.3 (Security &amp; Gaming)</title>
+    <link href="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security &amp; Gaming)_files/css2" rel="stylesheet">
+    <script src="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security &amp; Gaming)_files/Tone.min.js.download"></script>
 
     <style>
         :root {
@@ -539,15 +538,15 @@
             <form id="login-form">
                 <div class="login-field">
                     <label for="username">USERNAME:</label>
-                    <input type="text" id="username" required>
+                    <input type="text" id="username" required="">
                 </div>
                 <div class="login-field">
                     <label for="password">PASSWORD:</label>
-                    <input type="password" id="password" required>
+                    <input type="password" id="password" required="">
                 </div>
                 <div class="login-field">
                     <label for="passkey">PASSKEY (4 DIGITS):</label>
-                    <input type="text" id="passkey" required maxlength="4">
+                    <input type="text" id="passkey" required="" maxlength="4">
                 </div>
                 <button type="button" id="login-button">INITIATE ACCESS SEQUENCE</button>
             </form>
@@ -565,7 +564,7 @@
         <button id="quit-game-button">TERMINATE GAME SEQUENCE</button>
     </div>
 
-    <div id="console-container">
+    <div id="console-container" style="display: none;">
         <div id="console-header">ATLAS_SYSTEM_OFFLINE</div>
         <div id="terminal-output"></div>
         <div id="command-line">
@@ -575,7 +574,7 @@
     </div>
 
     <div id="chat-button">
-        <img src="chat.png" alt="Chat">
+        <img src="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/chat.png" alt="Chat">
         <div id="unread-count">0</div>
     </div>
 
@@ -606,8 +605,8 @@
             <button id="show-participants">Participants</button>
         </div>
         <div id="call-videos">
-            <video id="local-video" autoplay muted></video>
-            <video id="remote-video" autoplay></video>
+            <video id="local-video" autoplay="" muted=""></video>
+            <video id="remote-video" autoplay=""></video>
         </div>
         <div id="call-participants-list"></div>
     </div>
@@ -992,7 +991,7 @@ async function handleLoginAttempt(event) {
             break;
         }
     }
-    
+
     document.getElementById('loading-screen').style.display = 'flex';
     await new Promise(resolve => setTimeout(resolve, 1500));
     document.getElementById('loading-screen').style.display = 'none';
@@ -1037,7 +1036,7 @@ function addMessage(sender, message, isIncoming = true) {
     const messageDiv = document.createElement('div');
     messageDiv.className = isIncoming ? 'incoming-message' : 'outgoing-message';
     const senderColor = isIncoming ? 'var(--highlight-color)' : 'var(--prompt-caret)';
-    
+
     messageDiv.innerHTML = `
         <span class="message-timestamp" style="color:var(--prompt-caret);">${new Date().toLocaleTimeString()}</span>
         <span class="message-sender" style="color: ${senderColor};">${sender}:</span>
@@ -1076,11 +1075,11 @@ function updateUserList() {
         const user = USERS[username];
         const listItem = document.createElement('div');
         listItem.className = 'user-list-item';
-        
+
         // Determine real-time status based on current state
         let statusColor;
         let statusText;
-        
+
         if (currentCall && currentCall.participants.includes(username)) {
             statusColor = '#ffaa00'; // Orange for in-call
             statusText = 'IN CALL';
@@ -1091,7 +1090,7 @@ function updateUserList() {
             statusColor = 'var(--error-color)'; // Red for offline
             statusText = 'OFFLINE';
         }
-        
+
         listItem.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span class="user-status-dot" style="background-color: ${statusColor};"></span>
@@ -1102,7 +1101,7 @@ function updateUserList() {
         const callBtn = document.createElement('button');
         callBtn.textContent = 'Call';
         callBtn.style.cssText = 'background-color: var(--highlight-color); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 0.9rem;';
-        
+
         // Disable call button if user is already in a call or if current user is in a call
         if ((currentCall && currentCall.participants.includes(username)) || currentCall) {
             callBtn.disabled = true;
@@ -1111,7 +1110,7 @@ function updateUserList() {
         } else {
             callBtn.onclick = () => startCallWithUser(username);
         }
-        
+
         listItem.appendChild(callBtn);
         userList.appendChild(listItem);
     });
@@ -1166,7 +1165,7 @@ function addCallNotification(caller) {
             const command = consoleInput.value.trim().toUpperCase();
             writeOutput(consoleInput.value, 'var(--terminal-color)', true);
             consoleInput.value = '';
-            
+
             if (command === 'ACCEPT CALL') {
                 acceptCall(caller);
                 consoleInput.removeEventListener('keydown', tempConsoleHandler);
@@ -1180,7 +1179,7 @@ function addCallNotification(caller) {
             }
         }
     };
-    
+
     consoleInput.addEventListener('keydown', tempConsoleHandler);
 
     callNotificationTimeout = setTimeout(() => {
@@ -1233,7 +1232,7 @@ function joinCall(targetUsers) {
     const isGroupCall = Array.isArray(targetUsers) && targetUsers.length > 1;
     const callParticipants = isGroupCall ? [...targetUsers, authUsername] : [targetUsers[0], authUsername];
     const title = isGroupCall ? `CONFERENCE CALL (${targetUsers.length + 1})` : `Active Call: ${targetUsers[0]}`;
-    
+
     showCallModal(title);
     currentCall = {
         users: targetUsers,
@@ -1340,7 +1339,7 @@ function toggleScreenShare() {
         writeOutput('CALL ERROR: Start a call before attempting to share screen.', 'var(--error-color)');
         return;
     }
-    
+
     if (isSharingScreen) {
         if (screenStream) {
             screenStream.getTracks().forEach(track => track.stop());
@@ -1442,5 +1441,5 @@ window.onload = function() {
     showLoginModal();
 };
 </script>
-</body>
-</html>
+
+</body></html>
