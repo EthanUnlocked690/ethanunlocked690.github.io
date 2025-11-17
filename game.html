@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chrono-Dungeon Weaver - Logi-Lite</title>
+    <title>Chronosynapse - Chronal-Kinetic Fiction</title>
     <style>
         /* ========================================================= */
-        /* CSS STYLES                       */
+        /* CSS STYLES - CHRONAL-KINETIC INTERFACE */
         /* ========================================================= */
         :root {
-            --bg-color: #121212;
-            --main-color: #00ff99;
-            --accent-color: #ff0066;
+            --bg-color: #0d0d1a;
+            --main-color: #33ccff;
+            --accent-color: #ff33cc;
             --error-color: #ff3333;
-            --font-family: 'Consolas', monospace;
-            --node-size: 30px;
+            --font-family: 'Space Mono', monospace;
+            --pulse-duration: 0.8s;
         }
 
         body {
@@ -23,459 +23,431 @@
             font-family: var(--font-family);
             margin: 0;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            perspective: 800px; /* 3D Perspective for the interface */
         }
 
         .game-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr; /* Dungeon and Status/Circuit */
-            grid-template-rows: 1fr;
             width: 90vw;
-            height: 90vh;
-            border: 2px solid var(--main-color);
-            box-shadow: 0 0 50px rgba(0, 255, 153, 0.5), inset 0 0 20px rgba(0, 255, 153, 0.2);
-            padding: 10px;
+            max-width: 800px;
+            padding: 30px;
+            border: 1px solid var(--main-color);
+            box-shadow: 0 0 40px rgba(51, 204, 255, 0.5), inset 0 0 10px rgba(51, 204, 255, 0.2);
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease-out;
         }
 
-        /* --- Dungeon Area --- */
-        #dungeon {
-            background-color: rgba(0, 0, 0, 0.4);
-            border-right: 1px solid var(--main-color);
+        /* --- Narrative Display --- */
+        #narrative-display {
+            min-height: 150px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        /* --- Decision Interface --- */
+        #decision-interface {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .decision-button {
+            background-color: rgba(51, 204, 255, 0.1);
+            color: var(--main-color);
+            border: 1px solid var(--main-color);
+            padding: 12px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .decision-button:hover:not(.disabled) {
+            background-color: rgba(51, 204, 255, 0.4);
+        }
+
+        .decision-button.disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        /* --- Kinetic Interface (The core advanced element) --- */
+        #kinetic-interface {
+            margin-top: 30px;
+            height: 100px;
+            display: flex;
+            justify-content: space-around;
             align-items: center;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 30px var(--accent-color), inset 0 0 15px rgba(255, 51, 204, 0.4);
+            transform: rotateX(15deg); /* Tilt for 3D effect */
+            transition: opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
             position: relative;
         }
+        
+        #kinetic-interface.active {
+            opacity: 1;
+            pointer-events: all;
+        }
 
-        #player {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background-color: var(--main-color);
+        .indicator {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            transition: transform 0.2s ease-out;
-            box-shadow: 0 0 15px var(--main-color);
-            text-align: center;
-            line-height: 40px;
-            font-weight: bold;
-            color: #000;
-            z-index: 10;
-        }
-        
-        .enemy {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background-color: var(--accent-color);
-            transition: all 0.5s linear;
-            box-shadow: 0 0 10px var(--accent-color);
-            border-radius: 4px;
-            z-index: 5;
-        }
-        
-        /* --- Circuit & Status Area --- */
-        #interface {
-            padding: 15px;
-            display: grid;
-            grid-template-rows: auto 1fr;
-            gap: 15px;
-        }
-
-        #status-bar {
-            border-bottom: 1px solid var(--main-color);
-            padding-bottom: 10px;
-        }
-
-        .stat {
-            margin-bottom: 5px;
-        }
-        
-        .value {
-            color: var(--accent-color);
-            font-weight: bold;
-        }
-
-        #circuit-builder {
-            display: grid;
-            grid-template-columns: repeat(5, var(--node-size));
-            grid-template-rows: repeat(5, var(--node-size));
-            gap: 5px;
-            background-color: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border: 1px solid rgba(0, 255, 153, 0.3);
-            align-content: start;
-            justify-content: start;
-        }
-
-        .node {
-            width: var(--node-size);
-            height: var(--node-size);
-            background-color: #333;
-            border: 1px solid var(--main-color);
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 14px;
-            font-weight: bold;
-            transition: background-color 0.1s, box-shadow 0.1s;
-        }
-
-        .node.active {
             background-color: var(--main-color);
-            color: var(--bg-color);
-            box-shadow: 0 0 10px var(--main-color), inset 0 0 5px #fff;
+            opacity: 0.1;
+            transition: opacity 0.1s;
         }
 
-        .node:hover {
+        .indicator.target {
             opacity: 0.8;
+            box-shadow: 0 0 15px var(--main-color);
         }
         
-        .gate-AND { background-color: #008080 !important; color: white !important; }
-        .gate-OR { background-color: #800080 !important; color: white !important; }
-        .gate-XOR { background-color: #808000 !important; color: white !important; }
+        .indicator.hit {
+            background-color: #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            animation: pulse-success 0.2s;
+        }
         
-        /* --- Console/Log --- */
-        #log {
+        .indicator.miss {
+            background-color: var(--error-color);
+            box-shadow: 0 0 20px var(--error-color);
+            animation: pulse-fail 0.2s;
+        }
+
+        /* Rhythmic Animation */
+        #rhythm-line {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
-            width: 300px;
-            height: 100px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border: 1px solid var(--main-color);
-            padding: 5px;
-            overflow-y: scroll;
-            font-size: 12px;
-            opacity: 0.8;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            bottom: 0;
         }
-        .log-entry.damage { color: var(--error-color); }
-        .log-entry.power { color: var(--main-color); }
 
+        #rhythm-bar {
+            position: absolute;
+            width: 50px;
+            height: 5px;
+            background-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+            left: 0;
+            bottom: 0;
+            /* JS will apply the keyframe animation */
+        }
+        
+        /* Keyframe for the rhythmic movement */
+        @keyframes rhythm-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(100% - 50px)); }
+        }
+
+        @keyframes pulse-success {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+        @keyframes pulse-fail {
+            0% { background-color: var(--error-color); }
+            50% { background-color: var(--error-color); transform: scale(0.5); }
+            100% { background-color: var(--error-color); transform: scale(1); }
+        }
+
+        /* --- Status Bar --- */
+        #status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        .paradox { color: var(--error-color); font-weight: bold; }
+        .score { color: var(--accent-color); font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <div id="dungeon">
-        <div id="player">P</div>
+    <div id="status-bar">
+        <span>Paradox Level: <span id="paradox-level" class="paradox">0</span></span>
+        <span>Integrity Score: <span id="integrity-score" class="score">0</span></span>
     </div>
-    
-    <div id="interface">
-        <div id="status-bar">
-            <h3>Player Status</h3>
-            <div class="stat">Health: <span id="hp-value" class="value">100</span></div>
-            <div class="stat">Power: <span id="power-value" class="value">0</span></div>
-            <div class="stat">Defense: <span id="def-value" class="value">0</span></div>
-            <p>Target: <span id="target-gate-value" class="value">AND ( & )</span></p>
+
+    <div id="narrative-display">
+        <p>:: **Temporal Archival Unit 7** ::</p>
+        <p>Reviewing Event **EON-47: The Council Collapse**. You must intervene to stabilize the timeline. Each choice requires a successful kinetic sync. Failures increase the Paradox Level.</p>
+    </div>
+
+    <div id="decision-interface">
+        <button class="decision-button" data-choice="start">Begin Chronosynapse</button>
+    </div>
+
+    <div id="kinetic-interface">
+        <div id="rhythm-line">
+            <div class="indicator" data-key="a" style="left: 10%;"></div>
+            <div class="indicator" data-key="s" style="left: 30%;"></div>
+            <div class="indicator" data-key="d" style="left: 50%;"></div>
+            <div class="indicator" data-key="f" style="left: 70%;"></div>
+            <div class="indicator" data-key="g" style="left: 90%;"></div>
+            <div id="rhythm-bar"></div>
         </div>
-        
-        <div id="circuit-builder">
-            </div>
     </div>
-    
-    <div id="log"></div>
 </div>
 
 <script>
     // =========================================================
     //                          JAVASCRIPT LOGIC
     // =========================================================
-    
-    // --- Configuration & Global State ---
-    const GRID_SIZE = 5;
-    const GAME_TICK = 1000; // Enemy move/attack interval in ms
-    const GATE_TYPES = ['AND', 'OR', 'XOR'];
-    
-    let state = {
-        player: { hp: 100, power: 0, defense: 0, x: 50, y: 50 },
-        enemies: [],
-        circuit: [],
-        targetGate: 'AND', // The gate type the circuit must match to gain bonus
-        lastTick: 0,
-        running: true
+
+    // --- Global State ---
+    const state = {
+        paradoxLevel: 0,
+        integrityScore: 0,
+        currentScene: 'start',
+        awaitingChoice: false,
+        awaitingKinetic: false,
+        kineticSequence: [],
+        sequenceResolver: null,
+        rhythmDuration: 3000, // 3 seconds for the bar to cross
     };
-    
-    // --- Utility Functions ---
+
+    // --- DOM Elements ---
     const $ = id => document.getElementById(id);
+    const elements = {
+        narrative: $('narrative-display'),
+        decisions: $('decision-interface'),
+        kinetic: $('kinetic-interface'),
+        rhythmBar: $('rhythm-bar'),
+        paradox: $('paradox-level'),
+        score: $('integrity-score')
+    };
 
-    function logMessage(message, type = '') {
-        const log = $('log');
-        const entry = document.createElement('div');
-        entry.className = 'log-entry ' + type;
-        entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-        log.prepend(entry);
-        if (log.children.length > 20) log.removeChild(log.lastChild);
-    }
-    
-    function updateDisplay() {
-        $('hp-value').textContent = state.player.hp;
-        $('power-value').textContent = state.player.power;
-        $('def-value').textContent = state.player.defense;
-        $('target-gate-value').textContent = `${state.targetGate} ( ${state.targetGate === 'AND' ? '&' : state.targetGate === 'OR' ? '|' : '^'} )`;
-        
-        $('player').style.transform = `translate(${state.player.x}px, ${state.player.y}px)`;
-        
-        // Update Node visual state
-        state.circuit.forEach(node => {
-            const el = $(`node-${node.id}`);
-            el.className = `node ${node.isActive ? 'active' : ''}`;
-            if (node.gate) el.classList.add(`gate-${node.gate}`);
-            el.textContent = node.gate ? node.gate.charAt(0) : node.isActive ? '1' : '0';
-        });
+    // --- Core Data: The Narrative Tree ---
+    const scenes = {
+        'start': {
+            text: "Event EON-47 initiated. The Council is voting on the deployment of the Chronal Barrier. History shows a tie, but only one outcome is stable.",
+            choices: [
+                { text: "1. Push the 'Stabilization' vote through.", next: 'scene1_stabilize', keys: 'asdg' },
+                { text: "2. Allow the 'Entropy' vote to proceed.", next: 'scene1_entropy', keys: 'fsda' }
+            ]
+        },
+        'scene1_stabilize': {
+            text: "Stabilization choice selected. Preparing kinetic lock. The barrier must deploy **precisely** as the final vote is cast. Sequence: 'A', 'S', 'D', 'G'.",
+            choices: [], // The sequence is handled by the kinetic interface
+            success: "SUCCESS. The barrier is deployed. History is stable. Integrity +10.",
+            failure: "PARADOX. The barrier flickers, causing minor temporal echoes. Paradox +5.",
+            nextSuccess: 'scene2_stable',
+            nextFailure: 'scene2_unstable'
+        },
+        'scene1_entropy': {
+            text: "Entropy choice selected. Preparing kinetic lock. You must delay the deployment **exactly** until the resulting collapse is minimized. Sequence: 'F', 'S', 'D', 'A'.",
+            choices: [],
+            success: "SUCCESS. The entropy wave is contained. You've adapted to the instability. Integrity +15.",
+            failure: "PARADOX. The local chronal field collapses, forcing a risky jump. Paradox +10.",
+            nextSuccess: 'scene2_unstable', // Different outcomes based on success/failure state
+            nextFailure: 'end_paradox_major'
+        },
+        'scene2_stable': {
+            text: "Timeline stable. A new crisis appears: The Barrier's core requires a reset code. Code: 7-4-3. You must execute this as a rapid sequence on the keyboard ('J', 'K', 'L').",
+            choices: [
+                { text: "Input Reset Code (J, K, L)", next: 'scene3_reset', keys: 'jkl' }
+            ]
+        },
+        'scene2_unstable': {
+            text: "Timeline unstable. The paradox energy is attracting a Chronal Predator. You must fire a warning shot ('Z', 'X', 'C') to repel it before it reaches the main archive.",
+            choices: [
+                { text: "Fire Warning Shot (Z, X, C)", next: 'scene3_shot', keys: 'zxc' }
+            ]
+        },
+        'scene3_reset': { text: "Success! The Barrier is reset. The timeline is secure. (Game End - Stable Archive)", choices: [] },
+        'scene3_shot': { text: "Success! The Predator retreats. But the paradox remains a threat. (Game End - Tense Stability)", choices: [] },
+        'end_paradox_major': { text: "CRITICAL PARADOX FAILURE. The integrity of the Archivist is compromised. The timeline fragments.", choices: [] }
+    };
 
-        // Update enemies
-        state.enemies.forEach(enemy => {
-            const el = $(`enemy-${enemy.id}`);
-            el.style.left = `${enemy.x}%`;
-            el.style.top = `${enemy.y}%`;
-        });
-    }
-
-    // --- Core Game Classes ---
-    
-    class CircuitNode {
-        constructor(id, x, y) {
-            this.id = id;
-            this.x = x;
-            this.y = y;
-            this.isActive = Math.random() < 0.2; // Initial random state
-            this.gate = null; // Can be 'AND', 'OR', 'XOR', or null (simple input)
-        }
-        
-        toggle() {
-            this.isActive = !this.isActive;
-            // When an input node is toggled, re-calculate the whole circuit
-            if (!this.gate) calculateCircuitPower(); 
-        }
-
-        setGate(type) {
-            this.gate = type;
-            calculateCircuitPower();
-        }
-    }
-    
-    class Enemy {
-        constructor(id, hp, dmg) {
-            this.id = id;
-            this.hp = hp;
-            this.damage = dmg;
-            this.x = Math.random() * 90 + 5;
-            this.y = Math.random() * 90 + 5;
-            this.element = this.createElement();
-            $('dungeon').appendChild(this.element);
-        }
-        
-        createElement() {
-            const el = document.createElement('div');
-            el.className = 'enemy';
-            el.id = `enemy-${this.id}`;
-            el.style.left = `${this.x}%`;
-            el.style.top = `${this.y}%`;
-            el.textContent = 'E';
-            return el;
-        }
-
-        async moveAndAttack() {
-            // Simplified movement towards center (Player position is relative to dungeon center)
-            const dungeonRect = $('dungeon').getBoundingClientRect();
-            const playerEl = $('player');
-            const playerRect = playerEl.getBoundingClientRect();
-
-            // Calculate movement towards player
-            const dx = (playerRect.left + playerRect.width/2) - (this.element.offsetLeft + this.element.offsetWidth/2);
-            const dy = (playerRect.top + playerRect.height/2) - (this.element.offsetTop + this.element.offsetHeight/2);
-
-            // Normalize and move a small distance (simplified for the demo)
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance > 50) { // Only move if not too close
-                this.x += (dx / distance) * 2; // Move speed of 2 units (visual only)
-                this.y += (dy / distance) * 2;
-                this.element.style.left = `${this.x}px`;
-                this.element.style.top = `${this.y}px`;
-            } else {
-                // Attack if close enough
-                attackPlayer(this.damage);
-            }
+    // --- State Update & Rendering ---
+    function updateStatus() {
+        elements.paradox.textContent = state.paradoxLevel;
+        elements.score.textContent = state.integrityScore;
+        if (state.paradoxLevel >= 20) {
+            elements.paradox.classList.add('pulse-error');
+            endGame();
         }
     }
 
-    // --- Circuit Logic ---
-    
-    function calculateCircuitPower() {
-        let circuitOutput = 0;
-        let circuitGateType = null;
-        
-        // We'll use the center node's row/column for the output calculation (e.g., node 12 is at 2,2)
-        const centerID = Math.floor(GRID_SIZE * GRID_SIZE / 2);
-        const centerNode = state.circuit[centerID];
-        
-        if (!centerNode) return;
-        
-        // Step 1: Determine the output and gate type
-        if (centerNode.gate) {
-            // This is the core logical operation. We'll use the node's neighbors as inputs.
-            // Simplified: Use the top (i-GRID_SIZE) and left (i-1) neighbor's isActive state.
-            const topNeighbor = state.circuit.find(n => n.id === centerID - GRID_SIZE);
-            const leftNeighbor = state.circuit.find(n => n.id === centerID - 1);
-            
-            const inputA = topNeighbor ? topNeighbor.isActive : false;
-            const inputB = leftNeighbor ? leftNeighbor.isActive : false;
+    function renderScene(sceneId) {
+        state.currentScene = sceneId;
+        const scene = scenes[sceneId];
 
-            circuitGateType = centerNode.gate;
-            
-            // Perform the bitwise logic on the inputs (converted to 1 or 0)
-            const valA = inputA ? 1 : 0;
-            const valB = inputB ? 1 : 0;
-            
-            switch(circuitGateType) {
-                case 'AND':
-                    circuitOutput = valA & valB; // Bitwise AND
-                    break;
-                case 'OR':
-                    circuitOutput = valA | valB; // Bitwise OR
-                    break;
-                case 'XOR':
-                    circuitOutput = valA ^ valB; // Bitwise XOR
-                    break;
-            }
+        // 1. Update Narrative
+        elements.narrative.innerHTML = `<p>${scene.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
+        
+        // 2. Render Choices
+        elements.decisions.innerHTML = '';
+        if (scene.choices && scene.choices.length > 0) {
+            state.awaitingChoice = true;
+            scene.choices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'decision-button';
+                button.textContent = choice.text;
+                button.onclick = () => handleChoice(choice);
+                elements.decisions.appendChild(button);
+            });
         } else {
-            // If center is a simple input node
-            circuitOutput = centerNode.isActive ? 1 : 0;
-        }
-
-        // Step 2: Apply power and defense
-        let power = circuitOutput * 50; // Base power for a successful circuit (1)
-        let defense = circuitOutput * 10; // Base defense for a successful circuit (1)
-        
-        // Step 3: Check for Target Gate Bonus (The "Logi-Lite" element)
-        if (circuitGateType === state.targetGate && circuitOutput === 1) {
-            power *= 2; // Double power for matching the target gate
-            defense *= 2; // Double defense for matching the target gate
-            logMessage(`Target Gate **MATCHED!** (${state.targetGate}). Power/Defense doubled.`, 'power');
-        }
-
-        // Update player stats
-        state.player.power = power;
-        state.player.defense = defense;
-        
-        updateDisplay();
-    }
-    
-    // --- Game Actions ---
-    
-    function attackPlayer(baseDamage) {
-        let damage = Math.max(0, baseDamage - state.player.defense);
-        state.player.hp -= damage;
-        logMessage(`Player took **${damage}** damage (Defense: ${state.player.defense}).`, 'damage');
-        if (state.player.hp <= 0) {
-            endGame('You were overwhelmed by the temporal anomalies.');
+            state.awaitingChoice = false;
+            // End of branch, allow game to rest
+            if (sceneId.startsWith('end_') || sceneId.startsWith('scene3_')) {
+                endGame(scene.text);
+            }
         }
     }
-    
-    function spawnEnemy() {
-        const id = state.enemies.length;
-        // Spawns enemies with escalating difficulty
-        const enemy = new Enemy(id, 10, 5 + Math.floor(id / 3)); 
-        state.enemies.push(enemy);
-        logMessage(`A new threat level ${enemy.damage} has materialized!`);
-    }
 
-    function changeTargetGate() {
-        const currentIndex = GATE_TYPES.indexOf(state.targetGate);
-        const nextIndex = (currentIndex + 1) % GATE_TYPES.length;
-        state.targetGate = GATE_TYPES[nextIndex];
-        logMessage(`The Temporal Target Gate has shifted to **${state.targetGate}**!`);
-        calculateCircuitPower(); // Recalculate based on new target
-    }
+    // --- Kinetic Sequence Logic (The CKF Core) ---
 
-    // --- Initialization & Loop ---
-    
-    function initGame() {
-        // 1. Initialize Circuit Nodes
-        const circuitBuilder = $('circuit-builder');
-        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-            const node = new CircuitNode(i, i % GRID_SIZE, Math.floor(i / GRID_SIZE));
-            state.circuit.push(node);
+    async function handleChoice(choice) {
+        // Disable all buttons during processing
+        Array.from(elements.decisions.children).forEach(btn => btn.classList.add('disabled'));
+        state.awaitingChoice = false;
+
+        if (choice.keys) {
+            // Initiate Kinetic Sequence for the decision lock
+            elements.decisions.style.display = 'none';
+            const success = await startKineticSequence(choice.keys);
+
+            // Once the sequence is resolved, update narrative based on success/failure
+            const nextSceneID = success 
+                ? scenes[state.currentScene].nextSuccess 
+                : scenes[state.currentScene].nextFailure;
             
-            const nodeEl = document.createElement('div');
-            nodeEl.className = 'node';
-            nodeEl.id = `node-${i}`;
+            elements.narrative.innerHTML += success
+                ? `<p style="color: green;">:: SYNCHRONIZATION ACHIEVED :: ${scenes[state.currentScene].success}</p>`
+                : `<p style="color: var(--error-color);">:: SYNCHRONIZATION FAILED :: ${scenes[state.currentScene].failure}</p>`;
+
+            if (success) {
+                state.integrityScore += 10;
+            } else {
+                state.paradoxLevel += 5;
+            }
+            updateStatus();
+
+            // Wait a moment for the player to see the result, then proceed
+            setTimeout(() => {
+                elements.decisions.style.display = 'flex';
+                renderScene(nextSceneID);
+            }, 1500);
+
+        } else {
+            // Simple narrative jump (e.g., the 'start' button)
+            renderScene(choice.next);
+        }
+    }
+    
+    function startKineticSequence(keys) {
+        return new Promise(resolve => {
+            state.awaitingKinetic = true;
+            state.kineticSequence = keys.toUpperCase().split(''); // ['A', 'S', 'D', 'G']
+            state.sequenceResolver = resolve;
             
-            // Event listeners for advanced interaction
-            nodeEl.addEventListener('click', () => {
-                if (!node.gate) {
-                    // Simple input toggle
-                    node.toggle();
-                    calculateCircuitPower();
+            elements.kinetic.classList.add('active');
+            elements.rhythmBar.style.animation = `rhythm-move ${state.rhythmDuration}ms linear 0s infinite`;
+
+            // Prepare visual targets
+            elements.kinetic.querySelectorAll('.indicator').forEach(ind => {
+                ind.classList.remove('target', 'hit', 'miss');
+                if (state.kineticSequence.includes(ind.dataset.key.toUpperCase())) {
+                    ind.classList.add('target');
                 }
             });
-            nodeEl.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                // Cycle through gate types (OR > XOR > AND > null)
-                const gates = [null, ...GATE_TYPES];
-                const currentIndex = gates.indexOf(node.gate);
-                node.setGate(gates[(currentIndex + 1) % gates.length]);
-            });
+        });
+    }
 
-            circuitBuilder.appendChild(nodeEl);
+    // --- Input Listener ---
+    document.addEventListener('keydown', handleKeyInput);
+
+    function handleKeyInput(e) {
+        if (!state.awaitingKinetic || e.repeat) return;
+        
+        const keyPressed = e.key.toUpperCase();
+        
+        // 1. Check if the key is part of the required sequence
+        const keyIndex = state.kineticSequence.indexOf(keyPressed);
+        if (keyIndex === -1) {
+            // Key pressed not in sequence, penalize? (Optional: major failure)
+            return;
         }
+
+        // 2. Get the position of the rhythm bar (The heart of the timing challenge)
+        const barRect = elements.rhythmBar.getBoundingClientRect();
+        const interfaceRect = elements.kinetic.getBoundingClientRect();
+
+        // Calculate current progress as a percentage (0 to 100)
+        const currentX = barRect.left - interfaceRect.left;
+        const progress = (currentX + barRect.width / 2) / interfaceRect.width;
+
+        // 3. Check for proximity to the visual target
+        const targetIndicator = elements.kinetic.querySelector(`.indicator[data-key="${e.key.toLowerCase()}"]`);
+        if (!targetIndicator) return;
         
-        // 2. Initial state setup
-        spawnEnemy();
-        changeTargetGate(); // Initial target gate
+        const targetProgress = parseFloat(targetIndicator.style.left) / 100;
+        const tolerance = 0.05; // 5% tolerance window around the target
+
+        if (Math.abs(progress - targetProgress) < tolerance) {
+            // HIT: Successful input
+            targetIndicator.classList.remove('target');
+            targetIndicator.classList.add('hit');
+            state.kineticSequence.splice(keyIndex, 1); // Remove successfully hit key
+
+            if (state.kineticSequence.length === 0) {
+                // Sequence Complete!
+                endKineticSequence(true);
+            }
+        } else {
+            // MISS: Input was mistimed or wrong target was pressed
+            targetIndicator.classList.remove('target');
+            targetIndicator.classList.add('miss');
+            endKineticSequence(false);
+        }
+    }
+
+    function endKineticSequence(success) {
+        state.awaitingKinetic = false;
+        elements.rhythmBar.style.animation = 'none';
+        elements.kinetic.classList.remove('active');
         
-        // 3. Start the game loop
-        gameLoop();
-        
-        // 4. Set interval for game events (enemy attacks, target shift)
-        setInterval(() => {
-            if (!state.running) return;
-            state.enemies.forEach(e => e.moveAndAttack());
-            if (Math.random() < 0.3) spawnEnemy(); // 30% chance for a new enemy
-            if (Math.random() < 0.2) changeTargetGate(); // 20% chance to change target gate
-            
-        }, GAME_TICK);
+        // Reset indicators after a short delay
+        setTimeout(() => {
+             elements.kinetic.querySelectorAll('.indicator').forEach(ind => ind.classList.remove('hit', 'miss'));
+        }, 300);
+
+        if (state.sequenceResolver) {
+            state.sequenceResolver(success);
+        }
+    }
+
+    // --- Game Initialization and Ending ---
+    function init() {
+        // Initial setup
+        const startButton = elements.decisions.querySelector('[data-choice="start"]');
+        if(startButton) {
+            startButton.onclick = () => renderScene('start');
+        }
+        updateStatus();
+    }
+
+    function endGame(finalMessage = "System Shutdown.") {
+        state.awaitingChoice = false;
+        state.awaitingKinetic = false;
+        elements.decisions.innerHTML = `<h2 style="color: ${state.paradoxLevel >= 15 ? var(--error-color) : var(--main-color)};">${finalMessage}</h2>`;
+        elements.kinetic.style.display = 'none';
+        document.removeEventListener('keydown', handleKeyInput);
     }
     
-    function gameLoop(timestamp) {
-        if (!state.running) return;
-        
-        updateDisplay();
-        requestAnimationFrame(gameLoop);
-    }
-    
-    function endGame(message) {
-        state.running = false;
-        alert(`GAME OVER! ${message}`);
-        logMessage(`Game Ended. ${message}`, 'error');
-    }
-    
-    // --- Input Handling (Advanced: Player movement) ---
-    const playerEl = $('player');
-    const dungeonEl = $('dungeon');
-    dungeonEl.addEventListener('mousemove', (e) => {
-        if (!state.running) return;
-
-        // Mouse position relative to the dungeon element
-        const rect = dungeonEl.getBoundingClientRect();
-        let newX = e.clientX - rect.left - playerEl.offsetWidth / 2;
-        let newY = e.clientY - rect.top - playerEl.offsetHeight / 2;
-
-        // Clamp values to keep player inside the dungeon
-        newX = Math.max(0, Math.min(newX, rect.width - playerEl.offsetWidth));
-        newY = Math.max(0, Math.min(newY, rect.height - playerEl.offsetHeight));
-
-        state.player.x = newX;
-        state.player.y = newY;
-    });
-
-    // START THE GAME!
-    window.onload = initGame;
-    
+    // Start the game when the window loads
+    window.onload = init;
 </script>
 
 </body>
