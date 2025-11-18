@@ -3,198 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chronosynapse - Chronal-Kinetic Fiction</title>
+    <title>The Belt Blitz - Chore-Core Survival</title>
     <style>
         /* ========================================================= */
-        /* CSS STYLES - CHRONAL-KINETIC INTERFACE */
+        /* CSS STYLES - CHORE-CORE SURVIVAL */
         /* ========================================================= */
         :root {
-            --bg-color: #0d0d1a;
-            --main-color: #33ccff;
-            --accent-color: #ff33cc;
-            --error-color: #ff3333;
-            --font-family: 'Space Mono', monospace;
-            --pulse-duration: 0.8s;
+            --floor-color: #2c2c54;
+            --wall-color: #3d3d6e;
+            --player-color: #ffcc00;
+            --mom-color: #ff3333;
+            --chore-color: #00ff99;
+            --boost-color: #33ccff;
+            --font-family: 'Arial', sans-serif;
+            --belt-pulse: 0.5s;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--main-color);
+            background-color: #1a1a37;
+            color: white;
             font-family: var(--font-family);
             margin: 0;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
-            perspective: 800px; /* 3D Perspective for the interface */
+            perspective: 800px; /* 3D viewing distance */
         }
 
         .game-container {
             width: 90vw;
-            max-width: 800px;
-            padding: 30px;
-            border: 1px solid var(--main-color);
-            box-shadow: 0 0 40px rgba(51, 204, 255, 0.5), inset 0 0 10px rgba(51, 204, 255, 0.2);
-            background-color: rgba(0, 0, 0, 0.5);
-            transition: all 0.5s ease-out;
+            height: 90vh;
+            display: grid;
+            grid-template-columns: 3fr 1fr; /* World and HUD */
+            border: 5px solid var(--wall-color);
+            box-shadow: 0 0 50px rgba(255, 51, 51, 0.4); /* Danger glow */
         }
 
-        /* --- Narrative Display --- */
-        #narrative-display {
-            min-height: 150px;
-            font-size: 1.1em;
-            margin-bottom: 20px;
+        /* --- 3D Parkour World --- */
+        #game-world {
+            background-color: var(--floor-color);
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(45deg); /* Tilt the floor up for 3D effect */
+            overflow: hidden;
         }
 
-        /* --- Decision Interface --- */
-        #decision-interface {
+        /* --- Entities (Player, Mom, Chores) --- */
+        .entity {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            border-radius: 50%;
+            transition: transform 0.1s linear; /* Smooth movement */
+            transform-style: preserve-3d;
+        }
+
+        #player {
+            background-color: var(--player-color);
+            z-index: 10;
+            box-shadow: 0 0 15px var(--player-color);
+        }
+        
+        #mom {
+            background-color: var(--mom-color);
+            z-index: 5;
+            box-shadow: 0 0 20px var(--mom-color);
+        }
+
+        .chore {
+            background-color: var(--chore-color);
+            z-index: 8;
+            border-radius: 5px;
+            box-shadow: 0 0 10px var(--chore-color);
+        }
+
+        .boost {
+            background-color: var(--boost-color);
+            z-index: 8;
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--boost-color);
+            animation: pulse-boost 1s infinite alternate;
+        }
+
+        /* Mom's danger aura */
+        #mom.belt-ready {
+            animation: belt-pulse var(--belt-pulse) infinite alternate;
+        }
+
+        @keyframes belt-pulse {
+            from {
+                box-shadow: 0 0 20px var(--mom-color);
+            }
+            to {
+                box-shadow: 0 0 40px var(--mom-color);
+                transform: scale(1.1);
+            }
+        }
+        
+        @keyframes pulse-boost {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+
+        /* --- Dashboard/HUD --- */
+        #hud {
+            background-color: var(--wall-color);
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            justify-content: space-between;
         }
 
-        .decision-button {
-            background-color: rgba(51, 204, 255, 0.1);
-            color: var(--main-color);
-            border: 1px solid var(--main-color);
-            padding: 12px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+        #chores-list h3 {
+            border-bottom: 2px dashed var(--chore-color);
+            padding-bottom: 5px;
+            margin-top: 0;
         }
 
-        .decision-button:hover:not(.disabled) {
-            background-color: rgba(51, 204, 255, 0.4);
-        }
-
-        .decision-button.disabled {
-            opacity: 0.5;
-            cursor: default;
-        }
-
-        /* --- Kinetic Interface (The core advanced element) --- */
-        #kinetic-interface {
-            margin-top: 30px;
-            height: 100px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border: 2px solid var(--accent-color);
-            box-shadow: 0 0 30px var(--accent-color), inset 0 0 15px rgba(255, 51, 204, 0.4);
-            transform: rotateX(15deg); /* Tilt for 3D effect */
-            transition: opacity 0.3s;
-            opacity: 0;
-            pointer-events: none;
-            position: relative;
-        }
-        
-        #kinetic-interface.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .indicator {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--main-color);
-            opacity: 0.1;
-            transition: opacity 0.1s;
-        }
-
-        .indicator.target {
-            opacity: 0.8;
-            box-shadow: 0 0 15px var(--main-color);
-        }
-        
-        .indicator.hit {
-            background-color: #00ff00;
-            box-shadow: 0 0 20px #00ff00;
-            animation: pulse-success 0.2s;
-        }
-        
-        .indicator.miss {
-            background-color: var(--error-color);
-            box-shadow: 0 0 20px var(--error-color);
-            animation: pulse-fail 0.2s;
-        }
-
-        /* Rhythmic Animation */
-        #rhythm-line {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background-color: rgba(255, 255, 255, 0.1);
-            bottom: 0;
-        }
-
-        #rhythm-bar {
-            position: absolute;
-            width: 50px;
-            height: 5px;
-            background-color: var(--accent-color);
-            box-shadow: 0 0 10px var(--accent-color);
-            left: 0;
-            bottom: 0;
-            /* JS will apply the keyframe animation */
-        }
-        
-        /* Keyframe for the rhythmic movement */
-        @keyframes rhythm-move {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(calc(100% - 50px)); }
-        }
-
-        @keyframes pulse-success {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.5); }
-            100% { transform: scale(1); }
-        }
-        @keyframes pulse-fail {
-            0% { background-color: var(--error-color); }
-            50% { background-color: var(--error-color); transform: scale(0.5); }
-            100% { background-color: var(--error-color); transform: scale(1); }
-        }
-
-        /* --- Status Bar --- */
-        #status-bar {
+        .chore-item {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 0.9em;
+            margin-bottom: 5px;
         }
-        .paradox { color: var(--error-color); font-weight: bold; }
-        .score { color: var(--accent-color); font-weight: bold; }
+        
+        .chore-item.done {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        #status-display {
+            font-size: 1.1em;
+        }
+
+        .stat-line {
+            padding: 5px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .danger-bar {
+            background-color: #555;
+            height: 20px;
+            margin-top: 10px;
+        }
+
+        #idle-danger {
+            width: 0%;
+            height: 100%;
+            background-color: var(--mom-color);
+            transition: width 0.2s linear;
+        }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <div id="status-bar">
-        <span>Paradox Level: <span id="paradox-level" class="paradox">0</span></span>
-        <span>Integrity Score: <span id="integrity-score" class="score">0</span></span>
+    <div id="game-world">
+        <div id="player" class="entity">P</div>
+        <div id="mom" class="entity">M</div>
     </div>
-
-    <div id="narrative-display">
-        <p>:: **Temporal Archival Unit 7** ::</p>
-        <p>Reviewing Event **EON-47: The Council Collapse**. You must intervene to stabilize the timeline. Each choice requires a successful kinetic sync. Failures increase the Paradox Level.</p>
-    </div>
-
-    <div id="decision-interface">
-        <button class="decision-button" data-choice="start">Begin Chronosynapse</button>
-    </div>
-
-    <div id="kinetic-interface">
-        <div id="rhythm-line">
-            <div class="indicator" data-key="a" style="left: 10%;"></div>
-            <div class="indicator" data-key="s" style="left: 30%;"></div>
-            <div class="indicator" data-key="d" style="left: 50%;"></div>
-            <div class="indicator" data-key="f" style="left: 70%;"></div>
-            <div class="indicator" data-key="g" style="left: 90%;"></div>
-            <div id="rhythm-bar"></div>
+    
+    <div id="hud">
+        <div id="chores-list">
+            <h3>Chores Remaining</h3>
+            </div>
+        
+        <div id="status-display">
+            <div class="stat-line">Health: <span id="hp-value">100</span></div>
+            <div class="stat-line">Speed: <span id="speed-value">5</span></div>
+            <div class="stat-line">Score: <span id="score-value">0</span></div>
+            
+            <p>Idle Danger (2s limit):</p>
+            <div class="danger-bar">
+                <div id="idle-danger"></div>
+            </div>
+            
+            <p id="game-message" style="color: var(--boost-color); font-weight: bold;"></p>
         </div>
     </div>
 </div>
@@ -204,250 +192,304 @@
     //                          JAVASCRIPT LOGIC
     // =========================================================
 
-    // --- Global State ---
-    const state = {
-        paradoxLevel: 0,
-        integrityScore: 0,
-        currentScene: 'start',
-        awaitingChoice: false,
-        awaitingKinetic: false,
-        kineticSequence: [],
-        sequenceResolver: null,
-        rhythmDuration: 3000, // 3 seconds for the bar to cross
+    // --- Configuration & Global State ---
+    const GAME_TICK = 100; // Physics update interval (ms)
+    const MAX_IDLE_TIME = 2000; // 2 seconds idle limit
+    const CHORE_RANGE = 50; // Distance to complete a chore
+    
+    let state = {
+        running: false,
+        lastUpdateTime: 0,
+        player: { x: 50, y: 50, hp: 100, speed: 5, score: 0, dx: 0, dy: 0, isIdle: true, lastMoveTime: 0 },
+        mom: { x: 200, y: 200, speed: 4, damage: 15, range: 60, isNear: false, lastStrikeTime: 0 },
+        chores: [],
+        boosts: [],
+        activeKeys: {} // Tracks pressed keys for movement
     };
-
+    
     // --- DOM Elements ---
     const $ = id => document.getElementById(id);
     const elements = {
-        narrative: $('narrative-display'),
-        decisions: $('decision-interface'),
-        kinetic: $('kinetic-interface'),
-        rhythmBar: $('rhythm-bar'),
-        paradox: $('paradox-level'),
-        score: $('integrity-score')
+        world: $('game-world'),
+        playerEl: $('player'),
+        momEl: $('mom'),
+        hud: $('hud'),
+        hpValue: $('hp-value'),
+        speedValue: $('speed-value'),
+        scoreValue: $('score-value'),
+        idleDanger: $('idle-danger'),
+        choresList: $('chores-list'),
+        gameMessage: $('game-message')
     };
 
-    // --- Core Data: The Narrative Tree ---
-    const scenes = {
-        'start': {
-            text: "Event EON-47 initiated. The Council is voting on the deployment of the Chronal Barrier. History shows a tie, but only one outcome is stable.",
-            choices: [
-                { text: "1. Push the 'Stabilization' vote through.", next: 'scene1_stabilize', keys: 'asdg' },
-                { text: "2. Allow the 'Entropy' vote to proceed.", next: 'scene1_entropy', keys: 'fsda' }
-            ]
-        },
-        'scene1_stabilize': {
-            text: "Stabilization choice selected. Preparing kinetic lock. The barrier must deploy **precisely** as the final vote is cast. Sequence: 'A', 'S', 'D', 'G'.",
-            choices: [], // The sequence is handled by the kinetic interface
-            success: "SUCCESS. The barrier is deployed. History is stable. Integrity +10.",
-            failure: "PARADOX. The barrier flickers, causing minor temporal echoes. Paradox +5.",
-            nextSuccess: 'scene2_stable',
-            nextFailure: 'scene2_unstable'
-        },
-        'scene1_entropy': {
-            text: "Entropy choice selected. Preparing kinetic lock. You must delay the deployment **exactly** until the resulting collapse is minimized. Sequence: 'F', 'S', 'D', 'A'.",
-            choices: [],
-            success: "SUCCESS. The entropy wave is contained. You've adapted to the instability. Integrity +15.",
-            failure: "PARADOX. The local chronal field collapses, forcing a risky jump. Paradox +10.",
-            nextSuccess: 'scene2_unstable', // Different outcomes based on success/failure state
-            nextFailure: 'end_paradox_major'
-        },
-        'scene2_stable': {
-            text: "Timeline stable. A new crisis appears: The Barrier's core requires a reset code. Code: 7-4-3. You must execute this as a rapid sequence on the keyboard ('J', 'K', 'L').",
-            choices: [
-                { text: "Input Reset Code (J, K, L)", next: 'scene3_reset', keys: 'jkl' }
-            ]
-        },
-        'scene2_unstable': {
-            text: "Timeline unstable. The paradox energy is attracting a Chronal Predator. You must fire a warning shot ('Z', 'X', 'C') to repel it before it reaches the main archive.",
-            choices: [
-                { text: "Fire Warning Shot (Z, X, C)", next: 'scene3_shot', keys: 'zxc' }
-            ]
-        },
-        'scene3_reset': { text: "Success! The Barrier is reset. The timeline is secure. (Game End - Stable Archive)", choices: [] },
-        'scene3_shot': { text: "Success! The Predator retreats. But the paradox remains a threat. (Game End - Tense Stability)", choices: [] },
-        'end_paradox_major': { text: "CRITICAL PARADOX FAILURE. The integrity of the Archivist is compromised. The timeline fragments.", choices: [] }
-    };
-
-    // --- State Update & Rendering ---
-    function updateStatus() {
-        elements.paradox.textContent = state.paradoxLevel;
-        elements.score.textContent = state.integrityScore;
-        if (state.paradoxLevel >= 20) {
-            elements.paradox.classList.add('pulse-error');
-            endGame();
-        }
-    }
-
-    function renderScene(sceneId) {
-        state.currentScene = sceneId;
-        const scene = scenes[sceneId];
-
-        // 1. Update Narrative
-        elements.narrative.innerHTML = `<p>${scene.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`;
-        
-        // 2. Render Choices
-        elements.decisions.innerHTML = '';
-        if (scene.choices && scene.choices.length > 0) {
-            state.awaitingChoice = true;
-            scene.choices.forEach((choice, index) => {
-                const button = document.createElement('button');
-                button.className = 'decision-button';
-                button.textContent = choice.text;
-                button.onclick = () => handleChoice(choice);
-                elements.decisions.appendChild(button);
-            });
-        } else {
-            state.awaitingChoice = false;
-            // End of branch, allow game to rest
-            if (sceneId.startsWith('end_') || sceneId.startsWith('scene3_')) {
-                endGame(scene.text);
-            }
-        }
-    }
-
-    // --- Kinetic Sequence Logic (The CKF Core) ---
-
-    async function handleChoice(choice) {
-        // Disable all buttons during processing
-        Array.from(elements.decisions.children).forEach(btn => btn.classList.add('disabled'));
-        state.awaitingChoice = false;
-
-        if (choice.keys) {
-            // Initiate Kinetic Sequence for the decision lock
-            elements.decisions.style.display = 'none';
-            const success = await startKineticSequence(choice.keys);
-
-            // Once the sequence is resolved, update narrative based on success/failure
-            const nextSceneID = success 
-                ? scenes[state.currentScene].nextSuccess 
-                : scenes[state.currentScene].nextFailure;
-            
-            elements.narrative.innerHTML += success
-                ? `<p style="color: green;">:: SYNCHRONIZATION ACHIEVED :: ${scenes[state.currentScene].success}</p>`
-                : `<p style="color: var(--error-color);">:: SYNCHRONIZATION FAILED :: ${scenes[state.currentScene].failure}</p>`;
-
-            if (success) {
-                state.integrityScore += 10;
-            } else {
-                state.paradoxLevel += 5;
-            }
-            updateStatus();
-
-            // Wait a moment for the player to see the result, then proceed
-            setTimeout(() => {
-                elements.decisions.style.display = 'flex';
-                renderScene(nextSceneID);
-            }, 1500);
-
-        } else {
-            // Simple narrative jump (e.g., the 'start' button)
-            renderScene(choice.next);
-        }
-    }
+    // --- Core Game Classes ---
     
-    function startKineticSequence(keys) {
-        return new Promise(resolve => {
-            state.awaitingKinetic = true;
-            state.kineticSequence = keys.toUpperCase().split(''); // ['A', 'S', 'D', 'G']
-            state.sequenceResolver = resolve;
+    class Chore {
+        constructor(id, name, x, y) {
+            this.id = id;
+            this.name = name;
+            this.x = x;
+            this.y = y;
+            this.isDone = false;
+            this.element = this.createElement();
+            state.chores.push(this);
+        }
+        
+        createElement() {
+            const el = document.createElement('div');
+            el.className = 'entity chore';
+            el.id = `chore-${this.id}`;
+            el.textContent = this.name.charAt(0);
+            elements.world.appendChild(el);
             
-            elements.kinetic.classList.add('active');
-            elements.rhythmBar.style.animation = `rhythm-move ${state.rhythmDuration}ms linear 0s infinite`;
+            // HUD item
+            const listItem = document.createElement('div');
+            listItem.id = `chore-list-${this.id}`;
+            listItem.className = 'chore-item';
+            listItem.innerHTML = `<span>${this.name}</span> <span style="color: var(--chore-color);">[${this.name.charAt(0)}]</span>`;
+            elements.choresList.appendChild(listItem);
 
-            // Prepare visual targets
-            elements.kinetic.querySelectorAll('.indicator').forEach(ind => {
-                ind.classList.remove('target', 'hit', 'miss');
-                if (state.kineticSequence.includes(ind.dataset.key.toUpperCase())) {
-                    ind.classList.add('target');
-                }
-            });
-        });
-    }
-
-    // --- Input Listener ---
-    document.addEventListener('keydown', handleKeyInput);
-
-    function handleKeyInput(e) {
-        if (!state.awaitingKinetic || e.repeat) return;
-        
-        const keyPressed = e.key.toUpperCase();
-        
-        // 1. Check if the key is part of the required sequence
-        const keyIndex = state.kineticSequence.indexOf(keyPressed);
-        if (keyIndex === -1) {
-            // Key pressed not in sequence, penalize? (Optional: major failure)
-            return;
+            return el;
         }
 
-        // 2. Get the position of the rhythm bar (The heart of the timing challenge)
-        const barRect = elements.rhythmBar.getBoundingClientRect();
-        const interfaceRect = elements.kinetic.getBoundingClientRect();
+        updatePosition() {
+            // Apply 3D transform based on location
+            this.element.style.transform = `translate(${this.x}px, ${this.y}px) translateZ(0)`;
+        }
 
-        // Calculate current progress as a percentage (0 to 100)
-        const currentX = barRect.left - interfaceRect.left;
-        const progress = (currentX + barRect.width / 2) / interfaceRect.width;
-
-        // 3. Check for proximity to the visual target
-        const targetIndicator = elements.kinetic.querySelector(`.indicator[data-key="${e.key.toLowerCase()}"]`);
-        if (!targetIndicator) return;
-        
-        const targetProgress = parseFloat(targetIndicator.style.left) / 100;
-        const tolerance = 0.05; // 5% tolerance window around the target
-
-        if (Math.abs(progress - targetProgress) < tolerance) {
-            // HIT: Successful input
-            targetIndicator.classList.remove('target');
-            targetIndicator.classList.add('hit');
-            state.kineticSequence.splice(keyIndex, 1); // Remove successfully hit key
-
-            if (state.kineticSequence.length === 0) {
-                // Sequence Complete!
-                endKineticSequence(true);
+        complete() {
+            if (this.isDone) return;
+            this.isDone = true;
+            this.element.remove();
+            $(`chore-list-${this.id}`).classList.add('done');
+            state.player.score += 50;
+            displayMessage(`Chore **${this.name}** DONE! (+50)`, 'var(--chore-color)');
+            
+            if (state.chores.every(c => c.isDone)) {
+                endGame('VICTORY: All Chores Done! Mom\'s wrath is appeased.');
             }
-        } else {
-            // MISS: Input was mistimed or wrong target was pressed
-            targetIndicator.classList.remove('target');
-            targetIndicator.classList.add('miss');
-            endKineticSequence(false);
         }
     }
 
-    function endKineticSequence(success) {
-        state.awaitingKinetic = false;
-        elements.rhythmBar.style.animation = 'none';
-        elements.kinetic.classList.remove('active');
-        
-        // Reset indicators after a short delay
-        setTimeout(() => {
-             elements.kinetic.querySelectorAll('.indicator').forEach(ind => ind.classList.remove('hit', 'miss'));
-        }, 300);
+    class Boost {
+        constructor(id, type, x, y) {
+            this.id = id;
+            this.type = type; // 'speed' or 'health'
+            this.x = x;
+            this.y = y;
+            this.element = this.createElement();
+            state.boosts.push(this);
+        }
 
-        if (state.sequenceResolver) {
-            state.sequenceResolver(success);
+        createElement() {
+            const el = document.createElement('div');
+            el.className = 'entity boost';
+            el.id = `boost-${this.id}`;
+            el.textContent = this.type === 'speed' ? 'S' : 'H';
+            elements.world.appendChild(el);
+            return el;
+        }
+
+        updatePosition() {
+             this.element.style.transform = `translate(${this.x}px, ${this.y}px) translateZ(0)`;
+        }
+
+        collect() {
+            if (this.type === 'speed') {
+                state.player.speed += 2;
+                displayMessage('SPEED BOOST! (+2 speed)', 'var(--boost-color)');
+            } else if (this.type === 'health') {
+                state.player.hp = Math.min(100, state.player.hp + 20);
+                displayMessage('HEALTH RESTORED! (+20 HP)', 'var(--boost-color)');
+            }
+            this.element.remove();
+            state.boosts = state.boosts.filter(b => b.id !== this.id);
         }
     }
 
-    // --- Game Initialization and Ending ---
-    function init() {
+    // --- Game Logic ---
+
+    function initGame() {
         // Initial setup
-        const startButton = elements.decisions.querySelector('[data-choice="start"]');
-        if(startButton) {
-            startButton.onclick = () => renderScene('start');
-        }
-        updateStatus();
-    }
+        state.player.lastMoveTime = Date.now();
+        state.mom.lastStrikeTime = Date.now();
+        state.running = true;
+        
+        // Spawn Chores
+        new Chore(1, 'Dishes', 100, 400);
+        new Chore(2, 'Laundry', 500, 150);
+        new Chore(3, 'Tidy Room', 700, 550);
 
-    function endGame(finalMessage = "System Shutdown.") {
-        state.awaitingChoice = false;
-        state.awaitingKinetic = false;
-        elements.decisions.innerHTML = `<h2 style="color: ${state.paradoxLevel >= 15 ? var(--error-color) : var(--main-color)};">${finalMessage}</h2>`;
-        elements.kinetic.style.display = 'none';
-        document.removeEventListener('keydown', handleKeyInput);
+        // Spawn Boosts
+        new Boost(1, 'speed', 300, 500);
+        new Boost(2, 'health', 600, 400);
+
+        // Position Mom and Player
+        state.player.x = elements.world.offsetWidth / 2;
+        state.player.y = elements.world.offsetHeight / 2;
+        state.mom.x = 0;
+        state.mom.y = 0;
+
+        // Start the physics and rendering loop
+        gameLoop();
     }
     
-    // Start the game when the window loads
-    window.onload = init;
+    function displayMessage(text, color) {
+        elements.gameMessage.textContent = text;
+        elements.gameMessage.style.color = color;
+        setTimeout(() => { elements.gameMessage.textContent = ''; }, 1000);
+    }
+
+    // --- Input Handling (WASD Movement) ---
+    document.addEventListener('keydown', (e) => {
+        if (!state.running) return;
+        state.activeKeys[e.key.toLowerCase()] = true;
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (!state.running) return;
+        state.activeKeys[e.key.toLowerCase()] = false;
+    });
+
+    function handleMovement() {
+        let dx = 0, dy = 0;
+        const speed = state.player.speed;
+
+        if (state.activeKeys['w'] || state.activeKeys['arrowup']) dy -= speed;
+        if (state.activeKeys['s'] || state.activeKeys['arrowdown']) dy += speed;
+        if (state.activeKeys['a'] || state.activeKeys['arrowleft']) dx -= speed;
+        if (state.activeKeys['d'] || state.activeKeys['arrowright']) dx += speed;
+        
+        state.player.dx = dx;
+        state.player.dy = dy;
+
+        if (dx !== 0 || dy !== 0) {
+            // Player is moving
+            state.player.isIdle = false;
+            state.player.lastMoveTime = Date.now();
+        } else {
+            state.player.isIdle = true;
+        }
+    }
+
+    // --- Physics Update (Game Logic Tick) ---
+    function updatePhysics() {
+        const now = Date.now();
+        
+        // 1. Player Movement & Boundary Check
+        state.player.x += state.player.dx;
+        state.player.y += state.player.dy;
+
+        const worldW = elements.world.offsetWidth;
+        const worldH = elements.world.offsetHeight;
+        
+        state.player.x = Math.max(0, Math.min(state.player.x, worldW - elements.playerEl.offsetWidth));
+        state.player.y = Math.max(0, Math.min(state.player.y, worldH - elements.playerEl.offsetHeight));
+        
+        // 2. Mom's AI (Chasing)
+        const momDX = state.player.x - state.mom.x;
+        const momDY = state.player.y - state.mom.y;
+        const momDist = Math.sqrt(momDX * momDX + momDY * momDY);
+        
+        // Mom moves towards the player
+        state.mom.x += (momDX / momDist) * state.mom.speed;
+        state.mom.y += (momDY / momDist) * state.mom.speed;
+        
+        // Mom attack logic (If Mom is close, she attacks based on Idle Timer)
+        if (momDist < state.mom.range) {
+            state.mom.isNear = true;
+            // The actual attack is triggered by the Idle Timer (Rule of the game)
+        } else {
+            state.mom.isNear = false;
+        }
+
+        // 3. Chore/Boost Interaction
+        state.chores.forEach(chore => {
+            if (!chore.isDone && calculateDistance(state.player.x, state.player.y, chore.x, chore.y) < CHORE_RANGE) {
+                // If player is close AND hits SPACE/E, they could complete the chore
+                // Simplified: Auto-complete when close for demo
+                // if (state.activeKeys['e']) { chore.complete(); } // Add this for a more advanced version
+                chore.complete(); 
+            }
+        });
+
+        state.boosts.forEach(boost => {
+            if (calculateDistance(state.player.x, state.player.y, boost.x, boost.y) < 50) {
+                boost.collect();
+            }
+        });
+        
+        // 4. Idle Danger Check (The Core Chore-Core Rule)
+        const idleTime = now - state.player.lastMoveTime;
+        elements.idleDanger.style.width = `${Math.min(100, (idleTime / MAX_IDLE_TIME) * 100)}%`;
+
+        if (state.player.isIdle && idleTime >= MAX_IDLE_TIME) {
+            if (now - state.mom.lastStrikeTime > GAME_TICK * 2) { // Prevents rapid-fire hits
+                // Mom hits the player!
+                state.player.hp -= state.mom.damage;
+                state.mom.lastStrikeTime = now;
+                elements.playerEl.style.backgroundColor = 'var(--mom-color)';
+                setTimeout(() => { elements.playerEl.style.backgroundColor = 'var(--player-color)'; }, 100);
+                displayMessage(`WHAP! Idle too long! (-${state.mom.damage} HP)`, 'var(--mom-color)');
+                if (state.player.hp <= 0) {
+                    endGame('DEFEAT: You ran out of HP! The chores won.');
+                }
+            }
+        }
+    }
+
+    // --- Rendering Update (Frame update) ---
+    function updateDisplay() {
+        // Player and Mom rendering (3D positioning)
+        elements.playerEl.style.transform = `translate(${state.player.x}px, ${state.player.y}px) translateZ(10px)`;
+        elements.momEl.style.transform = `translate(${state.mom.x}px, ${state.mom.y}px) translateZ(10px)`;
+        
+        // Entity updates
+        state.chores.forEach(c => c.updatePosition());
+        state.boosts.forEach(b => b.updatePosition());
+
+        // HUD updates
+        elements.hpValue.textContent = state.player.hp;
+        elements.speedValue.textContent = state.player.speed;
+        elements.scoreValue.textContent = state.player.score;
+        
+        // Mom's proximity visual feedback
+        if (state.mom.isNear || state.player.isIdle) {
+            elements.momEl.classList.add('belt-ready');
+        } else {
+            elements.momEl.classList.remove('belt-ready');
+        }
+    }
+
+    // --- Game Loop and Utilities ---
+
+    function gameLoop(timestamp) {
+        if (!state.running) return;
+
+        handleMovement(); // Update desired direction from keys
+        
+        // Throttle physics updates to a consistent interval
+        if (timestamp - state.lastUpdateTime >= GAME_TICK) {
+            updatePhysics();
+            state.lastUpdateTime = timestamp;
+        }
+        
+        updateDisplay(); // Render every frame
+        requestAnimationFrame(gameLoop);
+    }
+    
+    function calculateDistance(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
+
+    function endGame(message) {
+        state.running = false;
+        alert(`GAME OVER! ${message}`);
+    }
+
+    // Start the game!
+    window.onload = initGame;
+    
 </script>
 
 </body>
