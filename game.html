@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Belt Blitz - Chore-Core Survival</title>
+    <title>The Belt Blitz 3D - FPP Chore-Core Survival</title>
     <style>
         /* ========================================================= */
-        /* CSS STYLES - CHORE-CORE SURVIVAL */
+        /* CSS STYLES - 3D FIRST PERSON */
         /* ========================================================= */
         :root {
-            --floor-color: #2c2c54;
-            --wall-color: #3d3d6e;
-            --player-color: #ffcc00;
-            --mom-color: #ff3333;
-            --chore-color: #00ff99;
-            --boost-color: #33ccff;
+            --floor-color: #3b3026; /* Darker wood floor */
+            --wall-color: #7a7a7a; /* Concrete/Painted Wall */
+            --player-color: rgba(255, 204, 0, 0); /* Player is now the Camera, so invisible */
+            --mom-color: #d11f1f; /* Menacing Red */
+            --chore-color: #008080; /* Teal/Utility */
+            --boost-color: #cc66ff; /* Purple/Energy */
             --font-family: 'Arial', sans-serif;
-            --belt-pulse: 0.5s;
+            --belt-pulse: 0.2s;
+            --world-size: 1000px; /* Defines the size of our 3D room */
         }
 
         body {
-            background-color: #1a1a37;
+            background-color: #1a1a1a;
             color: white;
             font-family: var(--font-family);
             margin: 0;
@@ -29,90 +30,130 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
-            perspective: 800px; /* 3D viewing distance */
         }
 
         .game-container {
             width: 90vw;
             height: 90vh;
             display: grid;
-            grid-template-columns: 3fr 1fr; /* World and HUD */
-            border: 5px solid var(--wall-color);
-            box-shadow: 0 0 50px rgba(255, 51, 51, 0.4); /* Danger glow */
+            grid-template-columns: 4fr 1fr; /* World and HUD */
         }
 
-        /* --- 3D Parkour World --- */
-        #game-world {
-            background-color: var(--floor-color);
+        /* --- 3D World Setup --- */
+        #game-view {
             position: relative;
-            transform-style: preserve-3d;
-            transform: rotateX(45deg); /* Tilt the floor up for 3D effect */
+            background-color: black; /* Background when looking out of the room */
             overflow: hidden;
+            perspective: 600px; /* Camera/Viewport perspective */
         }
 
-        /* --- Entities (Player, Mom, Chores) --- */
-        .entity {
+        #game-world {
             position: absolute;
-            width: 40px;
-            height: 40px;
-            text-align: center;
-            line-height: 40px;
-            font-weight: bold;
-            border-radius: 50%;
-            transition: transform 0.1s linear; /* Smooth movement */
+            width: 100%;
+            height: 100%;
             transform-style: preserve-3d;
-        }
-
-        #player {
-            background-color: var(--player-color);
-            z-index: 10;
-            box-shadow: 0 0 15px var(--player-color);
+            
+            /* Player (Camera) transform applied by JS */
+            /* transform: rotateX(-90deg) rotateZ(0deg) translate3d(0, 0, 0); */
         }
         
-        #mom {
-            background-color: var(--mom-color);
-            z-index: 5;
-            box-shadow: 0 0 20px var(--mom-color);
+        /* --- The 3D Room --- */
+        .wall {
+            position: absolute;
+            background-color: var(--wall-color);
+            border: 1px solid #555;
+            backface-visibility: hidden;
+            opacity: 0.9;
         }
 
-        .chore {
-            background-color: var(--chore-color);
-            z-index: 8;
+        #floor {
+            width: var(--world-size);
+            height: var(--world-size);
+            background-color: var(--floor-color);
+            background-image: linear-gradient(0deg, transparent 50%, rgba(0,0,0,.2) 50%), linear-gradient(90deg, transparent 50%, rgba(0,0,0,.2) 50%);
+            background-size: 50px 50px; /* Grid pattern for depth */
+            transform: rotateX(90deg) translateZ(calc(var(--world-size) / -2));
+            transform-origin: 0 0;
+            left: calc(50% - var(--world-size) / 2);
+            top: calc(50% - var(--world-size) / 2);
+        }
+
+        /* Walls setup - simplified to just show the 3D space */
+        #wall-back { 
+            width: var(--world-size); height: var(--world-size); 
+            transform: translateZ(calc(var(--world-size) / -2)); 
+            left: calc(50% - var(--world-size) / 2); 
+            top: calc(50% - var(--world-size) / 2);
+        }
+        
+        /* --- Entities (Projected Objects) --- */
+        .entity-3d {
+            position: absolute;
+            /* JS will set top, left, width, height, and opacity */
+            
+            /* Visual styling based on proximity (size and blur) */
+            transition: opacity 0.1s, transform 0.1s, filter 0.1s;
+            text-align: center;
             border-radius: 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backface-visibility: hidden;
+        }
+
+        .chore-3d {
+            background-color: var(--chore-color);
             box-shadow: 0 0 10px var(--chore-color);
+            opacity: 0.8;
         }
 
-        .boost {
+        .boost-3d {
             background-color: var(--boost-color);
-            z-index: 8;
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--boost-color);
+            box-shadow: 0 0 15px var(--boost-color);
             animation: pulse-boost 1s infinite alternate;
+            border-radius: 50%;
         }
 
-        /* Mom's danger aura */
-        #mom.belt-ready {
-            animation: belt-pulse var(--belt-pulse) infinite alternate;
-        }
-
-        @keyframes belt-pulse {
-            from {
-                box-shadow: 0 0 20px var(--mom-color);
-            }
-            to {
-                box-shadow: 0 0 40px var(--mom-color);
-                transform: scale(1.1);
-            }
+        #mom-3d {
+            background-color: var(--mom-color);
+            box-shadow: 0 0 30px var(--mom-color);
+            animation: none;
+            z-index: 100; /* Ensure Mom is always on top */
         }
         
+        /* Mom's danger aura (Belt Ready) */
+        #mom-3d.belt-ready {
+            animation: mom-pulse var(--belt-pulse) infinite alternate;
+        }
+
+        @keyframes mom-pulse {
+            from { opacity: 0.9; box-shadow: 0 0 30px var(--mom-color); }
+            to { opacity: 1; box-shadow: 0 0 60px var(--mom-color); }
+        }
+
         @keyframes pulse-boost {
             from { opacity: 1; }
             to { opacity: 0.5; }
         }
 
-        /* --- Dashboard/HUD --- */
+        /* --- Crosshair and HUD --- */
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            margin: -5px 0 0 -5px;
+            border: 2px solid var(--main-color);
+            border-radius: 50%;
+            z-index: 999;
+            pointer-events: none;
+        }
+        
+        /* --- Dashboard/HUD --- (Similar to previous version) */
         #hud {
-            background-color: var(--wall-color);
+            background-color: #2a2a2a;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -125,26 +166,15 @@
             margin-top: 0;
         }
 
-        .chore-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        
         .chore-item.done {
             text-decoration: line-through;
             color: gray;
         }
 
         #status-display {
-            font-size: 1.1em;
+            font-size: 1em;
         }
 
-        .stat-line {
-            padding: 5px 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
         .danger-bar {
             background-color: #555;
             height: 20px;
@@ -162,9 +192,14 @@
 <body>
 
 <div class="game-container">
-    <div id="game-world">
-        <div id="player" class="entity">P</div>
-        <div id="mom" class="entity">M</div>
+    <div id="game-view">
+        <div id="game-world">
+            <div id="floor" class="wall"></div>
+            <div id="wall-back" class="wall"></div>
+            
+            <div id="mom-3d" class="entity-3d">M</div>
+            </div>
+        <div id="crosshair"></div>
     </div>
     
     <div id="hud">
@@ -193,26 +228,36 @@
     // =========================================================
 
     // --- Configuration & Global State ---
-    const GAME_TICK = 100; // Physics update interval (ms)
-    const MAX_IDLE_TIME = 2000; // 2 seconds idle limit
-    const CHORE_RANGE = 50; // Distance to complete a chore
+    const WORLD_SIZE = 1000;
+    const GAME_TICK = 100; 
+    const MAX_IDLE_TIME = 2000; 
+    const CHORE_RANGE_3D = 80; // Distance in 3D units to complete a chore
+    const FOV = 600; // Match CSS perspective
     
     let state = {
         running: false,
         lastUpdateTime: 0,
-        player: { x: 50, y: 50, hp: 100, speed: 5, score: 0, dx: 0, dy: 0, isIdle: true, lastMoveTime: 0 },
-        mom: { x: 200, y: 200, speed: 4, damage: 15, range: 60, isNear: false, lastStrikeTime: 0 },
+        player: { 
+            x: WORLD_SIZE / 2, y: WORLD_SIZE / 2, z: 0, /* Player pos in 3D space */
+            rotY: 0, /* Y-axis rotation (left/right look) */
+            hp: 100, speed: 5, score: 0, 
+            isIdle: true, lastMoveTime: 0 
+        },
+        mom: { 
+            x: 0, y: 0, z: 0, /* Mom pos */
+            speed: 4, damage: 15, strikeRange: 100, isNear: false, lastStrikeTime: 0 
+        },
         chores: [],
         boosts: [],
-        activeKeys: {} // Tracks pressed keys for movement
+        activeKeys: {}
     };
     
     // --- DOM Elements ---
     const $ = id => document.getElementById(id);
     const elements = {
+        view: $('game-view'),
         world: $('game-world'),
-        playerEl: $('player'),
-        momEl: $('mom'),
+        mom3d: $('mom-3d'),
         hud: $('hud'),
         hpValue: $('hp-value'),
         speedValue: $('speed-value'),
@@ -221,116 +266,165 @@
         choresList: $('chores-list'),
         gameMessage: $('game-message')
     };
-
+    
     // --- Core Game Classes ---
     
-    class Chore {
-        constructor(id, name, x, y) {
+    class Entity3D {
+        constructor(id, name, x, y, z = 0, type) {
             this.id = id;
             this.name = name;
             this.x = x;
             this.y = y;
-            this.isDone = false;
+            this.z = z;
+            this.type = type;
             this.element = this.createElement();
-            state.chores.push(this);
+            if (type === 'chore') state.chores.push(this);
+            if (type === 'boost') state.boosts.push(this);
         }
-        
+
         createElement() {
             const el = document.createElement('div');
-            el.className = 'entity chore';
-            el.id = `chore-${this.id}`;
+            el.className = `entity-3d ${this.type}-3d`;
+            el.id = `${this.type}-${this.id}`;
             el.textContent = this.name.charAt(0);
             elements.world.appendChild(el);
             
-            // HUD item
-            const listItem = document.createElement('div');
-            listItem.id = `chore-list-${this.id}`;
-            listItem.className = 'chore-item';
-            listItem.innerHTML = `<span>${this.name}</span> <span style="color: var(--chore-color);">[${this.name.charAt(0)}]</span>`;
-            elements.choresList.appendChild(listItem);
-
+            if (this.type === 'chore') {
+                const listItem = document.createElement('div');
+                listItem.id = `chore-list-${this.id}`;
+                listItem.className = 'chore-item';
+                listItem.innerHTML = `<span>${this.name}</span> <span style="color: var(--chore-color);">[${this.name.charAt(0)}]</span>`;
+                elements.choresList.appendChild(listItem);
+                this.listItem = listItem;
+            }
             return el;
         }
 
         updatePosition() {
-            // Apply 3D transform based on location
-            this.element.style.transform = `translate(${this.x}px, ${this.y}px) translateZ(0)`;
+            const screen = projectToScreen(this.x, this.y, this.z);
+            
+            // Apply scale and position only if visible (Z > 0)
+            if (screen.isBehind || screen.scale < 0.05) {
+                this.element.style.opacity = '0';
+                return;
+            }
+            
+            this.element.style.opacity = screen.scale;
+            this.element.style.width = `${50 * screen.scale}px`;
+            this.element.style.height = `${50 * screen.scale}px`;
+            this.element.style.left = `${screen.x - (50 * screen.scale / 2)}px`;
+            this.element.style.top = `${screen.y - (50 * screen.scale / 2)}px`;
+            this.element.style.filter = `blur(${Math.max(0, 1 / screen.scale - 2)}px)`; 
         }
 
         complete() {
             if (this.isDone) return;
             this.isDone = true;
             this.element.remove();
-            $(`chore-list-${this.id}`).classList.add('done');
+            this.listItem.classList.add('done');
             state.player.score += 50;
             displayMessage(`Chore **${this.name}** DONE! (+50)`, 'var(--chore-color)');
             
             if (state.chores.every(c => c.isDone)) {
-                endGame('VICTORY: All Chores Done! Mom\'s wrath is appeased.');
+                endGame('VICTORY: All Chores Done! The house is clean!');
+            }
+        }
+        
+        collect() {
+            if (this.type === 'boost') {
+                if (this.name === 'speed') {
+                    state.player.speed += 2;
+                    displayMessage('SPEED BOOST! (+2 speed)', 'var(--boost-color)');
+                } else if (this.name === 'health') {
+                    state.player.hp = Math.min(100, state.player.hp + 20);
+                    displayMessage('HEALTH RESTORED! (+20 HP)', 'var(--boost-color)');
+                }
+                this.element.remove();
+                state.boosts = state.boosts.filter(b => b.id !== this.id);
             }
         }
     }
 
-    class Boost {
-        constructor(id, type, x, y) {
-            this.id = id;
-            this.type = type; // 'speed' or 'health'
-            this.x = x;
-            this.y = y;
-            this.element = this.createElement();
-            state.boosts.push(this);
-        }
+    // --- 3D Projection & Math ---
 
-        createElement() {
-            const el = document.createElement('div');
-            el.className = 'entity boost';
-            el.id = `boost-${this.id}`;
-            el.textContent = this.type === 'speed' ? 'S' : 'H';
-            elements.world.appendChild(el);
-            return el;
-        }
+    /**
+     * Projects a 3D coordinate (x, y, z) into screen coordinates (x, y) and scale.
+     * Z is forward/depth, X is horizontal, Y is vertical.
+     */
+    function projectToScreen(objX, objY, objZ) {
+        // Step 1: Translate the object's position relative to the player's position (camera origin)
+        let camX = objX - state.player.x;
+        let camY = objY - state.player.y;
+        let camZ = objZ - state.player.z;
+        
+        // Step 2: Rotate the coordinates based on the player's horizontal rotation (rotY)
+        const rad = state.player.rotY * (Math.PI / 180);
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
 
-        updatePosition() {
-             this.element.style.transform = `translate(${this.x}px, ${this.y}px) translateZ(0)`;
+        // Perform rotation around the Y-axis (left/right look)
+        let rotatedX = camZ * sin + camX * cos;
+        let rotatedZ = camZ * cos - camX * sin;
+        
+        // Step 3: Projection (Simulating Perspective)
+        const FOV_FACTOR = FOV;
+        
+        if (rotatedZ <= 10) { // Safety margin to avoid division by zero / clipping
+            return { isBehind: true, x: 0, y: 0, scale: 0 };
         }
+        
+        // Calculate scale (objects farther away are smaller)
+        const scale = FOV_FACTOR / rotatedZ; 
+        
+        // Calculate screen coordinates (relative to screen center)
+        const screenX = (rotatedX * scale) + (elements.view.offsetWidth / 2);
+        const screenY = (camY * scale) + (elements.view.offsetHeight / 2);
 
-        collect() {
-            if (this.type === 'speed') {
-                state.player.speed += 2;
-                displayMessage('SPEED BOOST! (+2 speed)', 'var(--boost-color)');
-            } else if (this.type === 'health') {
-                state.player.hp = Math.min(100, state.player.hp + 20);
-                displayMessage('HEALTH RESTORED! (+20 HP)', 'var(--boost-color)');
-            }
-            this.element.remove();
-            state.boosts = state.boosts.filter(b => b.id !== this.id);
-        }
+        return { 
+            isBehind: false,
+            x: screenX, 
+            y: screenY, 
+            scale: scale, 
+            distance: Math.sqrt(rotatedX * rotatedX + camY * camY + rotatedZ * rotatedZ)
+        };
+    }
+
+    function calculateDistance(x1, y1, z1, x2, y2, z2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2) + Math.pow(z2 - z1, 2));
     }
 
     // --- Game Logic ---
-
+    
     function initGame() {
-        // Initial setup
         state.player.lastMoveTime = Date.now();
         state.mom.lastStrikeTime = Date.now();
         state.running = true;
         
-        // Spawn Chores
-        new Chore(1, 'Dishes', 100, 400);
-        new Chore(2, 'Laundry', 500, 150);
-        new Chore(3, 'Tidy Room', 700, 550);
+        // Spawn Chores (y=0 for floor level)
+        new Entity3D(1, 'Dishes', 200, 0, 700, 'chore');
+        new Entity3D(2, 'Laundry', 800, 0, 200, 'chore');
+        new Entity3D(3, 'Tidy Room', 500, 0, 500, 'chore');
 
         // Spawn Boosts
-        new Boost(1, 'speed', 300, 500);
-        new Boost(2, 'health', 600, 400);
+        new Entity3D(1, 'speed', 100, 0, 300, 'boost');
+        new Entity3D(2, 'health', 900, 0, 800, 'boost');
 
-        // Position Mom and Player
-        state.player.x = elements.world.offsetWidth / 2;
-        state.player.y = elements.world.offsetHeight / 2;
+        // Position Mom and Player (Start player in the middle)
+        state.player.x = WORLD_SIZE / 2;
+        state.player.y = 0; // Player is standing on the floor
+        state.player.z = 200; // Start slightly away from the back wall
+        
         state.mom.x = 0;
         state.mom.y = 0;
+        state.mom.z = 0; // Mom starts in a corner
 
-        // Start the physics and rendering loop
+        // Event listeners for movement (WASD) and looking (Mouse)
+        document.addEventListener('keydown', handleKeyInput);
+        document.addEventListener('keyup', handleKeyInput);
+        
+        elements.view.addEventListener('click', () => elements.view.requestPointerLock());
+        elements.view.addEventListener('mousemove', handleMouseLook);
+
         gameLoop();
     }
     
@@ -340,99 +434,91 @@
         setTimeout(() => { elements.gameMessage.textContent = ''; }, 1000);
     }
 
-    // --- Input Handling (WASD Movement) ---
-    document.addEventListener('keydown', (e) => {
+    // --- Input Handlers ---
+    
+    function handleKeyInput(e) {
         if (!state.running) return;
-        state.activeKeys[e.key.toLowerCase()] = true;
-    });
+        const isDown = (e.type === 'keydown');
+        state.activeKeys[e.key.toLowerCase()] = isDown;
+    }
 
-    document.addEventListener('keyup', (e) => {
-        if (!state.running) return;
-        state.activeKeys[e.key.toLowerCase()] = false;
-    });
-
-    function handleMovement() {
-        let dx = 0, dy = 0;
-        const speed = state.player.speed;
-
-        if (state.activeKeys['w'] || state.activeKeys['arrowup']) dy -= speed;
-        if (state.activeKeys['s'] || state.activeKeys['arrowdown']) dy += speed;
-        if (state.activeKeys['a'] || state.activeKeys['arrowleft']) dx -= speed;
-        if (state.activeKeys['d'] || state.activeKeys['arrowright']) dx += speed;
-        
-        state.player.dx = dx;
-        state.player.dy = dy;
-
-        if (dx !== 0 || dy !== 0) {
-            // Player is moving
-            state.player.isIdle = false;
-            state.player.lastMoveTime = Date.now();
-        } else {
-            state.player.isIdle = true;
+    function handleMouseLook(e) {
+        if (document.pointerLockElement === elements.view) {
+            // Update horizontal rotation based on mouse movement
+            state.player.rotY += e.movementX * 0.1; 
+            // Clamp rotation to prevent extreme spinning
+            state.player.rotY = state.player.rotY % 360; 
         }
     }
 
     // --- Physics Update (Game Logic Tick) ---
+    
     function updatePhysics() {
         const now = Date.now();
         
-        // 1. Player Movement & Boundary Check
-        state.player.x += state.player.dx;
-        state.player.y += state.player.dy;
+        // 1. Player Movement (Forward/Backward and Strafing)
+        const radY = state.player.rotY * (Math.PI / 180);
+        const speed = state.player.speed;
+        let dx = 0, dz = 0;
 
-        const worldW = elements.world.offsetWidth;
-        const worldH = elements.world.offsetHeight;
+        if (state.activeKeys['w']) { dx += Math.sin(radY) * speed; dz += Math.cos(radY) * speed; }
+        if (state.activeKeys['s']) { dx -= Math.sin(radY) * speed; dz -= Math.cos(radY) * speed; }
+        if (state.activeKeys['a']) { dx += Math.sin(radY - Math.PI / 2) * speed; dz += Math.cos(radY - Math.PI / 2) * speed; } // Strafe Left
+        if (state.activeKeys['d']) { dx += Math.sin(radY + Math.PI / 2) * speed; dz += Math.cos(radY + Math.PI / 2) * speed; } // Strafe Right
+
+        if (dx !== 0 || dz !== 0) {
+            state.player.isIdle = false;
+            state.player.lastMoveTime = now;
+        } else {
+            state.player.isIdle = true;
+        }
         
-        state.player.x = Math.max(0, Math.min(state.player.x, worldW - elements.playerEl.offsetWidth));
-        state.player.y = Math.max(0, Math.min(state.player.y, worldH - elements.playerEl.offsetHeight));
+        // Update player position
+        state.player.x += dx;
+        state.player.z += dz;
+
+        // Clamp to room boundaries (0 to WORLD_SIZE)
+        state.player.x = Math.max(0, Math.min(state.player.x, WORLD_SIZE));
+        state.player.z = Math.max(0, Math.min(state.player.z, WORLD_SIZE));
         
         // 2. Mom's AI (Chasing)
         const momDX = state.player.x - state.mom.x;
-        const momDY = state.player.y - state.mom.y;
-        const momDist = Math.sqrt(momDX * momDX + momDY * momDY);
+        const momDZ = state.player.z - state.mom.z;
+        const momDist = Math.sqrt(momDX * momDX + momDZ * momDZ);
         
-        // Mom moves towards the player
         state.mom.x += (momDX / momDist) * state.mom.speed;
-        state.mom.y += (momDY / momDist) * state.mom.speed;
-        
-        // Mom attack logic (If Mom is close, she attacks based on Idle Timer)
-        if (momDist < state.mom.range) {
-            state.mom.isNear = true;
-            // The actual attack is triggered by the Idle Timer (Rule of the game)
-        } else {
-            state.mom.isNear = false;
-        }
+        state.mom.z += (momDZ / momDist) * state.mom.speed;
 
-        // 3. Chore/Boost Interaction
+        state.mom.isNear = (momDist < state.mom.strikeRange * 2);
+
+        // 3. Chore/Boost Interaction (Distance in 3D)
         state.chores.forEach(chore => {
-            if (!chore.isDone && calculateDistance(state.player.x, state.player.y, chore.x, chore.y) < CHORE_RANGE) {
-                // If player is close AND hits SPACE/E, they could complete the chore
-                // Simplified: Auto-complete when close for demo
-                // if (state.activeKeys['e']) { chore.complete(); } // Add this for a more advanced version
-                chore.complete(); 
+            if (!chore.isDone && calculateDistance(state.player.x, state.player.y, state.player.z, chore.x, chore.y, chore.z) < CHORE_RANGE_3D) {
+                // To make it cooler/more realistic, require a key press (e.g., 'E')
+                if (state.activeKeys['e']) {
+                    chore.complete(); 
+                    state.activeKeys['e'] = false; // Consume the key press
+                }
             }
         });
 
         state.boosts.forEach(boost => {
-            if (calculateDistance(state.player.x, state.player.y, boost.x, boost.y) < 50) {
+            if (calculateDistance(state.player.x, state.player.y, state.player.z, boost.x, boost.y, boost.z) < 50) {
                 boost.collect();
             }
         });
         
-        // 4. Idle Danger Check (The Core Chore-Core Rule)
+        // 4. Idle Danger Check (The Belt Strike)
         const idleTime = now - state.player.lastMoveTime;
         elements.idleDanger.style.width = `${Math.min(100, (idleTime / MAX_IDLE_TIME) * 100)}%`;
 
         if (state.player.isIdle && idleTime >= MAX_IDLE_TIME) {
-            if (now - state.mom.lastStrikeTime > GAME_TICK * 2) { // Prevents rapid-fire hits
-                // Mom hits the player!
+            if (now - state.mom.lastStrikeTime > GAME_TICK * 2) { 
                 state.player.hp -= state.mom.damage;
                 state.mom.lastStrikeTime = now;
-                elements.playerEl.style.backgroundColor = 'var(--mom-color)';
-                setTimeout(() => { elements.playerEl.style.backgroundColor = 'var(--player-color)'; }, 100);
                 displayMessage(`WHAP! Idle too long! (-${state.mom.damage} HP)`, 'var(--mom-color)');
                 if (state.player.hp <= 0) {
-                    endGame('DEFEAT: You ran out of HP! The chores won.');
+                    endGame('DEFEAT: Mom caught you! Game Over.');
                 }
             }
         }
@@ -440,35 +526,50 @@
 
     // --- Rendering Update (Frame update) ---
     function updateDisplay() {
-        // Player and Mom rendering (3D positioning)
-        elements.playerEl.style.transform = `translate(${state.player.x}px, ${state.player.y}px) translateZ(10px)`;
-        elements.momEl.style.transform = `translate(${state.mom.x}px, ${state.mom.y}px) translateZ(10px)`;
         
-        // Entity updates
+        // 1. Update Camera (World) Position
+        elements.world.style.transform = 
+            `rotateX(0deg) ` + 
+            `rotateY(${-state.player.rotY}deg) ` + 
+            `translate3d(${-state.player.x}px, ${-state.player.y}px, ${-state.player.z}px)`;
+
+        // 2. Update Mom's 3D Projection
+        const momScreen = projectToScreen(state.mom.x, state.mom.y, state.mom.z);
+        
+        if (!momScreen.isBehind) {
+            // Apply scale and position based on projection
+            elements.mom3d.style.opacity = '1';
+            elements.mom3d.style.width = `${100 * momScreen.scale}px`;
+            elements.mom3d.style.height = `${100 * momScreen.scale}px`;
+            elements.mom3d.style.left = `${momScreen.x - (100 * momScreen.scale / 2)}px`;
+            elements.mom3d.style.top = `${momScreen.y - (100 * momScreen.scale / 2)}px`;
+            
+            // Proximity Sound/Visual: If Mom is very close (e.g., scale > 0.5)
+            if (momScreen.scale > 0.5 || state.player.isIdle) {
+                elements.mom3d.classList.add('belt-ready');
+            } else {
+                elements.mom3d.classList.remove('belt-ready');
+            }
+        } else {
+            elements.mom3d.style.opacity = '0';
+        }
+
+        // 3. Update Chore/Boost 3D Projections
         state.chores.forEach(c => c.updatePosition());
         state.boosts.forEach(b => b.updatePosition());
 
-        // HUD updates
+        // 4. HUD updates
         elements.hpValue.textContent = state.player.hp;
         elements.speedValue.textContent = state.player.speed;
         elements.scoreValue.textContent = state.player.score;
-        
-        // Mom's proximity visual feedback
-        if (state.mom.isNear || state.player.isIdle) {
-            elements.momEl.classList.add('belt-ready');
-        } else {
-            elements.momEl.classList.remove('belt-ready');
-        }
     }
 
-    // --- Game Loop and Utilities ---
+    // --- Game Loop and Ending ---
 
     function gameLoop(timestamp) {
         if (!state.running) return;
 
-        handleMovement(); // Update desired direction from keys
-        
-        // Throttle physics updates to a consistent interval
+        // Use a fixed time step for physics
         if (timestamp - state.lastUpdateTime >= GAME_TICK) {
             updatePhysics();
             state.lastUpdateTime = timestamp;
@@ -478,13 +579,10 @@
         requestAnimationFrame(gameLoop);
     }
     
-    function calculateDistance(x1, y1, x2, y2) {
-        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-    }
-
     function endGame(message) {
         state.running = false;
         alert(`GAME OVER! ${message}`);
+        document.exitPointerLock();
     }
 
     // Start the game!
