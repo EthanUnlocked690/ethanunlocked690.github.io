@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Unlocked Web - Birthday Countdown</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for the digital clock look */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark GitHub-like background */
+            background-image: radial-gradient(circle at 50% 50%, #1c2333 0%, #0d1117 80%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .digital-number {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px rgba(255, 193, 7, 0.7), 0 0 20px rgba(255, 160, 0, 0.5);
+            line-height: 1; 
+        }
+
+        .countdown-card {
+            background-color: rgba(255, 255, 255, 0.05); /* Slightly transparent white */
+            backdrop-filter: blur(5px);
+            border: 2px solid #ffc107; /* Amber border */
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Ribbon effect for celebration */
+        .ribbon {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 100px;
+            height: 100px;
+            overflow: hidden;
+        }
+        .ribbon::before, .ribbon::after {
+            position: absolute;
+            z-index: -1;
+            content: '';
+            display: block;
+            border: 5px solid #e91e63; /* Pink */
+            border-top-color: transparent;
+            border-left-color: transparent;
+        }
+        .ribbon::before {
+            top: 0;
+            left: 0;
+        }
+        .ribbon::after {
+            bottom: 0;
+            right: 0;
+        }
+        .ribbon-text {
+            position: absolute;
+            display: block;
+            width: 140px;
+            padding: 5px 0;
+            background-color: #ff9800; /* Orange */
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            text-transform: uppercase;
+            right: -20px;
+            top: 26px;
+            transform: rotate(45deg);
+        }
+
+    </style>
+</head>
+<body>
+
+    <a href="TheUnlockedWeb.html" class="absolute top-4 left-4 text-amber-400 hover:text-amber-500 transition duration-300 font-semibold flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </svg>
+        Back to Main Site
+    </a>
+
+    <div class="max-w-6xl w-full p-8 md:p-12 rounded-3xl text-center">
+        <div class="ribbon hidden" id="birthday-ribbon">
+            <span class="ribbon-text">Happy Birthday!</span>
+        </div>
+        
+        <h1 class="text-4xl md:text-6xl font-extrabold text-amber-400 mb-4 tracking-wider">
+            Ethan's Next Birthday!
+        </h1>
+        <p class="text-xl text-gray-400 mb-12">
+            Counting down to January 25th.
+        </p>
+
+        <!-- Countdown Display Container -->
+        <div id="countdown-display" class="flex justify-center flex-wrap gap-4 md:gap-8">
+            <!-- Months Card -->
+            <div class="countdown-card p-4 md:p-8 rounded-xl text-center flex-shrink-0 w-28 sm:w-40 transition duration-300">
+                <div id="months" class="digital-number text-4xl md:text-7xl text-amber-300 font-bold mb-1">00</div>
+                <div class="text-xs md:text-sm uppercase tracking-widest text-gray-300">Months</div>
+            </div>
+
+            <!-- Weeks Card -->
+            <div class="countdown-card p-4 md:p-8 rounded-xl text-center flex-shrink-0 w-28 sm:w-40 transition duration-300">
+                <div id="weeks" class="digital-number text-4xl md:text-7xl text-amber-300 font-bold mb-1">00</div>
+                <div class="text-xs md:text-sm uppercase tracking-widest text-gray-300">Weeks</div>
+            </div>
+
+            <!-- Days Card -->
+            <div class="countdown-card p-4 md:p-8 rounded-xl text-center flex-shrink-0 w-28 sm:w-40 transition duration-300">
+                <div id="days" class="digital-number text-4xl md:text-7xl text-amber-300 font-bold mb-1">00</div>
+                <div class="text-xs md:text-sm uppercase tracking-widest text-gray-300">Days</div>
+            </div>
+
+            <!-- Hours Card -->
+            <div class="countdown-card p-4 md:p-8 rounded-xl text-center flex-shrink-0 w-28 sm:w-40 transition duration-300">
+                <div id="hours" class="digital-number text-4xl md:text-7xl text-amber-300 font-bold mb-1">00</div>
+                <div class="text-xs md:text-sm uppercase tracking-widest text-gray-300">Hours</div>
+            </div>
+
+            <!-- Minutes Card -->
+            <div class="countdown-card p-4 md:p-8 rounded-xl text-center flex-shrink-0 w-28 sm:w-40 transition duration-300">
+                <div id="minutes" class="digital-number text-4xl md:text-7xl text-amber-300 font-bold mb-1">00</div>
+                <div class="text-xs md:text-sm uppercase tracking-widest text-gray-300">Minutes</div>
+            </div>
+            
+            <!-- Seconds Card -->
+            <div class="countdown-card p-4 md:p-8 rounded-xl text-center flex-shrink-0 w-28 sm:w-40 transition duration-300">
+                <div id="seconds" class="digital-number text-4xl md:text-7xl text-amber-300 font-bold mb-1">00</div>
+                <div class="text-xs md:text-sm uppercase tracking-widest text-gray-300">Seconds</div>
+            </div>
+        </div>
+
+        <!-- Completion Message -->
+        <div id="completion-message" class="mt-12 text-center text-green-400 text-3xl font-semibold hidden p-6 bg-green-900/50 rounded-xl border border-green-400">
+            It's Ethan's Birthday TODAY! 🥳
+        </div>
+
+    </div>
+
+    <script>
+        // Target Birthday: January 25th (Month index 0)
+        const BIRTHDAY_MONTH = 0; 
+        const BIRTHDAY_DAY = 25; 
+        
+        // Get elements for display
+        const monthsEl = document.getElementById('months');
+        const weeksEl = document.getElementById('weeks');
+        const daysEl = document.getElementById('days');
+        const hoursEl = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+        const completionMessageEl = document.getElementById('completion-message');
+        const birthdayRibbonEl = document.getElementById('birthday-ribbon');
+
+        /**
+         * Calculates the timestamp for the next Jan 25th.
+         * @returns {number} The timestamp in milliseconds.
+         */
+        function getNextBirthdayTimestamp() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            
+            // Try setting the birthday for this year
+            let nextBirthday = new Date(currentYear, BIRTHDAY_MONTH, BIRTHDAY_DAY, 0, 0, 0);
+
+            // If the birthday for this year has passed (or is today, but we want the *start* of today)
+            if (today.getTime() >= nextBirthday.getTime()) {
+                // If it's precisely the birthday today, keep this year
+                if (today.getMonth() === BIRTHDAY_MONTH && today.getDate() === BIRTHDAY_DAY) {
+                    // Do nothing, the countdown is to 00:00:00 of the next second
+                } else {
+                    // Otherwise, set it for next year
+                    nextBirthday = new Date(currentYear + 1, BIRTHDAY_MONTH, BIRTHDAY_DAY, 0, 0, 0);
+                }
+            }
+            
+            return nextBirthday.getTime();
+        }
+        
+        let targetTime = getNextBirthdayTimestamp();
+
+
+        /**
+         * Formats a number to always have two digits (e.g., 5 becomes "05").
+         * @param {number} num The number to format.
+         * @returns {string} The formatted two-digit string.
+         */
+        const formatTwoDigits = (num) => {
+            // No padding for months/weeks/days since they can be large
+            return num < 10 && num > 0 ? num.toString() : num.toString();
+        }
+        
+        // Constants for time conversion
+        const MS_PER_SECOND = 1000;
+        const MS_PER_MINUTE = MS_PER_SECOND * 60;
+        const MS_PER_HOUR = MS_PER_MINUTE * 60;
+        const MS_PER_DAY = MS_PER_HOUR * 24;
+        const MS_PER_WEEK = MS_PER_DAY * 7;
+        // Approximate milliseconds in a month (30.44 days avg)
+        const MS_PER_MONTH_APPROX = MS_PER_DAY * 30.44; 
+
+
+        /**
+         * Main function to update the countdown timer every second.
+         */
+        function updateCountdown() {
+            const now = new Date().getTime();
+            let distance = targetTime - now;
+
+            // Check if the countdown is finished
+            if (distance <= 0) {
+                clearInterval(interval);
+                monthsEl.textContent = '00';
+                weeksEl.textContent = '00';
+                daysEl.textContent = '00';
+                hoursEl.textContent = '00';
+                minutesEl.textContent = '00';
+                secondsEl.textContent = '00';
+                
+                completionMessageEl.classList.remove('hidden');
+                birthdayRibbonEl.classList.remove('hidden');
+                return;
+            }
+            
+            // --- TIME CALCULATIONS (Sequential Breakdown) ---
+            
+            // 1. Months (Approximate - use for display only)
+            const months = Math.floor(distance / MS_PER_MONTH_APPROX);
+            distance %= MS_PER_MONTH_APPROX; // Remaining distance after months
+
+            // 2. Weeks
+            const weeks = Math.floor(distance / MS_PER_WEEK);
+            distance %= MS_PER_WEEK; // Remaining distance after weeks
+            
+            // 3. Days
+            const days = Math.floor(distance / MS_PER_DAY);
+            distance %= MS_PER_DAY; // Remaining distance after days
+
+            // 4. Hours
+            const hours = Math.floor(distance / MS_PER_HOUR);
+            distance %= MS_PER_HOUR; // Remaining distance after hours
+
+            // 5. Minutes
+            const minutes = Math.floor(distance / MS_PER_MINUTE);
+            distance %= MS_PER_MINUTE; // Remaining distance after minutes
+
+            // 6. Seconds
+            const seconds = Math.floor(distance / MS_PER_SECOND);
+
+            // Output the result in elements
+            monthsEl.textContent = formatTwoDigits(months);
+            weeksEl.textContent = formatTwoDigits(weeks);
+            daysEl.textContent = formatTwoDigits(days);
+            hoursEl.textContent = formatTwoDigits(hours);
+            minutesEl.textContent = formatTwoDigits(minutes);
+            secondsEl.textContent = formatTwoDigits(seconds);
+        }
+
+        // Run the function once immediately
+        updateCountdown();
+
+        // Update the countdown every 1 second
+        const interval = setInterval(updateCountdown, 1000);
+
+    </script>
+</body>
+</html>
