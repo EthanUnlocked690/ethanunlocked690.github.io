@@ -2,140 +2,87 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>3D Speedrun Challenge</title>
+    <title>3D Speedrun Challenge - MAX Graphics</title>
     <style>
-        /* ADVANCED CSS: Minimal, focused on full-screen rendering and hiding the cursor */
-        body {
-            margin: 0;
-            overflow: hidden; 
-            background-color: #000;
-            font-family: 'Consolas', monospace; 
-            color: white;
-        }
-        canvas {
-            display: block;
-        }
-        #info {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            text-align: center;
-            z-index: 100;
-            user-select: none;
-            text-shadow: 2px 2px 4px #000;
-            pointer-events: none; 
-        }
-        #gameTimer {
-            transition: color 0.1s; /* Smooth timer color change */
-        }
-        #overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-            cursor: pointer;
-            transition: opacity 0.5s;
-        }
-        #overlay h1 {
-            color: #4CAF50;
-            font-size: 4em;
-            margin-bottom: 20px;
-            animation: pulse 1.5s infinite alternate; 
-        }
-        #overlay p {
-            font-size: 1.5em;
-            margin: 5px 0;
-        }
-        #error-message {
-            color: #FF6347; 
-            font-weight: bold;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #331f1c;
-            border: 1px solid #FF6347;
-            font-size: 1.1em;
-            display: none;
-        }
+        /* [CSS is unchanged from the previous version] */
+        body { margin: 0; overflow: hidden; font-family: 'Consolas', monospace; color: white; background-color: #000; }
+        canvas { display: block; }
+        #info { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 100; user-select: none; text-shadow: 2px 2px 4px #000; pointer-events: none; }
+        #gameTimer { transition: color 0.1s; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; cursor: pointer; transition: opacity 0.5s; }
+        #overlay h1 { color: #4CAF50; font-size: 4em; margin-bottom: 20px; animation: pulse 1.5s infinite alternate; }
+        #overlay p { font-size: 1.5em; margin: 5px 0; }
+        #error-message { color: #FF6347; font-weight: bold; margin-top: 20px; padding: 10px; background-color: #331f1c; border: 1px solid #FF6347; font-size: 1.1em; display: none; }
+        
         /* Leaderboard styling */
-        .score-list {
-            margin-top: 20px;
-            padding: 10px;
-            border: 2px solid gold;
-            text-align: left;
-            width: 300px;
+        .score-list { 
+            margin-top: 20px; 
+            padding: 10px; 
+            border: 2px solid gold; 
+            text-align: left; 
+            width: 350px; 
             background-color: rgba(0, 0, 0, 0.5);
         }
-        .score-list h3 {
-            margin-top: 0;
-            color: gold;
-            text-align: center;
+        .score-list h3 { 
+            margin-top: 0; 
+            color: gold; 
+            text-align: center; 
         }
-        .score-list #highScoreDisplay {
+        #highScoreList {
             list-style-type: none;
-            padding: 5px 0;
+            padding: 0;
+        }
+        #highScoreList li {
             display: flex;
             justify-content: space-between;
-            font-size: 1.3em;
-            color: #f0e68c;
+            font-size: 1.2em;
+            padding: 5px 0;
+            border-bottom: 1px dashed #444;
+        }
+        #highScoreList li:last-child {
+            border-bottom: none;
+        }
+        .player-name {
             font-weight: bold;
+            color: #f0e68c;
+            width: 70%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.05); }
+        .highlighted-player .player-name {
+            color: #FFD700; /* Gold highlight */
+            background-color: rgba(255, 215, 0, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
         }
+        .player-rank {
+            width: 15%;
+            text-align: right;
+            color: silver;
+        }
+        .player-time {
+            width: 15%;
+            text-align: right;
+            color: #fff;
+        }
+        
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
         
         /* CONFETTI STYLES */
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00; /* Default color */
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s;
-        }
-        
-        /* Keyframe animation for confetti pop and fall */
+        .confetti { position: absolute; width: 10px; height: 10px; background-color: #f00; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
         @keyframes fall {
             0% { transform: translate(var(--x, 0px), var(--y, 0px)) rotate(0deg); opacity: 1; }
             100% { transform: translate(var(--x, 0px), 100vh) rotate(720deg); opacity: 0; }
         }
-        
-        .confetti-active {
-            animation: fall 3s ease-in-out forwards;
-        }
-        
-        /* Keyframe animation for the party popper "starburst" effect */
+        .confetti-active { animation: fall 3s ease-in-out forwards; }
         @keyframes popper-burst {
             0% { transform: scale(0) opacity: 1; }
             50% { transform: scale(1.5) opacity: 1; }
             100% { transform: scale(0.5) opacity: 0; }
         }
-        
-        .popper {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, #ff0 0%, #f90 50%, transparent 70%);
-            border-radius: 50%;
-            z-index: 999;
-            pointer-events: none;
-            opacity: 0;
-        }
-        
-        .popper-active {
-            animation: popper-burst 1s ease-out;
-        }
-        
+        .popper { position: fixed; top: 50%; left: 50%; width: 200px; height: 200px; background: radial-gradient(circle, #ff0 0%, #f90 50%, transparent 70%); border-radius: 50%; z-index: 999; pointer-events: none; opacity: 0; }
+        .popper-active { animation: popper-burst 1s ease-out; }
     </style>
 </head>
 <body>
@@ -148,8 +95,10 @@
         <p>Controls: **W A S D** to move, **SPACE** to jump. Falling resets you to the last checkpoint.</p>
         
         <div class="score-list">
-            <h3>⭐ CURRENT RECORD ⭐</h3>
-            <p id="highScoreDisplay">No record yet.</p>
+            <h3>🌎 GLOBAL RANKINGS (TOP 5) 🌎</h3>
+            <ul id="highScoreList">
+                <li>Loading scores...</li>
+            </ul>
         </div>
 
         <p id="error-message">
@@ -165,6 +114,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script> 
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/SAOPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SAOShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/DepthLimitedBlurShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/UnpackDepthRGBAShader.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/Sky.js"></script>
 
     <script>
         // --- three.js GLOBAL VARIABLES ---
@@ -177,13 +135,22 @@
         let velocity = new THREE.Vector3();
         let direction = new THREE.Vector3();
         let gameActive = false;
-        let timingActive = false; // Timer only runs when this is true
+        let timingActive = false;
         let startTime = 0;
         let finishGate, startGate;
         let playerName = "Runner";
         let obstacles = [];
         let checkpoints = [];
         let currentCheckpoint = new THREE.Vector3(0, 10, 60); 
+        let canJump = true;
+        let composer;
+        
+        // NEW: Moving platform variable
+        let movingPlatform; 
+        let platformVelocity = new THREE.Vector3(0, 0, 0); 
+        const PLATFORM_MAX_Y = 50;
+        const PLATFORM_MIN_Y = 10;
+        const PLATFORM_SPEED = 10;
 
         // --- GAME CONSTANTS ---
         const MOVEMENT_SPEED = 400.0;
@@ -194,50 +161,87 @@
         const FALL_Y_THRESHOLD = -50;
         const START_GATE_Z = 50;
         const localStorageKey = 'speedrunChallengeHighScoresV2'; 
+        const MAX_LEADERBOARD_ENTRIES = 5;
 
         // --- DOM Elements ---
         const overlay = document.getElementById('overlay');
         const errorMessage = document.getElementById('error-message');
-        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        const highScoreList = document.getElementById('highScoreList');
         const checkpointNameDisplay = document.getElementById('checkpointName');
         const gameTimerDisplay = document.getElementById('gameTimer');
         const confettiContainer = document.getElementById('confetti-container');
 
-        // --- HIGH SCORE & NAME FUNCTIONS ---
+        // --- HIGH SCORE & NAME FUNCTIONS (Unchanged) ---
         function getHighScore() {
             const scores = localStorage.getItem(localStorageKey);
             return scores ? JSON.parse(scores) : [];
         }
-        
         function isTopFive(time) {
             const scores = getHighScore();
-            if (scores.length < 5) return true;
+            if (scores.length < MAX_LEADERBOARD_ENTRIES) return true;
             scores.sort((a, b) => a.time - b.time);
-            return time < scores[4].time; // Check if time is faster than the 5th fastest time
+            return time < scores[MAX_LEADERBOARD_ENTRIES - 1].time;
         }
-        
         function updateHighScoreDisplay() {
             const scores = getHighScore();
             scores.sort((a, b) => a.time - b.time); 
 
+            highScoreList.innerHTML = '';
+
             if (scores.length === 0) {
-                highScoreDisplay.textContent = 'No record yet.';
+                highScoreList.innerHTML = '<li>No records yet.</li>';
                 return;
             }
+            
+            const topScores = scores.slice(0, MAX_LEADERBOARD_ENTRIES);
 
-            const bestScore = scores[0];
-            highScoreDisplay.innerHTML = `<span>${bestScore.name}</span> <span>${bestScore.time.toFixed(2)}s</span>`;
+            topScores.forEach((score, index) => {
+                const li = document.createElement('li');
+                li.className = (score.name === playerName) ? 'highlighted-player' : '';
+                
+                li.innerHTML = `
+                    <span class="player-rank">#${index + 1}</span>
+                    <span class="player-name">${score.name}</span>
+                    <span class="player-time">${score.time.toFixed(2)}s</span>
+                `;
+                highScoreList.appendChild(li);
+            });
+            
+            if (scores.length > MAX_LEADERBOARD_ENTRIES) {
+                const playerIndex = scores.findIndex(score => score.name === playerName);
+                
+                if (playerIndex !== -1 && playerIndex >= MAX_LEADERBOARD_ENTRIES) {
+                    const playerRecord = scores[playerIndex];
+                    
+                    const li = document.createElement('li');
+                    li.className = 'highlighted-player';
+                    li.style.marginTop = '10px';
+                    
+                    li.innerHTML = `
+                        <span class="player-rank">#${playerIndex + 1}</span>
+                        <span class="player-name">${playerRecord.name} (Your Best)</span>
+                        <span class="player-time">${playerRecord.time.toFixed(2)}s</span>
+                    `;
+                    highScoreList.appendChild(li);
+                }
+            }
         }
-        
         function saveScore(time, name) {
             let scores = getHighScore();
-            scores.push({ name: name, time: time });
+            let existingRecordIndex = scores.findIndex(s => s.name === name);
+
+            if (existingRecordIndex !== -1) {
+                if (time < scores[existingRecordIndex].time) {
+                    scores[existingRecordIndex].time = time;
+                }
+            } else {
+                scores.push({ name: name, time: time });
+            }
+
             scores.sort((a, b) => a.time - b.time); 
-            scores = scores.slice(0, 10);
             localStorage.setItem(localStorageKey, JSON.stringify(scores));
             updateHighScoreDisplay();
         }
-
         function promptForName() {
             let name = prompt("Enter your runner name (3-10 characters):", playerName);
             if (name === null || name.trim() === "") {
@@ -245,54 +249,45 @@
             }
             playerName = name.trim().substring(0, 10);
         }
-
         function resetPlayerToCheckpoint() {
             camera.position.copy(currentCheckpoint);
             camera.position.y = currentCheckpoint.y;
             velocity.set(0, 0, 0);
+            canJump = true;
         }
 
         function addObstacle(geometry, material, position, name) {
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.copy(position);
             mesh.castShadow = true;
-            
-            mesh.geometry.computeBoundingBox();
-            mesh.collisionBox = mesh.geometry.boundingBox.clone();
-            mesh.collisionBox.applyMatrix4(mesh.matrixWorld);
+            mesh.receiveShadow = true;
             
             obstacles.push(mesh);
             scene.add(mesh);
             return mesh;
         }
-
-        // --- VISUAL EFFECTS ---
+        
         const confettiColors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
-
         function createConfetti(isTopFiveRank) {
             const count = isTopFiveRank ? 100 : 50;
             const duration = isTopFiveRank ? 4000 : 3000;
             
-            // Clear any previous confetti
             confettiContainer.innerHTML = '';
             
             if (isTopFiveRank) {
-                // Add Party Popper Starburst Effect
                 const popper = document.createElement('div');
                 popper.className = 'popper popper-active';
                 confettiContainer.appendChild(popper);
                 setTimeout(() => popper.remove(), 1000);
             }
 
-            // Create Confetti
             for (let i = 0; i < count; i++) {
                 const c = document.createElement('div');
                 c.className = 'confetti confetti-active';
                 c.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
                 
-                // Random position and animation variables
                 const x = Math.random() * window.innerWidth;
-                const y = -Math.random() * 200; // Start slightly off screen
+                const y = -Math.random() * 200;
                 const xEnd = Math.random() * 200 - 100;
                 
                 c.style.setProperty('--x', `${xEnd}px`);
@@ -302,44 +297,164 @@
                 c.style.animationDuration = `${duration / 1000}s`;
                 
                 confettiContainer.appendChild(c);
-
-                // Clean up confetti elements after animation
                 setTimeout(() => c.remove(), duration + 100);
             }
         }
+        
+        // --- 🛑 FIX 1: IMPROVED COLLISION LOGIC 🛑 ---
+        // We need a more robust check to prevent phasing on side collisions
+        function checkCollision(pos, object, delta) {
+            object.updateMatrixWorld(true);
+            const box = new THREE.Box3().setFromObject(object);
 
-        // --- INIT FUNCTION ---
+            const playerHalfWidth = 5;
+            const futurePos = pos.clone().add(velocity.clone().multiplyScalar(delta));
+
+            // Player Bounding Box (AABB) using current position
+            const playerMinY = pos.y - PLAYER_HEIGHT;
+            const playerMaxY = pos.y + PLAYER_HEIGHT;
+            
+            // Check for overlap in all axes at CURRENT position
+            const overlapX = (pos.x - playerHalfWidth < box.max.x && pos.x + playerHalfWidth > box.min.x);
+            const overlapY = (playerMinY < box.max.y && playerMaxY > box.min.y);
+            const overlapZ = (pos.z - playerHalfWidth < box.max.z && pos.z + playerHalfWidth > box.min.z);
+
+            if (overlapX && overlapY && overlapZ) {
+                
+                // 1. TOP Collision (Landing detection)
+                // Check if the bottom of the player (at current Y) is above the box top, but the bottom of the player (at future Y) will be below it.
+                if (velocity.y <= 0 && playerMinY >= box.max.y && futurePos.y - PLAYER_HEIGHT <= box.max.y) {
+                    pos.y = box.max.y + PLAYER_HEIGHT; 
+                    velocity.y = 0;
+                    canJump = true;
+                    
+                    // NEW: If we land on a moving object, transfer its velocity
+                    if (object.isMoving) {
+                        return { type: 'top', movingObject: object };
+                    }
+                    return { type: 'top' };
+                }
+
+                // 2. HEAD Collision
+                if (velocity.y > 0 && playerMaxY <= box.min.y && futurePos.y + PLAYER_HEIGHT >= box.min.y) {
+                    velocity.y = 0;
+                    return { type: 'head' };
+                }
+
+                // 3. SIDE Collision (The core fix)
+                // If we didn't hit the top or bottom, we must be hitting the side.
+                // Revert movement along the axis of collision to prevent phasing.
+                return { type: 'side' };
+            }
+            return { type: 'none' };
+        }
+
+        function handleObstacleCollisions(delta) {
+            let onGround = false;
+            const playerPos = camera.position;
+            const prevPosition = camera.position.clone();
+            
+            let platformMovement = new THREE.Vector3(0, 0, 0);
+
+            for (let i = 0; i < obstacles.length; i++) {
+                const obstacle = obstacles[i];
+                const collision = checkCollision(playerPos, obstacle, delta);
+                
+                if (collision.type === 'top') {
+                    onGround = true;
+                    if (collision.movingObject) {
+                        platformMovement.copy(collision.movingObject.deltaPosition);
+                    }
+                } else if (collision.type === 'side' || collision.type === 'head') {
+                    // Revert horizontal position only
+                    playerPos.x = prevPosition.x;
+                    playerPos.z = prevPosition.z;
+                }
+            }
+
+            // Default floor collision
+            if (playerPos.y < PLAYER_HEIGHT && !onGround) {
+                playerPos.y = PLAYER_HEIGHT;
+                velocity.y = 0;
+                onGround = true;
+            }
+            
+            // Apply platform movement only if on the ground and moving
+            if (onGround && platformMovement.lengthSq() > 0) {
+                camera.position.add(platformMovement);
+            }
+            
+            return onGround;
+        }
+
+        // --- INIT FUNCTION (Unchanged structure, added movingPlatform) ---
         function init() {
             promptForName();
             updateHighScoreDisplay();
 
-            // Scene setup
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87ceeb);
-            scene.fog = new THREE.Fog(0x87ceeb, 0, 750);
+            // RENDERER SETUP
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.outputEncoding = THREE.sRGBEncoding; 
+            document.body.appendChild(renderer.domElement);
 
-            // Camera setup
+            // SCENE SETUP
+            scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 1000);
             camera.position.copy(currentCheckpoint); 
 
-            // Renderer setup
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setPixelRatio(window.deviceRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            document.body.appendChild(renderer.domElement);
+            // 1. SKYBOX (Unchanged)
+            const sky = new THREE.Sky();
+            sky.scale.setScalar(450000);
+            scene.add(sky);
+            const sun = new THREE.Vector3();
+            const uniforms = sky.material.uniforms;
+            uniforms[ 'turbidity' ].value = 10;
+            uniforms[ 'rayleigh' ].value = 3;
+            uniforms[ 'mieCoefficient' ].value = 0.005;
+            uniforms[ 'mieDirectionalG' ].value = 0.8;
+            const parameters = { inclination: 0.5, azimuth: 0.1 };
+            const theta = Math.PI * (parameters.inclination - 0.5);
+            const phi = 2 * Math.PI * (parameters.azimuth - 0.5);
+            sun.x = Math.cos(phi);
+            sun.y = Math.sin(phi) * Math.sin(theta);
+            sun.z = Math.sin(phi) * Math.cos(theta);
+            uniforms[ 'sunPosition' ].value.copy(sun);
+
 
             // Floor 
             const floorGeometry = new THREE.PlaneGeometry(2000, 2000, 100, 100);
             floorGeometry.rotateX(-Math.PI / 2);
-            const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x4caf50, side: THREE.DoubleSide });
-            const floor = addObstacle(floorGeometry, floorMaterial, new THREE.Vector3(0, 0, 0), "Floor");
-            floor.receiveShadow = true;
+            const floorMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x4caf50, 
+                metalness: 0.5, 
+                roughness: 0.8  
+            });
+            addObstacle(floorGeometry, floorMaterial, new THREE.Vector3(0, 0, 0), "Floor");
             
-            // --- GATES ---
+            // --- START ZONE ENCLOSURE ---
+            const wallMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xcccccc, 
+                side: THREE.DoubleSide,
+                metalness: 0.1,
+                roughness: 0.9 
+            });
+            const wallHeight = 100;
+            const wallLength = 100;
+            const wallThickness = 5;
 
-            // Start Gate (Green Arch)
-            const gateMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+            // Back Wall (Z=110)
+            addObstacle(new THREE.BoxGeometry(wallLength * 2 + 10, wallHeight, wallThickness), wallMaterial, new THREE.Vector3(0, wallHeight/2, START_GATE_Z + 60), "BackWall");
+            // Right Wall (X=110)
+            addObstacle(new THREE.BoxGeometry(wallThickness, wallHeight, wallLength * 2 + 10), wallMaterial, new THREE.Vector3(wallLength + 10, wallHeight/2, START_GATE_Z), "RightWall");
+            // Left Wall (X=-110)
+            addObstacle(new THREE.BoxGeometry(wallThickness, wallHeight, wallLength * 2 + 10), wallMaterial, new THREE.Vector3(-(wallLength + 10), wallHeight/2, START_GATE_Z), "LeftWall");
+
+
+            // --- GATES ---
+            const gateMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
             const startPostL = new THREE.Mesh(new THREE.BoxGeometry(5, 50, 5), gateMaterial);
             startPostL.position.set(-50, 25, START_GATE_Z);
             scene.add(startPostL);
@@ -348,48 +463,41 @@
             scene.add(startPostR);
             startGate = { z: START_GATE_Z }; 
 
-            // Finish Gate (Red Block)
-            const finishMaterial = new THREE.MeshLambertMaterial({ color: 0xff4500, transparent: true, opacity: 0.7 }); 
+            // Finish Gate
+            const finishMaterial = new THREE.MeshStandardMaterial({ color: 0xff4500, metalness: 0.9, roughness: 0.2, transparent: true, opacity: 0.8 }); 
             finishGate = new THREE.Mesh(new THREE.BoxGeometry(20, 100, 20), finishMaterial);
             finishGate.position.set(550, 50, -150); 
             finishGate.castShadow = true;
             scene.add(finishGate);
             
             // --- OBSTACLES & CHECKPOINTS ---
-            const obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0x5a2d07 });
-            
-            // 1. Tall Jump Block
-            addObstacle(new THREE.BoxGeometry(30, 20, 30), obstacleMaterial, new THREE.Vector3(0, 10, -50), "Obs1");
+            const obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0x5a2d07, metalness: 0.3, roughness: 0.7 });
+            const movingPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, metalness: 0.8, roughness: 0.2 }); // Blue metallic
 
-            // 2. Wide Barrier
+            // Static Obstacles
+            addObstacle(new THREE.BoxGeometry(30, 20, 30), obstacleMaterial, new THREE.Vector3(0, 10, -50), "Obs1");
             addObstacle(new THREE.BoxGeometry(100, 5, 20), obstacleMaterial, new THREE.Vector3(100, 2.5, -100), "Obs2");
 
             // CHECKPOINT 1
-            checkpoints.push({
-                name: "Platform 1",
-                position: new THREE.Vector3(150, PLAYER_HEIGHT, -150),
-                z_check: -120, 
-                activated: false
-            });
+            checkpoints.push({ name: "Platform 1", position: new THREE.Vector3(150, PLAYER_HEIGHT, -150), z_check: -120, activated: false });
             
-            // 3. Stepping Stones (High)
+            // 🛑 NEW: MOVING PLATFORM 🛑
+            movingPlatform = addObstacle(new THREE.BoxGeometry(40, 5, 40), movingPlatformMaterial, new THREE.Vector3(200, PLATFORM_MIN_Y, -250), "MovingPlatform");
+            movingPlatform.isMoving = true; // Flag for collision handler
+            movingPlatform.deltaPosition = new THREE.Vector3(0, 0, 0); // Stores movement per frame
+
+            // Static Obstacles (Continued)
             addObstacle(new THREE.BoxGeometry(20, 40, 20), obstacleMaterial, new THREE.Vector3(250, 20, -150), "Obs3a");
             addObstacle(new THREE.BoxGeometry(20, 60, 20), obstacleMaterial, new THREE.Vector3(300, 30, -150), "Obs3b");
 
             // CHECKPOINT 2
-            checkpoints.push({
-                name: "High Jump",
-                position: new THREE.Vector3(350, PLAYER_HEIGHT, -150),
-                z_check: -180, 
-                activated: false
-            });
+            checkpoints.push({ name: "High Jump", position: new THREE.Vector3(350, PLAYER_HEIGHT, -150), z_check: -180, activated: false });
 
-            // 4. Final large block before goal
             addObstacle(new THREE.BoxGeometry(40, 80, 40), obstacleMaterial, new THREE.Vector3(400, 40, -100), "Obs4");
 
 
-            // Lighting and Controls setup (same as before)
-            const ambientLight = new THREE.AmbientLight(0x666666);
+            // LIGHTING & POST-PROCESSING (Unchanged)
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
             scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
             dirLight.position.set(200, 500, 300);
@@ -398,11 +506,28 @@
             dirLight.shadow.camera.bottom = -300;
             dirLight.shadow.camera.left = -300;
             dirLight.shadow.camera.right = 300;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
             scene.add(dirLight);
+
+            composer = new THREE.EffectComposer(renderer);
+            composer.addPass(new THREE.RenderPass(scene, camera));
+
+            const saoPass = new THREE.SAOPass(scene, camera, false, true);
+            saoPass.params.saoScale = 50; 
+            saoPass.params.saoBias = 0.5; 
+            saoPass.params.saoIntensity = 0.01;
+            saoPass.params.saoKernelRadius = 100;
+            saoPass.params.saoMinResolution = 0;
+            saoPass.params.saoBlur = true;
+            saoPass.params.saoBlurScale = 1;
+            saoPass.params.saoBlurRadius = 10;
+            saoPass.params.saoBlurStdDev = 10;
+            composer.addPass(saoPass);
 
             controls = new THREE.PointerLockControls(camera, document.body);
             
-            // Event Handlers (same as before)
+            // Event Handlers (Unchanged)
             controls.addEventListener('lock', () => {
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 500);
@@ -412,67 +537,19 @@
                     gameActive = true; 
                 }
             });
-
             controls.addEventListener('unlock', () => {
                 overlay.style.display = 'flex';
                 setTimeout(() => overlay.style.opacity = '1', 50);
                 gameActive = false;
             });
-            
-            overlay.addEventListener('click', () => {
-                controls.lock();
-            });
-            
+            overlay.addEventListener('click', () => { controls.lock(); });
             document.addEventListener('pointerlockerror', () => {
-                errorMessage.style.display = 'block';
-                controls.unlock(); 
+                errorMessage.style.display = 'block'; controls.unlock(); 
             }, false);
-
             document.addEventListener('keydown', onKeyDown, false);
             document.addEventListener('keyup', onKeyUp, false);
             window.addEventListener('resize', onWindowResize, false);
         }
-
-        // --- COLLISIONS (Simplified Bounding Box Check) ---
-        function checkCollision(playerPos, box) {
-            const playerHalfWidth = 5;
-            const playerHalfHeight = PLAYER_HEIGHT - 1; // Check head/feet clearance
-            
-            const playerMinX = playerPos.x - playerHalfWidth;
-            const playerMaxX = playerPos.x + playerHalfWidth;
-            const playerMinY = playerPos.y - playerHalfHeight;
-            const playerMaxY = playerPos.y + playerHalfHeight;
-            const playerMinZ = playerPos.z - playerHalfWidth;
-            const playerMaxZ = playerPos.z + playerHalfWidth;
-
-            const boxMinX = box.min.x;
-            const boxMaxX = box.max.x;
-            const boxMinY = box.min.y;
-            const boxMaxY = box.max.y;
-            const boxMinZ = box.min.z;
-            const boxMaxZ = box.max.z;
-
-            return (playerMinX <= boxMaxX && playerMaxX >= boxMinX) &&
-                   (playerMinY <= boxMaxY && playerMaxY >= boxMinY) &&
-                   (playerMinZ <= boxMaxZ && playerMaxZ >= boxMinZ);
-        }
-
-        function handleObstacleCollisions(position) {
-            let collisionOccurred = false;
-            for (let i = 0; i < obstacles.length; i++) {
-                const obstacle = obstacles[i];
-                if (obstacle.collisionBox && checkCollision(position, obstacle.collisionBox)) {
-                    // Collision with floor is already handled by gravity check, skip it here
-                    if (obstacle.name !== "Floor") {
-                       velocity.x = 0; 
-                       velocity.z = 0; 
-                       collisionOccurred = true;
-                    }
-                }
-            }
-            return collisionOccurred;
-        }
-
 
         // --- GAME LOOP / ANIMATE FUNCTION ---
         function animate() {
@@ -480,8 +557,23 @@
 
             const delta = clock.getDelta();
 
+            // 🛑 NEW: Update Moving Platform Position 🛑
+            if (movingPlatform) {
+                const prevY = movingPlatform.position.y;
+                // Use a sine wave for smooth up/down oscillation
+                movingPlatform.position.y = PLATFORM_MIN_Y + ((PLATFORM_MAX_Y - PLATFORM_MIN_Y) / 2) * (1 + Math.sin(clock.getElapsedTime() * PLATFORM_SPEED * 0.1));
+                
+                // Calculate movement delta for player transfer
+                movingPlatform.deltaPosition.set(
+                    movingPlatform.position.x - movingPlatform.position.x, 
+                    movingPlatform.position.y - prevY, 
+                    movingPlatform.position.z - movingPlatform.position.z
+                );
+            }
+
             if (controls.isLocked === true && gameActive) {
-                // Apply Gravity/Physics
+                
+                // Physics
                 velocity.x -= velocity.x * 10.0 * delta;
                 velocity.z -= velocity.z * 10.0 * delta;
                 velocity.y -= GRAVITY * delta; 
@@ -493,42 +585,31 @@
                 if (moveForward || moveBackward) velocity.z -= direction.z * MOVEMENT_SPEED * delta;
                 if (moveLeft || moveRight) velocity.x -= direction.x * MOVEMENT_SPEED * delta;
 
-                const prevPosition = camera.position.clone();
-
                 // Apply movement
                 controls.moveRight(-velocity.x * delta);
                 controls.moveForward(-velocity.z * delta);
                 camera.position.y += velocity.y * delta;
                 
-                // Horizontal Collision Handling
-                if (handleObstacleCollisions(camera.position)) {
-                    // If collision occurs, revert horizontal movement only
-                    camera.position.x = prevPosition.x;
-                    camera.position.z = prevPosition.z;
-                }
+                // Collision Handling (Pass delta for collision prediction)
+                canJump = handleObstacleCollisions(delta);
 
-                // Fall Check & Floor Collision
-                if (camera.position.y < PLAYER_HEIGHT) {
-                    velocity.y = 0;
-                    camera.position.y = PLAYER_HEIGHT;
-                }
+                // Fall Check (below map)
                 if (camera.position.y < FALL_Y_THRESHOLD) {
                     resetPlayerToCheckpoint();
                     return; 
                 }
 
-                
-                // --- GAME LOGIC ---
+                // --- GAME LOGIC (Timing, Checkpoints, Finish) ---
                 const playerZ = camera.position.z;
 
-                // 1. START GATE CHECK: Timer starts when Z position moves past the start line (Z < 50)
+                // START GATE CHECK
                 if (!timingActive && playerZ < startGate.z) {
                     timingActive = true;
                     startTime = performance.now();
-                    gameTimerDisplay.style.color = '#00ff00'; // Green light!
+                    gameTimerDisplay.style.color = '#00ff00';
                 }
                 
-                // 2. CHECKPOINT ACTIVATION (Only check if timer is running)
+                // CHECKPOINT ACTIVATION
                 if (timingActive) {
                     for (let i = 0; i < checkpoints.length; i++) {
                         const cp = checkpoints[i];
@@ -542,42 +623,41 @@
                     }
                 }
                 
-                // 3. FINISH GATE CHECK (Timer stops immediately here)
+                // FINISH GATE CHECK
                 const distanceToFinish = camera.position.distanceTo(finishGate.position);
                 document.getElementById('distance').textContent = distanceToFinish.toFixed(1);
 
                 if (timingActive && distanceToFinish < GOAL_REACH_DISTANCE) { 
                     const finalTime = (performance.now() - startTime) / 1000;
-                    timingActive = false; // STOP THE TIMER
+                    timingActive = false;
                     
                     const finalTimeFormatted = finalTime.toFixed(2);
                     const topFiveStatus = isTopFive(finalTime);
-                    saveScore(finalTime, playerName); 
-                    controls.unlock();
+                    saveScore(finalTime, playerName);
                     
-                    // --- VISUAL FEEDBACK (Confetti/Poppers) ---
-                    createConfetti(topFiveStatus); // Trigger confetti, poppers if top 5
+                    createConfetti(topFiveStatus);
 
-                    // Reset Checkpoints for the next run
                     checkpoints.forEach(cp => cp.activated = false);
                     currentCheckpoint = new THREE.Vector3(0, 10, 60);
                     checkpointNameDisplay.textContent = 'Start';
                     gameTimerDisplay.style.color = 'gray';
 
-                    // Update overlay
                     overlay.style.display = 'flex';
                     setTimeout(() => overlay.style.opacity = '1', 50);
                     
                     let completionMessage = `🏁 RUN COMPLETE: ${finalTimeFormatted}s`;
                     if (topFiveStatus) {
-                        completionMessage = `🎉 TOP 5 RUN! ${finalTimeFormatted}s!`;
+                        completionMessage = `🎉 TOP ${MAX_LEADERBOARD_ENTRIES} RUN! ${finalTimeFormatted}s!`;
                     }
                     overlay.querySelector('h1').textContent = completionMessage;
                     overlay.querySelector('p:nth-child(2)').textContent = `Your time has been recorded, ${playerName}!`;
-                    
-                    // Reset player position and prompt name
-                    resetPlayerToCheckpoint();
-                    promptForName();
+
+                    setTimeout(() => {
+                        controls.unlock();
+                        resetPlayerToCheckpoint();
+                        promptForName();
+                        updateHighScoreDisplay();
+                    }, 500); 
                 }
 
                 // Update Timer
@@ -587,7 +667,8 @@
                 }
             }
 
-            renderer.render(scene, camera);
+            // RENDER: Use the composer for enhanced graphics
+            composer.render(delta);
         }
 
         // Helper functions
@@ -599,8 +680,9 @@
                 case 83: moveBackward = true; break; 
                 case 68: moveRight = true; break;   
                 case 32: 
-                    if (Math.abs(camera.position.y - PLAYER_HEIGHT) < 0.1) {
-                        velocity.y += JUMP_VELOCITY;
+                    if (canJump) {
+                        velocity.y = JUMP_VELOCITY;
+                        canJump = false;
                     }
                     break;
             }
@@ -617,6 +699,7 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
         }
 
         // --- START GAME ---
