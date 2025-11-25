@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Speedrun Sandbox</title>
+    <style>
+        /* ADVANCED CSS: Minimal, focused on full-screen rendering and hiding the cursor */
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            background-color: #000;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            user-select: none;
+            text-shadow: 2px 2px 4px #000;
+            pointer-events: none; /* Allows clicks to pass through to the canvas */
+        }
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            cursor: pointer;
+            transition: opacity 0.5s;
+        }
+        #overlay h1 {
+            color: #4CAF50;
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: pulse 1.5s infinite alternate; /* Simple CSS animation */
+        }
+        #overlay p {
+            font-size: 1.5em;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay">
+        <h1>SPEEDRUN START</h1>
+        <p>Click anywhere to begin and lock the pointer.</p>
+        <p>Controls: **W A S D** to move, **SPACE** to jump/move up.</p>
+        <p id="timerDisplay">Timer: 0.00s</p>
+    </div>
+
+    <div id="info">
+        <p>Time: <span id="gameTimer">0.00</span>s | Distance to Goal: <span id="distance">--</span>m</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- three.js GLOBAL VARIABLES ---
+        let camera, scene, renderer, controls;
+        let clock = new THREE.Clock();
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let gameActive = false;
+        let startTime = 0;
+        let goal;
+
+        // --- GAME CONSTANTS ---
+        const MOVEMENT_SPEED = 400.0;
+        const JUMP_VELOCITY = 1000.0;
+        const GRAVITY = 3000.0;
+        const PLAYER_HEIGHT = 10;
+        const GROUND_Y = 0;
+
+        // --- INIT FUNCTION ---
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb); // Sky blue background
+            scene.fog = new THREE.Fog(0x87ceeb, 0, 750);
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.y = PLAYER_HEIGHT;
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true; // Enable shadows
+            document.body.appendChild(renderer.domElement);
+
+            // Floor (Ground)
+            const floorGeometry = new THREE.PlaneGeometry(2000, 2000, 100, 100);
+            floorGeometry.rotateX(-Math.PI / 2);
+            // Simple green floor material
+            const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x4caf50, side: THREE.DoubleSide });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Goal (The object to speedrun to)
+            const goalGeometry = new THREE.BoxGeometry(20, 100, 20);
+            const goalMaterial = new THREE.MeshLambertMaterial({ color: 0xff4500 }); // Orange-Red
+            goal = new THREE.Mesh(goalGeometry, goalMaterial);
+            goal.position.set(400, 50, -300); // Set a distant goal position
+            goal.castShadow = true;
+            scene.add(goal);
+
+            // Lighting: Ambient and Directional
+            const ambientLight = new THREE.AmbientLight(0x666666);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            dirLight.position.set(200, 500, 300);
+            dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 100;
+            dirLight.shadow.camera.bottom = -100;
+            dirLight.shadow.camera.left = -100;
+            dirLight.shadow.camera.right = 100;
+            dirLight.shadow.camera.near = 0.1;
+            dirLight.shadow.camera.far = 1000;
+            scene.add(dirLight);
+
+            // PointerLockControls setup (Essential for first-person control)
+            controls = new THREE.PointerLockControls(camera, document.body);
+
+            // Event listeners for game start and controls
+            const overlay = document.getElementById('overlay');
+            overlay.addEventListener('click', () => {
+                controls.lock(); // Request pointer lock
+            });
+
+            controls.addEventListener('lock', () => {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 500);
+                if (!gameActive) {
+                    gameActive = true;
+                    startTime = performance.now();
+                }
+            });
+
+            controls.addEventListener('unlock', () => {
+                overlay.style.display = 'flex';
+                setTimeout(() => overlay.style.opacity = '1', 50);
+                gameActive = false;
+            });
+
+            // Keyboard controls listeners
+            document.addEventListener('keydown', onKeyDown, false);
+            document.addEventListener('keyup', onKeyUp, false);
+
+            // Handle window resizing
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        // --- KEYBOARD HANDLING ---
+        function onKeyDown(event) {
+            switch (event.keyCode) {
+                case 87: moveForward = true; break; // W
+                case 65: moveLeft = true; break;    // A
+                case 83: moveBackward = true; break; // S
+                case 68: moveRight = true; break;   // D
+                case 32: // SPACE (Jump)
+                    if (camera.position.y <= PLAYER_HEIGHT + 0.1) {
+                        velocity.y += JUMP_VELOCITY;
+                    }
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            switch (event.keyCode) {
+                case 87: moveForward = false; break;
+                case 65: moveLeft = false; break;
+                case 83: moveBackward = false; break;
+                case 68: moveRight = false; break;
+            }
+        }
+
+        // --- RESIZE HANDLING ---
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // --- GAME LOOP / ANIMATE FUNCTION ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+
+            if (controls.isLocked === true && gameActive) {
+                // Apply 'friction' and gravity
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+                velocity.y -= GRAVITY * delta; // Gravity
+
+                // Calculate direction vector from input
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize(); // Ensure constant speed when moving diagonally
+
+                // Update velocity based on controls and speed
+                if (moveForward || moveBackward) velocity.z -= direction.z * MOVEMENT_SPEED * delta;
+                if (moveLeft || moveRight) velocity.x -= direction.x * MOVEMENT_SPEED * delta;
+
+                // Move the control's object (camera)
+                controls.moveRight(-velocity.x * delta);
+                controls.moveForward(-velocity.z * delta);
+                camera.position.y += velocity.y * delta;
+
+                // Simple collision detection with the floor
+                if (camera.position.y < PLAYER_HEIGHT) {
+                    velocity.y = 0;
+                    camera.position.y = PLAYER_HEIGHT;
+                }
+
+                // Update Timer
+                const elapsedTime = (performance.now() - startTime) / 1000;
+                document.getElementById('gameTimer').textContent = elapsedTime.toFixed(2);
+
+                // Check for Goal Collision
+                const distanceToGoal = camera.position.distanceTo(goal.position);
+                document.getElementById('distance').textContent = distanceToGoal.toFixed(1);
+
+                if (distanceToGoal < 30) { // Goal reached!
+                    gameActive = false;
+                    controls.unlock();
+                    alert(`Speedrun Complete! Time: ${elapsedTime.toFixed(2)}s`);
+                    // Reset game state for a new run
+                    camera.position.set(0, PLAYER_HEIGHT, 0);
+                    velocity.set(0, 0, 0);
+                    document.getElementById('gameTimer').textContent = '0.00';
+                    document.getElementById('overlay').querySelector('h1').textContent = `WINNER! ${elapsedTime.toFixed(2)}s`;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // --- START GAME ---
+        init();
+        animate();
+    </script>
+</body>
+</html>
