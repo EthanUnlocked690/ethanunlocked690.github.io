@@ -91,7 +91,7 @@
     <div id="overlay">
         <h1>SPEEDRUN CHALLENGE</h1>
         <p>Goal: Cross GREEN gate to start, navigate obstacles, and finish at RED gate!</p>
-        <p>Click to begin (Time starts when you cross the GREEN gate)</p>
+        <p>Click anywhere to start (Time starts when you cross the GREEN gate)</p>
         <p>Controls: **W A S D** to move, **SPACE** to jump. Falling resets you to the last checkpoint.</p>
         
         <div class="score-list">
@@ -145,7 +145,6 @@
         let canJump = true;
         let composer;
         
-        // NEW: Moving platform variable
         let movingPlatform; 
         let platformVelocity = new THREE.Vector3(0, 0, 0); 
         const PLATFORM_MAX_Y = 50;
@@ -301,8 +300,7 @@
             }
         }
         
-        // --- 🛑 FIX 1: IMPROVED COLLISION LOGIC 🛑 ---
-        // We need a more robust check to prevent phasing on side collisions
+        // --- Collision Logic (FIXED & UNCHANGED from previous version) ---
         function checkCollision(pos, object, delta) {
             object.updateMatrixWorld(true);
             const box = new THREE.Box3().setFromObject(object);
@@ -322,13 +320,11 @@
             if (overlapX && overlapY && overlapZ) {
                 
                 // 1. TOP Collision (Landing detection)
-                // Check if the bottom of the player (at current Y) is above the box top, but the bottom of the player (at future Y) will be below it.
                 if (velocity.y <= 0 && playerMinY >= box.max.y && futurePos.y - PLAYER_HEIGHT <= box.max.y) {
                     pos.y = box.max.y + PLAYER_HEIGHT; 
                     velocity.y = 0;
                     canJump = true;
                     
-                    // NEW: If we land on a moving object, transfer its velocity
                     if (object.isMoving) {
                         return { type: 'top', movingObject: object };
                     }
@@ -342,8 +338,6 @@
                 }
 
                 // 3. SIDE Collision (The core fix)
-                // If we didn't hit the top or bottom, we must be hitting the side.
-                // Revert movement along the axis of collision to prevent phasing.
                 return { type: 'side' };
             }
             return { type: 'none' };
@@ -387,10 +381,10 @@
             return onGround;
         }
 
-        // --- INIT FUNCTION (Unchanged structure, added movingPlatform) ---
+        // --- INIT FUNCTION ---
         function init() {
             promptForName();
-            updateHighScoreDisplay();
+            updateHighScoreDisplay(); 
 
             // RENDERER SETUP
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -472,7 +466,7 @@
             
             // --- OBSTACLES & CHECKPOINTS ---
             const obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0x5a2d07, metalness: 0.3, roughness: 0.7 });
-            const movingPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, metalness: 0.8, roughness: 0.2 }); // Blue metallic
+            const movingPlatformMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, metalness: 0.8, roughness: 0.2 }); 
 
             // Static Obstacles
             addObstacle(new THREE.BoxGeometry(30, 20, 30), obstacleMaterial, new THREE.Vector3(0, 10, -50), "Obs1");
@@ -481,10 +475,10 @@
             // CHECKPOINT 1
             checkpoints.push({ name: "Platform 1", position: new THREE.Vector3(150, PLAYER_HEIGHT, -150), z_check: -120, activated: false });
             
-            // 🛑 NEW: MOVING PLATFORM 🛑
+            // MOVING PLATFORM
             movingPlatform = addObstacle(new THREE.BoxGeometry(40, 5, 40), movingPlatformMaterial, new THREE.Vector3(200, PLATFORM_MIN_Y, -250), "MovingPlatform");
-            movingPlatform.isMoving = true; // Flag for collision handler
-            movingPlatform.deltaPosition = new THREE.Vector3(0, 0, 0); // Stores movement per frame
+            movingPlatform.isMoving = true;
+            movingPlatform.deltaPosition = new THREE.Vector3(0, 0, 0);
 
             // Static Obstacles (Continued)
             addObstacle(new THREE.BoxGeometry(20, 40, 20), obstacleMaterial, new THREE.Vector3(250, 20, -150), "Obs3a");
@@ -496,7 +490,7 @@
             addObstacle(new THREE.BoxGeometry(40, 80, 40), obstacleMaterial, new THREE.Vector3(400, 40, -100), "Obs4");
 
 
-            // LIGHTING & POST-PROCESSING (Unchanged)
+            // LIGHTING & POST-PROCESSING
             const ambientLight = new THREE.AmbientLight(0x404040, 2);
             scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -527,7 +521,7 @@
 
             controls = new THREE.PointerLockControls(camera, document.body);
             
-            // Event Handlers (Unchanged)
+            // Event Handlers
             controls.addEventListener('lock', () => {
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 500);
@@ -537,15 +531,26 @@
                     gameActive = true; 
                 }
             });
+
             controls.addEventListener('unlock', () => {
-                overlay.style.display = 'flex';
-                setTimeout(() => overlay.style.opacity = '1', 50);
-                gameActive = false;
+                 if (gameActive) {
+                     overlay.style.display = 'flex';
+                     setTimeout(() => overlay.style.opacity = '1', 50);
+                     overlay.querySelector('h1').textContent = 'GAME PAUSED';
+                     overlay.querySelector('p:nth-child(2)').textContent = 'Press ESC to resume or Click to restart.';
+                 }
+                 gameActive = false;
             });
-            overlay.addEventListener('click', () => { controls.lock(); });
+            
+            // 🖱️ SIMPLIFIED START
+            overlay.addEventListener('click', () => { 
+                controls.lock(); 
+            });
+            
             document.addEventListener('pointerlockerror', () => {
                 errorMessage.style.display = 'block'; controls.unlock(); 
             }, false);
+
             document.addEventListener('keydown', onKeyDown, false);
             document.addEventListener('keyup', onKeyUp, false);
             window.addEventListener('resize', onWindowResize, false);
@@ -557,17 +562,16 @@
 
             const delta = clock.getDelta();
 
-            // 🛑 NEW: Update Moving Platform Position 🛑
+            // Update Moving Platform Position
             if (movingPlatform) {
                 const prevY = movingPlatform.position.y;
-                // Use a sine wave for smooth up/down oscillation
                 movingPlatform.position.y = PLATFORM_MIN_Y + ((PLATFORM_MAX_Y - PLATFORM_MIN_Y) / 2) * (1 + Math.sin(clock.getElapsedTime() * PLATFORM_SPEED * 0.1));
                 
                 // Calculate movement delta for player transfer
                 movingPlatform.deltaPosition.set(
-                    movingPlatform.position.x - movingPlatform.position.x, 
+                    0, 
                     movingPlatform.position.y - prevY, 
-                    movingPlatform.position.z - movingPlatform.position.z
+                    0
                 );
             }
 
@@ -599,6 +603,7 @@
                     return; 
                 }
 
+                
                 // --- GAME LOGIC (Timing, Checkpoints, Finish) ---
                 const playerZ = camera.position.z;
 
