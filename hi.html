@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>3D Speedrun Sandbox</title>
+    <title>3D Speedrun Challenge</title>
     <style>
         /* ADVANCED CSS: Minimal, focused on full-screen rendering and hiding the cursor */
         body {
             margin: 0;
-            overflow: hidden; /* Prevent scrollbars */
+            overflow: hidden; 
             background-color: #000;
-            font-family: Arial, sans-serif;
+            font-family: 'Consolas', monospace; 
             color: white;
         }
         canvas {
@@ -23,7 +23,10 @@
             z-index: 100;
             user-select: none;
             text-shadow: 2px 2px 4px #000;
-            pointer-events: none; /* Allows clicks to pass through to the canvas */
+            pointer-events: none; 
+        }
+        #gameTimer {
+            transition: color 0.1s; /* Smooth timer color change */
         }
         #overlay {
             position: absolute;
@@ -60,17 +63,95 @@
             font-size: 1.1em;
             display: none;
         }
+        /* Leaderboard styling */
+        .score-list {
+            margin-top: 20px;
+            padding: 10px;
+            border: 2px solid gold;
+            text-align: left;
+            width: 300px;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .score-list h3 {
+            margin-top: 0;
+            color: gold;
+            text-align: center;
+        }
+        .score-list #highScoreDisplay {
+            list-style-type: none;
+            padding: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3em;
+            color: #f0e68c;
+            font-weight: bold;
+        }
         @keyframes pulse {
             from { transform: scale(1); }
             to { transform: scale(1.05); }
         }
+        
+        /* CONFETTI STYLES */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00; /* Default color */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        
+        /* Keyframe animation for confetti pop and fall */
+        @keyframes fall {
+            0% { transform: translate(var(--x, 0px), var(--y, 0px)) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--x, 0px), 100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        .confetti-active {
+            animation: fall 3s ease-in-out forwards;
+        }
+        
+        /* Keyframe animation for the party popper "starburst" effect */
+        @keyframes popper-burst {
+            0% { transform: scale(0) opacity: 1; }
+            50% { transform: scale(1.5) opacity: 1; }
+            100% { transform: scale(0.5) opacity: 0; }
+        }
+        
+        .popper {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #ff0 0%, #f90 50%, transparent 70%);
+            border-radius: 50%;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+        }
+        
+        .popper-active {
+            animation: popper-burst 1s ease-out;
+        }
+        
     </style>
 </head>
 <body>
+    <div id="confetti-container" style="position: fixed; top: 0; left: 0; width: 100%; height: 100vh; overflow: hidden; z-index: 50;"></div>
+    
     <div id="overlay">
-        <h1>SPEEDRUN START</h1>
-        <p>Click anywhere to begin and lock the pointer.</p>
-        <p>Controls: **W A S D** to move, **SPACE** to jump/move up.</p>
+        <h1>SPEEDRUN CHALLENGE</h1>
+        <p>Goal: Cross GREEN gate to start, navigate obstacles, and finish at RED gate!</p>
+        <p>Click to begin (Time starts when you cross the GREEN gate)</p>
+        <p>Controls: **W A S D** to move, **SPACE** to jump. Falling resets you to the last checkpoint.</p>
+        
+        <div class="score-list">
+            <h3>⭐ CURRENT RECORD ⭐</h3>
+            <p id="highScoreDisplay">No record yet.</p>
+        </div>
+
         <p id="error-message">
             ⚠️ **Pointer Lock Failed!** The game needs a secure connection. 
             **FIX:** You must run this file on a local web server (e.g., `http://localhost:8000`), not directly from your file system (`file://`).
@@ -78,7 +159,7 @@
     </div>
 
     <div id="info">
-        <p>Time: <span id="gameTimer">0.00</span>s | Distance to Goal: <span id="distance">--</span>m</p>
+        <p>Time: <span id="gameTimer" style="color:gray;">0.00</span>s | Distance to Goal: <span id="distance">--</span>m | Checkpoint: <span id="checkpointName">Start</span></p>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -96,155 +177,302 @@
         let velocity = new THREE.Vector3();
         let direction = new THREE.Vector3();
         let gameActive = false;
+        let timingActive = false; // Timer only runs when this is true
         let startTime = 0;
-        let goal;
+        let finishGate, startGate;
+        let playerName = "Runner";
+        let obstacles = [];
+        let checkpoints = [];
+        let currentCheckpoint = new THREE.Vector3(0, 10, 60); 
 
         // --- GAME CONSTANTS ---
         const MOVEMENT_SPEED = 400.0;
         const JUMP_VELOCITY = 1000.0;
         const GRAVITY = 3000.0;
         const PLAYER_HEIGHT = 10;
-        const GOAL_REACH_DISTANCE = 30; // Radius for collision
+        const GOAL_REACH_DISTANCE = 30; 
+        const FALL_Y_THRESHOLD = -50;
+        const START_GATE_Z = 50;
+        const localStorageKey = 'speedrunChallengeHighScoresV2'; 
 
         // --- DOM Elements ---
         const overlay = document.getElementById('overlay');
         const errorMessage = document.getElementById('error-message');
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        const checkpointNameDisplay = document.getElementById('checkpointName');
+        const gameTimerDisplay = document.getElementById('gameTimer');
+        const confettiContainer = document.getElementById('confetti-container');
+
+        // --- HIGH SCORE & NAME FUNCTIONS ---
+        function getHighScore() {
+            const scores = localStorage.getItem(localStorageKey);
+            return scores ? JSON.parse(scores) : [];
+        }
+        
+        function isTopFive(time) {
+            const scores = getHighScore();
+            if (scores.length < 5) return true;
+            scores.sort((a, b) => a.time - b.time);
+            return time < scores[4].time; // Check if time is faster than the 5th fastest time
+        }
+        
+        function updateHighScoreDisplay() {
+            const scores = getHighScore();
+            scores.sort((a, b) => a.time - b.time); 
+
+            if (scores.length === 0) {
+                highScoreDisplay.textContent = 'No record yet.';
+                return;
+            }
+
+            const bestScore = scores[0];
+            highScoreDisplay.innerHTML = `<span>${bestScore.name}</span> <span>${bestScore.time.toFixed(2)}s</span>`;
+        }
+        
+        function saveScore(time, name) {
+            let scores = getHighScore();
+            scores.push({ name: name, time: time });
+            scores.sort((a, b) => a.time - b.time); 
+            scores = scores.slice(0, 10);
+            localStorage.setItem(localStorageKey, JSON.stringify(scores));
+            updateHighScoreDisplay();
+        }
+
+        function promptForName() {
+            let name = prompt("Enter your runner name (3-10 characters):", playerName);
+            if (name === null || name.trim() === "") {
+                name = "Unnamed Runner";
+            }
+            playerName = name.trim().substring(0, 10);
+        }
+
+        function resetPlayerToCheckpoint() {
+            camera.position.copy(currentCheckpoint);
+            camera.position.y = currentCheckpoint.y;
+            velocity.set(0, 0, 0);
+        }
+
+        function addObstacle(geometry, material, position, name) {
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.copy(position);
+            mesh.castShadow = true;
+            
+            mesh.geometry.computeBoundingBox();
+            mesh.collisionBox = mesh.geometry.boundingBox.clone();
+            mesh.collisionBox.applyMatrix4(mesh.matrixWorld);
+            
+            obstacles.push(mesh);
+            scene.add(mesh);
+            return mesh;
+        }
+
+        // --- VISUAL EFFECTS ---
+        const confettiColors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+
+        function createConfetti(isTopFiveRank) {
+            const count = isTopFiveRank ? 100 : 50;
+            const duration = isTopFiveRank ? 4000 : 3000;
+            
+            // Clear any previous confetti
+            confettiContainer.innerHTML = '';
+            
+            if (isTopFiveRank) {
+                // Add Party Popper Starburst Effect
+                const popper = document.createElement('div');
+                popper.className = 'popper popper-active';
+                confettiContainer.appendChild(popper);
+                setTimeout(() => popper.remove(), 1000);
+            }
+
+            // Create Confetti
+            for (let i = 0; i < count; i++) {
+                const c = document.createElement('div');
+                c.className = 'confetti confetti-active';
+                c.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                
+                // Random position and animation variables
+                const x = Math.random() * window.innerWidth;
+                const y = -Math.random() * 200; // Start slightly off screen
+                const xEnd = Math.random() * 200 - 100;
+                
+                c.style.setProperty('--x', `${xEnd}px`);
+                c.style.setProperty('--y', `${y}px`);
+                c.style.left = `${x}px`;
+                c.style.top = `${y}px`;
+                c.style.animationDuration = `${duration / 1000}s`;
+                
+                confettiContainer.appendChild(c);
+
+                // Clean up confetti elements after animation
+                setTimeout(() => c.remove(), duration + 100);
+            }
+        }
 
         // --- INIT FUNCTION ---
         function init() {
+            promptForName();
+            updateHighScoreDisplay();
+
             // Scene setup
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87ceeb); // Sky blue background
+            scene.background = new THREE.Color(0x87ceeb);
             scene.fog = new THREE.Fog(0x87ceeb, 0, 750);
 
             // Camera setup
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-            camera.position.y = PLAYER_HEIGHT;
+            camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.copy(currentCheckpoint); 
 
             // Renderer setup
             renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(window.deviceRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true; // Enable shadows
+            renderer.shadowMap.enabled = true;
             document.body.appendChild(renderer.domElement);
 
-            // Floor (Ground)
+            // Floor 
             const floorGeometry = new THREE.PlaneGeometry(2000, 2000, 100, 100);
             floorGeometry.rotateX(-Math.PI / 2);
             const floorMaterial = new THREE.MeshPhongMaterial({ color: 0x4caf50, side: THREE.DoubleSide });
-            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            const floor = addObstacle(floorGeometry, floorMaterial, new THREE.Vector3(0, 0, 0), "Floor");
             floor.receiveShadow = true;
-            scene.add(floor);
-
-            // Goal (The object to speedrun to)
-            const goalGeometry = new THREE.BoxGeometry(20, 100, 20);
-            const goalMaterial = new THREE.MeshLambertMaterial({ color: 0xff4500 }); // Orange-Red
-            goal = new THREE.Mesh(goalGeometry, goalMaterial);
-            goal.position.set(400, 50, -300); // Set a distant goal position
-            goal.castShadow = true;
-            scene.add(goal);
             
-            // Add a small obstacle/block for fun
-            const obstacleGeometry = new THREE.BoxGeometry(50, 50, 50);
+            // --- GATES ---
+
+            // Start Gate (Green Arch)
+            const gateMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00, transparent: true, opacity: 0.5 });
+            const startPostL = new THREE.Mesh(new THREE.BoxGeometry(5, 50, 5), gateMaterial);
+            startPostL.position.set(-50, 25, START_GATE_Z);
+            scene.add(startPostL);
+            const startPostR = new THREE.Mesh(new THREE.BoxGeometry(5, 50, 5), gateMaterial);
+            startPostR.position.set(50, 25, START_GATE_Z);
+            scene.add(startPostR);
+            startGate = { z: START_GATE_Z }; 
+
+            // Finish Gate (Red Block)
+            const finishMaterial = new THREE.MeshLambertMaterial({ color: 0xff4500, transparent: true, opacity: 0.7 }); 
+            finishGate = new THREE.Mesh(new THREE.BoxGeometry(20, 100, 20), finishMaterial);
+            finishGate.position.set(550, 50, -150); 
+            finishGate.castShadow = true;
+            scene.add(finishGate);
+            
+            // --- OBSTACLES & CHECKPOINTS ---
             const obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0x5a2d07 });
-            const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-            obstacle.position.set(200, 25, 0);
-            obstacle.castShadow = true;
-            scene.add(obstacle);
+            
+            // 1. Tall Jump Block
+            addObstacle(new THREE.BoxGeometry(30, 20, 30), obstacleMaterial, new THREE.Vector3(0, 10, -50), "Obs1");
+
+            // 2. Wide Barrier
+            addObstacle(new THREE.BoxGeometry(100, 5, 20), obstacleMaterial, new THREE.Vector3(100, 2.5, -100), "Obs2");
+
+            // CHECKPOINT 1
+            checkpoints.push({
+                name: "Platform 1",
+                position: new THREE.Vector3(150, PLAYER_HEIGHT, -150),
+                z_check: -120, 
+                activated: false
+            });
+            
+            // 3. Stepping Stones (High)
+            addObstacle(new THREE.BoxGeometry(20, 40, 20), obstacleMaterial, new THREE.Vector3(250, 20, -150), "Obs3a");
+            addObstacle(new THREE.BoxGeometry(20, 60, 20), obstacleMaterial, new THREE.Vector3(300, 30, -150), "Obs3b");
+
+            // CHECKPOINT 2
+            checkpoints.push({
+                name: "High Jump",
+                position: new THREE.Vector3(350, PLAYER_HEIGHT, -150),
+                z_check: -180, 
+                activated: false
+            });
+
+            // 4. Final large block before goal
+            addObstacle(new THREE.BoxGeometry(40, 80, 40), obstacleMaterial, new THREE.Vector3(400, 40, -100), "Obs4");
 
 
-            // Lighting: Ambient and Directional
+            // Lighting and Controls setup (same as before)
             const ambientLight = new THREE.AmbientLight(0x666666);
             scene.add(ambientLight);
-
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
             dirLight.position.set(200, 500, 300);
             dirLight.castShadow = true;
-            dirLight.shadow.camera.top = 200;
-            dirLight.shadow.camera.bottom = -200;
-            dirLight.shadow.camera.left = -200;
-            dirLight.shadow.camera.right = 200;
-            dirLight.shadow.camera.near = 0.1;
-            dirLight.shadow.camera.far = 1000;
+            dirLight.shadow.camera.top = 300;
+            dirLight.shadow.camera.bottom = -300;
+            dirLight.shadow.camera.left = -300;
+            dirLight.shadow.camera.right = 300;
             scene.add(dirLight);
 
-            // PointerLockControls setup (Now correctly initialized because the script is loaded)
             controls = new THREE.PointerLockControls(camera, document.body);
             
-            // --- Event Handling ---
+            // Event Handlers (same as before)
             controls.addEventListener('lock', () => {
-                // Successfully locked: hide overlay and start game
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 500);
                 errorMessage.style.display = 'none';
 
                 if (!gameActive) {
-                    gameActive = true;
-                    startTime = performance.now();
+                    gameActive = true; 
                 }
             });
 
             controls.addEventListener('unlock', () => {
-                // Unlocked: show overlay and pause game
                 overlay.style.display = 'flex';
                 setTimeout(() => overlay.style.opacity = '1', 50);
                 gameActive = false;
             });
             
-            // Initial Click Handler
             overlay.addEventListener('click', () => {
-                // Request lock on click
                 controls.lock();
             });
             
-            // Specific error handler for browsers that reject the lock request (e.g., if running on file://)
             document.addEventListener('pointerlockerror', () => {
-                console.error("Pointer Lock Error: The browser rejected the request. Please use a local web server.");
                 errorMessage.style.display = 'block';
                 controls.unlock(); 
             }, false);
 
-
-            // Keyboard controls listeners
             document.addEventListener('keydown', onKeyDown, false);
             document.addEventListener('keyup', onKeyUp, false);
-
-            // Handle window resizing
             window.addEventListener('resize', onWindowResize, false);
         }
 
-        // --- KEYBOARD HANDLING ---
-        function onKeyDown(event) {
-            if (!controls.isLocked) return;
-            switch (event.keyCode) {
-                case 87: moveForward = true; break; // W
-                case 65: moveLeft = true; break;    // A
-                case 83: moveBackward = true; break; // S
-                case 68: moveRight = true; break;   // D
-                case 32: // SPACE (Jump)
-                    // Check if player is near the ground to allow jump
-                    if (Math.abs(camera.position.y - PLAYER_HEIGHT) < 0.1) {
-                        velocity.y += JUMP_VELOCITY;
+        // --- COLLISIONS (Simplified Bounding Box Check) ---
+        function checkCollision(playerPos, box) {
+            const playerHalfWidth = 5;
+            const playerHalfHeight = PLAYER_HEIGHT - 1; // Check head/feet clearance
+            
+            const playerMinX = playerPos.x - playerHalfWidth;
+            const playerMaxX = playerPos.x + playerHalfWidth;
+            const playerMinY = playerPos.y - playerHalfHeight;
+            const playerMaxY = playerPos.y + playerHalfHeight;
+            const playerMinZ = playerPos.z - playerHalfWidth;
+            const playerMaxZ = playerPos.z + playerHalfWidth;
+
+            const boxMinX = box.min.x;
+            const boxMaxX = box.max.x;
+            const boxMinY = box.min.y;
+            const boxMaxY = box.max.y;
+            const boxMinZ = box.min.z;
+            const boxMaxZ = box.max.z;
+
+            return (playerMinX <= boxMaxX && playerMaxX >= boxMinX) &&
+                   (playerMinY <= boxMaxY && playerMaxY >= boxMinY) &&
+                   (playerMinZ <= boxMaxZ && playerMaxZ >= boxMinZ);
+        }
+
+        function handleObstacleCollisions(position) {
+            let collisionOccurred = false;
+            for (let i = 0; i < obstacles.length; i++) {
+                const obstacle = obstacles[i];
+                if (obstacle.collisionBox && checkCollision(position, obstacle.collisionBox)) {
+                    // Collision with floor is already handled by gravity check, skip it here
+                    if (obstacle.name !== "Floor") {
+                       velocity.x = 0; 
+                       velocity.z = 0; 
+                       collisionOccurred = true;
                     }
-                    break;
+                }
             }
+            return collisionOccurred;
         }
 
-        function onKeyUp(event) {
-            switch (event.keyCode) {
-                case 87: moveForward = false; break;
-                case 65: moveLeft = false; break;
-                case 83: moveBackward = false; break;
-                case 68: moveRight = false; break;
-            }
-        }
-
-        // --- RESIZE HANDLING ---
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
 
         // --- GAME LOOP / ANIMATE FUNCTION ---
         function animate() {
@@ -253,57 +481,142 @@
             const delta = clock.getDelta();
 
             if (controls.isLocked === true && gameActive) {
-                // Physics Simulation
+                // Apply Gravity/Physics
                 velocity.x -= velocity.x * 10.0 * delta;
                 velocity.z -= velocity.z * 10.0 * delta;
                 velocity.y -= GRAVITY * delta; 
 
-                // Calculate direction vector
                 direction.z = Number(moveForward) - Number(moveBackward);
                 direction.x = Number(moveRight) - Number(moveLeft);
                 direction.normalize();
 
-                // Apply movement force
                 if (moveForward || moveBackward) velocity.z -= direction.z * MOVEMENT_SPEED * delta;
                 if (moveLeft || moveRight) velocity.x -= direction.x * MOVEMENT_SPEED * delta;
 
-                // Update position
+                const prevPosition = camera.position.clone();
+
+                // Apply movement
                 controls.moveRight(-velocity.x * delta);
                 controls.moveForward(-velocity.z * delta);
                 camera.position.y += velocity.y * delta;
+                
+                // Horizontal Collision Handling
+                if (handleObstacleCollisions(camera.position)) {
+                    // If collision occurs, revert horizontal movement only
+                    camera.position.x = prevPosition.x;
+                    camera.position.z = prevPosition.z;
+                }
 
-                // Floor Collision
+                // Fall Check & Floor Collision
                 if (camera.position.y < PLAYER_HEIGHT) {
                     velocity.y = 0;
                     camera.position.y = PLAYER_HEIGHT;
                 }
+                if (camera.position.y < FALL_Y_THRESHOLD) {
+                    resetPlayerToCheckpoint();
+                    return; 
+                }
 
-                // Update Timer and Distance
-                const elapsedTime = (performance.now() - startTime) / 1000;
-                document.getElementById('gameTimer').textContent = elapsedTime.toFixed(2);
                 
-                const distanceToGoal = camera.position.distanceTo(goal.position);
-                document.getElementById('distance').textContent = distanceToGoal.toFixed(1);
+                // --- GAME LOGIC ---
+                const playerZ = camera.position.z;
 
-                // Goal Check
-                if (distanceToGoal < GOAL_REACH_DISTANCE) { 
-                    gameActive = false;
+                // 1. START GATE CHECK: Timer starts when Z position moves past the start line (Z < 50)
+                if (!timingActive && playerZ < startGate.z) {
+                    timingActive = true;
+                    startTime = performance.now();
+                    gameTimerDisplay.style.color = '#00ff00'; // Green light!
+                }
+                
+                // 2. CHECKPOINT ACTIVATION (Only check if timer is running)
+                if (timingActive) {
+                    for (let i = 0; i < checkpoints.length; i++) {
+                        const cp = checkpoints[i];
+                        if (!cp.activated && playerZ < cp.z_check) {
+                            cp.activated = true;
+                            currentCheckpoint = cp.position.clone();
+                            currentCheckpoint.name = cp.name;
+                            checkpointNameDisplay.textContent = cp.name;
+                            break; 
+                        }
+                    }
+                }
+                
+                // 3. FINISH GATE CHECK (Timer stops immediately here)
+                const distanceToFinish = camera.position.distanceTo(finishGate.position);
+                document.getElementById('distance').textContent = distanceToFinish.toFixed(1);
+
+                if (timingActive && distanceToFinish < GOAL_REACH_DISTANCE) { 
+                    const finalTime = (performance.now() - startTime) / 1000;
+                    timingActive = false; // STOP THE TIMER
+                    
+                    const finalTimeFormatted = finalTime.toFixed(2);
+                    const topFiveStatus = isTopFive(finalTime);
+                    saveScore(finalTime, playerName); 
                     controls.unlock();
                     
-                    const finalTime = elapsedTime.toFixed(2);
+                    // --- VISUAL FEEDBACK (Confetti/Poppers) ---
+                    createConfetti(topFiveStatus); // Trigger confetti, poppers if top 5
+
+                    // Reset Checkpoints for the next run
+                    checkpoints.forEach(cp => cp.activated = false);
+                    currentCheckpoint = new THREE.Vector3(0, 10, 60);
+                    checkpointNameDisplay.textContent = 'Start';
+                    gameTimerDisplay.style.color = 'gray';
+
+                    // Update overlay
                     overlay.style.display = 'flex';
                     setTimeout(() => overlay.style.opacity = '1', 50);
-                    overlay.querySelector('h1').textContent = `🏁 COMPLETED IN ${finalTime}s!`;
-                    overlay.querySelector('p:nth-child(2)').textContent = `Click to try for a better time!`; // Target the control text
                     
-                    // Reset game state
-                    camera.position.set(0, PLAYER_HEIGHT, 0);
-                    velocity.set(0, 0, 0);
-                    document.getElementById('gameTimer').textContent = '0.00';
+                    let completionMessage = `🏁 RUN COMPLETE: ${finalTimeFormatted}s`;
+                    if (topFiveStatus) {
+                        completionMessage = `🎉 TOP 5 RUN! ${finalTimeFormatted}s!`;
+                    }
+                    overlay.querySelector('h1').textContent = completionMessage;
+                    overlay.querySelector('p:nth-child(2)').textContent = `Your time has been recorded, ${playerName}!`;
+                    
+                    // Reset player position and prompt name
+                    resetPlayerToCheckpoint();
+                    promptForName();
+                }
+
+                // Update Timer
+                if (timingActive) {
+                    const elapsedTime = (performance.now() - startTime) / 1000;
+                    gameTimerDisplay.textContent = elapsedTime.toFixed(2);
                 }
             }
 
             renderer.render(scene, camera);
+        }
+
+        // Helper functions
+        function onKeyDown(event) {
+            if (!controls.isLocked) return;
+            switch (event.keyCode) {
+                case 87: moveForward = true; break; 
+                case 65: moveLeft = true; break;    
+                case 83: moveBackward = true; break; 
+                case 68: moveRight = true; break;   
+                case 32: 
+                    if (Math.abs(camera.position.y - PLAYER_HEIGHT) < 0.1) {
+                        velocity.y += JUMP_VELOCITY;
+                    }
+                    break;
+            }
+        }
+        function onKeyUp(event) {
+            switch (event.keyCode) {
+                case 87: moveForward = false; break;
+                case 65: moveLeft = false; break;
+                case 83: moveBackward = false; break;
+                case 68: moveRight = false; break;
+            }
+        }
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
         // --- START GAME ---
