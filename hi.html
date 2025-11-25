@@ -12,6 +12,9 @@
             font-family: Arial, sans-serif;
             color: white;
         }
+        canvas {
+            display: block;
+        }
         #info {
             position: absolute;
             top: 10px;
@@ -28,7 +31,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8); /* Slightly darker for contrast */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -45,6 +48,14 @@
         }
         #overlay p {
             font-size: 1.5em;
+            margin: 5px 0;
+        }
+        #error-message {
+            color: #FF6347; /* Tomato red */
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 1.2em;
+            display: none;
         }
         @keyframes pulse {
             from { transform: scale(1); }
@@ -57,7 +68,7 @@
         <h1>SPEEDRUN START</h1>
         <p>Click anywhere to begin and lock the pointer.</p>
         <p>Controls: **W A S D** to move, **SPACE** to jump/move up.</p>
-        <p id="timerDisplay">Timer: 0.00s</p>
+        <p id="error-message">Error: Pointer Lock failed. **Try hosting the file on a local server (http://) instead of opening it directly (file://).**</p>
     </div>
 
     <div id="info">
@@ -84,7 +95,11 @@
         const JUMP_VELOCITY = 1000.0;
         const GRAVITY = 3000.0;
         const PLAYER_HEIGHT = 10;
-        const GROUND_Y = 0;
+        const GOAL_REACH_DISTANCE = 30; // Radius for collision
+
+        // --- DOM Elements ---
+        const overlay = document.getElementById('overlay');
+        const errorMessage = document.getElementById('error-message');
 
         // --- INIT FUNCTION ---
         function init() {
@@ -120,6 +135,15 @@
             goal.position.set(400, 50, -300); // Set a distant goal position
             goal.castShadow = true;
             scene.add(goal);
+            
+            // Add a small obstacle/block for fun
+            const obstacleGeometry = new THREE.BoxGeometry(50, 50, 50);
+            const obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0x5a2d07 });
+            const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+            obstacle.position.set(200, 25, 0);
+            obstacle.castShadow = true;
+            scene.add(obstacle);
+
 
             // Lighting: Ambient and Directional
             const ambientLight = new THREE.AmbientLight(0x666666);
@@ -128,26 +152,24 @@
             const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
             dirLight.position.set(200, 500, 300);
             dirLight.castShadow = true;
-            dirLight.shadow.camera.top = 100;
-            dirLight.shadow.camera.bottom = -100;
-            dirLight.shadow.camera.left = -100;
-            dirLight.shadow.camera.right = 100;
+            dirLight.shadow.camera.top = 200;
+            dirLight.shadow.camera.bottom = -200;
+            dirLight.shadow.camera.left = -200;
+            dirLight.shadow.camera.right = 200;
             dirLight.shadow.camera.near = 0.1;
             dirLight.shadow.camera.far = 1000;
             scene.add(dirLight);
 
-            // PointerLockControls setup (Essential for first-person control)
+            // PointerLockControls setup
             controls = new THREE.PointerLockControls(camera, document.body);
-
-            // Event listeners for game start and controls
-            const overlay = document.getElementById('overlay');
-            overlay.addEventListener('click', () => {
-                controls.lock(); // Request pointer lock
-            });
-
+            
+            // --- FIX: Improved Pointer Lock Event Handling ---
             controls.addEventListener('lock', () => {
+                // Successfully locked: hide overlay and start game
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 500);
+                errorMessage.style.display = 'none';
+
                 if (!gameActive) {
                     gameActive = true;
                     startTime = performance.now();
@@ -155,10 +177,25 @@
             });
 
             controls.addEventListener('unlock', () => {
+                // Unlocked: show overlay and pause game
                 overlay.style.display = 'flex';
                 setTimeout(() => overlay.style.opacity = '1', 50);
                 gameActive = false;
             });
+            
+            // --- FIX: Initial Click Handler ---
+            overlay.addEventListener('click', () => {
+                // Request lock on click
+                controls.lock();
+            });
+            
+            // --- FIX: Add specific error handler for browsers that reject the lock request
+            document.addEventListener('pointerlockerror', () => {
+                console.error("Pointer Lock Error: The browser rejected the request.");
+                errorMessage.style.display = 'block';
+                controls.unlock(); // Ensure it's unlocked if it failed during a request
+            }, false);
+
 
             // Keyboard controls listeners
             document.addEventListener('keydown', onKeyDown, false);
@@ -170,13 +207,15 @@
 
         // --- KEYBOARD HANDLING ---
         function onKeyDown(event) {
+            if (!controls.isLocked) return;
             switch (event.keyCode) {
                 case 87: moveForward = true; break; // W
                 case 65: moveLeft = true; break;    // A
                 case 83: moveBackward = true; break; // S
                 case 68: moveRight = true; break;   // D
                 case 32: // SPACE (Jump)
-                    if (camera.position.y <= PLAYER_HEIGHT + 0.1) {
+                    // Check if player is near the ground to allow jump
+                    if (Math.abs(camera.position.y - PLAYER_HEIGHT) < 0.1) {
                         velocity.y += JUMP_VELOCITY;
                     }
                     break;
@@ -214,7 +253,7 @@
                 // Calculate direction vector from input
                 direction.z = Number(moveForward) - Number(moveBackward);
                 direction.x = Number(moveRight) - Number(moveLeft);
-                direction.normalize(); // Ensure constant speed when moving diagonally
+                direction.normalize();
 
                 // Update velocity based on controls and speed
                 if (moveForward || moveBackward) velocity.z -= direction.z * MOVEMENT_SPEED * delta;
@@ -239,15 +278,21 @@
                 const distanceToGoal = camera.position.distanceTo(goal.position);
                 document.getElementById('distance').textContent = distanceToGoal.toFixed(1);
 
-                if (distanceToGoal < 30) { // Goal reached!
+                if (distanceToGoal < GOAL_REACH_DISTANCE) { // Goal reached!
                     gameActive = false;
                     controls.unlock();
-                    alert(`Speedrun Complete! Time: ${elapsedTime.toFixed(2)}s`);
+                    
+                    // Update overlay with result
+                    const finalTime = elapsedTime.toFixed(2);
+                    overlay.style.display = 'flex';
+                    setTimeout(() => overlay.style.opacity = '1', 50);
+                    overlay.querySelector('h1').textContent = `🏁 COMPLETED IN ${finalTime}s!`;
+                    overlay.querySelector('p').textContent = `Click to try for a better time!`;
+                    
                     // Reset game state for a new run
                     camera.position.set(0, PLAYER_HEIGHT, 0);
                     velocity.set(0, 0, 0);
                     document.getElementById('gameTimer').textContent = '0.00';
-                    document.getElementById('overlay').querySelector('h1').textContent = `WINNER! ${elapsedTime.toFixed(2)}s`;
                 }
             }
 
