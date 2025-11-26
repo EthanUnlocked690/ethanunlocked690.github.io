@@ -170,7 +170,7 @@
         const gameTimerDisplay = document.getElementById('gameTimer');
         const confettiContainer = document.getElementById('confetti-container');
 
-        // --- HIGH SCORE & NAME FUNCTIONS (Unchanged) ---
+        // --- HIGH SCORE & NAME FUNCTIONS ---
         function getHighScore() {
             const scores = localStorage.getItem(localStorageKey);
             return scores ? JSON.parse(scores) : [];
@@ -241,13 +241,17 @@
             localStorage.setItem(localStorageKey, JSON.stringify(scores));
             updateHighScoreDisplay();
         }
+
+        // 🛑 UPDATED: MAX NAME LENGTH SET TO 15
         function promptForName() {
-            let name = prompt("Enter your runner name (3-10 characters):", playerName);
+            let name = prompt("Enter your runner name (Max 15 characters):", playerName);
             if (name === null || name.trim() === "") {
                 name = "Unnamed Runner";
             }
-            playerName = name.trim().substring(0, 10);
+            playerName = name.trim().substring(0, 15);
         }
+        // 🛑 END UPDATED FUNCTION
+
         function resetPlayerToCheckpoint() {
             camera.position.copy(currentCheckpoint);
             camera.position.y = currentCheckpoint.y;
@@ -300,7 +304,7 @@
             }
         }
         
-        // --- Collision Logic (FIXED & UNCHANGED from previous version) ---
+        // --- Collision Logic ---
         function checkCollision(pos, object, delta) {
             object.updateMatrixWorld(true);
             const box = new THREE.Box3().setFromObject(object);
@@ -308,18 +312,15 @@
             const playerHalfWidth = 5;
             const futurePos = pos.clone().add(velocity.clone().multiplyScalar(delta));
 
-            // Player Bounding Box (AABB) using current position
             const playerMinY = pos.y - PLAYER_HEIGHT;
             const playerMaxY = pos.y + PLAYER_HEIGHT;
             
-            // Check for overlap in all axes at CURRENT position
             const overlapX = (pos.x - playerHalfWidth < box.max.x && pos.x + playerHalfWidth > box.min.x);
             const overlapY = (playerMinY < box.max.y && playerMaxY > box.min.y);
             const overlapZ = (pos.z - playerHalfWidth < box.max.z && pos.z + playerHalfWidth > box.min.z);
 
             if (overlapX && overlapY && overlapZ) {
                 
-                // 1. TOP Collision (Landing detection)
                 if (velocity.y <= 0 && playerMinY >= box.max.y && futurePos.y - PLAYER_HEIGHT <= box.max.y) {
                     pos.y = box.max.y + PLAYER_HEIGHT; 
                     velocity.y = 0;
@@ -331,13 +332,11 @@
                     return { type: 'top' };
                 }
 
-                // 2. HEAD Collision
                 if (velocity.y > 0 && playerMaxY <= box.min.y && futurePos.y + PLAYER_HEIGHT >= box.min.y) {
                     velocity.y = 0;
                     return { type: 'head' };
                 }
 
-                // 3. SIDE Collision (The core fix)
                 return { type: 'side' };
             }
             return { type: 'none' };
@@ -360,20 +359,17 @@
                         platformMovement.copy(collision.movingObject.deltaPosition);
                     }
                 } else if (collision.type === 'side' || collision.type === 'head') {
-                    // Revert horizontal position only
                     playerPos.x = prevPosition.x;
                     playerPos.z = prevPosition.z;
                 }
             }
 
-            // Default floor collision
             if (playerPos.y < PLAYER_HEIGHT && !onGround) {
                 playerPos.y = PLAYER_HEIGHT;
                 velocity.y = 0;
                 onGround = true;
             }
             
-            // Apply platform movement only if on the ground and moving
             if (onGround && platformMovement.lengthSq() > 0) {
                 camera.position.add(platformMovement);
             }
@@ -399,7 +395,7 @@
             camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 1000);
             camera.position.copy(currentCheckpoint); 
 
-            // 1. SKYBOX (Unchanged)
+            // 1. SKYBOX
             const sky = new THREE.Sky();
             sky.scale.setScalar(450000);
             scene.add(sky);
@@ -542,7 +538,7 @@
                  gameActive = false;
             });
             
-            // 🖱️ SIMPLIFIED START
+            // SIMPLIFIED START
             overlay.addEventListener('click', () => { 
                 controls.lock(); 
             });
