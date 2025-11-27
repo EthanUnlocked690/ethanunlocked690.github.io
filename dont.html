@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warning</title>
+    <title>The Ultimate DO NOT CLICK ME</title>
     <style>
+        /* --- General Styling --- */
         body {
             display: flex;
             justify-content: center;
@@ -12,54 +13,142 @@
             height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            font-family: 'Comic Sans MS', cursive, sans-serif; /* Because why not? */
+            overflow: hidden; /* Prevent scrollbars when button moves off-screen */
+            transition: background-color 0.5s ease;
         }
 
+        /* --- Button Styling --- */
         #dangerButton {
-            padding: 20px 40px;
-            font-size: 24px;
-            font-weight: bold;
+            position: absolute; /* Essential for movement */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 25px 50px;
+            font-size: 28px;
+            font-weight: 900;
             color: white;
-            background-color: #cc0000;
-            border: 5px solid #800000;
-            border-radius: 10px;
+            background-color: #ff004c; /* Deep pink/red */
+            border: 8px solid #a80033;
+            border-radius: 15px;
             cursor: pointer;
-            box-shadow: 0 9px #999;
+            box-shadow: 0 12px #c9003c;
             transition: all 0.1s ease;
-        }
-
-        #dangerButton:hover {
-            background-color: #e60000;
+            z-index: 100;
         }
 
         #dangerButton:active {
-            background-color: #b30000;
-            box-shadow: 0 5px #666;
-            transform: translateY(4px);
+            box-shadow: 0 5px #7e0026;
+            transform: translate(-50%, -50%) translateY(5px);
+        }
+
+        /* --- Chaos Message Styling --- */
+        #message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            color: black;
+            text-shadow: 4px 4px 0 white, -4px -4px 0 white;
+            display: none; /* Hidden by default */
+            z-index: 50;
+            text-align: center;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <button id="dangerButton" onclick="handleClick()">
-        ⚠️ DO NOT CLICK ME ⚠️
+    <button id="dangerButton" onclick="startChaos()">
+        🛑 ABSOLUTELY DO NOT CLICK ME 🛑
     </button>
+    
+    <div id="message">TOO LATE! YOU BROKE IT!</div>
 
     <audio id="funnySound">
         <source src="your_funny_sound.mp3" type="audio/mpeg">
         <source src="your_funny_sound.wav" type="audio/wav">
-    </audio>
+        </audio>
 
     <script>
-        function handleClick() {
-            const audio = document.getElementById('funnySound');
+        const button = document.getElementById('dangerButton');
+        const message = document.getElementById('message');
+        const audio = document.getElementById('funnySound');
+        const colors = ['#FFC300', '#FF5733', '#C70039', '#900C3F', '#581845'];
+        let chaosIntervalId = null;
+        let isChaosActive = false;
+        
+        // Function to make the button run away
+        function runAway(e) {
+            // Only move if chaos hasn't started yet
+            if (isChaosActive) return;
+
+            // Get current button position
+            const rect = button.getBoundingClientRect();
+
+            // Calculate new position (50-100 pixels away from the mouse)
+            let newX = rect.left + (rect.left > e.clientX ? 100 : -100);
+            let newY = rect.top + (rect.top > e.clientY ? 100 : -100);
+
+            // Clamp positions to stay within the viewport
+            newX = Math.max(0, Math.min(newX, window.innerWidth - rect.width));
+            newY = Math.max(0, Math.min(newY, window.innerHeight - rect.height));
+
+            button.style.left = `${newX}px`;
+            button.style.top = `${newY}px`;
+            button.style.transform = 'none'; // Remove central transform for manual positioning
+        }
+
+        // Attach the runAway function to the mouseover event
+        button.addEventListener('mouseover', runAway);
+
+
+        // Function to start the chaos when clicked
+        function startChaos() {
+            if (isChaosActive) return;
+            isChaosActive = true;
+            
+            // 1. Stop the button from running away
+            button.removeEventListener('mouseover', runAway);
+            
+            // 2. Play the funny sound
             audio.currentTime = 0; 
             audio.play();
-            alert("A sound has been made! You are a menace to society. 😂");
+
+            // 3. Show the funny message
+            message.style.display = 'block';
+
+            // 4. Start the rapid color flashing and button text change
+            let colorIndex = 0;
+            chaosIntervalId = setInterval(() => {
+                document.body.style.backgroundColor = colors[colorIndex++ % colors.length];
+                
+                button.innerHTML = colorIndex % 2 === 0 ? "😵 HELP ME!" : "🤯 STOP THE MADNESS!";
+
+            }, 75); // Very fast flash
+
+            // 5. Stop the chaos after 5 seconds
+            setTimeout(() => {
+                clearInterval(chaosIntervalId);
+                document.body.style.backgroundColor = '#f0f0f0'; // Reset color
+                message.style.display = 'none'; // Hide message
+                button.innerHTML = '✅ SUCCESS! Now refresh.';
+                button.style.transform = 'translate(-50%, -50%)'; // Reset positioning
+                button.style.left = '50%';
+                button.style.top = '50%';
+                button.style.backgroundColor = '#00cc66';
+                button.style.borderColor = '#008040';
+                button.onclick = null; // Disable further clicks
+            }, 5000);
         }
     </script>
 
 </body>
 </html>
-
-
