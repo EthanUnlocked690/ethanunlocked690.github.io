@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Warning</title>
+    <style>
+        /* CSS for a more prominent, tempting button */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        #dangerButton {
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background-color: #cc0000; /* Red for danger */
+            border: 5px solid #800000;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 9px #999;
+            transition: all 0.1s ease;
+        }
+
+        #dangerButton:hover {
+            background-color: #e60000;
+        }
+
+        #dangerButton:active {
+            background-color: #b30000;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body>
+
+    <button id="dangerButton" onclick="handleClick()">
+        ⚠️ DO NOT CLICK ME ⚠️
+    </button>
+
+    <script>
+        function handleClick() {
+            // This is the function that runs when the button is clicked
+            alert("I told you not to click me! Now you must face the consequences (which is just this message).");
+        }
+    </script>
+
+</body>
+</html>
