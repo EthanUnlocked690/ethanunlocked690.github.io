@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Warning with Consequences</title>
+    <title>Warning</title>
     <style>
-        /* CSS remains the same for a prominent, tempting button */
         body {
             display: flex;
             justify-content: center;
@@ -21,7 +20,7 @@
             font-size: 24px;
             font-weight: bold;
             color: white;
-            background-color: #cc0000; /* Red for danger */
+            background-color: #cc0000;
             border: 5px solid #800000;
             border-radius: 10px;
             cursor: pointer;
@@ -49,24 +48,18 @@
     <audio id="funnySound">
         <source src="your_funny_sound.mp3" type="audio/mpeg">
         <source src="your_funny_sound.wav" type="audio/wav">
-        Your browser does not support the audio element.
     </audio>
 
     <script>
         function handleClick() {
-            // 1. Get the audio element by its ID
             const audio = document.getElementById('funnySound');
-            
-            // 2. Reset the audio to the beginning (in case it's clicked rapidly)
             audio.currentTime = 0; 
-
-            // 3. Play the sound!
             audio.play();
-            
-            // 4. Optionally, still show a funny alert message
             alert("A sound has been made! You are a menace to society. 😂");
         }
     </script>
 
 </body>
 </html>
+
+
