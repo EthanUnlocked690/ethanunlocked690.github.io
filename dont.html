@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE 500% VOLUME BUTTON</title>
+    <title>THE MUTE-BREAKING BUTTON</title>
     <style>
         /* --- General Styling --- */
         body {
@@ -19,7 +19,7 @@
             position: relative;
         }
 
-        /* --- OUT FEATURE 1: Main Button Styling & Darkening Effect --- */
+        /* --- Main Button Styling & Darkening Effect --- */
         #dangerButton {
             position: absolute;
             top: 50%;
@@ -36,10 +36,6 @@
             transition: all 0.2s ease;
             z-index: 100;
             transform: translate(-50%, -50%); 
-        }
-
-        #dangerButton:active {
-            box-shadow: 0 5px #7e0026;
         }
 
         /* OUT FEATURE 4: Dark overlay for mouse proximity */
@@ -108,6 +104,23 @@
             animation: flash 0.1s infinite alternate;
         }
         
+        /* --- IN FEATURE 6: Mute Joke Message Styling --- */
+        #muteJoke {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px;
+            font-size: 30px;
+            background-color: blue;
+            color: white;
+            border: 5px solid cyan;
+            display: none;
+            z-index: 160;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+
         @keyframes pulse {
             0% { transform: translate(-50%, -50%) scale(1); }
             50% { transform: translate(-50%, -50%) scale(1.05); }
@@ -151,6 +164,8 @@
     
     <div id="volumeJoke">VOLUME MAXED! MUTE BUTTON FAILED! 🔊</div>
 
+    <div id="muteJoke"></div>
+
 
     <audio id="funnySound" loop>
         <source src="your_funny_sound.mp3" type="audio/mpeg">
@@ -163,6 +178,7 @@
         const warning = document.getElementById('sideWarning');
         const message = document.getElementById('message');
         const volumeJoke = document.getElementById('volumeJoke');
+        const muteJoke = document.getElementById('muteJoke'); // New element
         const audio = document.getElementById('funnySound');
         const colors = ['#FFC300', '#FF5733', '#C70039', '#900C3F', '#581845'];
         const runAwayText = ["STOP IT!", "GO AWAY!", "DON'T TOUCH!", "LEAVE ME ALONE!"];
@@ -248,15 +264,23 @@
             // 2. IN FEATURE 2: Hide the button (The trick!)
             button.style.display = 'none'; 
             
-            // 3. IN FEATURE 3: Set audio volume to max and start looping sound
-            audio.volume = 1.0; // This is the max the browser allows (the 500% joke!)
+            // 3. IN FEATURE 3: Set volume to max and start sound
+            audio.volume = 1.0; 
             audio.play();
 
-            // 4. Show giant flashing message
+            // 4. IN FEATURE 6: Mute Check!
+            if (audio.muted || audio.volume === 0) {
+                 volumeJoke.style.display = 'none'; // Hide volume joke
+                 muteJoke.innerHTML = "HA! You had to mute your whole computer! The page wins! 😜";
+                 muteJoke.style.display = 'block';
+            } else {
+                 // IN FEATURE 5: Show the Volume Joke message if sound is playing
+                 volumeJoke.style.display = 'block';
+                 muteJoke.style.display = 'none';
+            }
+
+            // 5. Show giant flashing message
             message.style.display = 'block';
-            
-            // 5. IN FEATURE 5: Show the Volume Joke message
-            volumeJoke.style.display = 'block';
             
             // 6. IN FEATURE 4: Start the text rain
             startTextRain();
@@ -272,10 +296,11 @@
             setTimeout(() => {
                 clearInterval(chaosIntervalId);
                 clearInterval(rainIntervalId);
-                audio.pause(); // Crucial: Stop the looping audio!
+                audio.pause(); 
                 document.body.style.backgroundColor = '#f0f0f0';
                 message.style.display = 'none';
                 volumeJoke.style.display = 'none';
+                muteJoke.style.display = 'none';
                 
                 // Final State
                 button.style.display = 'block';
