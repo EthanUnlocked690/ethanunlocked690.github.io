@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Maximum DO NOT CLICK ME</title>
+    <title>THE FEATURE OVERLOAD BUTTON</title>
     <style>
         /* --- General Styling --- */
         body {
@@ -16,9 +16,10 @@
             font-family: 'Comic Sans MS', cursive, sans-serif;
             overflow: hidden;
             transition: background-color 0.5s ease;
+            position: relative;
         }
 
-        /* --- OUT FEATURE 1: Main Button Styling --- */
+        /* --- OUT FEATURE 1: Main Button Styling & Darkening Effect --- */
         #dangerButton {
             position: absolute;
             top: 50%;
@@ -41,18 +42,31 @@
             box-shadow: 0 5px #7e0026;
         }
 
+        /* OUT FEATURE 4: Dark overlay for mouse proximity */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0); /* Start transparent */
+            pointer-events: none; /* Allows clicks to pass through */
+            transition: background-color 0.5s;
+            z-index: 99;
+        }
+
         /* --- OUT FEATURE 2: Persistent Warning Box Styling --- */
         #sideWarning {
             position: absolute;
             width: 200px;
             padding: 10px;
             background-color: #000;
-            color: #ffcc00; /* Yellow text for caution */
+            color: #ffcc00;
             border: 3px solid #ffcc00;
             text-align: center;
             font-weight: bold;
             font-size: 14px;
-            pointer-events: none; /* Ignore mouse events so it doesn't block clicks */
+            pointer-events: none;
             z-index: 90;
             animation: bounce 2s infinite alternate;
         }
@@ -72,21 +86,31 @@
             color: black;
             text-shadow: 4px 4px 0 white, -4px -4px 0 white;
             display: none;
-            z-index: 50;
+            z-index: 150; /* Needs to be above the falling text */
             text-align: center;
             animation: pulse 1s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
+        /* --- IN FEATURE 4: Falling Text Style --- */
+        .falling-text {
+            position: absolute;
+            top: -50px; /* Start above screen */
+            font-size: 30px;
+            font-weight: bold;
+            color: rgba(255, 0, 0, 0.7);
+            z-index: 120;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+        
+        @keyframes fall {
+            to { transform: translateY(100vh); }
         }
     </style>
 </head>
 <body>
 
-    <button id="dangerButton" onclick="startChaos()">
+    <div id="overlay"></div> <button id="dangerButton" onclick="startChaos()">
         🛑 ABSOLUTELY DO NOT CLICK ME 🛑
     </button>
     
@@ -101,6 +125,7 @@
 
     <script>
         const button = document.getElementById('dangerButton');
+        const overlay = document.getElementById('overlay');
         const warning = document.getElementById('sideWarning');
         const message = document.getElementById('message');
         const audio = document.getElementById('funnySound');
@@ -109,13 +134,13 @@
         let isChaosActive = false;
         let textIntervalId;
         let warningIntervalId;
+        let rainIntervalId;
 
         // --- OUT FEATURE 1: Running Away ---
         function runAway(e) {
             if (isChaosActive) return;
 
             const rect = button.getBoundingClientRect();
-            // Move 150px away
             let newX = rect.left + (rect.left > e.clientX ? 150 : -150);
             let newY = rect.top + (rect.top > e.clientY ? 150 : -150);
 
@@ -128,11 +153,18 @@
         }
         button.addEventListener('mousemove', runAway);
 
+        // --- OUT FEATURE 3: Darkening Page on Hover ---
+        button.addEventListener('mouseenter', () => {
+            if (!isChaosActive) overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        });
+        button.addEventListener('mouseleave', () => {
+            if (!isChaosActive) overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        });
+
         // --- OUT FEATURE 2: Distracting Text Flash & Warning Box Movement ---
         let textIndex = 0;
         textIntervalId = setInterval(() => {
             if (!isChaosActive) {
-                 // Button text flash
                  button.innerHTML = runAwayText[textIndex++ % runAwayText.length];
             }
         }, 500);
@@ -151,7 +183,25 @@
                 warning.style.left = `${randX}px`;
                 warning.style.top = `${randY}px`;
             }
-        }, 1500); // Move every 1.5 seconds
+        }, 1500);
+
+        // --- IN FEATURE 4: Falling Text Blocks ---
+        function startTextRain() {
+            rainIntervalId = setInterval(() => {
+                const text = document.createElement('div');
+                text.className = 'falling-text';
+                text.innerHTML = 'NO!';
+                
+                // Randomize starting position and duration
+                text.style.left = `${Math.random() * 100}vw`;
+                text.style.animationDuration = `${Math.random() * 2 + 1}s`; // Fall speed 1-3 seconds
+
+                document.body.appendChild(text);
+                
+                // Clean up the element after it falls
+                text.addEventListener('animationend', () => text.remove());
+            }, 50); // Drop a new one every 50ms
+        }
 
 
         // --- IN FEATURE: Chaos on Click ---
@@ -163,8 +213,9 @@
             button.removeEventListener('mousemove', runAway);
             clearInterval(textIntervalId);
             clearInterval(warningIntervalId);
-            warning.style.display = 'none'; // Hide the warning box
-
+            warning.style.display = 'none';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)'; // Ensure overlay is off
+            
             // 2. IN FEATURE 2: Hide the button (The trick!)
             button.style.display = 'none'; 
             
@@ -174,30 +225,33 @@
 
             // 4. Show giant flashing message
             message.style.display = 'block';
+            
+            // 5. IN FEATURE 4: Start the text rain
+            startTextRain();
 
-            // 5. Start color flashing
+
+            // 6. Start color flashing
             let colorIndex = 0;
             const chaosIntervalId = setInterval(() => {
-                // Background flash
                 document.body.style.backgroundColor = colors[colorIndex++ % colors.length];
             }, 75); 
 
-            // 6. Stop the chaos after 5 seconds
+            // 7. Stop the chaos after 5 seconds
             setTimeout(() => {
                 clearInterval(chaosIntervalId);
-                document.body.style.backgroundColor = '#f0f0f0'; // Reset color
-                message.style.display = 'none'; // Hide message
+                clearInterval(rainIntervalId);
+                document.body.style.backgroundColor = '#f0f0f0';
+                message.style.display = 'none';
                 
-                // Final State: Display a new success button
-                button.style.display = 'block'; // Show the button again
-                button.innerHTML = '🎉 YOU SURVIVED THE CHAOS! 🎉';
+                // Final State
+                button.style.display = 'block';
+                button.innerHTML = '👑 YOU ARE THE CHAOS KING/QUEEN! 🎉';
                 button.style.transform = 'none';
                 button.style.left = '50%';
                 button.style.top = '50%';
                 button.style.backgroundColor = '#00cc66';
                 button.style.borderColor = '#008040';
-                button.onclick = null; // Disable further clicks
-                button.removeEventListener('mousemove', runAway);
+                button.onclick = null;
             }, 5000);
         }
     </script>
