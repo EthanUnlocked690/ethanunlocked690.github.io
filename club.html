@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Club designer</title>
+    <title>Gaming Club UI Architect</title>
     <style>
         /* =======================================
            ADVANCED CSS STYLES (Embedded)
@@ -11,36 +11,37 @@
 
         /* 1. CSS Variables for Theming */
         :root {
-            --color-primary: #ff0077; /* Neon Pink */
-            --color-secondary: #00ffff; /* Cyan */
-            --color-background: #080808;
-            --canvas-bg: #1a1a1a;
-            --tool-bg: #0d0d0d;
-            --tool-border: #222222;
-            --font-stack: 'Inter', sans-serif;
-            --transition-speed: 0.2s;
+            --color-primary: #ff3377; /* Highlight Pink */
+            --color-secondary: #00ffc8; /* Aqua/Neon Green */
+            --color-background: #0d1117; /* Dark Background */
+            --canvas-bg: #161b22; /* Canvas color */
+            --tool-bg: #0d1117;
+            --tool-border: #2d333b;
+            --font-stack: 'Montserrat', sans-serif;
+            --element-fill: #21262d; /* Default Card Fill */
         }
 
-        /* Base Styles */
+        /* Base Layout */
         body {
             display: flex;
             font-family: var(--font-stack);
             background-color: var(--color-background);
-            color: #e0e0e0;
+            color: var(--color-secondary);
             margin: 0;
             min-height: 100vh;
         }
 
-        /* 2. Layout */
-        #club-canvas {
+        /* 2. Layout Sections */
+        #ui-canvas {
             flex-grow: 1;
             position: relative;
             overflow: hidden;
             background-color: var(--canvas-bg);
+            border: 5px dashed var(--color-secondary);
         }
 
         #design-tools {
-            width: 350px;
+            width: 300px;
             background-color: var(--tool-bg);
             padding: 20px;
             box-shadow: -4px 0 10px rgba(0, 0, 0, 0.5);
@@ -62,15 +63,16 @@
             color: #fff;
             border: none;
             padding: 10px 15px;
-            margin: 5px;
+            margin: 5px 0;
+            width: 100%;
             cursor: pointer;
-            transition: background-color var(--transition-speed);
+            transition: background-color 0.2s;
             font-weight: bold;
             border-radius: 4px;
         }
 
         button:hover {
-            background-color: #ff3399;
+            background-color: #ff5599;
         }
         
         /* Dynamic Property Pane */
@@ -79,53 +81,52 @@
             margin-top: 10px;
             color: var(--color-secondary);
         }
-        
-        /* 3. SVG Element Styling and Interactivity */
-        .club-element {
-            transition: fill var(--transition-speed), transform 0.1s;
-            cursor: grab;
-            fill-opacity: 0.9;
-        }
 
-        .club-element[data-type="dance-floor"] {
-            fill: #00ffff;
+        /* 3. SVG Element Styling and Interactivity */
+        .ui-element {
+            /* This makes the elements look like standard UI boxes */
+            fill: var(--element-fill); 
             stroke: var(--color-secondary);
             stroke-width: 2px;
+            fill-opacity: 0.9;
+            cursor: grab;
         }
         
-        .club-element[data-type="bar-area"] {
-            fill: #795548;
-            stroke: #ff9800;
-            stroke-width: 2px;
+        /* Specific element visual differentiation */
+        .ui-element[data-type="roster-panel"] {
+            stroke: #4CAF50; /* Green */
         }
-        
-        .club-element[data-type="vip-lounge"] {
-            fill: #880e4f;
+        .ui-element[data-type="leaderboard"] {
+            stroke: #2196F3; /* Blue */
+        }
+        .ui-element[data-type="stream-overlay"] {
+            fill: rgba(255, 51, 119, 0.1);
             stroke: var(--color-primary);
-            stroke-width: 2px;
+            stroke-dasharray: 8, 4;
+            stroke-width: 3px;
         }
 
 
         /* Selection and Dragging State */
-        .club-element.is-selected {
+        .ui-element.is-selected {
             stroke: var(--color-primary);
-            stroke-width: 5px;
-            filter: drop-shadow(0 0 5px var(--color-primary));
+            stroke-width: 4px;
+            filter: drop-shadow(0 0 8px var(--color-primary));
         }
 
-        .club-element.is-dragging {
+        .ui-element.is-dragging {
             cursor: grabbing;
             opacity: 0.7;
         }
 
         /* 4. Resizing Handles */
         .resize-handle {
-            fill: var(--color-primary);
+            fill: var(--color-secondary);
             stroke: #fff;
             stroke-width: 2px;
             cursor: nwse-resize; 
             opacity: 0; 
-            transition: opacity var(--transition-speed);
+            transition: opacity 0.2s;
         }
 
         .is-selected ~ .resize-handle {
@@ -134,16 +135,15 @@
         
         .resize-handle[data-handle="n"], .resize-handle[data-handle="s"] { cursor: ns-resize; }
         .resize-handle[data-handle="e"], .resize-handle[data-handle="w"] { cursor: ew-resize; }
-        .resize-handle[data-handle="ne"], .resize-handle[data-handle="sw"] { cursor: nesw-resize; }
         
         /* 5. Rotation Handle */
         .rotate-handle {
-            fill: var(--color-secondary);
+            fill: var(--color-primary);
             stroke: #fff;
             stroke-width: 2px;
             cursor: grab; 
             opacity: 0;
-            transition: opacity var(--transition-speed);
+            transition: opacity 0.2s;
         }
 
         .is-selected ~ .rotate-handle {
@@ -153,47 +153,34 @@
 </head>
 <body>
 
-    <main id="club-canvas" role="region" aria-label="Club Design Viewport">
-        <svg id="club-svg-viewport" viewBox="0 0 800 600">
+    <main id="ui-canvas" role="region" aria-label="Gaming Club UI Design Viewport">
+        <svg id="ui-svg-viewport" viewBox="0 0 1200 800" style="width: 100%; height: 100%;">
             <g id="designer-elements">
-                <rect class="club-element" data-element-id="floor" width="800" height="600" fill="#1a1a1a" data-type="base-layer"></rect>
+                <rect data-element-id="base" width="1200" height="800" fill="var(--canvas-bg)" data-type="base-layer"></rect>
+                
                 <g id="selection-group"></g>
             </g>
         </svg>
     </main>
     
-    <aside id="design-tools" aria-label="Club Design Tools">
-        <h2 class="tool-header">Club Structure</h2>
-        <div class="tool-group" data-tool-type="structure">
-            <button data-action="add-element" data-element-type="dance-floor">Add Dance Floor</button>
-            <button data-action="add-element" data-element-type="bar-area">Add Bar Area</button>
-            <button data-action="add-element" data-element-type="vip-lounge">Add VIP Lounge</button>
-        </div>
-        
-        <h2 class="tool-header">Club Identity</h2>
+    <aside id="design-tools" aria-label="Gaming UI Tools">
+        <h2 class="tool-header">Add Gaming Components</h2>
         <div class="tool-group">
-            <button id="launch-logo-designer" data-action="launch-logo">
-                Launch Logo Designer 🚀
-            </button>
-            <div id="logo-preview-container">
-                <img id="club-logo-preview" src="" alt="Club Logo Preview" style="width: 100%; max-width: 200px; height: auto; margin-top: 10px; border: 2px solid var(--color-primary); display: none;">
-            </div>
+            <button data-action="add-element" data-element-type="roster-panel">Add Roster Panel 👥</button>
+            <button data-action="add-element" data-element-type="leaderboard">Add Leaderboard 🏆</button>
+            <button data-action="add-element" data-element-type="news-feed">Add News Feed 📰</button>
+            <button data-action="add-element" data-element-type="recruitment-form">Add Recruitment Form 📝</button>
+            <button data-action="add-element" data-element-type="stream-overlay">Add Stream Overlay Zone 📺</button>
         </div>
 
-        <h2 class="tool-header">Global Theme</h2>
-        <div class="color-picker-container">
-            <label for="wall-color">Canvas/Wall Color:</label>
-            <input type="color" id="wall-color" value="#1a1a1a">
-        </div>
-        
         <h2 class="tool-header">Element Properties</h2>
         <div id="property-pane">
             <p id="no-selection-message">Select an element to edit its properties.</p>
         </div>
         
-        <h2 class="tool-header">Configuration</h2>
+        <h2 class="tool-header">Layout Controls</h2>
         <footer>
-            <button id="export-json">Export Configuration</button>
+            <button id="export-json">Export Layout Data</button>
             <button id="delete-element" disabled>Delete Selected</button>
         </footer>
     </aside>
@@ -201,34 +188,35 @@
 
     <script>
         // =======================================
-        // ADVANCED JAVASCRIPT LOGIC (Embedded)
+        // ADVANCED JAVASCRIPT LOGIC (REUSED/ADAPTED)
         // =======================================
         
         // --- 1. Global State Management ---
-        const clubState = {
-            wallColor: '#1a1a1a',
+        const uiState = {
             elements: [
-                { id: 'floor', type: 'base-layer', x: 0, y: 0, width: 800, height: 600, style: { fill: '#1a1a1a' }, rotation: 0, removable: false },
-                { id: 'bar-1', type: 'bar-area', x: 50, y: 50, width: 150, height: 40, style: { fill: '#795548', opacity: 0.9 }, rotation: 10, removable: true }
+                // Initial example element
+                { id: 'lb-1', type: 'leaderboard', x: 50, y: 50, width: 300, height: 400, style: { fill: '#21262d', opacity: 0.9 }, rotation: 0, removable: true },
             ],
             selectedElementId: null,
-            clubLogoData: localStorage.getItem('clubLogoData') || null, 
-            clubLogoConfig: JSON.parse(localStorage.getItem('clubLogoConfig')) || [], 
+            // Configuration for new elements
             newElementConfig: {
-                'dance-floor': { type: 'rect', defaultW: 200, defaultH: 200, defaultFill: '#00ffff' },
-                'bar-area': { type: 'rect', defaultW: 150, defaultH: 40, defaultFill: '#795548' },
-                'vip-lounge': { type: 'rect', defaultW: 100, defaultH: 150, defaultFill: '#880e4f' },
+                'roster-panel': { type: 'rect', defaultW: 250, defaultH: 350, defaultFill: '#21262d' },
+                'leaderboard': { type: 'rect', defaultW: 400, defaultH: 500, defaultFill: '#21262d' },
+                'news-feed': { type: 'rect', defaultW: 300, defaultH: 200, defaultFill: '#21262d' },
+                'recruitment-form': { type: 'rect', defaultW: 450, defaultH: 300, defaultFill: '#21262d' },
+                'stream-overlay': { type: 'rect', defaultW: 800, defaultH: 500, defaultFill: 'rgba(255, 51, 119, 0.1)' },
             }
         };
 
         // --- 2. DOM Elements and Constants ---
-        const canvas = document.getElementById('club-svg-viewport');
+        const canvas = document.getElementById('ui-svg-viewport');
         const designerElements = document.getElementById('designer-elements');
         const selectionGroup = document.getElementById('selection-group');
         const propertyPane = document.getElementById('property-pane');
         const designTools = document.getElementById('design-tools');
         
-        let activeElement = null;
+        // Interaction State Variables
+        let activeElement = null; 
         let activeState = null;   
         let initialMousePos = { x: 0, y: 0 };
         let initialElementBounds = {}; 
@@ -246,26 +234,23 @@
 
         /** Finds an element in the state by its ID */
         function getElementState(id) {
-            return clubState.elements.find(el => el.id === id);
+            return uiState.elements.find(el => el.id === id);
         }
 
         // --- 4. Rendering and Selection ---
 
-        /** Renders all elements from the clubState to the SVG canvas. */
+        /** Renders all elements from the uiState to the SVG canvas. */
         function renderElements() {
-            // Remove all elements except floor and selection group
-            designerElements.querySelectorAll('.club-element:not([data-type="base-layer"])').forEach(el => el.remove());
+            // Remove everything except the base layer and selection group
+            designerElements.querySelectorAll('.ui-element').forEach(el => el.remove());
             
-            clubState.elements.forEach(el => {
-                if (el.type === 'base-layer') {
-                    const baseLayer = document.querySelector('[data-type="base-layer"]');
-                    baseLayer.setAttribute('fill', el.style.fill);
-                    return;
-                }
+            uiState.elements.forEach(el => {
+                if (el.type === 'base-layer') return;
 
                 const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 
-                svgEl.setAttribute('class', 'club-element');
+                // Add attributes from state
+                svgEl.setAttribute('class', 'ui-element');
                 svgEl.setAttribute('data-element-id', el.id);
                 svgEl.setAttribute('data-type', el.type);
 
@@ -286,40 +271,40 @@
 
         /** Handles element selection and renders control handles. */
         function updateSelection() {
-            designerElements.querySelectorAll('.club-element').forEach(el => {
+            designerElements.querySelectorAll('.ui-element').forEach(el => {
                 el.classList.remove('is-selected');
             });
 
-            selectionGroup.innerHTML = ''; 
+            selectionGroup.innerHTML = ''; // Clear previous handles
 
-            if (!clubState.selectedElementId) {
+            if (!uiState.selectedElementId) {
                 renderPropertyPane();
                 document.getElementById('delete-element').disabled = true;
                 return;
             }
 
-            const state = getElementState(clubState.selectedElementId);
-            const element = document.querySelector(`[data-element-id="${clubState.selectedElementId}"]`);
+            const state = getElementState(uiState.selectedElementId);
+            const element = document.querySelector(`[data-element-id="${uiState.selectedElementId}"]`);
             
             if (element) {
                 element.classList.add('is-selected');
                 document.getElementById('delete-element').disabled = !state.removable;
 
-                // 1. Selection Bounds Rectangle
+                // 1. Selection Bounds Rectangle (Dashed border)
                 const boundsRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 boundsRect.setAttribute('x', state.x);
                 boundsRect.setAttribute('y', state.y);
                 boundsRect.setAttribute('width', state.width);
                 boundsRect.setAttribute('height', state.height);
                 boundsRect.setAttribute('fill', 'none');
-                boundsRect.setAttribute('stroke', '#ff0077');
+                boundsRect.setAttribute('stroke', 'var(--color-primary)');
                 boundsRect.setAttribute('stroke-dasharray', '5,5');
                 boundsRect.setAttribute('stroke-width', '1');
-                boundsRect.setAttribute('pointer-events', 'none');
+                boundsRect.setAttribute('pointer-events', 'none'); 
                 boundsRect.setAttribute('transform', `rotate(${state.rotation}, ${state.x + state.width / 2}, ${state.y + state.height / 2})`);
                 selectionGroup.appendChild(boundsRect);
 
-                // 2. Resizing Handles
+                // 2. Resizing Handles (8 points)
                 const handles = [
                     { h: 'nw', x: state.x, y: state.y }, { h: 'n', x: state.x + state.width / 2, y: state.y },
                     { h: 'ne', x: state.x + state.width, y: state.y }, { h: 'e', x: state.x + state.width, y: state.y + state.height / 2 },
@@ -342,7 +327,7 @@
                 
                 // 3. Rotation Handle
                 const rotateHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                const rotateY = state.y - 20; 
+                const rotateY = state.y - 20; // 20px above the top edge
                 rotateHandle.setAttribute('class', 'rotate-handle');
                 rotateHandle.setAttribute('data-handle', 'rotate');
                 rotateHandle.setAttribute('cx', center.x);
@@ -367,36 +352,33 @@
             }
 
             html += `
-                <label>Element Type: **${state.type.toUpperCase().replace('-', ' ')}**</label>
+                <label>Component Type: **${state.type.toUpperCase().replace('-', ' ')}**</label>
                 <label for="prop-fill-color">Fill Color</label>
-                <input type="color" id="prop-fill-color" data-prop="style.fill" value="${state.style.fill || '#ffffff'}">
+                <input type="color" id="prop-fill-color" data-prop="style.fill" value="${state.style.fill || '#ffffff'}" style="width: 100%;">
+                
+                <label for="prop-opacity">Opacity: ${ (state.style.opacity * 100).toFixed(0) }%</label>
+                <input type="range" id="prop-opacity" data-prop="style.opacity" min="0.1" max="1" step="0.05" value="${state.style.opacity || 0.9}">
+                <label>X Position: ${state.x.toFixed(0)}</label>
+                <label>Y Position: ${state.y.toFixed(0)}</label>
+                <label>Rotation: ${state.rotation.toFixed(0)}°</label>
             `;
-
-            if (state.type !== 'base-layer') {
-                html += `
-                    <label for="prop-opacity">Opacity: ${ (state.style.opacity * 100).toFixed(0) }%</label>
-                    <input type="range" id="prop-opacity" data-prop="style.opacity" min="0.1" max="1" step="0.05" value="${state.style.opacity || 0.9}">
-                    <label>X Position: ${state.x.toFixed(0)}</label>
-                    <label>Y Position: ${state.y.toFixed(0)}</label>
-                    <label>Rotation: ${state.rotation.toFixed(0)}°</label>
-                `;
-            }
             
             propertyPane.innerHTML = html;
         }
 
         /** Handles input changes in the property pane. */
         propertyPane.addEventListener('input', (e) => {
-            if (!clubState.selectedElementId) return;
+            if (!uiState.selectedElementId) return;
             const input = e.target;
             const prop = input.getAttribute('data-prop');
-            const state = getElementState(clubState.selectedElementId);
+            const state = getElementState(uiState.selectedElementId);
             
             if (!prop) return;
 
             let value = input.value;
             if (input.type === 'range') value = parseFloat(value);
             
+            // Handle nested properties (like style.fill)
             if (prop.includes('.')) {
                 const parts = prop.split('.');
                 state[parts[0]][parts[1]] = value;
@@ -417,35 +399,35 @@
             if (target.classList.contains('resize-handle')) {
                 activeState = 'resize';
                 resizeHandleType = target.getAttribute('data-handle');
-                const state = getElementState(clubState.selectedElementId);
+                const state = getElementState(uiState.selectedElementId);
                 initialElementBounds = { ...state, centerX: state.x + state.width / 2, centerY: state.y + state.height / 2 };
-                activeElement = document.querySelector(`[data-element-id="${clubState.selectedElementId}"]`);
+                activeElement = document.querySelector(`[data-element-id="${uiState.selectedElementId}"]`);
                 e.preventDefault(); 
                 return;
             } 
             
             if (target.classList.contains('rotate-handle')) {
                 activeState = 'rotate';
-                const state = getElementState(clubState.selectedElementId);
+                const state = getElementState(uiState.selectedElementId);
                 initialElementBounds = { ...state, centerX: state.x + state.width / 2, centerY: state.y + state.height / 2 };
-                activeElement = document.querySelector(`[data-element-id="${clubState.selectedElementId}"]`);
+                activeElement = document.querySelector(`[data-element-id="${uiState.selectedElementId}"]`);
                 e.preventDefault();
                 return;
             }
 
-            const elementTarget = target.closest('.club-element');
+            const elementTarget = target.closest('.ui-element');
             if (elementTarget && elementTarget.getAttribute('data-type') !== 'base-layer') {
-                clubState.selectedElementId = elementTarget.getAttribute('data-element-id');
+                uiState.selectedElementId = elementTarget.getAttribute('data-element-id');
                 activeElement = elementTarget;
                 activeState = 'move';
                 activeElement.classList.add('is-dragging');
 
-                const state = getElementState(clubState.selectedElementId);
+                const state = getElementState(uiState.selectedElementId);
                 initialElementBounds = { x: state.x, y: state.y }; 
                 initialMousePos = { x: svgPos.x - state.x, y: svgPos.y - state.y }; 
 
             } else {
-                clubState.selectedElementId = null;
+                uiState.selectedElementId = null;
             }
             updateSelection();
         });
@@ -454,7 +436,7 @@
             if (!activeState) return;
 
             const svgPos = screenToSvg(e.clientX, e.clientY);
-            const state = getElementState(clubState.selectedElementId);
+            const state = getElementState(uiState.selectedElementId);
 
             if (activeState === 'move') {
                 state.x = svgPos.x - initialMousePos.x;
@@ -462,7 +444,6 @@
                 
             } else if (activeState === 'resize') {
                 
-                // Simplified resize (ignores rotation for edge cases)
                 let newX = initialElementBounds.x;
                 let newY = initialElementBounds.y;
                 let newW = initialElementBounds.width;
@@ -487,6 +468,7 @@
                 
                 if (angleDeg < 0) angleDeg += 360;
                 
+                // Snap to 15-degree increments
                 state.rotation = Math.round(angleDeg / 15) * 15;
             }
 
@@ -506,50 +488,20 @@
 
         // --- 7. Toolbar and Global Controls ---
 
-        // Logo Communication Function (Global)
-        window.receiveLogoData = function(dataUrl, config) {
-            clubState.clubLogoData = dataUrl;
-            clubState.clubLogoConfig = config;
-            localStorage.setItem('clubLogoData', dataUrl);
-            localStorage.setItem('clubLogoConfig', JSON.stringify(config));
-            
-            const preview = document.getElementById('club-logo-preview');
-            preview.src = dataUrl;
-            preview.style.display = 'block';
-            
-            alert('Logo saved and applied!');
-        }
-
-
-        // Launch Logo Designer button handler
-        document.getElementById('launch-logo-designer').addEventListener('click', () => {
-            // NOTE: This requires 'logo-designer.html' to be saved in the same directory!
-            const designerWindow = window.open('logo-designer.html', 'LogoDesignerWindow', 'width=1000,height=700,menubar=no,toolbar=no');
-
-            // Send configuration to the new window after it loads
-            if (designerWindow) {
-                designerWindow.onload = () => {
-                    if (clubState.clubLogoConfig.length > 0) {
-                        designerWindow.postMessage({ type: 'LOAD_CONFIG', config: clubState.clubLogoConfig }, '*');
-                    }
-                };
-            }
-        });
-        
         // Add new elements
         designTools.addEventListener('click', (e) => {
             const action = e.target.getAttribute('data-action');
             const type = e.target.getAttribute('data-element-type');
 
             if (action === 'add-element' && type) {
-                const config = clubState.newElementConfig[type];
+                const config = uiState.newElementConfig[type];
                 if (!config) return;
 
                 const newId = `${type}-${Date.now()}`;
                 const newElement = {
                     id: newId,
                     type: type,
-                    x: 100 + Math.random() * 50,
+                    x: 100 + Math.random() * 50, // Slightly randomized initial position
                     y: 100 + Math.random() * 50,
                     width: config.defaultW,
                     height: config.defaultH,
@@ -558,60 +510,45 @@
                     removable: true
                 };
 
-                clubState.elements.push(newElement);
-                clubState.selectedElementId = newId;
+                uiState.elements.push(newElement);
+                uiState.selectedElementId = newId;
                 renderElements();
             }
         });
         
         // Delete selected element
         document.getElementById('delete-element').addEventListener('click', () => {
-            const id = clubState.selectedElementId;
+            const id = uiState.selectedElementId;
             const state = getElementState(id);
             if (!id || !state || !state.removable) return;
 
-            clubState.elements = clubState.elements.filter(el => el.id !== id);
-            clubState.selectedElementId = null;
+            uiState.elements = uiState.elements.filter(el => el.id !== id);
+            uiState.selectedElementId = null;
             renderElements();
-        });
-
-        // Handle Global Wall Color change
-        document.getElementById('wall-color').addEventListener('input', (e) => {
-            const newColor = e.target.value;
-            document.documentElement.style.setProperty('--canvas-bg', newColor);
-            
-            const stateIndex = clubState.elements.findIndex(el => el.id === 'floor');
-            if (stateIndex !== -1) {
-                clubState.elements[stateIndex].style.fill = newColor;
-                document.querySelector('[data-type="base-layer"]').setAttribute('fill', newColor);
-            }
         });
 
         // Export Configuration
         document.getElementById('export-json').addEventListener('click', () => {
-            const jsonOutput = JSON.stringify(clubState, null, 2);
+            // Only export the component data
+            const exportData = uiState.elements.filter(el => el.type !== 'base-layer');
+            const jsonOutput = JSON.stringify(exportData, null, 2);
+            
             const blob = new Blob([jsonOutput], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'club_design.json';
+            a.download = 'gaming_ui_layout.json';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            alert('Club design configuration exported successfully!');
+            alert('Layout configuration exported successfully! (Check Downloads)');
         });
 
 
         // --- 8. Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             renderElements();
-            
-            // Check for existing logo data on load
-            if (clubState.clubLogoData) {
-                document.getElementById('club-logo-preview').src = clubState.clubLogoData;
-                document.getElementById('club-logo-preview').style.display = 'block';
-            }
         });
     </script>
 </body>
