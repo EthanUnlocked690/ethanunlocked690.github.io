@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Club Architect 2.0</title>
+    <style>
+        /* =======================================
+           ADVANCED CSS STYLES (Embedded)
+           ======================================= */
+
+        /* 1. CSS Variables for Theming */
+        :root {
+            --color-primary: #ff0077; /* Neon Pink */
+            --color-secondary: #00ffff; /* Cyan */
+            --color-background: #080808;
+            --canvas-bg: #1a1a1a;
+            --tool-bg: #0d0d0d;
+            --tool-border: #222222;
+            --font-stack: 'Inter', sans-serif;
+            --transition-speed: 0.2s;
+        }
+
+        /* Base Styles */
+        body {
+            display: flex;
+            font-family: var(--font-stack);
+            background-color: var(--color-background);
+            color: #e0e0e0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* 2. Layout */
+        #club-canvas {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: var(--canvas-bg);
+        }
+
+        #design-tools {
+            width: 350px;
+            background-color: var(--tool-bg);
+            padding: 20px;
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.5);
+            border-left: 1px solid var(--tool-border);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .tool-header {
+            color: var(--color-primary);
+            border-bottom: 1px solid var(--tool-border);
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+
+        /* Buttons & Inputs */
+        button {
+            background-color: var(--color-primary);
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #ff3399;
+        }
+        
+        /* Dynamic Property Pane */
+        #property-pane label {
+            display: block;
+            margin-top: 10px;
+            color: var(--color-secondary);
+        }
+        
+        /* 3. SVG Element Styling and Interactivity */
+        .club-element {
+            transition: fill var(--transition-speed), transform 0.1s;
+            cursor: grab;
+            fill-opacity: 0.9;
+        }
+
+        .club-element[data-type="dance-floor"] {
+            fill: #00ffff;
+            stroke: var(--color-secondary);
+            stroke-width: 2px;
+        }
+        
+        .club-element[data-type="bar-area"] {
+            fill: #795548;
+            stroke: #ff9800;
+            stroke-width: 2px;
+        }
+        
+        .club-element[data-type="vip-lounge"] {
+            fill: #880e4f;
+            stroke: var(--color-primary);
+            stroke-width: 2px;
+        }
+
+
+        /* Selection and Dragging State */
+        .club-element.is-selected {
+            stroke: var(--color-primary);
+            stroke-width: 5px;
+            filter: drop-shadow(0 0 5px var(--color-primary));
+        }
+
+        .club-element.is-dragging {
+            cursor: grabbing;
+            opacity: 0.7;
+        }
+
+        /* 4. Resizing Handles */
+        .resize-handle {
+            fill: var(--color-primary);
+            stroke: #fff;
+            stroke-width: 2px;
+            cursor: nwse-resize; 
+            opacity: 0; 
+            transition: opacity var(--transition-speed);
+        }
+
+        .is-selected ~ .resize-handle {
+            opacity: 1; 
+        }
+        
+        .resize-handle[data-handle="n"], .resize-handle[data-handle="s"] { cursor: ns-resize; }
+        .resize-handle[data-handle="e"], .resize-handle[data-handle="w"] { cursor: ew-resize; }
+        .resize-handle[data-handle="ne"], .resize-handle[data-handle="sw"] { cursor: nesw-resize; }
+        
+        /* 5. Rotation Handle */
+        .rotate-handle {
+            fill: var(--color-secondary);
+            stroke: #fff;
+            stroke-width: 2px;
+            cursor: grab; 
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+
+        .is-selected ~ .rotate-handle {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <main id="club-canvas" role="region" aria-label="Club Design Viewport">
+        <svg id="club-svg-viewport" viewBox="0 0 800 600">
+            <g id="designer-elements">
+                <rect class="club-element" data-element-id="floor" width="800" height="600" fill="#1a1a1a" data-type="base-layer"></rect>
+                <g id="selection-group"></g>
+            </g>
+        </svg>
+    </main>
+    
+    <aside id="design-tools" aria-label="Club Design Tools">
+        <h2 class="tool-header">Club Structure</h2>
+        <div class="tool-group" data-tool-type="structure">
+            <button data-action="add-element" data-element-type="dance-floor">Add Dance Floor</button>
+            <button data-action="add-element" data-element-type="bar-area">Add Bar Area</button>
+            <button data-action="add-element" data-element-type="vip-lounge">Add VIP Lounge</button>
+        </div>
+        
+        <h2 class="tool-header">Club Identity</h2>
+        <div class="tool-group">
+            <button id="launch-logo-designer" data-action="launch-logo">
+                Launch Logo Designer 🚀
+            </button>
+            <div id="logo-preview-container">
+                <img id="club-logo-preview" src="" alt="Club Logo Preview" style="width: 100%; max-width: 200px; height: auto; margin-top: 10px; border: 2px solid var(--color-primary); display: none;">
+            </div>
+        </div>
+
+        <h2 class="tool-header">Global Theme</h2>
+        <div class="color-picker-container">
+            <label for="wall-color">Canvas/Wall Color:</label>
+            <input type="color" id="wall-color" value="#1a1a1a">
+        </div>
+        
+        <h2 class="tool-header">Element Properties</h2>
+        <div id="property-pane">
+            <p id="no-selection-message">Select an element to edit its properties.</p>
+        </div>
+        
+        <h2 class="tool-header">Configuration</h2>
+        <footer>
+            <button id="export-json">Export Configuration</button>
+            <button id="delete-element" disabled>Delete Selected</button>
+        </footer>
+    </aside>
+
+
+    <script>
+        // =======================================
+        // ADVANCED JAVASCRIPT LOGIC (Embedded)
+        // =======================================
+        
+        // --- 1. Global State Management ---
+        const clubState = {
+            wallColor: '#1a1a1a',
+            elements: [
+                { id: 'floor', type: 'base-layer', x: 0, y: 0, width: 800, height: 600, style: { fill: '#1a1a1a' }, rotation: 0, removable: false },
+                { id: 'bar-1', type: 'bar-area', x: 50, y: 50, width: 150, height: 40, style: { fill: '#795548', opacity: 0.9 }, rotation: 10, removable: true }
+            ],
+            selectedElementId: null,
+            clubLogoData: localStorage.getItem('clubLogoData') || null, 
+            clubLogoConfig: JSON.parse(localStorage.getItem('clubLogoConfig')) || [], 
+            newElementConfig: {
+                'dance-floor': { type: 'rect', defaultW: 200, defaultH: 200, defaultFill: '#00ffff' },
+                'bar-area': { type: 'rect', defaultW: 150, defaultH: 40, defaultFill: '#795548' },
+                'vip-lounge': { type: 'rect', defaultW: 100, defaultH: 150, defaultFill: '#880e4f' },
+            }
+        };
+
+        // --- 2. DOM Elements and Constants ---
+        const canvas = document.getElementById('club-svg-viewport');
+        const designerElements = document.getElementById('designer-elements');
+        const selectionGroup = document.getElementById('selection-group');
+        const propertyPane = document.getElementById('property-pane');
+        const designTools = document.getElementById('design-tools');
+        
+        let activeElement = null;
+        let activeState = null;   
+        let initialMousePos = { x: 0, y: 0 };
+        let initialElementBounds = {}; 
+        let resizeHandleType = null;
+
+        // --- 3. Core Utility Functions ---
+
+        /** Converts screen coordinates to SVG coordinates */
+        function screenToSvg(clientX, clientY) {
+            const svgPoint = canvas.createSVGPoint();
+            svgPoint.x = clientX;
+            svgPoint.y = clientY;
+            return svgPoint.matrixTransform(canvas.getScreenCTM().inverse());
+        }
+
+        /** Finds an element in the state by its ID */
+        function getElementState(id) {
+            return clubState.elements.find(el => el.id === id);
+        }
+
+        // --- 4. Rendering and Selection ---
+
+        /** Renders all elements from the clubState to the SVG canvas. */
+        function renderElements() {
+            // Remove all elements except floor and selection group
+            designerElements.querySelectorAll('.club-element:not([data-type="base-layer"])').forEach(el => el.remove());
+            
+            clubState.elements.forEach(el => {
+                if (el.type === 'base-layer') {
+                    const baseLayer = document.querySelector('[data-type="base-layer"]');
+                    baseLayer.setAttribute('fill', el.style.fill);
+                    return;
+                }
+
+                const svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                
+                svgEl.setAttribute('class', 'club-element');
+                svgEl.setAttribute('data-element-id', el.id);
+                svgEl.setAttribute('data-type', el.type);
+
+                svgEl.setAttribute('x', el.x);
+                svgEl.setAttribute('y', el.y);
+                svgEl.setAttribute('width', el.width);
+                svgEl.setAttribute('height', el.height);
+                svgEl.setAttribute('fill', el.style.fill);
+                svgEl.style.opacity = el.style.opacity || 1;
+                
+                // Apply rotation transform
+                svgEl.setAttribute('transform', `rotate(${el.rotation}, ${el.x + el.width / 2}, ${el.y + el.height / 2})`);
+
+                designerElements.insertBefore(svgEl, selectionGroup); 
+            });
+            updateSelection();
+        }
+
+        /** Handles element selection and renders control handles. */
+        function updateSelection() {
+            designerElements.querySelectorAll('.club-element').forEach(el => {
+                el.classList.remove('is-selected');
+            });
+
+            selectionGroup.innerHTML = ''; 
+
+            if (!clubState.selectedElementId) {
+                renderPropertyPane();
+                document.getElementById('delete-element').disabled = true;
+                return;
+            }
+
+            const state = getElementState(clubState.selectedElementId);
+            const element = document.querySelector(`[data-element-id="${clubState.selectedElementId}"]`);
+            
+            if (element) {
+                element.classList.add('is-selected');
+                document.getElementById('delete-element').disabled = !state.removable;
+
+                // 1. Selection Bounds Rectangle
+                const boundsRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                boundsRect.setAttribute('x', state.x);
+                boundsRect.setAttribute('y', state.y);
+                boundsRect.setAttribute('width', state.width);
+                boundsRect.setAttribute('height', state.height);
+                boundsRect.setAttribute('fill', 'none');
+                boundsRect.setAttribute('stroke', '#ff0077');
+                boundsRect.setAttribute('stroke-dasharray', '5,5');
+                boundsRect.setAttribute('stroke-width', '1');
+                boundsRect.setAttribute('pointer-events', 'none');
+                boundsRect.setAttribute('transform', `rotate(${state.rotation}, ${state.x + state.width / 2}, ${state.y + state.height / 2})`);
+                selectionGroup.appendChild(boundsRect);
+
+                // 2. Resizing Handles
+                const handles = [
+                    { h: 'nw', x: state.x, y: state.y }, { h: 'n', x: state.x + state.width / 2, y: state.y },
+                    { h: 'ne', x: state.x + state.width, y: state.y }, { h: 'e', x: state.x + state.width, y: state.y + state.height / 2 },
+                    { h: 'se', x: state.x + state.width, y: state.y + state.height }, { h: 's', x: state.x + state.width / 2, y: state.y + state.height },
+                    { h: 'sw', x: state.x, y: state.y + state.height }, { h: 'w', x: state.x, y: state.y + state.height / 2 }
+                ];
+                
+                const center = { x: state.x + state.width / 2, y: state.y + state.height / 2 };
+
+                handles.forEach(pos => {
+                    const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    handle.setAttribute('class', 'resize-handle');
+                    handle.setAttribute('data-handle', pos.h);
+                    handle.setAttribute('cx', pos.x);
+                    handle.setAttribute('cy', pos.y);
+                    handle.setAttribute('r', 5);
+                    handle.setAttribute('transform', `rotate(${state.rotation}, ${center.x}, ${center.y})`);
+                    selectionGroup.appendChild(handle);
+                });
+                
+                // 3. Rotation Handle
+                const rotateHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                const rotateY = state.y - 20; 
+                rotateHandle.setAttribute('class', 'rotate-handle');
+                rotateHandle.setAttribute('data-handle', 'rotate');
+                rotateHandle.setAttribute('cx', center.x);
+                rotateHandle.setAttribute('cy', rotateY);
+                rotateHandle.setAttribute('r', 7);
+                rotateHandle.setAttribute('transform', `rotate(${state.rotation}, ${center.x}, ${center.y})`);
+                selectionGroup.appendChild(rotateHandle);
+            }
+
+            renderPropertyPane(state);
+        }
+
+        // --- 5. Dynamic Property Pane (Sidebar) ---
+
+        /** Renders the dynamic property controls for the selected element. */
+        function renderPropertyPane(state) {
+            let html = '';
+            
+            if (!state) {
+                propertyPane.innerHTML = `<p id="no-selection-message">Select an element to edit its properties.</p>`;
+                return;
+            }
+
+            html += `
+                <label>Element Type: **${state.type.toUpperCase().replace('-', ' ')}**</label>
+                <label for="prop-fill-color">Fill Color</label>
+                <input type="color" id="prop-fill-color" data-prop="style.fill" value="${state.style.fill || '#ffffff'}">
+            `;
+
+            if (state.type !== 'base-layer') {
+                html += `
+                    <label for="prop-opacity">Opacity: ${ (state.style.opacity * 100).toFixed(0) }%</label>
+                    <input type="range" id="prop-opacity" data-prop="style.opacity" min="0.1" max="1" step="0.05" value="${state.style.opacity || 0.9}">
+                    <label>X Position: ${state.x.toFixed(0)}</label>
+                    <label>Y Position: ${state.y.toFixed(0)}</label>
+                    <label>Rotation: ${state.rotation.toFixed(0)}°</label>
+                `;
+            }
+            
+            propertyPane.innerHTML = html;
+        }
+
+        /** Handles input changes in the property pane. */
+        propertyPane.addEventListener('input', (e) => {
+            if (!clubState.selectedElementId) return;
+            const input = e.target;
+            const prop = input.getAttribute('data-prop');
+            const state = getElementState(clubState.selectedElementId);
+            
+            if (!prop) return;
+
+            let value = input.value;
+            if (input.type === 'range') value = parseFloat(value);
+            
+            if (prop.includes('.')) {
+                const parts = prop.split('.');
+                state[parts[0]][parts[1]] = value;
+            } else {
+                state[prop] = value;
+            }
+            
+            renderElements(); 
+        });
+
+        // --- 6. Interaction Handlers (Move, Resize, Rotate) ---
+        
+        canvas.addEventListener('mousedown', (e) => {
+            const target = e.target;
+            const svgPos = screenToSvg(e.clientX, e.clientY);
+            initialMousePos = svgPos;
+            
+            if (target.classList.contains('resize-handle')) {
+                activeState = 'resize';
+                resizeHandleType = target.getAttribute('data-handle');
+                const state = getElementState(clubState.selectedElementId);
+                initialElementBounds = { ...state, centerX: state.x + state.width / 2, centerY: state.y + state.height / 2 };
+                activeElement = document.querySelector(`[data-element-id="${clubState.selectedElementId}"]`);
+                e.preventDefault(); 
+                return;
+            } 
+            
+            if (target.classList.contains('rotate-handle')) {
+                activeState = 'rotate';
+                const state = getElementState(clubState.selectedElementId);
+                initialElementBounds = { ...state, centerX: state.x + state.width / 2, centerY: state.y + state.height / 2 };
+                activeElement = document.querySelector(`[data-element-id="${clubState.selectedElementId}"]`);
+                e.preventDefault();
+                return;
+            }
+
+            const elementTarget = target.closest('.club-element');
+            if (elementTarget && elementTarget.getAttribute('data-type') !== 'base-layer') {
+                clubState.selectedElementId = elementTarget.getAttribute('data-element-id');
+                activeElement = elementTarget;
+                activeState = 'move';
+                activeElement.classList.add('is-dragging');
+
+                const state = getElementState(clubState.selectedElementId);
+                initialElementBounds = { x: state.x, y: state.y }; 
+                initialMousePos = { x: svgPos.x - state.x, y: svgPos.y - state.y }; 
+
+            } else {
+                clubState.selectedElementId = null;
+            }
+            updateSelection();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!activeState) return;
+
+            const svgPos = screenToSvg(e.clientX, e.clientY);
+            const state = getElementState(clubState.selectedElementId);
+
+            if (activeState === 'move') {
+                state.x = svgPos.x - initialMousePos.x;
+                state.y = svgPos.y - initialMousePos.y;
+                
+            } else if (activeState === 'resize') {
+                
+                // Simplified resize (ignores rotation for edge cases)
+                let newX = initialElementBounds.x;
+                let newY = initialElementBounds.y;
+                let newW = initialElementBounds.width;
+                let newH = initialElementBounds.height;
+
+                const dx = svgPos.x - initialMousePos.x;
+                const dy = svgPos.y - initialMousePos.y;
+
+                if (resizeHandleType.includes('w')) { newX += dx; newW -= dx; }
+                if (resizeHandleType.includes('e')) { newW += dx; }
+                if (resizeHandleType.includes('n')) { newY += dy; newH -= dy; }
+                if (resizeHandleType.includes('s')) { newH += dy; }
+                
+                if (newW > 10) { state.x = newX; state.width = newW; }
+                if (newH > 10) { state.y = newY; state.height = newH; }
+
+            } else if (activeState === 'rotate') {
+                const center = { x: state.x + state.width / 2, y: state.y + state.height / 2 };
+                
+                const angleRad = Math.atan2(svgPos.y - center.y, svgPos.x - center.x);
+                let angleDeg = angleRad * (180 / Math.PI) + 90; 
+                
+                if (angleDeg < 0) angleDeg += 360;
+                
+                state.rotation = Math.round(angleDeg / 15) * 15;
+            }
+
+            renderElements(); 
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (activeState === 'move' && activeElement) {
+                activeElement.classList.remove('is-dragging');
+            }
+            activeState = null;
+            activeElement = null;
+            resizeHandleType = null;
+            updateSelection(); 
+        });
+
+
+        // --- 7. Toolbar and Global Controls ---
+
+        // Logo Communication Function (Global)
+        window.receiveLogoData = function(dataUrl, config) {
+            clubState.clubLogoData = dataUrl;
+            clubState.clubLogoConfig = config;
+            localStorage.setItem('clubLogoData', dataUrl);
+            localStorage.setItem('clubLogoConfig', JSON.stringify(config));
+            
+            const preview = document.getElementById('club-logo-preview');
+            preview.src = dataUrl;
+            preview.style.display = 'block';
+            
+            alert('Logo saved and applied!');
+        }
+
+
+        // Launch Logo Designer button handler
+        document.getElementById('launch-logo-designer').addEventListener('click', () => {
+            // NOTE: This requires 'logo-designer.html' to be saved in the same directory!
+            const designerWindow = window.open('logo-designer.html', 'LogoDesignerWindow', 'width=1000,height=700,menubar=no,toolbar=no');
+
+            // Send configuration to the new window after it loads
+            if (designerWindow) {
+                designerWindow.onload = () => {
+                    if (clubState.clubLogoConfig.length > 0) {
+                        designerWindow.postMessage({ type: 'LOAD_CONFIG', config: clubState.clubLogoConfig }, '*');
+                    }
+                };
+            }
+        });
+        
+        // Add new elements
+        designTools.addEventListener('click', (e) => {
+            const action = e.target.getAttribute('data-action');
+            const type = e.target.getAttribute('data-element-type');
+
+            if (action === 'add-element' && type) {
+                const config = clubState.newElementConfig[type];
+                if (!config) return;
+
+                const newId = `${type}-${Date.now()}`;
+                const newElement = {
+                    id: newId,
+                    type: type,
+                    x: 100 + Math.random() * 50,
+                    y: 100 + Math.random() * 50,
+                    width: config.defaultW,
+                    height: config.defaultH,
+                    style: { fill: config.defaultFill, opacity: 0.9 },
+                    rotation: 0,
+                    removable: true
+                };
+
+                clubState.elements.push(newElement);
+                clubState.selectedElementId = newId;
+                renderElements();
+            }
+        });
+        
+        // Delete selected element
+        document.getElementById('delete-element').addEventListener('click', () => {
+            const id = clubState.selectedElementId;
+            const state = getElementState(id);
+            if (!id || !state || !state.removable) return;
+
+            clubState.elements = clubState.elements.filter(el => el.id !== id);
+            clubState.selectedElementId = null;
+            renderElements();
+        });
+
+        // Handle Global Wall Color change
+        document.getElementById('wall-color').addEventListener('input', (e) => {
+            const newColor = e.target.value;
+            document.documentElement.style.setProperty('--canvas-bg', newColor);
+            
+            const stateIndex = clubState.elements.findIndex(el => el.id === 'floor');
+            if (stateIndex !== -1) {
+                clubState.elements[stateIndex].style.fill = newColor;
+                document.querySelector('[data-type="base-layer"]').setAttribute('fill', newColor);
+            }
+        });
+
+        // Export Configuration
+        document.getElementById('export-json').addEventListener('click', () => {
+            const jsonOutput = JSON.stringify(clubState, null, 2);
+            const blob = new Blob([jsonOutput], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'club_design.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('Club design configuration exported successfully!');
+        });
+
+
+        // --- 8. Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderElements();
+            
+            // Check for existing logo data on load
+            if (clubState.clubLogoData) {
+                document.getElementById('club-logo-preview').src = clubState.clubLogoData;
+                document.getElementById('club-logo-preview').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
