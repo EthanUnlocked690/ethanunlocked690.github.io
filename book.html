@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Club - Bookings</title>
+    <style>
+        /* --- 🎨 ADVANCED CSS STYLING (LOOK AS COOL AS POSSIBLE) --- */
+        :root {
+            /* Brawl Stars inspired color palette */
+            --color-primary: #FFD700; /* Gold/Yellow */
+            --color-secondary: #00BFFF; /* Deep Blue */
+            --color-dark: #1C1C1C;
+            --color-light: #F0F0F0;
+            --color-error: #FF4500;
+            --font-main: 'Arial', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(135deg, var(--color-dark) 0%, #333 100%);
+            color: var(--color-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: rgba(30, 30, 30, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 5px var(--color-primary); /* Cool double border effect */
+            width: 90%;
+            max-width: 500px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--color-primary);
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--color-light);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #555;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+            color: var(--color-light);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--color-secondary);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 25px;
+        }
+
+        /* Styling for the custom checkbox */
+        input[type="checkbox"] {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-primary);
+            border-radius: 4px;
+            background-color: #2a2a2a;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--color-dark);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Advanced Conditional Area Styling */
+        #child-details {
+            border-left: 5px solid var(--color-secondary);
+            padding-left: 15px;
+            margin-left: 0;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            background-color: rgba(0, 191, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+
+        #child-details.visible {
+            max-height: 500px; /* Sufficiently large height */
+            opacity: 1;
+        }
+
+        /* Submit Button Styling */
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--color-primary);
+            color: var(--color-dark);
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+        }
+
+        button:hover {
+            background-color: #FFC700;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: var(--color-error);
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .alert-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            border: 2px solid;
+            animation: pulse 1s infinite alternate;
+        }
+
+        .alert-success {
+            background-color: rgba(50, 205, 50, 0.2);
+            border-color: #32CD32;
+            color: #32CD32;
+        }
+
+        .alert-fail {
+            background-color: rgba(255, 69, 0, 0.2);
+            border-color: var(--color-error);
+            color: var(--color-error);
+        }
+
+        @keyframes pulse {
+            from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+            to { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Brawl Stars Club Sign-Up</h2>
+
+        <form id="signup-form">
+
+            <div class="form-group">
+                <label for="firstName">First Name <span style="color:var(--color-error);">*</span></label>
+                <input type="text" id="firstName" name="firstName" required>
+                <div class="error-message" id="error-firstName">First Name is required.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name <span style="color:var(--color-error);">*</span></label>
+                <input type="text" id="lastName" name="lastName" required>
+                <div class="error-message" id="error-lastName">Last Name is required.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email <span style="color:var(--color-error);">*</span></label>
+                <input type="email" id="email" name="email" required>
+                <div class="error-message" id="error-email">A valid Email is required.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number <span style="color:var(--color-error);">*</span></label>
+                <input type="tel" id="phone" name="phone" required pattern="[0-9]{10,15}">
+                <div class="error-message" id="error-phone">Phone Number is required (10-15 digits recommended).</div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="hasChild" name="hasChild">
+                <label for="hasChild">I am signing up a child for the club.</label>
+            </div>
+
+            <div id="child-details">
+                <p style="color: var(--color-secondary); font-style: italic;">Child Registration (Ages 9-13 Only)</p>
+                <div class="form-group">
+                    <label for="childFirstName">Child's First Name <span style="color:var(--color-error;">*</span></label>
+                    <input type="text" id="childFirstName" name="childFirstName">
+                    <div class="error-message" id="error-childFirstName">Child's First Name is required.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="childAge">Child's Age (9-13) <span style="color:var(--color-error);">*</span></label>
+                    <input type="number" id="childAge" name="childAge" min="9" max="13">
+                    <div class="error-message" id="error-childAge">Child's age must be between 9 and 13.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="childBirthYear">Child's Birth Year <span style="color:var(--color-error;">*</span></label>
+                    <input type="number" id="childBirthYear" name="childBirthYear" min="1900" max="2025">
+                    <div class="error-message" id="error-childBirthYear">Child's Birth Year is required.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="numKids">Number of Kids Signing Up <span style="color:var(--color-error;">*</span></label>
+                    <select id="numKids" name="numKids">
+                        <option value="1">1 Child</option>
+                        <option value="2">2 Children</option>
+                        <option value="3">3 Children</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit">Complete Club Booking</button>
+
+            <div id="result-message" class="alert-message"></div>
+
+        </form>
+    </div>
+
+    <script>
+        // --- ⚙️ ADVANCED JAVASCRIPT VALIDATION AND LOGIC ---
+        const form = document.getElementById('signup-form');
+        const hasChildCheckbox = document.getElementById('hasChild');
+        const childDetailsDiv = document.getElementById('child-details');
+        const resultMessage = document.getElementById('result-message');
+        const CURRENT_YEAR = new Date().getFullYear();
+
+        // **1. Conditional Display Logic**
+        hasChildCheckbox.addEventListener('change', () => {
+            if (hasChildCheckbox.checked) {
+                childDetailsDiv.classList.add('visible');
+            } else {
+                childDetailsDiv.classList.remove('visible');
+            }
+        });
+
+        // **2. Centralized Validation Function**
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            resultMessage.style.display = 'none';
+
+            // Required Adult Fields Check
+            const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
+            requiredFields.forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                if (input.value.trim() === '') {
+                    document.getElementById(`error-${fieldId}`).style.display = 'block';
+                    isValid = false;
+                }
+            });
+
+            // Email Format Check (simple)
+            const email = document.getElementById('email').value;
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email.trim() !== '' && !emailPattern.test(email)) {
+                document.getElementById('error-email').innerText = 'Please enter a valid email address.';
+                document.getElementById('error-email').style.display = 'block';
+                isValid = false;
+            }
+
+            // Phone Number Check (basic pattern)
+            const phone = document.getElementById('phone').value;
+            const phonePattern = /^\d{10,15}$/;
+            if (phone.trim() !== '' && !phonePattern.test(phone)) {
+                 document.getElementById('error-phone').innerText = 'Please enter 10 to 15 digits for the phone number.';
+                 document.getElementById('error-phone').style.display = 'block';
+                 isValid = false;
+            }
+
+            // Conditional Child Fields Check
+            if (hasChildCheckbox.checked) {
+                const childFields = ['childFirstName', 'childAge', 'childBirthYear'];
+                childFields.forEach(fieldId => {
+                    const input = document.getElementById(fieldId);
+                    if (input.value.trim() === '') {
+                        document.getElementById(`error-${fieldId}`).style.display = 'block';
+                        isValid = false;
+                    }
+                });
+
+                // Child Age Validation (9-13 ONLY)
+                const ageInput = document.getElementById('childAge');
+                const age = parseInt(ageInput.value);
+                
+                if (!isNaN(age)) {
+                    if (age < 9 || age > 13) {
+                        document.getElementById('error-childAge').innerText = 'Child\'s age must be between 9 and 13.';
+                        document.getElementById('error-childAge').style.display = 'block';
+                        isValid = false;
+                    }
+                }
+
+                // Child Birth Year Validation (Approximate check)
+                const yearInput = document.getElementById('childBirthYear');
+                const year = parseInt(yearInput.value);
+                const minYear = CURRENT_YEAR - 13; // Min age 13
+                const maxYear = CURRENT_YEAR - 9;  // Max age 9
+                
+                if (!isNaN(year) && (year < minYear || year > maxYear)) {
+                     document.getElementById('error-childBirthYear').innerText = `Year must be approx. between ${minYear} and ${maxYear}.`;
+                     document.getElementById('error-childBirthYear').style.display = 'block';
+                }
+            }
+
+            return isValid;
+        }
+
+        // **3. Form Submission Handler**
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Stop the default form submission
+
+            if (!validateForm()) {
+                resultMessage.innerText = "Please fix the errors shown above to complete the booking.";
+                resultMessage.className = "alert-message alert-fail";
+                resultMessage.style.display = 'block';
+                return;
+            }
+
+            // Get all necessary data
+            const formData = {
+                parentName: `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                isChildBooking: hasChildCheckbox.checked,
+                childName: document.getElementById('childFirstName')?.value || null,
+                childAge: parseInt(document.getElementById('childAge')?.value) || null,
+                numKids: document.getElementById('numKids')?.value || 1
+            };
+
+            // --- A. Overage/Underage Failure Check (Specific Requirement) ---
+            if (formData.isChildBooking && (formData.childAge < 9 || formData.childAge > 13)) {
+                let status = formData.childAge < 9 ? "underage" : "overage";
+                
+                resultMessage.innerText = `Booking failed! Child is ${status}! 9's – 13's only.`;
+                resultMessage.className = "alert-message alert-fail";
+                resultMessage.style.display = 'block';
+                return;
+            }
+
+            // --- B. Successful Booking Message Generation ---
+            
+            let bookedFor = formData.isChildBooking ? `their child (${formData.childName})` : `themselves`;
+            
+            // Build the email content for Ethan
+            const emailRecipient = "ethan.unlocked@gmail.com";
+            const subject = encodeURIComponent(`New Brawl Stars Club Booking: ${formData.parentName}`);
+            
+            let bodyText = `Hello Ethan,\n\n`;
+            bodyText += `${formData.parentName} has booked ${bookedFor} for the Brawl Stars Club.`;
+            if (formData.isChildBooking && formData.numKids > 1) {
+                bodyText += ` They are signing up ${formData.numKids} children.`;
+            }
+            bodyText += `\n\nTheir email for RSVP is ${formData.email}. Their number is ${formData.phone}.`;
+            
+            const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+
+            // **Final Success UI Update**
+            resultMessage.innerHTML = `
+                <p>✅ **BOOKING COMPLETE!**</p>
+                <p>Thank you, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor}.</p>
+                <p>We are now preparing the RSVP email. Please click the button below to send the details to the club coordinator:</p>
+                <a href="${mailtoLink}" style="display:block; margin-top:15px; padding:10px; background-color:#32CD32; color:white; border-radius:5px; text-decoration:none;">
+                    Click to Send Coordinator Email
+                </a>
+            `;
+            resultMessage.className = "alert-message alert-success";
+            resultMessage.style.display = 'block';
+
+            // Optional: Scroll to the result message for visibility
+            resultMessage.scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
