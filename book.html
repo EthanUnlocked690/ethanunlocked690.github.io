@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Club - Bookings</title>
+    <title>Brawl Stars Club Sign-Up - Dynamic Advanced</title>
     <style>
-        /* --- 🎨 ADVANCED CSS STYLING (LOOK AS COOL AS POSSIBLE) --- */
+        /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
-            /* Brawl Stars inspired color palette */
             --color-primary: #FFD700; /* Gold/Yellow */
             --color-secondary: #00BFFF; /* Deep Blue */
             --color-dark: #1C1C1C;
@@ -22,8 +21,9 @@
             color: var(--color-light);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Align to the top due to dynamic height */
             min-height: 100vh;
+            padding: 40px 0;
             margin: 0;
         }
 
@@ -31,9 +31,9 @@
             background-color: rgba(30, 30, 30, 0.95);
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 5px var(--color-primary); /* Cool double border effect */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 5px var(--color-primary);
             width: 90%;
-            max-width: 500px;
+            max-width: 600px; /* Increased max width for better dynamic form layout */
             animation: fadeIn 1s ease-out;
         }
 
@@ -46,7 +46,7 @@
             text-align: center;
             color: var(--color-primary);
             margin-bottom: 30px;
-            font-size: 2em;
+            font-size: 2.2em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
 
@@ -119,26 +119,52 @@
             font-weight: bold;
         }
 
-        /* Advanced Conditional Area Styling */
-        #child-details {
+        /* Dynamic Conditional Area Styling */
+        #child-registration-area {
             border-left: 5px solid var(--color-secondary);
             padding-left: 15px;
-            margin-left: 0;
-            padding-top: 5px;
-            padding-bottom: 5px;
+            padding-top: 10px;
+            padding-bottom: 10px;
             margin-bottom: 20px;
             background-color: rgba(0, 191, 255, 0.1);
             border-radius: 5px;
             overflow: hidden;
             max-height: 0;
             opacity: 0;
-            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
         }
 
-        #child-details.visible {
-            max-height: 500px; /* Sufficiently large height */
+        #child-registration-area.visible {
+            max-height: 1500px; /* Sufficiently large height for multiple forms */
             opacity: 1;
         }
+
+        /* Dynamic Child Form Styling */
+        .child-form {
+            border: 1px dashed #555;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 8px;
+            background-color: rgba(50, 50, 50, 0.5);
+        }
+
+        .child-form-header {
+            color: var(--color-primary);
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        .child-form .form-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .child-form .form-group > div {
+            flex: 1;
+        }
+
 
         /* Submit Button Styling */
         button {
@@ -233,37 +259,25 @@
 
             <div class="checkbox-group">
                 <input type="checkbox" id="hasChild" name="hasChild">
-                <label for="hasChild">I am signing up a child for the club.</label>
+                <label for="hasChild">I am signing up a child/children for the club.</label>
             </div>
 
-            <div id="child-details">
+            <div id="child-registration-area">
                 <p style="color: var(--color-secondary); font-style: italic;">Child Registration (Ages 9-13 Only)</p>
-                <div class="form-group">
-                    <label for="childFirstName">Child's First Name <span style="color:var(--color-error;">*</span></label>
-                    <input type="text" id="childFirstName" name="childFirstName">
-                    <div class="error-message" id="error-childFirstName">Child's First Name is required.</div>
-                </div>
 
                 <div class="form-group">
-                    <label for="childAge">Child's Age (9-13) <span style="color:var(--color-error);">*</span></label>
-                    <input type="number" id="childAge" name="childAge" min="9" max="13">
-                    <div class="error-message" id="error-childAge">Child's age must be between 9 and 13.</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="childBirthYear">Child's Birth Year <span style="color:var(--color-error;">*</span></label>
-                    <input type="number" id="childBirthYear" name="childBirthYear" min="1900" max="2025">
-                    <div class="error-message" id="error-childBirthYear">Child's Birth Year is required.</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="numKids">Number of Kids Signing Up <span style="color:var(--color-error;">*</span></label>
+                    <label for="numKids">Number of Kids Signing Up <span style="color:var(--color-error);">*</span></label>
                     <select id="numKids" name="numKids">
                         <option value="1">1 Child</option>
                         <option value="2">2 Children</option>
                         <option value="3">3 Children</option>
+                        <option value="4">4 Children</option>
+                        <option value="5">5 Children</option>
                     </select>
                 </div>
+
+                <div id="child-forms-container">
+                    </div>
             </div>
             
             <button type="submit">Complete Club Booking</button>
@@ -274,36 +288,90 @@
     </div>
 
     <script>
-        // --- ⚙️ ADVANCED JAVASCRIPT VALIDATION AND LOGIC ---
+        // --- ⚙️ ADVANCED DYNAMIC JAVASCRIPT VALIDATION AND LOGIC ---
         const form = document.getElementById('signup-form');
         const hasChildCheckbox = document.getElementById('hasChild');
-        const childDetailsDiv = document.getElementById('child-details');
+        const childRegistrationArea = document.getElementById('child-registration-area');
+        const numKidsSelect = document.getElementById('numKids');
+        const childFormsContainer = document.getElementById('child-forms-container');
         const resultMessage = document.getElementById('result-message');
         const CURRENT_YEAR = new Date().getFullYear();
 
-        // **1. Conditional Display Logic**
+        // **1. Dynamic Child Form HTML Template**
+        function createChildFormHTML(index) {
+            return `
+                <div class="child-form" data-child-index="${index}">
+                    <div class="child-form-header">Child #${index} Details</div>
+                    <div class="form-group">
+                        <div style="flex: 2;">
+                            <label for="childFirstName${index}">Child First Name <span style="color:var(--color-error);">*</span></label>
+                            <input type="text" id="childFirstName${index}" name="childFirstName${index}" required data-field-name="First Name">
+                            <div class="error-message" id="error-childFirstName${index}">First Name is required.</div>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="childAge${index}">Age (9-13) <span style="color:var(--color-error);">*</span></label>
+                            <input type="number" id="childAge${index}" name="childAge${index}" min="9" max="13" required data-field-name="Age">
+                            <div class="error-message" id="error-childAge${index}">Age must be 9-13.</div>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="childBirthYear${index}">Birth Year <span style="color:var(--color-error);">*</span></label>
+                            <input type="number" id="childBirthYear${index}" name="childBirthYear${index}" min="1900" max="${CURRENT_YEAR}" required data-field-name="Birth Year">
+                            <div class="error-message" id="error-childBirthYear${index}">Year is required.</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // **2. Dynamic Form Generator Function**
+        function generateChildForms(count) {
+            childFormsContainer.innerHTML = ''; // Clear previous forms
+            for (let i = 1; i <= count; i++) {
+                childFormsContainer.insertAdjacentHTML('beforeend', createChildFormHTML(i));
+            }
+        }
+
+        // **3. Conditional Display & Generator Listener**
         hasChildCheckbox.addEventListener('change', () => {
             if (hasChildCheckbox.checked) {
-                childDetailsDiv.classList.add('visible');
+                childRegistrationArea.classList.add('visible');
+                // Generate forms when first checked, default is 1
+                generateChildForms(parseInt(numKidsSelect.value)); 
             } else {
-                childDetailsDiv.classList.remove('visible');
+                childRegistrationArea.classList.remove('visible');
+                childFormsContainer.innerHTML = ''; // Clear forms when hiding
             }
         });
 
-        // **2. Centralized Validation Function**
+        numKidsSelect.addEventListener('change', (e) => {
+            if (hasChildCheckbox.checked) {
+                generateChildForms(parseInt(e.target.value));
+            }
+        });
+
+        // Initialize (in case the checkbox is checked by default, though it isn't here)
+        // Check if the checkbox is already checked on load and run the generator
+        if (hasChildCheckbox.checked) {
+             generateChildForms(parseInt(numKidsSelect.value));
+        }
+
+
+        // **4. Centralized Validation Function (Updated for dynamic fields)**
         function validateForm() {
             let isValid = true;
+            let firstInvalidField = null;
 
             // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             resultMessage.style.display = 'none';
 
-            // Required Adult Fields Check
-            const requiredFields = ['firstName', 'lastName', 'email', 'phone'];
-            requiredFields.forEach(fieldId => {
+            // --- Adult Fields Validation ---
+            const adultFields = ['firstName', 'lastName', 'email', 'phone'];
+            adultFields.forEach(fieldId => {
                 const input = document.getElementById(fieldId);
                 if (input.value.trim() === '') {
                     document.getElementById(`error-${fieldId}`).style.display = 'block';
+                    if (!firstInvalidField) firstInvalidField = input;
                     isValid = false;
                 }
             });
@@ -314,102 +382,106 @@
             if (email.trim() !== '' && !emailPattern.test(email)) {
                 document.getElementById('error-email').innerText = 'Please enter a valid email address.';
                 document.getElementById('error-email').style.display = 'block';
+                if (!firstInvalidField) firstInvalidField = document.getElementById('email');
                 isValid = false;
             }
 
-            // Phone Number Check (basic pattern)
-            const phone = document.getElementById('phone').value;
-            const phonePattern = /^\d{10,15}$/;
-            if (phone.trim() !== '' && !phonePattern.test(phone)) {
-                 document.getElementById('error-phone').innerText = 'Please enter 10 to 15 digits for the phone number.';
-                 document.getElementById('error-phone').style.display = 'block';
-                 isValid = false;
+            // --- Dynamic Child Fields Validation ---
+            if (hasChildCheckbox.checked) {
+                const numKids = parseInt(numKidsSelect.value);
+                for (let i = 1; i <= numKids; i++) {
+                    const nameInput = document.getElementById(`childFirstName${i}`);
+                    const ageInput = document.getElementById(`childAge${i}`);
+                    const yearInput = document.getElementById(`childBirthYear${i}`);
+
+                    // Required check
+                    if (nameInput.value.trim() === '') {
+                        document.getElementById(`error-childFirstName${i}`).style.display = 'block';
+                        if (!firstInvalidField) firstInvalidField = nameInput;
+                        isValid = false;
+                    }
+                    if (ageInput.value.trim() === '') {
+                        document.getElementById(`error-childAge${i}`).innerText = "Age is required.";
+                        document.getElementById(`error-childAge${i}`).style.display = 'block';
+                        if (!firstInvalidField) firstInvalidField = ageInput;
+                        isValid = false;
+                    }
+                    if (yearInput.value.trim() === '') {
+                        document.getElementById(`error-childBirthYear${i}`).innerText = "Birth Year is required.";
+                        document.getElementById(`error-childBirthYear${i}`).style.display = 'block';
+                        if (!firstInvalidField) firstInvalidField = yearInput;
+                        isValid = false;
+                    }
+
+                    // Age Validation (9-13 ONLY) - Check only if value is present
+                    const age = parseInt(ageInput.value);
+                    if (!isNaN(age) && (age < 9 || age > 13)) {
+                        document.getElementById(`error-childAge${i}`).innerText = `Booking failed! Child #${i} is ${age < 9 ? 'underage' : 'overage'}! 9's – 13's only.`;
+                        document.getElementById(`error-childAge${i}`).style.display = 'block';
+                        if (!firstInvalidField) firstInvalidField = ageInput;
+                        isValid = false;
+                    }
+                }
             }
 
-            // Conditional Child Fields Check
-            if (hasChildCheckbox.checked) {
-                const childFields = ['childFirstName', 'childAge', 'childBirthYear'];
-                childFields.forEach(fieldId => {
-                    const input = document.getElementById(fieldId);
-                    if (input.value.trim() === '') {
-                        document.getElementById(`error-${fieldId}`).style.display = 'block';
-                        isValid = false;
-                    }
-                });
-
-                // Child Age Validation (9-13 ONLY)
-                const ageInput = document.getElementById('childAge');
-                const age = parseInt(ageInput.value);
-                
-                if (!isNaN(age)) {
-                    if (age < 9 || age > 13) {
-                        document.getElementById('error-childAge').innerText = 'Child\'s age must be between 9 and 13.';
-                        document.getElementById('error-childAge').style.display = 'block';
-                        isValid = false;
-                    }
-                }
-
-                // Child Birth Year Validation (Approximate check)
-                const yearInput = document.getElementById('childBirthYear');
-                const year = parseInt(yearInput.value);
-                const minYear = CURRENT_YEAR - 13; // Min age 13
-                const maxYear = CURRENT_YEAR - 9;  // Max age 9
-                
-                if (!isNaN(year) && (year < minYear || year > maxYear)) {
-                     document.getElementById('error-childBirthYear').innerText = `Year must be approx. between ${minYear} and ${maxYear}.`;
-                     document.getElementById('error-childBirthYear').style.display = 'block';
-                }
+            // Scroll to the first error if validation failed
+            if (firstInvalidField) {
+                firstInvalidField.focus();
+                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
 
             return isValid;
         }
 
-        // **3. Form Submission Handler**
+        // **5. Form Submission Handler**
         form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Stop the default form submission
+            event.preventDefault();
 
             if (!validateForm()) {
-                resultMessage.innerText = "Please fix the errors shown above to complete the booking.";
+                resultMessage.innerText = "Please fix the errors shown above to complete the booking. Pay special attention to the child age requirements (9-13 only).";
                 resultMessage.className = "alert-message alert-fail";
                 resultMessage.style.display = 'block';
                 return;
             }
 
-            // Get all necessary data
-            const formData = {
-                parentName: `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                isChildBooking: hasChildCheckbox.checked,
-                childName: document.getElementById('childFirstName')?.value || null,
-                childAge: parseInt(document.getElementById('childAge')?.value) || null,
-                numKids: document.getElementById('numKids')?.value || 1
-            };
-
-            // --- A. Overage/Underage Failure Check (Specific Requirement) ---
-            if (formData.isChildBooking && (formData.childAge < 9 || formData.childAge > 13)) {
-                let status = formData.childAge < 9 ? "underage" : "overage";
-                
-                resultMessage.innerText = `Booking failed! Child is ${status}! 9's – 13's only.`;
-                resultMessage.className = "alert-message alert-fail";
-                resultMessage.style.display = 'block';
-                return;
-            }
-
-            // --- B. Successful Booking Message Generation ---
+            // --- Data Aggregation for Email ---
+            const parentName = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
+            const parentEmail = document.getElementById('email').value;
+            const parentPhone = document.getElementById('phone').value;
+            const isChildBooking = hasChildCheckbox.checked;
+            const numKids = isChildBooking ? parseInt(numKidsSelect.value) : 0;
             
-            let bookedFor = formData.isChildBooking ? `their child (${formData.childName})` : `themselves`;
+            let bookedFor = 'themselves';
+            let childList = [];
+
+            if (isChildBooking) {
+                bookedFor = numKids > 1 ? `their ${numKids} children` : `their child`;
+                
+                for (let i = 1; i <= numKids; i++) {
+                    childList.push({
+                        name: document.getElementById(`childFirstName${i}`).value,
+                        age: document.getElementById(`childAge${i}`).value,
+                    });
+                }
+            }
             
             // Build the email content for Ethan
             const emailRecipient = "ethan.unlocked@gmail.com";
-            const subject = encodeURIComponent(`New Brawl Stars Club Booking: ${formData.parentName}`);
+            const subject = encodeURIComponent(`New Brawl Stars Club Booking: ${parentName} (${numKids > 0 ? numKids + ' Kids' : 'Adult'})`);
             
             let bodyText = `Hello Ethan,\n\n`;
-            bodyText += `${formData.parentName} has booked ${bookedFor} for the Brawl Stars Club.`;
-            if (formData.isChildBooking && formData.numKids > 1) {
-                bodyText += ` They are signing up ${formData.numKids} children.`;
+            bodyText += `${parentName} has booked ${bookedFor} for the Brawl Stars Club.\n\n`;
+            
+            if (isChildBooking) {
+                bodyText += `Children Registered (${numKids}):\n`;
+                childList.forEach((child, index) => {
+                    bodyText += `- Child ${index + 1}: ${child.name} (Age ${child.age})\n`;
+                });
+                bodyText += '\n';
             }
-            bodyText += `\n\nTheir email for RSVP is ${formData.email}. Their number is ${formData.phone}.`;
+            
+            bodyText += `Their email for RSVP is ${parentEmail}.\n`;
+            bodyText += `Their number is ${parentPhone}.\n\n`;
             
             const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
@@ -417,16 +489,16 @@
             resultMessage.innerHTML = `
                 <p>✅ **BOOKING COMPLETE!**</p>
                 <p>Thank you, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor}.</p>
-                <p>We are now preparing the RSVP email. Please click the button below to send the details to the club coordinator:</p>
-                <a href="${mailtoLink}" style="display:block; margin-top:15px; padding:10px; background-color:#32CD32; color:white; border-radius:5px; text-decoration:none;">
+                <p>We are now preparing the RSVP email. **Please click the button below** to send the final details to the club coordinator:</p>
+                <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:#32CD32; color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
                     Click to Send Coordinator Email
                 </a>
             `;
             resultMessage.className = "alert-message alert-success";
             resultMessage.style.display = 'block';
 
-            // Optional: Scroll to the result message for visibility
-            resultMessage.scrollIntoView({ behavior: 'smooth' });
+            // Scroll to the result message
+            resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
     </script>
 </body>
