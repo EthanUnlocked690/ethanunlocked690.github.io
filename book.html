@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Club Sign-Up & Cancellation</title>
+    <title>Brawl Stars Club Sign-Up & Cancellation - FIXED</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -336,6 +336,9 @@
         // **!!! DANGER WARNING POP-UP - CLUB IS NOT READY !!!**
         window.onload = function() {
             alert("⚠️ DANGER WARNING: The Brawl Stars Club isn't ready, but it's in the works!");
+            
+            // **FIXED: Initial state check for checkbox needs to run on load.**
+            checkChildCheckboxState(); 
         }
         // **!!! REMOVE THE 4 LINES ABOVE WHEN THE CLUB IS READY !!!**
 
@@ -380,16 +383,21 @@
                 childFormsContainer.insertAdjacentHTML('beforeend', createChildFormHTML(i));
             }
         }
-
-        hasChildCheckbox.addEventListener('change', () => {
+        
+        // **NEW FUNCTION: Checks the state and renders forms/visibility**
+        function checkChildCheckboxState() {
             if (hasChildCheckbox.checked) {
                 childRegistrationArea.classList.add('visible');
+                // Generate forms when first checked, default is 1
                 generateChildForms(parseInt(numKidsSelect.value)); 
             } else {
                 childRegistrationArea.classList.remove('visible');
-                childFormsContainer.innerHTML = '';
+                childFormsContainer.innerHTML = ''; // Clear forms when hiding
             }
-        });
+        }
+
+        // Attach listeners for changes
+        hasChildCheckbox.addEventListener('change', checkChildCheckboxState);
 
         numKidsSelect.addEventListener('change', (e) => {
             if (hasChildCheckbox.checked) {
