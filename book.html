@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Club Sign-Up & Cancellation</title>
+    <title>Brawl Stars Club Sign-Up & Cancellation - Final Working Version</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -331,13 +331,9 @@
     </div>
 
     <script>
-        // --- ⚙️ ADVANCED JAVASCRIPT VALIDATION AND LOGIC ---
+        // --- ⚙️ JAVASCRIPT VALIDATION AND LOGIC ---
         
-        // **!!! DANGER WARNING POP-UP - CLUB IS NOT READY !!!**
-        window.onload = function() {
-            alert("⚠️The Brawl Stars Club isn't ready, but it's in the works!⚠️");
-        }
-        // **!!! REMOVE THE 4 LINES ABOVE WHEN THE CLUB IS READY !!!**
+        // **ALERT REMOVED HERE TO FIX INITIALIZATION ISSUES**
 
         const form = document.getElementById('signup-form');
         const hasChildCheckbox = document.getElementById('hasChild');
@@ -381,16 +377,19 @@
             }
         }
 
+        // Event listener to show/hide the child registration area and generate forms
         hasChildCheckbox.addEventListener('change', () => {
             if (hasChildCheckbox.checked) {
                 childRegistrationArea.classList.add('visible');
+                // Generate forms when first checked, default is 1
                 generateChildForms(parseInt(numKidsSelect.value)); 
             } else {
                 childRegistrationArea.classList.remove('visible');
-                childFormsContainer.innerHTML = '';
+                childFormsContainer.innerHTML = ''; // Clear forms when hiding
             }
         });
 
+        // Event listener to change the number of forms based on the dropdown
         numKidsSelect.addEventListener('change', (e) => {
             if (hasChildCheckbox.checked) {
                 generateChildForms(parseInt(e.target.value));
@@ -402,6 +401,7 @@
             let isValid = true;
             let firstInvalidField = null;
 
+            // Reset all error messages
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             resultMessage.style.display = 'none';
 
@@ -409,14 +409,15 @@
             const fieldsToCheck = ['firstName', 'lastName', 'email', 'phone', 'cardNumber', 'expiryDate', 'cvv'];
             fieldsToCheck.forEach(fieldId => {
                 const input = document.getElementById(fieldId);
+                // Clear border style first
+                input.style.borderColor = '#555'; 
+
                 if (input.value.trim() === '') {
                     const errorElement = document.getElementById(`error-${fieldId}`);
                     if (errorElement) errorElement.style.display = 'block';
-                    input.style.borderColor = var(--color-error);
+                    input.style.borderColor = 'var(--color-error)';
                     if (!firstInvalidField) firstInvalidField = input;
                     isValid = false;
-                } else {
-                    input.style.borderColor = '#555';
                 }
             });
 
@@ -429,15 +430,42 @@
                     const yearInput = document.getElementById(`childBirthYear${i}`);
                     
                     const age = parseInt(ageInput.value);
+                    
+                    // Age validation
                     if (!isNaN(age) && (age < 9 || age > 13)) {
                         document.getElementById(`error-childAge${i}`).innerText = `Booking failed! Child #${i} is ${age < 9 ? 'underage' : 'overage'}! 9's – 13's only.`;
                         document.getElementById(`error-childAge${i}`).style.display = 'block';
+                        ageInput.style.borderColor = 'var(--color-error)';
                         if (!firstInvalidField) firstInvalidField = ageInput;
                         isValid = false;
+                    } else if (ageInput.value.trim() === '') {
+                         document.getElementById(`error-childAge${i}`).innerText = `Age is required.`;
+                         document.getElementById(`error-childAge${i}`).style.display = 'block';
+                         ageInput.style.borderColor = 'var(--color-error)';
+                         if (!firstInvalidField) firstInvalidField = ageInput;
+                         isValid = false;
+                    } else {
+                         ageInput.style.borderColor = '#555';
                     }
                     
-                    if (nameInput.value.trim() === '' || ageInput.value.trim() === '' || yearInput.value.trim() === '') {
+                    // Name validation
+                    if (nameInput.value.trim() === '') {
+                        document.getElementById(`error-childFirstName${i}`).style.display = 'block';
+                        nameInput.style.borderColor = 'var(--color-error)';
+                        if (!firstInvalidField) firstInvalidField = nameInput;
                         isValid = false;
+                    } else {
+                        nameInput.style.borderColor = '#555';
+                    }
+
+                    // Birth Year validation (simple check here)
+                    if (yearInput.value.trim() === '') {
+                        document.getElementById(`error-childBirthYear${i}`).style.display = 'block';
+                        yearInput.style.borderColor = 'var(--color-error)';
+                        if (!firstInvalidField) firstInvalidField = yearInput;
+                        isValid = false;
+                    } else {
+                        yearInput.style.borderColor = '#555';
                     }
                 }
             }
@@ -457,6 +485,8 @@
             if (!validateForm()) {
                 resultMessage.innerText = "Please fix the errors shown above to complete the booking. Remember the strict age requirements (9-13) and ensure all fields are filled.";
                 resultMessage.className = "alert-message alert-fail";
+                resultMessage.style.border = '2px solid var(--color-error)';
+                resultMessage.style.color = 'var(--color-error)';
                 resultMessage.style.display = 'block';
                 return;
             }
@@ -487,6 +517,8 @@
                 </a>
             `;
             resultMessage.className = "alert-message alert-success";
+            resultMessage.style.border = '2px solid #32CD32';
+            resultMessage.style.color = 'var(--color-light)';
             resultMessage.style.display = 'block';
             resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
@@ -516,7 +548,7 @@
             const cancelArea = document.getElementById('cancellation-form-area');
             cancelArea.innerHTML = `
                 <p style="color: var(--color-cancel); font-weight: bold;">
-                    Confirmation Required! Your cancellation request is ready when you need it!
+                    Confirmation Required! Your cancellation request is ready.
                 </p>
                 <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
                 <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decoration:none; font-weight:bold; text-align:center;">
