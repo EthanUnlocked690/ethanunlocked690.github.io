@@ -335,10 +335,7 @@
         
         // **!!! DANGER WARNING POP-UP - CLUB IS NOT READY !!!**
         window.onload = function() {
-            alert("⚠️ DANGER WARNING: The Brawl Stars Club isn't ready, but it's in the works!");
-            
-            // NOTE: Initial state check removed in this version, relying purely on the
-            // 'change' event to trigger form generation.
+            alert("⚠️The Brawl Stars Club isn't ready, but it's in the works!⚠️");
         }
         // **!!! REMOVE THE 4 LINES ABOVE WHEN THE CLUB IS READY !!!**
 
@@ -384,19 +381,16 @@
             }
         }
 
-        // Event listener to show/hide the child registration area and generate forms
         hasChildCheckbox.addEventListener('change', () => {
             if (hasChildCheckbox.checked) {
                 childRegistrationArea.classList.add('visible');
-                // Generate forms when first checked, default is 1
                 generateChildForms(parseInt(numKidsSelect.value)); 
             } else {
                 childRegistrationArea.classList.remove('visible');
-                childFormsContainer.innerHTML = ''; // Clear forms when hiding
+                childFormsContainer.innerHTML = '';
             }
         });
 
-        // Event listener to change the number of forms based on the dropdown
         numKidsSelect.addEventListener('change', (e) => {
             if (hasChildCheckbox.checked) {
                 generateChildForms(parseInt(e.target.value));
