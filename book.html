@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Club Sign-Up & Cancellation - FIXED</title>
+    <title>Brawl Stars Club Sign-Up & Cancellation - FIXED AGAIN</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -114,7 +114,8 @@
             overflow: hidden;
             max-height: 0;
             opacity: 0;
-            transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
+            /* Shorter transition time to make interaction feel snappier */
+            transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
         }
 
         #child-registration-area.visible {
@@ -333,15 +334,6 @@
     <script>
         // --- ⚙️ ADVANCED JAVASCRIPT VALIDATION AND LOGIC ---
         
-        // **!!! DANGER WARNING POP-UP - CLUB IS NOT READY !!!**
-        window.onload = function() {
-            alert("⚠️ DANGER WARNING: The Brawl Stars Club isn't ready, but it's in the works!");
-            
-            // **FIXED: Initial state check for checkbox needs to run on load.**
-            checkChildCheckboxState(); 
-        }
-        // **!!! REMOVE THE 4 LINES ABOVE WHEN THE CLUB IS READY !!!**
-
         const form = document.getElementById('signup-form');
         const hasChildCheckbox = document.getElementById('hasChild');
         const childRegistrationArea = document.getElementById('child-registration-area');
@@ -384,7 +376,7 @@
             }
         }
         
-        // **NEW FUNCTION: Checks the state and renders forms/visibility**
+        // **FUNCTION: Checks the state and renders forms/visibility**
         function checkChildCheckboxState() {
             if (hasChildCheckbox.checked) {
                 childRegistrationArea.classList.add('visible');
@@ -398,12 +390,23 @@
 
         // Attach listeners for changes
         hasChildCheckbox.addEventListener('change', checkChildCheckboxState);
-
         numKidsSelect.addEventListener('change', (e) => {
             if (hasChildCheckbox.checked) {
                 generateChildForms(parseInt(e.target.value));
             }
         });
+        
+        // **INITIALIZATION (FIXED): Check the state of the checkbox AFTER the page is loaded.**
+        // This ensures the initial state is rendered correctly and fixes the issue if the checkbox
+        // was pre-checked or if page loading was delayed by the alert.
+        window.onload = function() {
+            // **!!! DANGER WARNING POP-UP - CLUB IS NOT READY !!!**
+            alert("⚠️ DANGER WARNING: The Brawl Stars Club isn't ready, but it's in the works!");
+            // **!!! REMOVE THE 4 LINES ABOVE WHEN THE CLUB IS READY !!!**
+
+            // Delay the state check slightly to ensure all DOM elements and CSS transitions are ready.
+            setTimeout(checkChildCheckboxState, 100); 
+        }
 
         // **3. Centralized Validation Function**
         function validateForm() {
