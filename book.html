@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Club Sign-Up - Final Advanced</title>
+    <title>Brawl Stars Club Sign-Up & Cancellation</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -12,7 +12,7 @@
             --color-dark: #1C1C1C;
             --color-light: #F0F0F0;
             --color-error: #FF4500;
-            --color-admin: #FF8C00; /* Dark Orange for Admin */
+            --color-cancel: #708090; /* Slate Gray for Cancellation */
             --font-main: 'Arial', sans-serif;
         }
 
@@ -46,9 +46,19 @@
         h2 {
             text-align: center;
             color: var(--color-primary);
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-size: 2.2em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Schedule Bar */
+        .schedule-info {
+            text-align: center;
+            color: var(--color-secondary);
+            font-weight: bold;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--color-secondary);
         }
 
         .form-group {
@@ -138,31 +148,19 @@
         .card-details-group > div {
             flex: 1;
         }
-
-        /* Admin Section Styling */
-        #admin-access-area {
-            margin-top: 30px;
-            padding: 20px;
-            border: 2px solid var(--color-admin);
-            border-radius: 10px;
-            background-color: rgba(255, 140, 0, 0.1);
-            display: none; /* Hidden by default, shown by JS */
-        }
-        #admin-access-area.visible {
-            display: block;
-        }
-        .admin-login-link {
+        .fee-warning {
             text-align: center;
-            margin-top: 20px;
-            color: var(--color-admin);
-            cursor: pointer;
-            text-decoration: underline;
+            font-weight: bold;
+            color: var(--color-error);
+            margin-bottom: 20px;
+            border: 1px dashed var(--color-error);
+            padding: 10px;
+            border-radius: 5px;
         }
-        
+
         /* Submit Button Styling */
         button {
             width: 100%;
-            /* ... (Button styles from previous response) ... */
             padding: 15px;
             background-color: var(--color-primary);
             color: var(--color-dark);
@@ -179,7 +177,8 @@
             background-color: #FFC700;
             transform: translateY(-2px);
         }
-
+        
+        /* Error and Alert Styling */
         .error-message {
             color: var(--color-error);
             font-size: 0.9em;
@@ -188,7 +187,6 @@
         }
 
         .alert-message {
-            /* ... (Alert styles from previous response) ... */
             margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
@@ -198,12 +196,39 @@
             border: 2px solid;
             animation: pulse 1s infinite alternate;
         }
+        
+        /* Cancellation Section Styling */
+        #cancellation-form-area {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid var(--color-cancel);
+            border-radius: 8px;
+            background-color: rgba(112, 128, 144, 0.1);
+        }
+
+        #cancellation-link {
+            text-align: center;
+            margin-top: 20px;
+            cursor: pointer;
+            text-decoration: underline;
+            color: var(--color-cancel);
+        }
+
+        .cancel-button {
+            background-color: var(--color-cancel);
+            color: white;
+            padding: 10px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h2>Brawl Stars Club Sign-Up</h2>
+        <div class="schedule-info">
+            📅 **Club Schedule:** Weekends | 11:00 AM - 3:00 PM
+        </div>
 
         <form id="signup-form">
 
@@ -212,8 +237,7 @@
                 <input type="text" id="firstName" name="firstName" required>
                 <div class="error-message" id="error-firstName">First Name is required.</div>
             </div>
-
-            <div class="form-group">
+             <div class="form-group">
                 <label for="lastName">Last Name <span style="color:var(--color-error);">*</span></label>
                 <input type="text" id="lastName" name="lastName" required>
                 <div class="error-message" id="error-lastName">Last Name is required.</div>
@@ -258,9 +282,9 @@
 
             <div id="payment-section">
                 <h3 style="color: var(--color-error); margin-top: 0; text-align: center;">Payment Details</h3>
-                <p style="text-align: center; font-style: italic; color: var(--color-light);">
-                    **Club Fee:** $10.00 will be charged **daily** for each child attending.
-                </p>
+                <div class="fee-warning">
+                    ⚠️ **Club Fee:** $10.00 will be charged **daily** for each child attending on weekends (11am-3pm).
+                </div>
 
                 <div class="form-group">
                     <label for="cardNumber">Credit Card Number <span style="color:var(--color-error);">*</span></label>
@@ -287,55 +311,43 @@
 
             <div id="result-message" class="alert-message"></div>
         </form>
-
+        
         <hr style="border-color: #555; margin-top: 30px;"/>
-
-        <div class="admin-login-link" onclick="document.getElementById('admin-login-popup').style.display='block'">
-            🔑 Admin Access (EthanUnlocked)
+        
+        <div id="cancellation-link" onclick="document.getElementById('cancellation-form-area').style.display='block'; this.style.display='none';">
+            Click here to **Cancel** an existing booking. 💔
         </div>
 
-        <div id="admin-login-popup" style="display:none; background:#2a2a2a; padding: 15px; border-radius: 8px; margin-top: 15px;">
+        <div id="cancellation-form-area" style="display:none;">
+            <p style="color: var(--color-cancel); font-weight: bold;">To cancel your booking, please confirm the email address used for registration:</p>
             <div class="form-group">
-                <label for="adminUser">Username:</label>
-                <input type="text" id="adminUser" value="EthanUnlocked">
+                <label for="cancelEmail">Registration Email Address:</label>
+                <input type="email" id="cancelEmail" placeholder="Your Email" required>
             </div>
-            <div class="form-group">
-                <label for="adminPass">Password:</label>
-                <input type="password" id="adminPass">
-            </div>
-            <button type="button" onclick="attemptAdminLogin()" style="background-color: var(--color-admin); color: black;">Log In</button>
-            <p id="admin-error" class="error-message" style="margin-top:10px;"></p>
-        </div>
-
-        <div id="admin-access-area">
-            <h3 style="color: var(--color-admin); margin-top: 0;">Ethan's Proposed Changes</h3>
-            <p>You are logged in as **EthanUnlocked**. Use this area to propose changes to the live booking page.</p>
-            <div class="form-group">
-                <label for="proposedChange">Proposed Booking Change Details:</label>
-                <textarea id="proposedChange" rows="4" style="width:100%; padding: 10px; background: #333; color: white; border-radius: 5px;">Example: Increase max child age to 14. Change fee to $12.</textarea>
-            </div>
-            <button type="button" style="background-color: var(--color-admin); color: black;">Submit Proposed Changes</button>
-            <button type="button" onclick="document.getElementById('admin-access-area').style.display='none'; document.getElementById('admin-login-popup').style.display='none';" style="margin-top: 10px; background-color: #555; color: white;">Log Out</button>
+            <button type="button" class="cancel-button" onclick="initiateCancellation()">Initiate Cancellation Request</button>
+            <p id="cancel-status" class="error-message" style="color: var(--color-cancel);"></p>
         </div>
 
     </div>
 
     <script>
         // --- ⚙️ ADVANCED JAVASCRIPT VALIDATION AND LOGIC ---
+        
+        // **!!! DANGER WARNING POP-UP - CLUB IS NOT READY !!!**
+        window.onload = function() {
+            alert("⚠️ DANGER WARNING: The Brawl Stars Club isn't ready, but it's in the works!");
+        }
+        // **!!! REMOVE THE 4 LINES ABOVE WHEN THE CLUB IS READY !!!**
+
         const form = document.getElementById('signup-form');
         const hasChildCheckbox = document.getElementById('hasChild');
         const childRegistrationArea = document.getElementById('child-registration-area');
         const numKidsSelect = document.getElementById('numKids');
         const childFormsContainer = document.getElementById('child-forms-container');
         const resultMessage = document.getElementById('result-message');
-        const adminAccessArea = document.getElementById('admin-access-area');
         const CURRENT_YEAR = new Date().getFullYear();
-
-        // Admin Credentials (As requested)
-        const ADMIN_USER = "EthanUnlocked";
-        const ADMIN_PASS = "CoolGamer67";
-
-        // **1. Dynamic Child Form HTML Template (Same as previous)**
+        
+        // **1. Dynamic Child Form HTML Template**
         function createChildFormHTML(index) {
             return `
                 <div class="child-form" data-child-index="${index}">
@@ -361,7 +373,7 @@
             `;
         }
         
-        // **2. Dynamic Form Generator/Display Logic (Same as previous)**
+        // **2. Dynamic Form Generator/Display Logic**
         function generateChildForms(count) {
             childFormsContainer.innerHTML = '';
             for (let i = 1; i <= count; i++) {
@@ -385,56 +397,21 @@
             }
         });
 
-        // **3. Centralized Validation Function (Updated for payment)**
+        // **3. Centralized Validation Function**
         function validateForm() {
             let isValid = true;
             let firstInvalidField = null;
 
-            // Clear previous errors
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             resultMessage.style.display = 'none';
 
-            // --- Adult Fields Validation ---
-            const adultFields = ['firstName', 'lastName', 'email', 'phone'];
-            adultFields.forEach(fieldId => {
+            // --- Adult/Payment Fields Validation (Requires basic check) ---
+            const fieldsToCheck = ['firstName', 'lastName', 'email', 'phone', 'cardNumber', 'expiryDate', 'cvv'];
+            fieldsToCheck.forEach(fieldId => {
                 const input = document.getElementById(fieldId);
                 if (input.value.trim() === '') {
-                    document.getElementById(`error-${fieldId}`).style.display = 'block';
-                    if (!firstInvalidField) firstInvalidField = input;
-                    isValid = false;
-                }
-            });
-            // (Note: Email and Phone regex checks remain, but for brevity, only the required logic is shown here)
-
-            // --- Dynamic Child Fields Validation ---
-            if (hasChildCheckbox.checked) {
-                const numKids = parseInt(numKidsSelect.value);
-                for (let i = 1; i <= numKids; i++) {
-                    const nameInput = document.getElementById(`childFirstName${i}`);
-                    const ageInput = document.getElementById(`childAge${i}`);
-
-                    // Age Validation (9-13 ONLY)
-                    const age = parseInt(ageInput.value);
-                    if (!isNaN(age) && (age < 9 || age > 13)) {
-                        document.getElementById(`error-childAge${i}`).innerText = `Booking failed! Child #${i} is ${age < 9 ? 'underage' : 'overage'}! 9's – 13's only.`;
-                        document.getElementById(`error-childAge${i}`).style.display = 'block';
-                        if (!firstInvalidField) firstInvalidField = ageInput;
-                        isValid = false;
-                    }
-                    
-                    // Required fields check for children
-                    if (nameInput.value.trim() === '' || isNaN(age) || document.getElementById(`childBirthYear${i}`).value.trim() === '') {
-                        isValid = false;
-                    }
-                }
-            }
-
-            // --- Payment Fields Validation (Basic required check) ---
-            const paymentFields = ['cardNumber', 'expiryDate', 'cvv'];
-            paymentFields.forEach(fieldId => {
-                const input = document.getElementById(fieldId);
-                if (input.value.trim() === '') {
-                    // Note: Simple error message display for payment fields for this mock form
+                    const errorElement = document.getElementById(`error-${fieldId}`);
+                    if (errorElement) errorElement.style.display = 'block';
                     input.style.borderColor = var(--color-error);
                     if (!firstInvalidField) firstInvalidField = input;
                     isValid = false;
@@ -443,7 +420,28 @@
                 }
             });
 
-            // Scroll to the first error if validation failed
+            // --- Dynamic Child Fields Validation (Crucial Age Check) ---
+            if (hasChildCheckbox.checked) {
+                const numKids = parseInt(numKidsSelect.value);
+                for (let i = 1; i <= numKids; i++) {
+                    const nameInput = document.getElementById(`childFirstName${i}`);
+                    const ageInput = document.getElementById(`childAge${i}`);
+                    const yearInput = document.getElementById(`childBirthYear${i}`);
+                    
+                    const age = parseInt(ageInput.value);
+                    if (!isNaN(age) && (age < 9 || age > 13)) {
+                        document.getElementById(`error-childAge${i}`).innerText = `Booking failed! Child #${i} is ${age < 9 ? 'underage' : 'overage'}! 9's – 13's only.`;
+                        document.getElementById(`error-childAge${i}`).style.display = 'block';
+                        if (!firstInvalidField) firstInvalidField = ageInput;
+                        isValid = false;
+                    }
+                    
+                    if (nameInput.value.trim() === '' || ageInput.value.trim() === '' || yearInput.value.trim() === '') {
+                        isValid = false;
+                    }
+                }
+            }
+
             if (firstInvalidField) {
                 firstInvalidField.focus();
                 firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -457,32 +455,32 @@
             event.preventDefault();
 
             if (!validateForm()) {
-                resultMessage.innerText = "Please fix the errors shown above to complete the booking, including all payment and age details (9-13 only).";
+                resultMessage.innerText = "Please fix the errors shown above to complete the booking. Remember the strict age requirements (9-13) and ensure all fields are filled.";
                 resultMessage.className = "alert-message alert-fail";
                 resultMessage.style.display = 'block';
                 return;
             }
 
-            // --- Data Aggregation & Email Link Generation (Similar to previous, skipped for brevity) ---
-            
-            // Build the email content for Ethan (This is a simplified re-run of the previous logic)
+            // --- Email Link Generation ---
             const parentName = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
+            const parentEmail = document.getElementById('email').value;
             const isChildBooking = hasChildCheckbox.checked;
             const numKids = isChildBooking ? parseInt(numKidsSelect.value) : 0;
             let bookedFor = isChildBooking ? `their ${numKids} children` : `themselves`;
             
             const emailRecipient = "ethan.unlocked@gmail.com";
             const subject = encodeURIComponent(`New Brawl Stars Club Booking: ${parentName}`);
-            let bodyText = `Hello Ethan,\n\n${parentName} has booked ${bookedFor} for the Brawl Stars Club. ... (details)`;
+            let bodyText = `Hello Ethan,\n\n${parentName} has booked ${bookedFor} for the Brawl Stars Club.\n\nParent Email: ${parentEmail}\nSchedule: Weekends, 11am-3pm. Fee: $10/day/child.\n\n(Full details to be checked against payment system)`;
             const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
-            // **Booking Complete Popup (Mandatory Request)**
+            // **Booking Complete Popup**
             alert("Booking complete! Ethan will confirm with you within 3 days maximum");
 
             // **Final Success UI Update**
             resultMessage.innerHTML = `
                 <p>✅ **BOOKING & PAYMENT PENDING!**</p>
-                <p>Thank you, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor}.</p>
+                <p>Thank yourself, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor}.</p>
+                <p>Club Schedule: **Weekends, 11:00 AM - 3:00 PM**.</p>
                 <p>Click the button to send the final booking details to the club coordinator:</p>
                 <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:#32CD32; color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
                     Click to Send Coordinator Email
@@ -493,21 +491,41 @@
             resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
         
-        // **5. Admin Login Logic**
-        window.attemptAdminLogin = function() {
-            const user = document.getElementById('adminUser').value;
-            const pass = document.getElementById('adminPass').value;
-            const errorElement = document.getElementById('admin-error');
+        // **5. Cancellation Logic**
+        window.initiateCancellation = function() {
+            const cancelEmailInput = document.getElementById('cancelEmail');
+            const statusElement = document.getElementById('cancel-status');
+            const coordinatorEmail = "ethan.unlocked@gmail.com";
+            const email = cancelEmailInput.value.trim();
 
-            if (user === ADMIN_USER && pass === ADMIN_PASS) {
-                document.getElementById('admin-login-popup').style.display = 'none';
-                adminAccessArea.classList.add('visible');
-                errorElement.style.display = 'none';
-                adminAccessArea.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                errorElement.innerText = 'Invalid username or password.';
-                errorElement.style.display = 'block';
+            statusElement.style.display = 'none';
+
+            if (!email) {
+                statusElement.innerText = "Please enter your registration email address.";
+                statusElement.style.display = 'block';
+                return;
             }
+
+            // Generate the cancellation mailto link
+            const subject = encodeURIComponent("CANCELLATION REQUEST: Brawl Stars Club");
+            const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Brawl Stars Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
+            
+            const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
+
+            // Update the UI to show the final mailto link
+            const cancelArea = document.getElementById('cancellation-form-area');
+            cancelArea.innerHTML = `
+                <p style="color: var(--color-cancel); font-weight: bold;">
+                    Confirmation Required! Your cancellation request is ready.
+                </p>
+                <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
+                <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decoration:none; font-weight:bold; text-align:center;">
+                    SEND CANCELLATION EMAIL
+                </a>
+                <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">You must send this email to complete the cancellation process.</p>
+            `;
+            
+            cancelArea.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
