@@ -1,540 +1,710 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Club Sign-Up & Cancellation - FIXED</title>
-    <style>
-        /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
-        :root {
-            --color-primary: #FFD700; /* Gold/Yellow */
-            --color-secondary: #00BFFF; /* Deep Blue */
-            --color-dark: #1C1C1C;
-            --color-light: #F0F0F0;
-            --color-error: #FF4500;
-            --color-cancel: #708090; /* Slate Gray for Cancellation */
-            --font-main: 'Arial', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheUnlockedWeb</title>
+<meta name="google-site-verification" content="eHA-fyuHNpFO1gxDcH8B29KJYZwD2gO1jATtmFPYaTE" />
+<meta name="description" content="Welcome to TheUnlockedWeb – your hub that tells you about our channel, has a game, and, some of our videos and shorts!!">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+/* User's original styles */
+ul {
+list-style-type: none;
+margin: 0px;
+padding: 0px;
+overflow: hidden;
+background-color: #ff0000;
+}
+body {
+margin:0px;
+background-image: url('webpage-backdrop.jpg');
+}
+li {
+float: left;
+}
+li a {
+display: block;
+color: white;
+text-align: center;
+padding: 14px 16px;
+text-decoration: none;
+position: relative;
+}
+li a:hover {
+background-color: #964B00;
+}
+/* NEW style for disabled terminal link */
+li a.disabled-link {
+background-color: #555555; /* Grayed out */
+cursor: not-allowed;
+}
+li a.disabled-link:hover {
+background-color: #555555;
+}
+/* NEW indicator styles */
+.new-indicator {
+position: absolute;
+top: 2px;
+right: 2px;
+background-color: #00ff00;
+color: #000000;
+font-size: 10px;
+font-weight: bold;
+padding: 2px 4px;
+border-radius: 3px;
+animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+0% { opacity: 1; transform: scale(1); }
+50% { opacity: 0.7; transform: scale(1.1); }
+100% { opacity: 1; transform: scale(1); }
+}
+/* This gives a bouncy effect on the letters at the top of the page */
+.bouncy-text {
+font-size: 50px !important;
+font-weight: bold;
+text-align: center;
+}
+.bouncy-text span {
+background: linear-gradient(to bottom, #ff6600, #ffcc33);
+-webkit-background-clip: text;
+color: transparent;
+animation: bounce 0.5s infinite alternate;
+display: inline-block;
+}
+@keyframes bounce {
+0% { transform: translateY(0); }
+100% { transform: translateY(-10px); }
+}
+.bouncy-text span:nth-child(1) { animation-delay: 0s; }
+.bouncy-text span:nth-child(2) { animation-delay: 0.05s; }
+.bouncy-text span:nth-child(3) { animation-delay: 0.1s; }
+.bouncy-text span:nth-child(4) { animation-delay: 0.15s; }
+.bouncy-text span:nth-child(5) { animation-delay: 0.20s; }
+.bouncy-text span:nth-child(6) { animation-delay: 0.25s; }
+.bouncy-text span:nth-child(7) { animation-delay: 0.30s; }
+.bouncy-text span:nth-child(8) { animation-delay: 0.35s; }
+.bouncy-text span:nth-child(9) { animation-delay: 0.40s; }
+.bouncy-text span:nth-child(10) { animation-delay: 0.45s; }
+.bouncy-text span:nth-child(11) { animation-delay: 0.50s; }
+.bouncy-text span:nth-child(12) { animation-delay: 0.55s; }
+.bouncy-text span:nth-child(13) { animation-delay: 0.60s; }
+.bouncy-text span:nth-child(14) { animation-delay: 0.65s; }
+/* Floating chatbot button styles (kept) */
+.chatbot-button-container {
+position: fixed;
+bottom: 20px;
+right: 20px;
+z-index: 1000;
+cursor: pointer;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+border-radius: 50%;
+transition: transform 0.2s ease-in-out;
+}
+.chatbot-button-container:hover {
+transform: scale(1.1);
+}
+.chatbot-button-container img {
+width: 70px;
+height: 70px;
+border-radius: 50%;
+}
+/* Chatbot modal styles (kept) */
+.chatbot-modal {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.75);
+display: none; /* Hidden by default */
+align-items: center;
+justify-content: center;
+z-index: 2000;
+backdrop-filter: blur(5px);
+}
+.chatbot-modal-content {
+width: 95%;
+max-width: 600px;
+height: 90vh;
+background-color: #1f2937; /* Tailwind gray-800 */
+border-radius: 1rem; /* Tailwind rounded-2xl */
+padding: 1.5rem; /* Tailwind p-6 */
+box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+position: relative;
+}
 
-        body {
-            font-family: var(--font-main);
-            background: linear-gradient(135deg, var(--color-dark) 0%, #333 100%);
-            color: var(--color-light);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 40px 0;
-            margin: 0;
-        }
+/* --- CHATBOT EXIT BUTTON STYLES --- */
+#chatbotExitBtn {
+    /* Position the button at the top right corner */
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    
+    /* Default style for the exit button (the 'X') */
+    font-size: 2rem;
+    color: #d1d5db;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    width: 2rem; 
+    height: 2rem;
+    text-align: center;
+}
+#chatbotExitBtn:hover {
+    color: #ef4444; /* Red-500 hover for 'X' */
+    transform: rotate(90deg);
+}
 
-        .container {
-            background-color: rgba(30, 30, 30, 0.95);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 5px var(--color-primary);
-            width: 90%;
-            max-width: 600px;
-            animation: fadeIn 1s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h2 {
-            text-align: center;
-            color: var(--color-primary);
-            margin-bottom: 10px;
-            font-size: 2.2em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-        }
-
-        /* Schedule Bar */
-        .schedule-info {
-            text-align: center;
-            color: var(--color-secondary);
-            font-weight: bold;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--color-secondary);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--color-light);
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="number"],
-        input[type="password"],
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #555;
-            border-radius: 8px;
-            background-color: #2a2a2a;
-            color: var(--color-light);
-            box-sizing: border-box;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--color-secondary);
-            outline: none;
-            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-            margin-bottom: 25px;
-        }
-
-        /* Dynamic Child Registration Area */
-        #child-registration-area {
-            border-left: 5px solid var(--color-secondary);
-            padding-left: 15px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            background-color: rgba(0, 191, 255, 0.1);
-            border-radius: 5px;
-            overflow: hidden;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
-        }
-
-        #child-registration-area.visible {
-            max-height: 1500px;
-            opacity: 1;
-        }
-
-        /* Dynamic Child Form Styling */
-        .child-form {
-            border: 1px dashed #555;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 8px;
-            background-color: rgba(50, 50, 50, 0.5);
-        }
-        .child-form .form-group {
-            display: flex;
-            gap: 20px;
-        }
-
-        /* Payment Section Styling */
-        #payment-section {
-            border-top: 2px solid var(--color-error);
-            padding-top: 20px;
-            margin-top: 30px;
-        }
-        .card-details-group {
-            display: flex;
-            gap: 15px;
-        }
-        .card-details-group > div {
-            flex: 1;
-        }
-        .fee-warning {
-            text-align: center;
-            font-weight: bold;
-            color: var(--color-error);
-            margin-bottom: 20px;
-            border: 1px dashed var(--color-error);
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        /* Submit Button Styling */
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--color-primary);
-            color: var(--color-dark);
-            border: none;
-            border-radius: 8px;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
-        }
-
-        button:hover {
-            background-color: #FFC700;
-            transform: translateY(-2px);
-        }
-        
-        /* Error and Alert Styling */
-        .error-message {
-            color: var(--color-error);
-            font-size: 0.9em;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .alert-message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            display: none;
-            border: 2px solid;
-            animation: pulse 1s infinite alternate;
-        }
-        
-        /* Cancellation Section Styling */
-        #cancellation-form-area {
-            margin-top: 20px;
-            padding: 15px;
-            border: 2px solid var(--color-cancel);
-            border-radius: 8px;
-            background-color: rgba(112, 128, 144, 0.1);
-        }
-
-        #cancellation-link {
-            text-align: center;
-            margin-top: 20px;
-            cursor: pointer;
-            text-decoration: underline;
-            color: var(--color-cancel);
-        }
-
-        .cancel-button {
-            background-color: var(--color-cancel);
-            color: white;
-            padding: 10px;
-            margin-top: 10px;
-        }
-    </style>
+/* Custom Alert/Prompt Modal styles (kept) */
+.custom-modal {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.75);
+display: none;
+align-items: center;
+justify-content: center;
+z-index: 3000;
+}
+.custom-modal-content {
+background-color: #2d3748; /* Dark gray */
+padding: 2rem;
+border-radius: 0.75rem;
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+color: #e2e8f0; /* Light gray text */
+text-align: center;
+max-width: 400px;
+width: 90%;
+}
+.custom-modal-content h3 {
+font-size: 1.25rem;
+font-weight: bold;
+margin-bottom: 1rem;
+}
+.custom-modal-content input {
+width: 100%;
+padding: 0.5rem;
+margin-bottom: 1rem;
+border-radius: 0.25rem;
+border: 1px solid #4a5568;
+background-color: #1a202c; /* Darker gray */
+color: #e2e8f0;
+}
+.custom-modal-buttons {
+display: flex;
+justify-content: center;
+gap: 1rem;
+}
+.custom-modal-buttons button {
+padding: 0.5rem 1.5rem;
+border-radius: 0.5rem;
+font-weight: bold;
+transition: background-color 0.2s;
+}
+.custom-modal-buttons .ok-button {
+background-color: #48bb78; /* Green */
+color: white;
+}
+.custom-modal-buttons .ok-button:hover {
+background-color: #38a169;
+}
+.custom-modal-buttons .cancel-button {
+background-color: #e53e3e; /* Red */
+color: white;
+}
+.custom-modal-buttons .cancel-button:hover {
+background-color: #c53030;
+}
+/* Message box for specific messages (kept) */
+.message-box {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+background-color: rgba(0, 0, 0, 0.85);
+color: white;
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+z-index: 9999;
+text-align: center;
+display: none;
+backdrop-filter: blur(5px);
+}
+</style>
 </head>
-<body>
+<body onload="checkCookie(); checkNewsUpdate(); checkTerminalStatus();">
+<div id="custom-alert-modal" class="custom-modal">
+<div class="custom-modal-content">
+<h3 id="alert-message"></h3>
+<div class="custom-modal-buttons">
+<button class="ok-button" onclick="hideAlert()">OK</button>
+</div>
+</div>
+</div>
+<div id="custom-prompt-modal" class="custom-modal">
+<div class="custom-modal-content">
+<h3 id="prompt-message"></h3>
+<input type="text" id="prompt-input" placeholder="Enter your name">
+<div class="custom-modal-buttons">
+<button class="ok-button" onclick="handlePromptResult(true)">OK</button>
+<button class="cancel-button" onclick="handlePromptResult(false)">Cancel</button>
+</div>
+</div>
+</div>
+<div id="message-box" class="message-box"></div>
+<ul>
+<li><a class="active" href="index.html" img src="house.png" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
+<li><a href="news.html" id="news-link" onclick="markNewsAsRead()">News<span id="news-indicator" class="new-indicator" style="display: none;">NEW</span></a></li>
+<li><a href="subscribe.html">Subscribe</a></li>
+<li><a href="about.html">About</a></li>
+<li><a href="short.html">Shorts</a></li>
+<li><a href="videos.html">Video Gallery</a></li>
+<li><a href="images.html">Image Gallery</a></li>
+<li><a href="animate.html">LEGO Animations</a></li>
+<li><a href="tutorial.html">Tutorials & Speedruns</a></li>
+<li><a href="turtle.html">Others</a></li>
+</ul>
+<div style="text-align: center; font-size: 100px;">
+<b id="demo" style="color:white;">Good Evening! Welcome to...</b>
+</div>
+<script> if (new Date().getHours() < 18) { document.getElementById("demo").innerHTML = "Good day! Welcome to..."; } </script>
+<br>
+<div style="width:100%">
+<div class="bouncy-text">
+<span>T</span><span>h</span><span>e</span> <span>U</span><span>n</span><span>l</span><span>o</span><span>c</span><span>k</span><span>e</span><span>d</span> <span>W</span><span>e</span><span>b</span>
+</div>
+</div>
+<br>
+<button type="button" id="playButton">DO NOT CLICK THIS BUTTON!!! (I dare you to click it)</button>
+<br>
+<b id="displayText" style="color:white;"></b>
+<br>
+<script>
+const playButton = document.getElementById('playButton');
+const audio = new Audio('do-not-click-me.mp3'); // Replace with your audio file path
+const textElement = document.getElementById('displayText');
+playButton.addEventListener('click', function() {
+audio.play();
+textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣🤣🤣'; // Text to display on click
+});
+</script>
+<h2 style="color:red;">My latest video</h2>
+<h2 style="color:dodgerblue;">REVERSED Dash | Geometry Dash 2.2:</h2>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Sh2zuz4-xlc?si=CGLcD8djbFUEPO8Z" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<h2 style="color:red;">My most popular video</h2>
+<h2 style="color:dodgerblue;">Music video:</h2>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/SrgMCyEV2rc?si=Mx23TExAfOaBBikI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<h2 style="color:red;">My least popular video</h2>
+<h2 style="color:dodgerblue;">Fingerdash 100% (All coins):</h2>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/5aRt1FKgNoI?si=OZPdhwbU4L99kYys" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<h2 style="color:red;">My favourite video from my channel(s):</h2>
+<h2 style="color:dodgerblue;">Fingerdash 100% (All coins):</h2>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/5aRt1FKgNoI?si=OZPdhwbU4L99kYys" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<h1 style="background-color:#ffa500;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe (Main)</h1>
+<h2 style="background-color:#ffa500;" href="https://www.youtube.com/@EthansUnlockedLEGO223">Subscribe (LEGO)</h2>
+<h3 style="background-color:#ffa500;" href="https://www.youtube.com/@EthanUnlockedwithFortmon-lf9hf">Subscribe (Fortmongus!!)</h3>
+<h4 style="background-color:#ffa500;" href="https://www.youtube.com/@EthansStorytellingRatings">Subscribe (Brick hits)</h4>
+<h4 style="background-color:#ffa500;" href="https://www.youtube.com/@EthanandBailyUnlockedgames-r5f">Subscribe (Ethan and Baily Unlocked games)</h4>
+<h1 style="color:green;">Website code</h1>
+<a style="color:white;" href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io/blob/main/index.html" class="button">To view the code for this website, click F12 with Fn on (Make sure the light's on) and click elements, or, click me</a>
+<button type="button" onclick="showAlert('To get to my blooket, go to: https://dashboard.blooket.com/set/683d291a46fe0cb8b31dbb81')">Click Me to see how to get to my blooket</button>
+<h1 style="color:yellow;">Announcements</h1>
+<button type="button" onclick="showAlert('Hey guys, coming soon is... a new GAME!! This game will not have AI to help me create it. Stick around to see it when it comes out')">Click Me to get the latest announcement</button>
+<button id="theButton">Tap Me!</button>
+<p id="theWords" style="color:white;"></p>
+<script>
+// This bit is like finding your button on the paper
+const theButtonThing = document.getElementById("theButton");
+const theWordPlace = document.getElementById("theWords");
+// This part says, "Hey computer, listen really carefully for when someone taps the button!"
+theButtonThing.addEventListener("click", function() {
+// When they DO tap it, do the stuff inside these curly lines { }
+// Let's see what words are on the button right now
+if (theButtonThing.textContent === "Tap Me!") {
+// If it says "Tap Me!", then CHANGE it to "Don't you see?"
+theButtonThing.textContent = "Don't you see?";
+// And let's write a little message down below
+theWordPlace.textContent = "The button changed its writing!";
+} else {
+// If it DOESN'T say "Tap Me!" (it must say "Yay!...")
+// then change it BACK to "Awesome, right?"
+theButtonThing.textContent = "Awesome, right?";
+// And change the message back too
+theWordPlace.textContent = "The button is now back to normal. Subscribe if this was cool: Ethan and Isabella Unlocked";
+}
+});
+</script>
+<p1 style="background-color:#ffa500;">You have reached the end of the page.</p1>
+<a style="background-color:#ffa500;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe</a>
+<p1 style="color:white">This website was coded and created by EthanUnlocked</p1>
+<a style="background-color:#008000" href="contact.html">📞Contact Us</a>
+<a style="background-color:#ffa500;" href="index.html">TheUnlockedWeb© 2025</a>
+<input type="button" value="Back" onclick="goBack()">
+<script>
+function goBack() {
+window.history.back()
+}
+</script>
+<input type="button" value="Forward" onclick="goForward()">
+<script>
+function goForward() {
+window.history.forward()
+}
+</script>
+<div id="chatbot-button" class="chatbot-button-container">
+<img src="bot.png" alt="Chatbot button">
+</div>
+<div id="chatbot-modal" class="chatbot-modal">
+<div class="chatbot-modal-content">
+<button id="chatbotExitBtn" class="chatbot-close-button">&times;</button>
 
-    <div class="container">
-        <h2>Brawl Stars Club Sign-Up</h2>
-        <div class="schedule-info">
-            📅 **Club Schedule:** Weekends | 11:00 AM - 3:00 PM
-        </div>
+<button id="terminalHackBtn" style="display:none; position:absolute; top:1rem; left:1rem; background-color: darkred; color: white; padding: 5px 10px; border: 1px solid red; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; cursor: pointer;">ATLAS TERMINAL ACCESS</button>
 
-        <form id="signup-form">
+<div id="chatbot-container" class="flex flex-col h-full">
+<h1 class="text-3xl font-bold text-center text-teal-400 mb-6">Chat with TheUnlockedBot</h1>
+<div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
+</div>
+<div id="loading-indicator" class="hidden flex items-center justify-center p-2 text-sm text-gray-400">
+<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+</svg> Thinking...
+</div>
+<div class="flex items-center space-x-2 border-t border-gray-700 pt-4">
+<textarea id="user-input" class="flex-1 resize-none p-3 bg-gray-700 text-gray-100 placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors duration-200" rows="1" placeholder="Type your message here..."></textarea>
+<button id="send-button" class="p-3 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600 transition-colors duration-200"> Send </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+// =========================================================================
+// TERMINAL LOCKOUT LOGIC & INITIALIZATION
+// =========================================================================
+const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
 
-            <div class="form-group">
-                <label for="firstName">First Name <span style="color:var(--color-error);">*</span></label>
-                <input type="text" id="firstName" name="firstName" required>
-                <div class="error-message" id="error-firstName">First Name is required.</div>
-            </div>
-             <div class="form-group">
-                <label for="lastName">Last Name <span style="color:var(--color-error);">*</span></label>
-                <input type="text" id="lastName" name="lastName" required>
-                <div class="error-message" id="error-lastName">Last Name is required.</div>
-            </div>
+// Function to check and update the Terminal link status in the Navbar
+function checkTerminalStatus() {
+    const terminalLink = document.getElementById('terminal-link');
+    const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
+    const currentTime = new Date().getTime();
 
-            <div class="form-group">
-                <label for="email">Email <span style="color:var(--color-error);">*</span></label>
-                <input type="email" id="email" name="email" required>
-                <div class="error-message" id="error-email">A valid Email is required.</div>
-            </div>
-            
-            <div class="form-group">
-                <label for="phone">Phone Number <span style="color:var(--color-error);">*</span></label>
-                <input type="tel" id="phone" name="phone" required pattern="[0-9]{10,15}">
-                <div class="error-message" id="error-phone">Phone Number is required (10-15 digits recommended).</div>
-            </div>
-
-            <div class="checkbox-group">
-                <input type="checkbox" id="hasChild" name="hasChild">
-                <label for="hasChild">I am signing up a child/children for the club.</label>
-            </div>
-
-            <div id="child-registration-area">
-                <p style="color: var(--color-secondary); font-style: italic;">Child Registration (Ages 9-13 Only)</p>
-
-                <div class="form-group">
-                    <label for="numKids">Number of Kids Signing Up <span style="color:var(--color-error);">*</span></label>
-                    <select id="numKids" name="numKids">
-                        <option value="1">1 Child</option>
-                        <option value="2">2 Children</option>
-                        <option value="3">3 Children</option>
-                        <option value="4">4 Children</option>
-                        <option value="5">5 Children</option>
-                    </select>
-                </div>
-
-                <div id="child-forms-container">
-                    </div>
-            </div>
-            
-            <hr style="border-color: #555; margin-top: 30px;"/>
-
-            <div id="payment-section">
-                <h3 style="color: var(--color-error); margin-top: 0; text-align: center;">Payment Details</h3>
-                <div class="fee-warning">
-                    ⚠️ **Club Fee:** $10.00 will be charged **daily** for each child attending on weekends (11am-3pm).
-                </div>
-
-                <div class="form-group">
-                    <label for="cardNumber">Credit Card Number <span style="color:var(--color-error);">*</span></label>
-                    <input type="text" id="cardNumber" name="cardNumber" pattern="\d{16}" placeholder="**** **** **** ****" required>
-                </div>
-
-                <div class="card-details-group">
-                    <div>
-                        <div class="form-group">
-                            <label for="expiryDate">Expiry Date <span style="color:var(--color-error);">*</span></label>
-                            <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" pattern="\d{2}/\d{2}" required>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="form-group">
-                            <label for="cvv">CVV <span style="color:var(--color-error);">*</span></label>
-                            <input type="text" id="cvv" name="cvv" pattern="\d{3,4}" placeholder="***" required>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <button type="submit">Complete Club Booking & Pay</button>
-
-            <div id="result-message" class="alert-message"></div>
-        </form>
+    if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
+        // Terminal is locked
+        terminalLink.href = 'terminal.html?interference=active'; // Ensures the link goes to the denied screen
+        terminalLink.textContent = 'Terminal Interference (Disabled)';
+        terminalLink.classList.add('disabled-link');
+        terminalLink.style.backgroundColor = '#555555'; 
         
-        <hr style="border-color: #555; margin-top: 30px;"/>
-        
-        <div id="cancellation-link" onclick="document.getElementById('cancellation-form-area').style.display='block'; this.style.display='none';">
-            Click here to **Cancel** an existing booking. 💔
-        </div>
+        // Re-check when the lockout expires
+        setTimeout(checkTerminalStatus, parseInt(lockoutEndTime) - currentTime + 1000);
 
-        <div id="cancellation-form-area" style="display:none;">
-            <p style="color: var(--color-cancel); font-weight: bold;">To cancel your booking, please confirm the email address used for registration:</p>
-            <div class="form-group">
-                <label for="cancelEmail">Registration Email Address:</label>
-                <input type="email" id="cancelEmail" placeholder="Your Email" required>
-            </div>
-            <button type="button" class="cancel-button" onclick="initiateCancellation()">Initiate Cancellation Request</button>
-            <p id="cancel-status" class="error-message" style="color: var(--color-cancel);"></p>
-        </div>
+    } else {
+        // Terminal is unlocked
+        localStorage.removeItem(TERMINAL_LOCKOUT_KEY); 
+        terminalLink.href = 'terminal.html'; 
+        terminalLink.textContent = 'Terminal';
+        terminalLink.classList.remove('disabled-link');
+        terminalLink.style.backgroundColor = ''; 
+    }
+}
 
-    </div>
+// Initial setup on body load
+window.onload = function() {
+    checkCookie(); 
+    checkNewsUpdate();
+    checkTerminalStatus(); 
+};
 
-    <script>
-        // --- ⚙️ ADVANCED JAVASCRIPT VALIDATION AND LOGIC ---
-        
-        // **!!! DANGER WARNING POP-UP - CLUB IS NOT READY !!!**
-        window.onload = function() {
-            alert("⚠️ DANGER WARNING: The Brawl Stars Club isn't ready, but it's in the works!");
-            
-            // **FIXED: Initial state check for checkbox needs to run on load.**
-            checkChildCheckboxState(); 
-        }
-        // **!!! REMOVE THE 4 LINES ABOVE WHEN THE CLUB IS READY !!!**
+// =========================================================================
+// END TERMINAL LOCKOUT LOGIC
+// =========================================================================
 
-        const form = document.getElementById('signup-form');
-        const hasChildCheckbox = document.getElementById('hasChild');
-        const childRegistrationArea = document.getElementById('child-registration-area');
-        const numKidsSelect = document.getElementById('numKids');
-        const childFormsContainer = document.getElementById('child-forms-container');
-        const resultMessage = document.getElementById('result-message');
-        const CURRENT_YEAR = new Date().getFullYear();
-        
-        // **1. Dynamic Child Form HTML Template**
-        function createChildFormHTML(index) {
-            return `
-                <div class="child-form" data-child-index="${index}">
-                    <div class="child-form-header">Child #${index} Details</div>
-                    <div class="form-group">
-                        <div style="flex: 2;">
-                            <label for="childFirstName${index}">Child First Name <span style="color:var(--color-error);">*</span></label>
-                            <input type="text" id="childFirstName${index}" name="childFirstName${index}" required data-field-name="First Name">
-                            <div class="error-message" id="error-childFirstName${index}">First Name is required.</div>
-                        </div>
-                        <div style="flex: 1;">
-                            <label for="childAge${index}">Age (9-13) <span style="color:var(--color-error);">*</span></label>
-                            <input type="number" id="childAge${index}" name="childAge${index}" min="9" max="13" required data-field-name="Age">
-                            <div class="error-message" id="error-childAge${index}">Age must be 9-13.</div>
-                        </div>
-                        <div style="flex: 1;">
-                            <label for="childBirthYear${index}">Birth Year <span style="color:var(--color-error);">*</span></label>
-                            <input type="number" id="childBirthYear${index}" name="childBirthYear${index}" min="1900" max="${CURRENT_YEAR}" required data-field-name="Birth Year">
-                            <div class="error-message" id="error-childBirthYear${index}">Year is required.</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // **2. Dynamic Form Generator/Display Logic**
-        function generateChildForms(count) {
-            childFormsContainer.innerHTML = '';
-            for (let i = 1; i <= count; i++) {
-                childFormsContainer.insertAdjacentHTML('beforeend', createChildFormHTML(i));
-            }
-        }
-        
-        // **NEW FUNCTION: Checks the state and renders forms/visibility**
-        function checkChildCheckboxState() {
-            if (hasChildCheckbox.checked) {
-                childRegistrationArea.classList.add('visible');
-                // Generate forms when first checked, default is 1
-                generateChildForms(parseInt(numKidsSelect.value)); 
-            } else {
-                childRegistrationArea.classList.remove('visible');
-                childFormsContainer.innerHTML = ''; // Clear forms when hiding
-            }
-        }
+// News update functionality
+function setNewsUpdate() {
+const updateTime = new Date().getTime();
+const newsData = { hasUpdate: true, updateTime: updateTime };
+const existingData = getNewsData();
+if (!existingData || updateTime > existingData.updateTime) {
+storeNewsData(newsData);
+console.log("News update flagged!");
+}
+}
+function checkNewsUpdate() {
+const newsData = getNewsData();
+const newsIndicator = document.getElementById('news-indicator');
+if (newsData && newsData.hasUpdate) {
+newsIndicator.style.display = 'inline-block';
+} else {
+newsIndicator.style.display = 'none';
+}
+}
+function markNewsAsRead() {
+const newsData = getNewsData();
+if (newsData) {
+newsData.hasUpdate = false;
+storeNewsData(newsData);
+}
+document.getElementById('news-indicator').style.display = 'none';
+}
+function getNewsData() {
+try {
+const stored = getCookie('newsUpdateData');
+return stored ? JSON.parse(stored) : null;
+} catch (e) {
+return null;
+}
+}
+function storeNewsData(data) {
+setCookie('newsUpdateData', JSON.stringify(data), 30); 
+}
 
-        // Attach listeners for changes
-        hasChildCheckbox.addEventListener('change', checkChildCheckboxState);
+// Custom Alert/Prompt Modals Logic
+const alertModal = document.getElementById('custom-alert-modal');
+const alertMessage = document.getElementById('alert-message');
+const promptModal = document.getElementById('custom-prompt-modal');
+const promptMessage = document.getElementById('prompt-message');
+const promptInput = document.getElementById('prompt-input');
+let promptResolve;
 
-        numKidsSelect.addEventListener('change', (e) => {
-            if (hasChildCheckbox.checked) {
-                generateChildForms(parseInt(e.target.value));
-            }
-        });
+function showAlert(message) {
+alertMessage.textContent = message;
+alertModal.style.display = 'flex';
+}
+function hideAlert() {
+alertModal.style.display = 'none';
+}
 
-        // **3. Centralized Validation Function**
-        function validateForm() {
-            let isValid = true;
-            let firstInvalidField = null;
+function showPrompt(message, defaultValue = "") {
+return new Promise(resolve => {
+promptMessage.textContent = message;
+promptInput.value = defaultValue;
+promptInput.focus();
+promptModal.style.display = 'flex';
+promptResolve = resolve;
+});
+}
+function handlePromptResult(isOk) {
+promptModal.style.display = 'none';
+if (isOk) {
+promptResolve(promptInput.value);
+} else {
+promptResolve(null); 
+}
+}
+// --- Custom Alert on page load, replaces original window.alert() ---
+showAlert("WAIT! Before you come in, have you liked and subscribed to Ethan and Isabella Unlocked? If you haven't, go onto YouTube and do it right now! And if you have, click OK. Welcome to TheUnlockedWeb!");
+// --- User's original cookie scripts, modified to use custom modals ---
+function setCookie(cname, cvalue, exdays) {
+const d = new Date();
+d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+let expires = "expires=" + d.toUTCString();
+document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+function getCookie(cname) {
+let name = cname + "=";
+let decodedCookie = decodeURIComponent(document.cookie);
+let ca = decodedCookie.split(';');
+for (let i = 0; i < ca.length; i++) {
+let c = ca[i];
+while (c.charAt(0) == ' ') {
+c = c.substring(1);
+}
+if (c.indexOf(name) == 0) {
+return c.substring(name.length, c.length);
+}
+}
+return "";
+}
+async function checkCookie() {
+let user = getCookie("username");
+if (user != "") {
+showAlert("Hello again " + user + "! Welcome back to TheUnlockedWeb!");
+} else {
+user = await showPrompt("Please enter your name:", "");
+if (user != "" && user != null) {
+setCookie("username", user, 7);
+}
+}
+}
+// --- Chatbot UI References ---
+const chatbotButton = document.getElementById('chatbot-button');
+const chatbotModal = document.getElementById('chatbot-modal');
+const chatbotExitBtn = document.getElementById('chatbotExitBtn'); 
+const terminalHackBtn = document.getElementById('terminalHackBtn'); // NEW: The hack button
+const userInput = document.getElementById('user-input');
+const sendButton = document.getElementById('send-button');
+const chatHistoryDiv = document.getElementById('chat-history');
+const loadingIndicator = document.getElementById('loading-indicator');
 
-            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-            resultMessage.style.display = 'none';
+// --- Chat History State ---
+let chatHistory = [];
+// --- Hardcoded responses for basic conversation ---
+const hardcodedResponses = {
+'hello': "Hello there! How can I help you today?",
+'hi': "Hi! What's on your mind?",
+'how are you': "I'm doing great, thanks for asking! I'm here to help you with anything on this website.",
+'who are you': "I'm TheUnlockedBot, an AI assistant created by TheUnlockedWeb. How can I help you?",
+'what is this site': "This is TheUnlockedWeb! It's a website with videos, games, and information about the YouTube channel.",
+'thanks': "You're welcome!",
+'thank you': "You're welcome!"
+};
+// --- Helper Functions ---
+function addMessageToChat(role, text) {
+const messageContainer = document.createElement('div');
+messageContainer.classList.add('flex', 'space-x-3', 'items-start');
+messageContainer.innerHTML = `
+<div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg ${role === 'user' ? 'bg-teal-500' : 'bg-gray-600'}">
+${role === 'user' ? 'U' : 'T'}
+</div>
+<div class="flex-1">
+<div class="font-semibold text-sm ${role === 'user' ? 'text-teal-300' : 'text-gray-300'}">
+${role === 'user' ? 'You' : 'TheUnlockedBot'}
+</div>
+<div class="mt-1 p-3 rounded-xl ${role === 'user' ? 'bg-teal-600 text-white' : 'bg-gray-700 text-gray-200'}">
+${text.replace(/\n/g, '<br>')}
+</div>
+</div>
+`;
+chatHistoryDiv.appendChild(messageContainer);
+chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+}
+async function fetchGeminiResponse(prompt) {
+loadingIndicator.classList.remove('hidden');
+let currentChatHistory = [...chatHistory, { role: "user", parts: [{ text: prompt }] }];
+const payload = { contents: currentChatHistory };
+const apiKey = ""; // API Key placeholder
+const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+let backoffDelay = 1000; 
+const maxRetries = 5;
+let retryCount = 0;
+while (retryCount < maxRetries) {
+try {
+const response = await fetch(url, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(payload)
+});
+if (response.status === 429) {
+retryCount++;
+if (retryCount < maxRetries) {
+await new Promise(resolve => setTimeout(resolve, backoffDelay));
+backoffDelay *= 2; 
+continue; 
+} else {
+throw new Error("API request limit exceeded. Please try again later.");
+}
+}
+if (!response.ok) {
+throw new Error(`API call failed with status: ${response.status}`);
+}
+const result = await response.json();
+if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+const text = result.candidates[0].content.parts[0].text;
+chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+chatHistory.push({ role: "model", parts: [{ text }] });
+addMessageToChat('model', text);
+} else {
+addMessageToChat('model', "Sorry, I couldn't generate a response. The response was empty or malformed.");
+}
+break; 
+} catch (error) {
+console.error("Error fetching response:", error);
+addMessageToChat('model', `An error occurred: ${error.message}`);
+break; 
+} finally {
+loadingIndicator.classList.add('hidden');
+}
+}
+}
+function handleSendMessage() {
+const prompt = userInput.value.trim();
+if (prompt) {
+addMessageToChat('user', prompt);
+userInput.value = '';
+const normalizedPrompt = prompt.toLowerCase().trim();
+let hardcodedResponseFound = false;
+for (const key in hardcodedResponses) {
+if (normalizedPrompt.includes(key)) {
+const response = hardcodedResponses[key];
+chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+chatHistory.push({ role: "model", parts: [{ text: response }] });
+addMessageToChat('model', response);
+hardcodedResponseFound = true;
+break;
+}
+}
+if (!hardcodedResponseFound) {
+fetchGeminiResponse(prompt);
+}
+}
+}
+// --- Chatbot Event Listeners ---
+chatbotButton.addEventListener('click', () => {
+chatbotModal.style.display = 'flex';
+if (chatHistory.length === 0) {
+addMessageToChat('model', "Hello! I'm TheUnlockedBot. What can I help you with today?");
+}
+});
 
-            // --- Adult/Payment Fields Validation (Requires basic check) ---
-            const fieldsToCheck = ['firstName', 'lastName', 'email', 'phone', 'cardNumber', 'expiryDate', 'cvv'];
-            fieldsToCheck.forEach(fieldId => {
-                const input = document.getElementById(fieldId);
-                if (input.value.trim() === '') {
-                    const errorElement = document.getElementById(`error-${fieldId}`);
-                    if (errorElement) errorElement.style.display = 'block';
-                    input.style.borderColor = var(--color-error);
-                    if (!firstInvalidField) firstInvalidField = input;
-                    isValid = false;
-                } else {
-                    input.style.borderColor = '#555';
-                }
-            });
+// Listener to close modal and hide hack button
+chatbotExitBtn.addEventListener('click', function() {
+    chatbotModal.style.display = 'none';
+    terminalHackBtn.style.display = 'none'; // Hide the hack button when exiting
+});
 
-            // --- Dynamic Child Fields Validation (Crucial Age Check) ---
-            if (hasChildCheckbox.checked) {
-                const numKids = parseInt(numKidsSelect.value);
-                for (let i = 1; i <= numKids; i++) {
-                    const nameInput = document.getElementById(`childFirstName${i}`);
-                    const ageInput = document.getElementById(`childAge${i}`);
-                    const yearInput = document.getElementById(`childBirthYear${i}`);
-                    
-                    const age = parseInt(ageInput.value);
-                    if (!isNaN(age) && (age < 9 || age > 13)) {
-                        document.getElementById(`error-childAge${i}`).innerText = `Booking failed! Child #${i} is ${age < 9 ? 'underage' : 'overage'}! 9's – 13's only.`;
-                        document.getElementById(`error-childAge${i}`).style.display = 'block';
-                        if (!firstInvalidField) firstInvalidField = ageInput;
-                        isValid = false;
-                    }
-                    
-                    if (nameInput.value.trim() === '' || ageInput.value.trim() === '' || yearInput.value.trim() === '') {
-                        isValid = false;
-                    }
-                }
-            }
+window.addEventListener('click', (event) => {
+if (event.target == chatbotModal) {
+    chatbotModal.style.display = 'none';
+    terminalHackBtn.style.display = 'none'; // Hide the hack button when clicking outside
+}
+});
+sendButton.addEventListener('click', handleSendMessage);
+userInput.addEventListener('keydown', (event) => {
+if (event.key === 'Enter' && !event.shiftKey) {
+event.preventDefault();
+handleSendMessage();
+}
+});
 
-            if (firstInvalidField) {
-                firstInvalidField.focus();
-                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
 
-            return isValid;
-        }
+// =========================================================================
+// CHATBOT RIGHT-CLICK HACK (Reveals Terminal Button)
+// =========================================================================
 
-        // **4. Form Submission Handler**
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
+// 1. Right-click listener for chatbotExitBtn (the 'X')
+chatbotExitBtn.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); // Prevents the browser's default context menu
+    
+    // Show the secret terminal access button
+    terminalHackBtn.style.display = 'block';
+    
+    showAlert("Secret ATLAS TERMINAL link activated. This button will disappear when you close the chat."); 
+});
 
-            if (!validateForm()) {
-                resultMessage.innerText = "Please fix the errors shown above to complete the booking. Remember the strict age requirements (9-13) and ensure all fields are filled.";
-                resultMessage.className = "alert-message alert-fail";
-                resultMessage.style.display = 'block';
-                return;
-            }
+// 2. Listener for the new hack button (sends user to login)
+terminalHackBtn.addEventListener('click', function() {
+    // Redirect to terminal page
+    window.location.href = 'terminal.html';
+});
 
-            // --- Email Link Generation ---
-            const parentName = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
-            const parentEmail = document.getElementById('email').value;
-            const isChildBooking = hasChildCheckbox.checked;
-            const numKids = isChildBooking ? parseInt(numKidsSelect.value) : 0;
-            let bookedFor = isChildBooking ? `their ${numKids} children` : `themselves`;
-            
-            const emailRecipient = "ethan.unlocked@gmail.com";
-            const subject = encodeURIComponent(`New Brawl Stars Club Booking: ${parentName}`);
-            let bodyText = `Hello Ethan,\n\n${parentName} has booked ${bookedFor} for the Brawl Stars Club.\n\nParent Email: ${parentEmail}\nSchedule: Weekends, 11am-3pm. Fee: $10/day/child.\n\n(Full details to be checked against payment system)`;
-            const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+// ========================================================================
+// END OF DYNAMIC BUTTON AND LOCKDOWN LOGIC
+// ========================================================================
 
-            // **Booking Complete Popup**
-            alert("Booking complete! Ethan will confirm with you within 3 days maximum");
-
-            // **Final Success UI Update**
-            resultMessage.innerHTML = `
-                <p>✅ **BOOKING & PAYMENT PENDING!**</p>
-                <p>Thank yourself, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor}.</p>
-                <p>Club Schedule: **Weekends, 11:00 AM - 3:00 PM**.</p>
-                <p>Click the button to send the final booking details to the club coordinator:</p>
-                <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:#32CD32; color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
-                    Click to Send Coordinator Email
-                </a>
-            `;
-            resultMessage.className = "alert-message alert-success";
-            resultMessage.style.display = 'block';
-            resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        });
-        
-        // **5. Cancellation Logic**
-        window.initiateCancellation = function() {
-            const cancelEmailInput = document.getElementById('cancelEmail');
-            const statusElement = document.getElementById('cancel-status');
-            const coordinatorEmail = "ethan.unlocked@gmail.com";
-            const email = cancelEmailInput.value.trim();
-
-            statusElement.style.display = 'none';
-
-            if (!email) {
-                statusElement.innerText = "Please enter your registration email address.";
-                statusElement.style.display = 'block';
-                return;
-            }
-
-            // Generate the cancellation mailto link
-            const subject = encodeURIComponent("CANCELLATION REQUEST: Brawl Stars Club");
-            const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Brawl Stars Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
-            
-            const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
-
-            // Update the UI to show the final mailto link
-            const cancelArea = document.getElementById('cancellation-form-area');
-            cancelArea.innerHTML = `
-                <p style="color: var(--color-cancel); font-weight: bold;">
-                    Confirmation Required! Your cancellation request is ready.
-                </p>
-                <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
-                <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decoration:none; font-weight:bold; text-align:center;">
-                    SEND CANCELLATION EMAIL
-                </a>
-                <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">You must send this email to complete the cancellation process.</p>
-            `;
-            
-            cancelArea.scrollIntoView({ behavior: 'smooth' });
-        }
-    </script>
+</script>
 </body>
 </html>
