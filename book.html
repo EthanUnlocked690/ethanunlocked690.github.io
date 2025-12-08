@@ -445,52 +445,53 @@
         const gdAppModal = document.getElementById('gd-app-modal');
         const CURRENT_YEAR = new Date().getFullYear();
 
-        // Helper function to format date
+        // Helper function to format date (REFINED)
         function formatDate(date) {
-            // Options for display
+            // Options for display (e.g., Sat 12/09/2025)
             const options = { weekday: 'short', month: '2-digit', day: '2-digit', year: 'numeric' };
             const dateString = date.toLocaleDateString('en-US', options);
             
-            // Generate YYYY-MM-DD format for the value attribute
+            // Generate YYYY-MM-DD format for the value attribute (MUST BE EXACT)
             const yyyy = date.getFullYear();
-            const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months start at 0
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
             const dd = String(date.getDate()).padStart(2, '0');
             const yyyyMmDd = `${yyyy}-${mm}-${dd}`;
             
             return {
                 value: yyyyMmDd,
-                text: dateString.replace(/,/g, '') // Remove commas for cleaner display
+                text: dateString.replace(/,/g, '')
             };
         }
 
-        // **1. Dynamic Date Population Function (FIXED)**
+        // **1. Dynamic Date Population Function (HIGH-RELIABILITY FIX)**
         window.populateWeekendDates = function() {
             clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
             
             const today = new Date();
-            // Start iterating from today. Setting time to 0 prevents timezone issues.
-            today.setHours(0, 0, 0, 0); 
-
+            // Start iterating from the day before today for reliable iteration logic
+            today.setDate(today.getDate() - 1); 
+            
             let count = 0;
             const maxWeekends = 8; 
 
             // Iterate through upcoming days
-            for (let i = 0; count < maxWeekends * 7; i++) { // Check up to 56 days (8 weekends)
+            for (let i = 1; count < maxWeekends; i++) {
                 const date = new Date(today);
                 date.setDate(today.getDate() + i);
 
                 const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
 
-                if (dayOfWeek === 0 || dayOfWeek === 6) { // If it's Saturday or Sunday
+                // Check if it is a weekend
+                if (dayOfWeek === 0 || dayOfWeek === 6) { 
                     const formattedDate = formatDate(date);
                     const option = document.createElement('option');
                     option.value = formattedDate.value;
                     option.text = formattedDate.text;
                     clubDateSelect.appendChild(option);
-                    count++;
                     
-                    // Break out once we have 8 weekend dates
-                    if (count >= maxWeekends) break;
+                    // console.log(`Added date: ${formattedDate.text} (Value: ${formattedDate.value})`); // Use for debugging
+                    
+                    count++;
                 }
             }
         };
