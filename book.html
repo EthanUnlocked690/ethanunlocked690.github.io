@@ -111,6 +111,32 @@
             margin-bottom: 25px;
         }
 
+        /* Styling for the new Date Checkbox Group */
+        .date-checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 8px;
+        }
+
+        .date-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: #2a2a2a;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            flex-basis: calc(50% - 5px); /* Two items per row on wider screens */
+        }
+        
+        .date-checkbox-item input[type="checkbox"] {
+            /* Keep the checkbox size small */
+            width: auto;
+        }
+        
         /* Dynamic Child Registration Area */
         #child-registration-area {
             border-left: 5px solid var(--color-secondary);
@@ -352,14 +378,45 @@
             <hr style="border-color: #555; margin-top: 30px;"/>
 
             <div id="date-selection-section">
-                <h3 style="color: var(--color-primary); margin-top: 0; text-align: center;">📅 Choose Club Slot</h3>
+                <h3 style="color: var(--color-primary); margin-top: 0; text-align: center;">📅 Choose Club Slot (Check all dates you wish to book)</h3>
 
                 <div class="form-group">
-                    <label for="clubDate">Select a Weekend Date <span style="color:var(--color-error);">*</span></label>
-                    <select id="clubDate" name="clubDate" required>
-                        <option value="" disabled selected>Select Date</option>
-                        </select>
-                    <div class="error-message" id="error-clubDate">Please select a weekend date.</div>
+                    <label>Select Weekend Dates <span style="color:var(--color-error);">*</span></label>
+                    <div class="date-checkbox-group" id="clubDateCheckboxes">
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Dec13" name="clubDate" value="Sat 12/13/2025">
+                            <label for="date-Dec13">Sat 12/13/2025</label>
+                        </div>
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Dec14" name="clubDate" value="Sun 12/14/2025">
+                            <label for="date-Dec14">Sun 12/14/2025</label>
+                        </div>
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Dec20" name="clubDate" value="Sat 12/20/2025">
+                            <label for="date-Dec20">Sat 12/20/2025</label>
+                        </div>
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Dec21" name="clubDate" value="Sun 12/21/2025">
+                            <label for="date-Dec21">Sun 12/21/2025</label>
+                        </div>
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Jan03" name="clubDate" value="Sat 01/03/2026">
+                            <label for="date-Jan03">Sat 01/03/2026</label>
+                        </div>
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Jan04" name="clubDate" value="Sun 01/04/2026">
+                            <label for="date-Jan04">Sun 01/04/2026</label>
+                        </div>
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Jan10" name="clubDate" value="Sat 01/10/2026">
+                            <label for="date-Jan10">Sat 01/10/2026</label>
+                        </div>
+                        <div class="date-checkbox-item">
+                            <input type="checkbox" id="date-Jan11" name="clubDate" value="Sun 01/11/2026">
+                            <label for="date-Jan11">Sun 01/11/2026</label>
+                        </div>
+                    </div>
+                    <div class="error-message" id="error-clubDate">Please select at least one weekend date.</div>
                 </div>
 
                 <div class="date-time-group">
@@ -445,83 +502,19 @@
             const numKidsSelect = document.getElementById('numKids');
             const childFormsContainer = document.getElementById('child-forms-container');
             const resultMessage = document.getElementById('result-message');
-            const clubDateSelect = document.getElementById('clubDate');
+            // clubDateSelect is now a group of checkboxes, but we keep the other elements
             const dropOffTimeSelect = document.getElementById('dropOffTime');
             const pickUpTimeSelect = document.getElementById('pickUpTime');
             const gdAppModal = document.getElementById('gd-app-modal');
             const CURRENT_YEAR = new Date().getFullYear();
-
-            // *** DIAGNOSTIC STEP 1: Check if the element was found ***
-            console.log("DOM Content Loaded. Attempting to find clubDateSelect...");
-            if (!clubDateSelect) {
-                console.error("CRITICAL ERROR: Element with ID 'clubDate' not found in the DOM.");
-                return; // Stop execution if the element isn't there.
-            } else {
-                console.log("SUCCESS: clubDateSelect element found.");
-            }
+            
+            // New selection for date checkboxes
+            const dateCheckboxes = document.querySelectorAll('input[name="clubDate"]');
+            const dateErrorElement = document.getElementById('error-clubDate');
 
 
-            // Helper function to format date (Simplified to minimize potential errors)
-            function formatDate(date) {
-                try {
-                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    const dayName = days[date.getDay()];
-                    
-                    // Pad month and day to 2 digits (e.g., 01, 12)
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const year = date.getFullYear();
-
-                    // Display format: Sun 12/09/2025
-                    const text = `${dayName} ${month}/${day}/${year}`;
-                    
-                    // Value format: YYYY-MM-DD (Required for form processing)
-                    const value = `${year}-${month}-${day}`;
-                    
-                    return { value, text };
-                } catch (e) {
-                    console.error("Error formatting date:", e);
-                    return { value: 'error', text: 'Date Error' };
-                }
-            }
-
-            // **1. Dynamic Date Population Function**
-            function populateWeekendDates() {
-                try {
-                    clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
-                    
-                    const today = new Date();
-                    // Start iterating from today
-                    
-                    let count = 0;
-                    const maxWeekends = 8; 
-                    let attempts = 0;
-
-                    // Iterate through upcoming days (up to 60 days in the future to find 8 weekends)
-                    while (count < maxWeekends && attempts < 60) {
-                        const date = new Date(today);
-                        date.setDate(date.getDate() + attempts); // Increment date for each attempt
-
-                        const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
-
-                        // Check if it is a weekend
-                        if (dayOfWeek === 0 || dayOfWeek === 6) { 
-                            const formattedDate = formatDate(date);
-                            const option = document.createElement('option');
-                            option.value = formattedDate.value;
-                            option.text = formattedDate.text;
-                            clubDateSelect.appendChild(option);
-                            console.log(`Date added: ${formattedDate.text}`);
-                            count++;
-                        }
-                        attempts++;
-                    }
-                    console.log(`Date population finished. Added ${count} weekend dates.`);
-
-                } catch (e) {
-                    console.error("FATAL ERROR during populateWeekendDates execution:", e);
-                }
-            };
+            // **1. Dynamic Date Population Function (REMOVED)**
+            // This function is no longer needed as dates are hardcoded as checkboxes.
             
             // **2. Dynamic Child Form HTML Template**
             function createChildFormHTML(index) {
@@ -580,11 +573,11 @@
                 let firstInvalidField = null;
 
                 document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-                document.querySelectorAll('input, select').forEach(el => el.style.borderColor = '#555');
+                document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], select').forEach(el => el.style.borderColor = '#555');
                 resultMessage.style.display = 'none';
 
-                // --- Required Fields Check ---
-                const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'clubDate', 'dropOffTime', 'pickUpTime'];
+                // --- Required Fields Check (Basic Parent/Time Fields) ---
+                const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'dropOffTime', 'pickUpTime'];
 
                 requiredFields.forEach(fieldId => {
                     const input = document.getElementById(fieldId);
@@ -596,29 +589,40 @@
                     }
                 });
                 
+                // --- Date Checkbox Validation ---
+                const checkedDates = Array.from(dateCheckboxes).filter(cb => cb.checked);
+                if (checkedDates.length === 0) {
+                    dateErrorElement.style.display = 'block';
+                    dateErrorElement.parentNode.querySelector('.date-checkbox-group').style.border = '2px solid var(--color-error)';
+                    if (!firstInvalidField) firstInvalidField = dateCheckboxes[0];
+                    isValid = false;
+                } else {
+                    dateErrorElement.parentNode.querySelector('.date-checkbox-group').style.border = '1px solid #444';
+                }
+
                 // --- Time Logic Check ---
                 const dropOffValue = dropOffTimeSelect.value;
                 const pickUpValue = pickUpTimeSelect.value;
-                const errorElement = document.getElementById('error-pickUpTime');
+                const timeErrorElement = document.getElementById('error-pickUpTime');
 
                 if (dropOffValue !== '' && pickUpValue !== '') {
                     const dropOffHour = parseInt(dropOffValue.split(':')[0]);
                     const pickUpHour = parseInt(pickUpValue.split(':')[0]);
                     
                     if (pickUpHour <= dropOffHour) {
-                        errorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
-                        errorElement.style.display = 'block';
+                        timeErrorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
+                        timeErrorElement.style.display = 'block';
                         pickUpTimeSelect.style.borderColor = 'var(--color-error)';
                         if (!firstInvalidField) firstInvalidField = pickUpTimeSelect;
                         isValid = false;
                     } else {
                          // Reset custom error message if it was previously set
-                         errorElement.innerText = "Pick-up time is required.";
+                         timeErrorElement.innerText = "Pick-up time is required.";
                     }
                 }
 
 
-                // --- Dynamic Child Fields Validation (Existing Check) ---
+                // --- Dynamic Child Fields Validation ---
                 if (hasChildCheckbox.checked) {
                     const numKids = parseInt(numKidsSelect.value);
                     for (let i = 1; i <= numKids; i++) {
@@ -635,7 +639,7 @@
 
                         if (ageInput.value.trim() === '') {
                              document.getElementById(`error-childAge${i}`).innerText = `Age is required.`;
-                             document.getElementById(`error-childAge${i}`).style.display = 'block`;
+                             document.getElementById(`error-childAge${i}`).style.display = 'block';
                              ageInput.style.borderColor = 'var(--color-error)';
                              if (!firstInvalidField) firstInvalidField = ageInput;
                              isValid = false;
@@ -698,10 +702,11 @@
             // --- Final Result Display Functions ---
 
             function getBookingData() {
-                 // Convert military time values back to AM/PM for the email body
-                const dropOffValue = dropOffTimeSelect.value;
-                const pickUpValue = pickUpTimeSelect.value;
-                
+                // Get ALL checked dates
+                const checkedDates = Array.from(document.querySelectorAll('input[name="clubDate"]:checked'));
+                const datesList = checkedDates.map(cb => cb.value).join(', ');
+
+
                 // Helper to convert military hour string to 12-hour format string (e.g., "13:00" -> "1:00 PM")
                 function formatTime(timeValue) {
                     const hour = parseInt(timeValue.split(':')[0]);
@@ -711,39 +716,36 @@
                     return `${hour - 12}:00 PM`;
                 }
 
-                const dropOffTime = formatTime(dropOffValue);
-                const pickUpTime = formatTime(pickUpValue);
+                const dropOffTime = formatTime(dropOffTimeSelect.value);
+                const pickUpTime = formatTime(pickUpTimeSelect.value);
                 
                 const numKids = hasChildCheckbox.checked ? parseInt(numKidsSelect.value) : 0;
-                const bookedFor = hasChildCheckbox.checked ? `their ${numKids} children` : `themselves`;
-
+                
                 return {
                     parentName: `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`,
                     parentEmail: document.getElementById('email').value,
-                    clubDateText: clubDateSelect.options[clubDateSelect.selectedIndex].text,
+                    clubDatesText: datesList, // Multiple dates now
                     dropOffTime: dropOffTime,
                     pickUpTime: pickUpTime,
                     numKids: numKids,
-                    bookedFor: bookedFor
                 };
             }
 
             function displayFinalSuccess() {
                 const data = getBookingData();
                 const emailRecipient = "ethan.unlocked@gmail.com";
-                const subject = encodeURIComponent(`NEW BOOKING: GD Creator Club - ${data.clubDateText}`);
+                const subject = encodeURIComponent(`NEW BOOKING: GD Creator Club - Multiple Dates`);
                 
                 let bodyText = `Hello Ethan,\n\nA new booking has been made for the Geometry Dash Level Creator Club.\n\n` + 
                                `**Parent Details:**\n` +
                                `Name: ${data.parentName}\n` +
                                `Email: ${data.parentEmail}\n\n` +
-                               `**Booking Slot:**\n` +
-                               `Date: ${data.clubDateText}\n` +
-                               `Drop-off: ${data.dropOffTime}\n` +
-                               `Pick-up: ${data.pickUpTime}\n` +
+                               `**Booking Slots:**\n` +
+                               `Dates: ${data.clubDatesText}\n` + // Updated to list of dates
+                               `Time Slot: ${data.dropOffTime} - ${data.pickUpTime}\n` +
                                `Children: ${data.numKids}\n` +
                                `App Status: CONFIRMED\n\n` +
-                               `**FEE STATUS:** $10.00 per child fee to be collected manually upon drop-off via Square reader.\n` +
+                               `**FEE STATUS:** $10.00 per child, per session. Fee will be collected upon drop-off via Square reader.\n` +
                                `**Payment Instruction: Pay on drop off/pick up ONLY!**\n\n` +
                                `Please confirm this booking with the parent.`;
                 
@@ -755,8 +757,8 @@
                 // **Final Success UI Update**
                 resultMessage.innerHTML = `
                     <p>✅ **PERFECT! BOOKING CONFIRMED!**</p>
-                    <p>Thank you, **${document.getElementById('firstName').value}**. Your booking for the **Geometry Dash Level Creator Club** on **${data.clubDateText}** from ${data.dropOffTime} to ${data.pickUpTime} is secured.</p>
-                    <p style="color: var(--color-error); font-weight: bold;">The $10.00 fee per child will be collected upon drop-off. Pay on drop off/pick up ONLY!</p>
+                    <p>Thank you, **${document.getElementById('firstName').value}**. Your booking for the **Geometry Dash Level Creator Club** for the date(s) **${data.clubDatesText}** from ${data.dropOffTime} to ${data.pickUpTime} is secured.</p>
+                    <p style="color: var(--color-error); font-weight: bold;">The $10.00 fee per child, per session, will be collected upon drop-off. Pay on drop off/pick up ONLY!</p>
                     <p>Click the button to send the final booking details to the club coordinator (remember to CC or BCC yourself for a copy):</p>
                     <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
                         Click to Send Coordinator Email
@@ -776,7 +778,7 @@
                 resultMessage.innerHTML = `
                     <p>🛑 **BOOKING BLOCKED: APP REQUIRED**</p>
                     <p style="font-weight: bold; color: var(--color-error);">Sorry, the $4.99 Geometry Dash app is required! The app is not provided at the club.</p>
-                    <p>Please purchase the full game and then re-submit the form once you have the app ready for **${data.clubDateText}**.</p>
+                    <p>Please purchase the full game and then re-submit the form once you have the app ready for the date(s) **${data.clubDatesText}**.</p>
                     <p style="font-size: 0.9em; margin-top: 15px;">Your form data has been saved, but no official booking email has been sent to the coordinator.</p>
                 `;
                 resultMessage.className = "alert-message alert-fail";
@@ -802,7 +804,7 @@
                 }
 
                 const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
-                // Corrected the body template string to fix the SyntaxError
+                // Corrected template string from previous fix:
                 const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
                 
                 const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
@@ -823,7 +825,7 @@
             }
             
             // **7. EXECUTION**
-            populateWeekendDates();
+            // Removed populateWeekendDates();
         });
     </script>
 </body>
