@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Level Creator Club - Book session</title>
+    <title>Geometry Dash Level Creator Club - Book a session</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -18,12 +18,11 @@
 
         body {
             font-family: var(--font-main);
-            /* --- 🌐 UPDATED BACKGROUND TO USE geometry.gif --- */
+            /* --- 🌐 BACKGROUND --- */
             background-image: url('geometry.gif');
             background-repeat: no-repeat;
             background-size: cover;
-            background-attachment: fixed; /* Ensures the background stays put while scrolling */
-            /* Fallback color if the GIF doesn't load */
+            background-attachment: fixed; 
             background-color: #1C1C1C; 
             
             color: var(--color-light);
@@ -36,7 +35,6 @@
         }
 
         .container {
-            /* Kept the transparent dark background so the text is readable over the background image */
             background-color: rgba(30, 30, 30, 0.95);
             padding: 40px;
             border-radius: 20px;
@@ -143,27 +141,34 @@
             gap: 20px;
         }
 
-        /* Payment Section Styling */
-        #payment-section {
-            border-top: 2px solid var(--color-error);
+        /* Date Selection Section */
+        #date-selection-section {
+            border-top: 2px dashed var(--color-primary);
             padding-top: 20px;
             margin-top: 30px;
+            margin-bottom: 30px;
         }
-        .card-details-group {
+
+        .date-time-group {
             display: flex;
             gap: 15px;
+            align-items: flex-end;
         }
-        .card-details-group > div {
+        .date-time-group > div {
             flex: 1;
         }
-        .fee-warning {
+
+        /* Fee Notice (Replaces Payment Section) */
+        .fee-notice {
             text-align: center;
             font-weight: bold;
             color: var(--color-error);
-            margin-bottom: 20px;
-            border: 1px dashed var(--color-error);
-            padding: 10px;
-            border-radius: 5px;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            border: 2px solid var(--color-error);
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(255, 69, 0, 0.1);
         }
 
         /* Submit Button Styling */
@@ -210,7 +215,7 @@
             margin-top: 20px;
             padding: 15px;
             border: 2px solid var(--color-cancel);
-            border-radius: 8櫃8px;
+            border-radius: 8px;
             background-color: rgba(112, 128, 144, 0.1);
         }
 
@@ -230,7 +235,7 @@
         }
     </style>
 </head>
-<body>
+<body onload="populateWeekendDates()">
 
     <div class="container">
         <h2>Geometry Dash Level Creator Club Sign-Up</h2>
@@ -288,46 +293,48 @@
             
             <hr style="border-color: #555; margin-top: 30px;"/>
 
-            <div id="payment-section">
-                <h3 style="color: var(--color-error); margin-top: 0; text-align: center;">Payment Details</h3>
-                <div class="fee-warning">
-                    ⚠️ **Club Fee:** $10.00 will be charged **daily** for each child attending on weekends (11am-3pm).
+            <div id="date-selection-section">
+                <h3 style="color: var(--color-primary); margin-top: 0; text-align: center;">📅 Choose Club Slot</h3>
+
+                <div class="form-group">
+                    <label for="clubDate">Select a Weekend Date <span style="color:var(--color-error);">*</span></label>
+                    <select id="clubDate" name="clubDate" required>
+                        <option value="" disabled selected>Select Date</option>
+                        </select>
+                    <div class="error-message" id="error-clubDate">Please select a weekend date.</div>
+                </div>
+
+                <div class="date-time-group">
+                    <div>
+                        <div class="form-group">
+                            <label for="dropOffTime">Drop-off Time <span style="color:var(--color-error);">*</span></label>
+                            <select id="dropOffTime" name="dropOffTime" required>
+                                <option value="11:00 AM" selected>11:00 AM</option>
+                            </select>
+                            <div class="error-message" id="error-dropOffTime">Drop-off time is required.</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label for="pickUpTime">Pick-up Time <span style="color:var(--color-error);">*</span></label>
+                            <select id="pickUpTime" name="pickUpTime" required>
+                                <option value="3:00 PM" selected>3:00 PM</option>
+                            </select>
+                            <div class="error-message" id="error-pickUpTime">Pick-up time is required.</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="cardProvider">Card Provider <span style="color:var(--color-error);">*</span></label>
-                    <select id="cardProvider" name="cardProvider" required>
-                        <option value="" disabled selected>Select Provider</option>
-                        <option value="Visa">Visa</option>
-                        <option value="Mastercard">Mastercard</option>
-                        <option value="Amex">American Express</option>
-                        <option value="Discover">Discover</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="cardNumber">Credit Card Number <span style="color:var(--color-error);">*</span></label>
-                    <input type="text" id="cardNumber" name="cardNumber" pattern="\d{16}" placeholder="**** **** **** ****" required>
-                </div>
-
-                <div class="card-details-group">
-                    <div>
-                        <div class="form-group">
-                            <label for="expiryDate">Expiry Date <span style="color:var(--color-error);">*</span></label>
-                            <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" pattern="\d{2}/\d{2}" required>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="form-group">
-                            <label for="cvv">CVV <span style="color:var(--color-error);">*</span></label>
-                            <input type="text" id="cvv" name="cvv" pattern="\d{3,4}" placeholder="***" required>
-                        </div>
-                    </div>
-                </div>
+                <p style="font-size: 0.9em; text-align: center; color: #aaa;">Club session runs from Drop-off to Pick-up time.</p>
             </div>
             
-            <button type="submit">Complete Club Booking & Pay</button>
+            <hr style="border-color: #555; margin-top: 30px;"/>
+
+            <div class="fee-notice">
+                ⚠️ **Club Fee: $10.00** per child, collected upon drop-off via Square reader.
+            </div>
+            
+            <button type="submit">Complete Club Booking</button>
 
             <div id="result-message" class="alert-message"></div>
         </form>
@@ -359,9 +366,49 @@
         const numKidsSelect = document.getElementById('numKids');
         const childFormsContainer = document.getElementById('child-forms-container');
         const resultMessage = document.getElementById('result-message');
+        const clubDateSelect = document.getElementById('clubDate');
+        const dropOffTimeSelect = document.getElementById('dropOffTime');
+        const pickUpTimeSelect = document.getElementById('pickUpTime');
         const CURRENT_YEAR = new Date().getFullYear();
-        
-        // **1. Dynamic Child Form HTML Template**
+
+        // Helper function to format date as "MM/DD/YYYY (Day)"
+        function formatDate(date) {
+            const options = { weekday: 'short', month: '2-digit', day: '2-digit', year: 'numeric' };
+            const dateString = date.toLocaleDateString('en-US', options);
+            // Reformat to YYYY-MM-DD for value and MM/DD/YYYY (Day) for text
+            const yyyyMmDd = date.toISOString().split('T')[0];
+            return {
+                value: yyyyMmDd,
+                text: dateString.replace(/,/g, '') // Remove comma from locale string
+            };
+        }
+
+        // **1. Dynamic Date Population Function**
+        window.populateWeekendDates = function() {
+            clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
+            
+            const today = new Date();
+            let count = 0;
+            const maxWeekends = 8; // Generate the next 8 weekend dates
+
+            for (let i = 0; count < maxWeekends; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+
+                const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    const formattedDate = formatDate(date);
+                    const option = document.createElement('option');
+                    option.value = formattedDate.value;
+                    option.text = formattedDate.text;
+                    clubDateSelect.appendChild(option);
+                    count++;
+                }
+            }
+        };
+
+        // **2. Dynamic Child Form HTML Template** (Unchanged)
         function createChildFormHTML(index) {
             return `
                 <div class="child-form" data-child-index="${index}">
@@ -387,7 +434,7 @@
             `;
         }
         
-        // **2. Dynamic Form Generator/Display Logic**
+        // **3. Dynamic Form Generator/Display Logic** (Unchanged)
         function generateChildForms(count) {
             childFormsContainer.innerHTML = '';
             for (let i = 1; i <= count; i++) {
@@ -395,26 +442,24 @@
             }
         }
 
-        // Event listener to show/hide the child registration area and generate forms
+        // Event listeners for child registration (Unchanged)
         hasChildCheckbox.addEventListener('change', () => {
             if (hasChildCheckbox.checked) {
                 childRegistrationArea.classList.add('visible');
-                // Generate forms when first checked, default is 1
                 generateChildForms(parseInt(numKidsSelect.value)); 
             } else {
                 childRegistrationArea.classList.remove('visible');
-                childFormsContainer.innerHTML = ''; // Clear forms when hiding
+                childFormsContainer.innerHTML = '';
             }
         });
 
-        // Event listener to change the number of forms based on the dropdown
         numKidsSelect.addEventListener('change', (e) => {
             if (hasChildCheckbox.checked) {
                 generateChildForms(parseInt(e.target.value));
             }
         });
 
-        // **3. Centralized Validation Function**
+        // **4. Centralized Validation Function**
         function validateForm() {
             let isValid = true;
             let firstInvalidField = null;
@@ -424,22 +469,23 @@
             document.querySelectorAll('input, select').forEach(el => el.style.borderColor = '#555');
             resultMessage.style.display = 'none';
 
-            // --- Adult/Payment Fields Validation ---
-            const fieldsToCheck = ['firstName', 'lastName', 'email', 'phone', 'cardProvider', 'cardNumber', 'expiryDate', 'cvv'];
-            fieldsToCheck.forEach(fieldId => {
+            // --- Required Fields Check ---
+            // Removed card fields. Now checking Name, Contact, Date, and Time.
+            const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'clubDate', 'dropOffTime', 'pickUpTime'];
+
+            requiredFields.forEach(fieldId => {
                 const input = document.getElementById(fieldId);
-                // The select input requires checking the value directly
+                // Check if the input is empty (or the default selected option for dropdowns)
                 if (input.value.trim() === '' || (input.tagName === 'SELECT' && input.value === '')) {
-                    const errorElement = document.getElementById(`error-${fieldId}`);
-                    // Note: error messages for some payment fields were implicitly handled via general error message, 
-                    // but we ensure the style shows error clearly here.
+                    document.getElementById(`error-${fieldId}`).style.display = 'block';
                     input.style.borderColor = 'var(--color-error)';
                     if (!firstInvalidField) firstInvalidField = input;
                     isValid = false;
                 }
             });
 
-            // --- Dynamic Child Fields Validation (Name/Age/Year Check) ---
+
+            // --- Dynamic Child Fields Validation (Existing Check) ---
             if (hasChildCheckbox.checked) {
                 const numKids = parseInt(numKidsSelect.value);
                 for (let i = 1; i <= numKids; i++) {
@@ -447,7 +493,6 @@
                     const ageInput = document.getElementById(`childAge${i}`);
                     const yearInput = document.getElementById(`childBirthYear${i}`);
                     
-                    // Name validation
                     if (nameInput.value.trim() === '') {
                         document.getElementById(`error-childFirstName${i}`).style.display = 'block';
                         nameInput.style.borderColor = 'var(--color-error)';
@@ -455,7 +500,6 @@
                         isValid = false;
                     } 
 
-                    // Age validation (basic check for empty)
                     if (ageInput.value.trim() === '') {
                          document.getElementById(`error-childAge${i}`).innerText = `Age is required.`;
                          document.getElementById(`error-childAge${i}`).style.display = 'block';
@@ -464,7 +508,6 @@
                          isValid = false;
                     } 
                     
-                    // Birth Year validation (simple check here)
                     if (yearInput.value.trim() === '') {
                         document.getElementById(`error-childBirthYear${i}`).style.display = 'block';
                         yearInput.style.borderColor = 'var(--color-error)';
@@ -482,7 +525,7 @@
             return isValid;
         }
 
-        // **4. Form Submission Handler**
+        // **5. Form Submission Handler**
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -495,28 +538,40 @@
                 return;
             }
 
-            // --- Email Link Generation ---
+            // --- Data Retrieval ---
             const parentName = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
             const parentEmail = document.getElementById('email').value;
-            const isChildBooking = hasChildCheckbox.checked;
-            const numKids = isChildBooking ? parseInt(numKidsSelect.value) : 0;
-            let bookedFor = isChildBooking ? `their ${numKids} children` : `themselves`;
+            const clubDateText = clubDateSelect.options[clubDateSelect.selectedIndex].text;
+            const dropOffTime = dropOffTimeSelect.value;
+            const pickUpTime = pickUpTimeSelect.value;
+            const numKids = hasChildCheckbox.checked ? parseInt(numKidsSelect.value) : 0;
+            let bookedFor = hasChildCheckbox.checked ? `their ${numKids} children` : `themselves`;
             
             const emailRecipient = "ethan.unlocked@gmail.com";
-            // UPDATED CLUB NAME IN SUBJECT
-            const subject = encodeURIComponent(`New GD Creator Club Booking: ${parentName}`);
-            // UPDATED CLUB NAME IN BODY
-            let bodyText = `Hello Ethan,\n\n${parentName} has booked ${bookedFor} for the Geometry Dash Level Creator Club.\n\nParent Email: ${parentEmail}\nSchedule: Weekends, 11am-3pm. Fee: $10/day/child.\n\n(Full details to be checked against payment system)`;
+            const subject = encodeURIComponent(`NEW BOOKING: GD Creator Club - ${clubDateText}`);
+            
+            // Body text confirms the booking details and the payment method (Square reader)
+            let bodyText = `Hello Ethan,\n\nA new booking has been made for the Geometry Dash Level Creator Club.\n\n` + 
+                           `**Parent Details:**\n` +
+                           `Name: ${parentName}\n` +
+                           `Email: ${parentEmail}\n\n` +
+                           `**Booking Slot:**\n` +
+                           `Date: ${clubDateText}\n` +
+                           `Drop-off: ${dropOffTime}\n` +
+                           `Pick-up: ${pickUpTime}\n` +
+                           `Children: ${numKids}\n\n` +
+                           `**FEE STATUS:** $10.00 per child fee to be collected manually upon drop-off via Square reader.\n\nPlease confirm this booking with the parent.`;
+            
             const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
             // **Booking Complete Popup**
-            alert("Booking complete! Ethan will confirm with you within 3 days maximum");
+            alert(`Booking for ${clubDateText} complete! A confirmation email is ready to be sent to the coordinator.`);
 
             // **Final Success UI Update**
             resultMessage.innerHTML = `
-                <p>✅ **BOOKING & PAYMENT PENDING!**</p>
-                <p>Thank you, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor} for the **Geometry Dash Level Creator Club**.</p>
-                <p>Club Schedule: **Weekends, 11:00 AM - 3:00 PM**.</p>
+                <p>✅ **BOOKING CONFIRMED!**</p>
+                <p>Thank you, **${document.getElementById('firstName').value}**. You have successfully booked a slot for the **Geometry Dash Level Creator Club** on **${clubDateText}**.</p>
+                <p style="color: var(--color-error); font-weight: bold;">The $10.00 fee per child will be collected upon drop-off.</p>
                 <p>Click the button to send the final booking details to the club coordinator:</p>
                 <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
                     Click to Send Coordinator Email
@@ -529,7 +584,7 @@
             resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
         
-        // **5. Cancellation Logic**
+        // **6. Cancellation Logic** (Unchanged)
         window.initiateCancellation = function() {
             const cancelEmailInput = document.getElementById('cancelEmail');
             const statusElement = document.getElementById('cancel-status');
@@ -544,15 +599,11 @@
                 return;
             }
 
-            // Generate the cancellation mailto link
-            // UPDATED CLUB NAME IN CANCELLATION SUBJECT
             const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
-            // UPDATED CLUB NAME IN CANCELLATION BODY
             const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
             
             const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
 
-            // Update the UI to show the final mailto link
             const cancelArea = document.getElementById('cancellation-form-area');
             cancelArea.innerHTML = `
                 <p style="color: var(--color-cancel); font-weight: bold;">
