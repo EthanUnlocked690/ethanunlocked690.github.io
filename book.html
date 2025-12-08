@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Level Creator Club Sign-Up & Cancellation</title>
+    <title>Geometry Dash Level Creator Club - Book Session</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -22,6 +22,8 @@
             background-image: url('geometry.gif');
             background-repeat: no-repeat;
             background-size: cover;
+            /* --- FIX: CENTERED BACKGROUND --- */
+            background-position: center center; 
             background-attachment: fixed; 
             background-color: #1C1C1C; 
             
@@ -235,7 +237,7 @@
             margin-top: 10px;
         }
 
-        /* --- MODAL STYLES (New) --- */
+        /* --- MODAL STYLES --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -390,7 +392,8 @@
             <hr style="border-color: #555; margin-top: 30px;"/>
 
             <div class="fee-notice">
-                ⚠️ **Club Fee: $10.00** per child, collected upon drop-off via Square reader.
+                ⚠️ **Club Fee: $10.00** per child, collected upon drop-off via Square reader.<br>
+                **Pay on drop off/pick up ONLY!**
             </div>
             
             <button type="submit">Complete Club Booking</button>
@@ -453,7 +456,7 @@
             };
         }
 
-        // **1. Dynamic Date Population Function** (Unchanged)
+        // **1. Dynamic Date Population Function**
         window.populateWeekendDates = function() {
             clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
             
@@ -478,7 +481,7 @@
             }
         };
 
-        // **2. Dynamic Child Form HTML Template** (Unchanged)
+        // **2. Dynamic Child Form HTML Template**
         function createChildFormHTML(index) {
             return `
                 <div class="child-form" data-child-index="${index}">
@@ -504,7 +507,7 @@
             `;
         }
         
-        // **3. Dynamic Form Generator/Display Logic** (Unchanged)
+        // **3. Dynamic Form Generator/Display Logic**
         function generateChildForms(count) {
             childFormsContainer.innerHTML = '';
             for (let i = 1; i <= count; i++) {
@@ -512,7 +515,7 @@
             }
         }
 
-        // Event listeners for child registration (Unchanged)
+        // Event listeners for child registration
         hasChildCheckbox.addEventListener('change', () => {
             if (hasChildCheckbox.checked) {
                 childRegistrationArea.classList.add('visible');
@@ -529,7 +532,7 @@
             }
         });
 
-        // **4. Centralized Validation Function** (Unchanged except for time logic display)
+        // **4. Centralized Validation Function**
         function validateForm() {
             let isValid = true;
             let firstInvalidField = null;
@@ -656,7 +659,7 @@
              // Convert military time values back to AM/PM for the email body
             const dropOffValue = dropOffTimeSelect.value;
             const pickUpValue = pickUpTimeSelect.value;
-            const dropOffTime = dropOffValue === "11:00" ? "11:00 AM" : `${parseInt(dropOffValue)}:00 PM`;
+            const dropOffTime = dropOffValue === "11:00" ? "11:00 AM" : `${parseInt(dropOffValue) - 12}:00 PM`;
             const pickUpTime = pickUpValue === "12:00" ? "12:00 PM" : `${parseInt(pickUpValue) - 12}:00 PM`;
             
             const numKids = hasChildCheckbox.checked ? parseInt(numKidsSelect.value) : 0;
@@ -688,7 +691,9 @@
                            `Pick-up: ${data.pickUpTime}\n` +
                            `Children: ${data.numKids}\n` +
                            `App Status: CONFIRMED\n\n` +
-                           `**FEE STATUS:** $10.00 per child fee to be collected manually upon drop-off via Square reader.\n\nPlease confirm this booking with the parent.`;
+                           `**FEE STATUS:** $10.00 per child fee to be collected manually upon drop-off via Square reader.\n` +
+                           `**Payment Instruction: Pay on drop off/pick up ONLY!**\n\n` +
+                           `Please confirm this booking with the parent.`;
             
             const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
@@ -699,8 +704,8 @@
             resultMessage.innerHTML = `
                 <p>✅ **PERFECT! BOOKING CONFIRMED!**</p>
                 <p>Thank you, **${document.getElementById('firstName').value}**. Your booking for the **Geometry Dash Level Creator Club** on **${data.clubDateText}** from ${data.dropOffTime} to ${data.pickUpTime} is secured.</p>
-                <p style="color: var(--color-error); font-weight: bold;">The $10.00 fee per child will be collected upon drop-off.</p>
-                <p>Click the button to send the final booking details to the club coordinator:</p>
+                <p style="color: var(--color-error); font-weight: bold;">The $10.00 fee per child will be collected upon drop-off. Pay on drop off/pick up ONLY!</p>
+                <p>Click the button to send the final booking details to the club coordinator (remember to CC or BCC yourself for a copy):</p>
                 <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
                     Click to Send Coordinator Email
                 </a>
@@ -730,8 +735,7 @@
         }
 
 
-        // **6. Cancellation Logic** (Unchanged)
-        window.initiateCancellation = function() {
+        // **6. Cancellation Logic** window.initiateCancellation = function() {
             const cancelEmailInput = document.getElementById('cancelEmail');
             const statusElement = document.getElementById('cancel-status');
             const coordinatorEmail = "ethan.unlocked@gmail.com";
