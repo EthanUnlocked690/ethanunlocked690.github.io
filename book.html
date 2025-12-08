@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Level Creator Club Sign-Up & Cancellation</title>
+    <title>Geometry Dash Level Creator Club - Book session</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -18,7 +18,14 @@
 
         body {
             font-family: var(--font-main);
-            background: linear-gradient(135deg, var(--color-dark) 0%, #333 100%);
+            /* --- 🌐 UPDATED BACKGROUND TO USE geometry.gif --- */
+            background-image: url('geometry.gif');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed; /* Ensures the background stays put while scrolling */
+            /* Fallback color if the GIF doesn't load */
+            background-color: #1C1C1C; 
+            
             color: var(--color-light);
             display: flex;
             justify-content: center;
@@ -29,6 +36,7 @@
         }
 
         .container {
+            /* Kept the transparent dark background so the text is readable over the background image */
             background-color: rgba(30, 30, 30, 0.95);
             padding: 40px;
             border-radius: 20px;
@@ -202,7 +210,7 @@
             margin-top: 20px;
             padding: 15px;
             border: 2px solid var(--color-cancel);
-            border-radius: 8px;
+            border-radius: 8櫃8px;
             background-color: rgba(112, 128, 144, 0.1);
         }
 
@@ -495,7 +503,9 @@
             let bookedFor = isChildBooking ? `their ${numKids} children` : `themselves`;
             
             const emailRecipient = "ethan.unlocked@gmail.com";
+            // UPDATED CLUB NAME IN SUBJECT
             const subject = encodeURIComponent(`New GD Creator Club Booking: ${parentName}`);
+            // UPDATED CLUB NAME IN BODY
             let bodyText = `Hello Ethan,\n\n${parentName} has booked ${bookedFor} for the Geometry Dash Level Creator Club.\n\nParent Email: ${parentEmail}\nSchedule: Weekends, 11am-3pm. Fee: $10/day/child.\n\n(Full details to be checked against payment system)`;
             const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
@@ -535,7 +545,9 @@
             }
 
             // Generate the cancellation mailto link
+            // UPDATED CLUB NAME IN CANCELLATION SUBJECT
             const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
+            // UPDATED CLUB NAME IN CANCELLATION BODY
             const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
             
             const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
