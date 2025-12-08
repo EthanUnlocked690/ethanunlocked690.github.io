@@ -289,8 +289,7 @@
 
     </style>
 </head>
-<body onload="populateWeekendDates()">
-
+<body>
     <div class="container">
         <h2>Geometry Dash Level Creator Club Sign-Up</h2>
         <div class="schedule-info">
@@ -445,7 +444,7 @@
         const gdAppModal = document.getElementById('gd-app-modal');
         const CURRENT_YEAR = new Date().getFullYear();
 
-        // Helper function to format date (REFINED)
+        // Helper function to format date
         function formatDate(date) {
             // Options for display (e.g., Sat 12/09/2025)
             const options = { weekday: 'short', month: '2-digit', day: '2-digit', year: 'numeric' };
@@ -463,8 +462,8 @@
             };
         }
 
-        // **1. Dynamic Date Population Function (HIGH-RELIABILITY FIX)**
-        window.populateWeekendDates = function() {
+        // **1. Dynamic Date Population Function (FINAL FIX)**
+        function populateWeekendDates() {
             clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
             
             const today = new Date();
@@ -488,14 +487,11 @@
                     option.value = formattedDate.value;
                     option.text = formattedDate.text;
                     clubDateSelect.appendChild(option);
-                    
-                    // console.log(`Added date: ${formattedDate.text} (Value: ${formattedDate.value})`); // Use for debugging
-                    
                     count++;
                 }
             }
         };
-
+        
         // **2. Dynamic Child Form HTML Template**
         function createChildFormHTML(index) {
             return `
@@ -784,6 +780,9 @@
             
             cancelArea.scrollIntoView({ behavior: 'smooth' });
         }
+        
+        // **7. Event Listener for DOMContentLoaded (The fix!)**
+        document.addEventListener('DOMContentLoaded', populateWeekendDates);
     </script>
 </body>
 </html>
