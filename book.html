@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Level Creator Club - Book sessions</title>
+    <title>Geometry Dash Level Creator Club Sign-Up & Cancellation</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -42,6 +42,7 @@
             width: 90%;
             max-width: 600px;
             animation: fadeIn 1s ease-out;
+            position: relative; 
         }
 
         @keyframes fadeIn {
@@ -233,6 +234,57 @@
             padding: 10px;
             margin-top: 10px;
         }
+
+        /* --- MODAL STYLES (New) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none; /* Controlled by JS */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--color-dark);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(50, 205, 50, 0.8);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 3px solid var(--color-primary);
+        }
+
+        .modal-content h3 {
+            color: var(--color-primary);
+            margin-top: 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            width: 45%;
+            padding: 10px;
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
+        .modal-buttons .btn-yes {
+            background-color: var(--color-primary);
+        }
+        .modal-buttons .btn-no {
+            background-color: var(--color-error);
+            color: white;
+        }
+
     </style>
 </head>
 <body onload="populateWeekendDates()">
@@ -363,6 +415,17 @@
         </div>
 
     </div>
+    
+    <div id="gd-app-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: var(--color-error);">WAIT! Have you bought the $4.99 Geometry Dash?</h3>
+            <p>The full game is required for the Level Creator Club. The free versions are not sufficient.</p>
+            <div class="modal-buttons">
+                <button type="button" class="btn-yes" onclick="handleAppCheck(true)">YES, I Have It!</button>
+                <button type="button" class="btn-no" onclick="handleAppCheck(false)">NO, Not Yet</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- ⚙️ JAVASCRIPT VALIDATION AND LOGIC ---
@@ -376,27 +439,27 @@
         const clubDateSelect = document.getElementById('clubDate');
         const dropOffTimeSelect = document.getElementById('dropOffTime');
         const pickUpTimeSelect = document.getElementById('pickUpTime');
+        const gdAppModal = document.getElementById('gd-app-modal');
         const CURRENT_YEAR = new Date().getFullYear();
 
-        // Helper function to format date as "MM/DD/YYYY (Day)"
+        // Helper function to format date
         function formatDate(date) {
             const options = { weekday: 'short', month: '2-digit', day: '2-digit', year: 'numeric' };
             const dateString = date.toLocaleDateString('en-US', options);
-            // We use YYYY-MM-DD for the value, and the formatted string for text
             const yyyyMmDd = date.toISOString().split('T')[0];
             return {
                 value: yyyyMmDd,
-                text: dateString.replace(/,/g, '') // Remove comma from locale string
+                text: dateString.replace(/,/g, '')
             };
         }
 
-        // **1. Dynamic Date Population Function**
+        // **1. Dynamic Date Population Function** (Unchanged)
         window.populateWeekendDates = function() {
             clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
             
             const today = new Date();
             let count = 0;
-            const maxWeekends = 8; // Generate the next 8 weekend dates
+            const maxWeekends = 8; 
 
             for (let i = 0; count < maxWeekends; i++) {
                 const date = new Date(today);
@@ -466,12 +529,11 @@
             }
         });
 
-        // **4. Centralized Validation Function**
+        // **4. Centralized Validation Function** (Unchanged except for time logic display)
         function validateForm() {
             let isValid = true;
             let firstInvalidField = null;
 
-            // Reset all error messages and styles
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             document.querySelectorAll('input, select').forEach(el => el.style.borderColor = '#555');
             resultMessage.style.display = 'none';
@@ -489,23 +551,24 @@
                 }
             });
             
-            // --- Time Logic Check (New) ---
+            // --- Time Logic Check ---
             const dropOffValue = dropOffTimeSelect.value;
             const pickUpValue = pickUpTimeSelect.value;
             const errorElement = document.getElementById('error-pickUpTime');
 
             if (dropOffValue !== '' && pickUpValue !== '') {
-                // Compare hours (since the values are "HH:00" strings)
                 const dropOffHour = parseInt(dropOffValue.split(':')[0]);
                 const pickUpHour = parseInt(pickUpValue.split(':')[0]);
                 
-                // Pick-up must be at least one hour after drop-off (pickUpHour > dropOffHour)
                 if (pickUpHour <= dropOffHour) {
                     errorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
                     errorElement.style.display = 'block';
                     pickUpTimeSelect.style.borderColor = 'var(--color-error)';
                     if (!firstInvalidField) firstInvalidField = pickUpTimeSelect;
                     isValid = false;
+                } else {
+                     // Reset custom error message if it was previously set
+                     errorElement.innerText = "Pick-up time is required.";
                 }
             }
 
@@ -550,7 +613,7 @@
             return isValid;
         }
 
-        // **5. Form Submission Handler**
+        // **5. Form Submission Handler - Opens Modal**
         form.addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -563,44 +626,79 @@
                 return;
             }
 
-            // --- Data Retrieval ---
-            const parentName = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
-            const parentEmail = document.getElementById('email').value;
-            const clubDateText = clubDateSelect.options[clubDateSelect.selectedIndex].text;
-            
-            // Convert military time values back to AM/PM for the email body
+            // If validation passes, open the GD App Check Modal
+            openAppCheckModal();
+        });
+
+        // --- Modal Control Functions ---
+
+        function openAppCheckModal() {
+            gdAppModal.style.display = 'flex';
+        }
+
+        function closeAppCheckModal() {
+            gdAppModal.style.display = 'none';
+        }
+
+        window.handleAppCheck = function(hasApp) {
+            closeAppCheckModal();
+
+            if (hasApp) {
+                displayFinalSuccess();
+            } else {
+                displayFinalFailure();
+            }
+        }
+        
+        // --- Final Result Display Functions ---
+
+        function getBookingData() {
+             // Convert military time values back to AM/PM for the email body
             const dropOffValue = dropOffTimeSelect.value;
             const pickUpValue = pickUpTimeSelect.value;
             const dropOffTime = dropOffValue === "11:00" ? "11:00 AM" : `${parseInt(dropOffValue)}:00 PM`;
             const pickUpTime = pickUpValue === "12:00" ? "12:00 PM" : `${parseInt(pickUpValue) - 12}:00 PM`;
             
             const numKids = hasChildCheckbox.checked ? parseInt(numKidsSelect.value) : 0;
-            let bookedFor = hasChildCheckbox.checked ? `their ${numKids} children` : `themselves`;
-            
+            const bookedFor = hasChildCheckbox.checked ? `their ${numKids} children` : `themselves`;
+
+            return {
+                parentName: `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`,
+                parentEmail: document.getElementById('email').value,
+                clubDateText: clubDateSelect.options[clubDateSelect.selectedIndex].text,
+                dropOffTime: dropOffTime,
+                pickUpTime: pickUpTime,
+                numKids: numKids,
+                bookedFor: bookedFor
+            };
+        }
+
+        function displayFinalSuccess() {
+            const data = getBookingData();
             const emailRecipient = "ethan.unlocked@gmail.com";
-            const subject = encodeURIComponent(`NEW BOOKING: GD Creator Club - ${clubDateText}`);
+            const subject = encodeURIComponent(`NEW BOOKING: GD Creator Club - ${data.clubDateText}`);
             
-            // Body text confirms the booking details and the payment method (Square reader)
             let bodyText = `Hello Ethan,\n\nA new booking has been made for the Geometry Dash Level Creator Club.\n\n` + 
                            `**Parent Details:**\n` +
-                           `Name: ${parentName}\n` +
-                           `Email: ${parentEmail}\n\n` +
+                           `Name: ${data.parentName}\n` +
+                           `Email: ${data.parentEmail}\n\n` +
                            `**Booking Slot:**\n` +
-                           `Date: ${clubDateText}\n` +
-                           `Drop-off: ${dropOffTime}\n` +
-                           `Pick-up: ${pickUpTime}\n` +
-                           `Children: ${numKids}\n\n` +
+                           `Date: ${data.clubDateText}\n` +
+                           `Drop-off: ${data.dropOffTime}\n` +
+                           `Pick-up: ${data.pickUpTime}\n` +
+                           `Children: ${data.numKids}\n` +
+                           `App Status: CONFIRMED\n\n` +
                            `**FEE STATUS:** $10.00 per child fee to be collected manually upon drop-off via Square reader.\n\nPlease confirm this booking with the parent.`;
             
             const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
             // **Booking Complete Popup**
-            alert(`Booking for ${clubDateText} complete! A confirmation email is ready to be sent to the coordinator.`);
+            alert(`PERFECT! An email has been sent to the coordinator! Enjoy!`);
 
             // **Final Success UI Update**
             resultMessage.innerHTML = `
-                <p>✅ **BOOKING CONFIRMED!**</p>
-                <p>Thank you, **${document.getElementById('firstName').value}**. You have successfully booked a slot for the **Geometry Dash Level Creator Club** on **${clubDateText}** from ${dropOffTime} to ${pickUpTime}.</p>
+                <p>✅ **PERFECT! BOOKING CONFIRMED!**</p>
+                <p>Thank you, **${document.getElementById('firstName').value}**. Your booking for the **Geometry Dash Level Creator Club** on **${data.clubDateText}** from ${data.dropOffTime} to ${data.pickUpTime} is secured.</p>
                 <p style="color: var(--color-error); font-weight: bold;">The $10.00 fee per child will be collected upon drop-off.</p>
                 <p>Click the button to send the final booking details to the club coordinator:</p>
                 <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
@@ -612,8 +710,26 @@
             resultMessage.style.color = 'var(--color-light)';
             resultMessage.style.display = 'block';
             resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        });
-        
+        }
+
+        function displayFinalFailure() {
+            const data = getBookingData();
+
+            // **Final Failure UI Update**
+            resultMessage.innerHTML = `
+                <p>🛑 **BOOKING BLOCKED: APP REQUIRED**</p>
+                <p style="font-weight: bold; color: var(--color-error);">Sorry, the $4.99 Geometry Dash app is required! The app is not provided at the club.</p>
+                <p>Please purchase the full game and then re-submit the form once you have the app ready for **${data.clubDateText}**.</p>
+                <p style="font-size: 0.9em; margin-top: 15px;">Your form data has been saved, but no official booking email has been sent to the coordinator.</p>
+            `;
+            resultMessage.className = "alert-message alert-fail";
+            resultMessage.style.border = '2px solid var(--color-error)';
+            resultMessage.style.color = 'var(--color-error)';
+            resultMessage.style.display = 'block';
+            resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+
         // **6. Cancellation Logic** (Unchanged)
         window.initiateCancellation = function() {
             const cancelEmailInput = document.getElementById('cancelEmail');
