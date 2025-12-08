@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Level Creator Club - Book a session</title>
+    <title>Geometry Dash Level Creator Club - Book sessions</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -158,7 +158,7 @@
             flex: 1;
         }
 
-        /* Fee Notice (Replaces Payment Section) */
+        /* Fee Notice */
         .fee-notice {
             text-align: center;
             font-weight: bold;
@@ -309,7 +309,10 @@
                         <div class="form-group">
                             <label for="dropOffTime">Drop-off Time <span style="color:var(--color-error);">*</span></label>
                             <select id="dropOffTime" name="dropOffTime" required>
-                                <option value="11:00 AM" selected>11:00 AM</option>
+                                <option value="" disabled selected>Select Drop-off</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="13:00">1:00 PM</option>
                             </select>
                             <div class="error-message" id="error-dropOffTime">Drop-off time is required.</div>
                         </div>
@@ -318,14 +321,18 @@
                         <div class="form-group">
                             <label for="pickUpTime">Pick-up Time <span style="color:var(--color-error);">*</span></label>
                             <select id="pickUpTime" name="pickUpTime" required>
-                                <option value="3:00 PM" selected>3:00 PM</option>
+                                <option value="" disabled selected>Select Pick-up</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="13:00">1:00 PM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="15:00">3:00 PM</option>
                             </select>
                             <div class="error-message" id="error-pickUpTime">Pick-up time is required.</div>
                         </div>
                     </div>
                 </div>
                 
-                <p style="font-size: 0.9em; text-align: center; color: #aaa;">Club session runs from Drop-off to Pick-up time.</p>
+                <p style="font-size: 0.9em; text-align: center; color: #aaa;">Club session time must be at least one hour long.</p>
             </div>
             
             <hr style="border-color: #555; margin-top: 30px;"/>
@@ -375,7 +382,7 @@
         function formatDate(date) {
             const options = { weekday: 'short', month: '2-digit', day: '2-digit', year: 'numeric' };
             const dateString = date.toLocaleDateString('en-US', options);
-            // Reformat to YYYY-MM-DD for value and MM/DD/YYYY (Day) for text
+            // We use YYYY-MM-DD for the value, and the formatted string for text
             const yyyyMmDd = date.toISOString().split('T')[0];
             return {
                 value: yyyyMmDd,
@@ -470,12 +477,10 @@
             resultMessage.style.display = 'none';
 
             // --- Required Fields Check ---
-            // Removed card fields. Now checking Name, Contact, Date, and Time.
             const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'clubDate', 'dropOffTime', 'pickUpTime'];
 
             requiredFields.forEach(fieldId => {
                 const input = document.getElementById(fieldId);
-                // Check if the input is empty (or the default selected option for dropdowns)
                 if (input.value.trim() === '' || (input.tagName === 'SELECT' && input.value === '')) {
                     document.getElementById(`error-${fieldId}`).style.display = 'block';
                     input.style.borderColor = 'var(--color-error)';
@@ -483,6 +488,26 @@
                     isValid = false;
                 }
             });
+            
+            // --- Time Logic Check (New) ---
+            const dropOffValue = dropOffTimeSelect.value;
+            const pickUpValue = pickUpTimeSelect.value;
+            const errorElement = document.getElementById('error-pickUpTime');
+
+            if (dropOffValue !== '' && pickUpValue !== '') {
+                // Compare hours (since the values are "HH:00" strings)
+                const dropOffHour = parseInt(dropOffValue.split(':')[0]);
+                const pickUpHour = parseInt(pickUpValue.split(':')[0]);
+                
+                // Pick-up must be at least one hour after drop-off (pickUpHour > dropOffHour)
+                if (pickUpHour <= dropOffHour) {
+                    errorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
+                    errorElement.style.display = 'block';
+                    pickUpTimeSelect.style.borderColor = 'var(--color-error)';
+                    if (!firstInvalidField) firstInvalidField = pickUpTimeSelect;
+                    isValid = false;
+                }
+            }
 
 
             // --- Dynamic Child Fields Validation (Existing Check) ---
@@ -530,7 +555,7 @@
             event.preventDefault();
 
             if (!validateForm()) {
-                resultMessage.innerText = "Please fix the errors shown above to complete the booking. Ensure all required fields are filled.";
+                resultMessage.innerText = "Please fix the errors shown above to complete the booking.";
                 resultMessage.className = "alert-message alert-fail";
                 resultMessage.style.border = '2px solid var(--color-error)';
                 resultMessage.style.color = 'var(--color-error)';
@@ -542,8 +567,13 @@
             const parentName = `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
             const parentEmail = document.getElementById('email').value;
             const clubDateText = clubDateSelect.options[clubDateSelect.selectedIndex].text;
-            const dropOffTime = dropOffTimeSelect.value;
-            const pickUpTime = pickUpTimeSelect.value;
+            
+            // Convert military time values back to AM/PM for the email body
+            const dropOffValue = dropOffTimeSelect.value;
+            const pickUpValue = pickUpTimeSelect.value;
+            const dropOffTime = dropOffValue === "11:00" ? "11:00 AM" : `${parseInt(dropOffValue)}:00 PM`;
+            const pickUpTime = pickUpValue === "12:00" ? "12:00 PM" : `${parseInt(pickUpValue) - 12}:00 PM`;
+            
             const numKids = hasChildCheckbox.checked ? parseInt(numKidsSelect.value) : 0;
             let bookedFor = hasChildCheckbox.checked ? `their ${numKids} children` : `themselves`;
             
@@ -570,7 +600,7 @@
             // **Final Success UI Update**
             resultMessage.innerHTML = `
                 <p>✅ **BOOKING CONFIRMED!**</p>
-                <p>Thank you, **${document.getElementById('firstName').value}**. You have successfully booked a slot for the **Geometry Dash Level Creator Club** on **${clubDateText}**.</p>
+                <p>Thank you, **${document.getElementById('firstName').value}**. You have successfully booked a slot for the **Geometry Dash Level Creator Club** on **${clubDateText}** from ${dropOffTime} to ${pickUpTime}.</p>
                 <p style="color: var(--color-error); font-weight: bold;">The $10.00 fee per child will be collected upon drop-off.</p>
                 <p>Click the button to send the final booking details to the club coordinator:</p>
                 <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
