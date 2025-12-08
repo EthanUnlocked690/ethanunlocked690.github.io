@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Level Creator Club Sign-Up & Cancellation</title>
+    <title>Geometry Dash Level Creator Club - Book a session</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -327,6 +327,11 @@
             </div>
 
             <div id="child-registration-area">
+                
+                <p style="color: var(--color-error); font-weight: bold; margin-bottom: 20px; padding: 10px; border: 1px dashed var(--color-error); background-color: rgba(255, 69, 0, 0.1);">
+                    ➡️ Please fill out the first form, even if you are signing up a child!
+                </p>
+
                 <p style="color: var(--color-secondary); font-style: italic;">Child Registration</p>
 
                 <div class="form-group">
@@ -431,7 +436,6 @@
 
     <script>
         // --- ⚙️ JAVASCRIPT VALIDATION AND LOGIC ---
-        // All element access and logic moved inside DOMContentLoaded to guarantee existence.
 
         document.addEventListener('DOMContentLoaded', () => {
             // ELEMENT DEFINITIONS - GUARANTEED TO EXIST HERE
@@ -447,49 +451,75 @@
             const gdAppModal = document.getElementById('gd-app-modal');
             const CURRENT_YEAR = new Date().getFullYear();
 
-            // Helper function to format date (Simplified to minimize potential errors)
-            function formatDate(date) {
-                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const dayName = days[date.getDay()];
-                
-                // Pad month and day to 2 digits (e.g., 01, 12)
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const year = date.getFullYear();
-
-                // Display format: Sun 12/09/2025
-                const text = `${dayName} ${month}/${day}/${year}`;
-                
-                // Value format: YYYY-MM-DD (Required for form processing)
-                const value = `${year}-${month}-${day}`;
-                
-                return { value, text };
+            // *** DIAGNOSTIC STEP 1: Check if the element was found ***
+            console.log("DOM Content Loaded. Attempting to find clubDateSelect...");
+            if (!clubDateSelect) {
+                console.error("CRITICAL ERROR: Element with ID 'clubDate' not found in the DOM.");
+                return; // Stop execution if the element isn't there.
+            } else {
+                console.log("SUCCESS: clubDateSelect element found.");
             }
 
-            // **1. Dynamic Date Population Function (CRITICAL FIX: Use simple formatting)**
+
+            // Helper function to format date (Simplified to minimize potential errors)
+            function formatDate(date) {
+                try {
+                    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const dayName = days[date.getDay()];
+                    
+                    // Pad month and day to 2 digits (e.g., 01, 12)
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const year = date.getFullYear();
+
+                    // Display format: Sun 12/09/2025
+                    const text = `${dayName} ${month}/${day}/${year}`;
+                    
+                    // Value format: YYYY-MM-DD (Required for form processing)
+                    const value = `${year}-${month}-${day}`;
+                    
+                    return { value, text };
+                } catch (e) {
+                    console.error("Error formatting date:", e);
+                    return { value: 'error', text: 'Date Error' };
+                }
+            }
+
+            // **1. Dynamic Date Population Function**
             function populateWeekendDates() {
-                clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
-                
-                const today = new Date();
-                today.setDate(today.getDate() - 1); 
-                
-                let count = 0;
-                const maxWeekends = 8; 
+                try {
+                    clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
+                    
+                    const today = new Date();
+                    // Start iterating from today
+                    
+                    let count = 0;
+                    const maxWeekends = 8; 
+                    let attempts = 0;
 
-                for (let i = 1; count < maxWeekends; i++) {
-                    const date = new Date(today);
-                    date.setDate(today.getDate() + i);
+                    // Iterate through upcoming days (up to 60 days in the future to find 8 weekends)
+                    while (count < maxWeekends && attempts < 60) {
+                        const date = new Date(today);
+                        date.setDate(date.getDate() + attempts); // Increment date for each attempt
 
-                    const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
+                        const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
 
-                    if (dayOfWeek === 0 || dayOfWeek === 6) { 
-                        const formattedDate = formatDate(date);
-                        const option = document.createElement('option');
-                        option.value = formattedDate.value;
-                        option.text = formattedDate.text;
-                        clubDateSelect.appendChild(option);
-                        count++;
+                        // Check if it is a weekend
+                        if (dayOfWeek === 0 || dayOfWeek === 6) { 
+                            const formattedDate = formatDate(date);
+                            const option = document.createElement('option');
+                            option.value = formattedDate.value;
+                            option.text = formattedDate.text;
+                            clubDateSelect.appendChild(option);
+                            console.log(`Date added: ${formattedDate.text}`);
+                            count++;
+                        }
+                        attempts++;
                     }
+                    console.log(`Date population finished. Added ${count} weekend dates.`);
+
+                } catch (e) {
+                    console.error("FATAL ERROR during populateWeekendDates execution:", e);
                 }
             };
             
@@ -605,7 +635,7 @@
 
                         if (ageInput.value.trim() === '') {
                              document.getElementById(`error-childAge${i}`).innerText = `Age is required.`;
-                             document.getElementById(`error-childAge${i}`).style.display = 'block';
+                             document.getElementById(`error-childAge${i}`).style.display = 'block`;
                              ageInput.style.borderColor = 'var(--color-error)';
                              if (!firstInvalidField) firstInvalidField = ageInput;
                              isValid = false;
@@ -671,9 +701,18 @@
                  // Convert military time values back to AM/PM for the email body
                 const dropOffValue = dropOffTimeSelect.value;
                 const pickUpValue = pickUpTimeSelect.value;
-                // 11:00 AM, 12:00 PM (12:00), 1:00 PM (13:00) etc.
-                const dropOffTime = dropOffValue === "11:00" ? "11:00 AM" : `${parseInt(dropOffValue) === 12 ? 12 : parseInt(dropOffValue) - 12}:00 PM`;
-                const pickUpTime = pickUpValue === "12:00" ? "12:00 PM" : `${parseInt(pickUpValue) === 12 ? 12 : parseInt(pickUpValue) - 12}:00 PM`;
+                
+                // Helper to convert military hour string to 12-hour format string (e.g., "13:00" -> "1:00 PM")
+                function formatTime(timeValue) {
+                    const hour = parseInt(timeValue.split(':')[0]);
+                    if (hour === 12) return "12:00 PM";
+                    if (hour === 0) return "12:00 AM";
+                    if (hour < 12) return `${hour}:00 AM`;
+                    return `${hour - 12}:00 PM`;
+                }
+
+                const dropOffTime = formatTime(dropOffValue);
+                const pickUpTime = formatTime(pickUpValue);
                 
                 const numKids = hasChildCheckbox.checked ? parseInt(numKidsSelect.value) : 0;
                 const bookedFor = hasChildCheckbox.checked ? `their ${numKids} children` : `themselves`;
@@ -763,6 +802,7 @@
                 }
 
                 const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
+                // Corrected the body template string to fix the SyntaxError
                 const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
                 
                 const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
