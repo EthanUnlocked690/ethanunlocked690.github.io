@@ -1,250 +1,503 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cookie Clicker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* --- CSS Section --- */
         body {
-            font-family: sans-serif;
-            margin: 0;
-            background-color: #f0f0f0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0e6d6;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .navbar {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .navbar a:hover {
-            background-color: #575757;
-        }
-
-        .game-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            padding: 20px;
+            margin: 0;
+            color: #5e3d0c;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px; /* Increased width */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            background-color: #fffaf0; /* Creamy background */
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #cookieArea {
+            flex: 1.5; /* Larger clicker area */
+            padding: 30px;
             text-align: center;
+            border-right: 2px solid #ccc;
             position: relative;
         }
-
+        #upgrades {
+            flex: 1;
+            padding: 20px;
+            background-color: #f5f5f5;
+            overflow-y: auto;
+            max-height: 95vh;
+            border-left: 2px solid #ccc;
+        }
+        #statsArea {
+            flex: 0.5;
+            padding: 20px;
+            background-color: #eee;
+            overflow-y: auto;
+            max-height: 95vh;
+        }
         #cookie {
             width: 250px;
             height: 250px;
             cursor: pointer;
-            user-select: none;
-            position: relative;
             border-radius: 50%;
-            border: 5px solid #a0522d;
-            box-shadow: 0 10px 0 #8b4513, inset 0 -5px 10px rgba(0,0,0,0.2);
-            padding: 0;
-            box-sizing: border-box;
-            background-color: transparent;
-            overflow: hidden;
-            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-            margin-bottom: 20px;
+            transition: transform 0.1s;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            content: url('https://upload.wikimedia.org/wikipedia/commons/e/e5/Chocolate_chip_cookie.jpg'); /* Inlining cookie image */
         }
-
         #cookie:active {
-            transform: translateY(5px);
-            box-shadow: 0 5px 0 #8b4513, inset 0 -2px 5px rgba(0,0,0,0.2);
+            transform: scale(0.95);
         }
-
-        #cookie-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        #score {
-            font-size: 3em;
-            margin: 20px 0;
-            font-weight: bold;
-        }
-        
-        #cps-indicator {
-            font-size: 1.2em;
-            color: #555;
-            margin-bottom: 20px;
-        }
-
-        .upgrades-container {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        .upgrade-button {
-            padding: 10px 20px;
-            margin: 5px;
-            font-size: 1em;
-            cursor: pointer;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            transition: background-color 0.3s ease;
-        }
-
-        .upgrade-button:hover {
-            background-color: #e9e9e9;
-        }
-
-        .upgrade-button:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        
-        .floating-score {
+        /* Flying Text Animation */
+        .click-text {
             position: absolute;
-            font-size: 2em;
+            font-size: 20px;
             font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+            color: orange;
+            text-shadow: 1px 1px 2px black;
+            opacity: 1;
+            animation: flyup 1s ease-out forwards;
             pointer-events: none;
-            animation: floatup 1.5s forwards;
         }
-
-        @keyframes floatup {
-            from {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateY(-80px);
-                opacity: 0;
-            }
+        @keyframes flyup {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+        /* Upgrade Items Styling */
+        .upgrade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #c0c0c0;
+            border-radius: 5px;
+            background-color: #fff;
+            transition: background-color 0.1s;
+        }
+        .upgrade-item:hover:not(.disabled) {
+            background-color: #f0f0f0;
+        }
+        .upgrade-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #e0e0e0;
+        }
+        .info { flex-grow: 1; }
+        .buttons button {
+            padding: 8px 12px;
+            margin-left: 5px;
+            background-color: #8b4513;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .buttons button:hover:not(:disabled) { background-color: #a0522d; }
+        .buttons button:disabled { background-color: #a0a0a0; cursor: not-allowed; }
+        h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #5e3d0c;
+            padding-bottom: 5px;
+            color: #5e3d0c;
+        }
+        /* Golden Cookie Styling */
+        #goldenCookie {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: gold;
+            cursor: pointer;
+            box-shadow: 0 0 10px yellow, 0 0 20px orange;
+            transition: opacity 0.5s;
+            opacity: 0;
+            content: url('https://upload.wikimedia.org/wikipedia/commons/e/e5/Chocolate_chip_cookie.jpg'); /* Using the same cookie image */
+            transform: scale(0.7);
+        }
+        /* Achievements Styling */
+        .achievement-item {
+            padding: 5px;
+            border-bottom: 1px dashed #ccc;
+        }
+        .unlocked {
+            font-weight: bold;
+            color: green;
+        }
+        .locked {
+            color: #a0a0a0;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div id="cookieArea">
+            <div id="display">
+                <p>Cookies: <span id="total_clicks">0</span></p>
+                <p>CPS: <span id="cps">0</span></p>
+            </div>
+            <img id="cookie" onclick="Game.clickCookie()">
+            <div id="goldenCookie" onclick="Game.clickGoldenCookie()"></div>
+        </div>
 
-<div class="navbar">
-    <a href="turtle.html">⬅ Back to others</a>
-</div>
+        <div id="upgrades">
+            <h3>Store</h3>
+            <div id="store"></div>
+        </div>
 
-<div class="game-container">
-    <div id="score">0 Cookies</div>
-    <div id="cookie">
-        <img src="my-cookie.png" alt="Cookie" id="cookie-image">
+        <div id="statsArea">
+            <h3>Achievements</h3>
+            <div id="achievements"></div>
+        </div>
     </div>
-    <div id="cps-indicator">0 Clicks per second</div>
 
-    <div class="upgrades-container">
-        <h3>Upgrades</h3>
-        <button class="upgrade-button" id="grandma-upgrade">Grandma (Cost: 10) - +1 Cookie per click</button>
-        <button class="upgrade-button" id="factory-upgrade">Factory (Cost: 100) - +10 Cookies per click</button>
-    </div>
-</div>
+    <script>
+        /* --- JavaScript Section (The Game Object) --- */
+        const Game = {
+            // --- Core Game State ---
+            totalClicks: 0,
+            increment: 1,
+            goldenCookieClicks: 0,
+            
+            // Define all buildings/upgrades
+            buildings: {
+                'clicker': { name: 'Cursor', basePrice: 15, baseCps: 0.1, count: 0, cost: 15 },
+                'grandma': { name: 'Grandma', basePrice: 100, baseCps: 1, count: 0, cost: 100 },
+                'farm': { name: 'Farm', basePrice: 1100, baseCps: 8, count: 0, cost: 1100 },
+                'mine': { name: 'Mine', basePrice: 12000, baseCps: 47, count: 0, cost: 12000 },
+                'factory': { name: 'Factory', basePrice: 130000, baseCps: 260, count: 0, cost: 130000 },
+            },
+            
+            // Define achievements
+            achievementsList: {
+                'ten_cookies': { name: 'The First Ten', threshold: 10, check: (c) => c.totalClicks >= 10, unlocked: false },
+                'one_hundred': { name: 'Hundredaire', threshold: 100, check: (c) => c.totalClicks >= 100, unlocked: false },
+                'thousand': { name: 'Thousand Years', threshold: 1000, check: (c) => c.totalClicks >= 1000, unlocked: false },
+                'first_building': { name: 'New Management', threshold: 1, check: (c) => Object.values(c.buildings).some(b => b.count >= 1), unlocked: false },
+            },
 
-<script>
-    let score = 0;
-    let clickValue = 1;
-    let clickTimestamps = [];
+            // --- Constants ---
+            PRICE_MULTIPLIER: 1.15,
+            
+            // --- DOM Elements ---
+            cookiesDisplay: document.getElementById('total_clicks'),
+            cpsDisplay: document.getElementById('cps'),
+            storeDiv: document.getElementById('store'),
+            achievementDiv: document.getElementById('achievements'),
+            goldenCookieDiv: document.getElementById('goldenCookie'),
 
-    const scoreDisplay = document.getElementById('score');
-    const cookie = document.getElementById('cookie');
-    const cpsIndicator = document.getElementById('cps-indicator');
-    const grandmaUpgradeBtn = document.getElementById('grandma-upgrade');
-    const factoryUpgradeBtn = document.getElementById('factory-upgrade');
+            // --- Methods ---
 
-    let grandmaCost = 10;
-    let factoryCost = 100;
+            clickCookie: function() {
+                this.totalClicks += this.increment;
+                this.showClickText(this.increment);
+                this.updateDisplay();
+            },
 
-    const clickSound = new Audio('click.mp3');
+            // ** ADVANCED FEATURE 1: FLYING TEXT **
+            showClickText: function(amount) {
+                const cookieElement = document.getElementById('cookie');
+                const rect = cookieElement.getBoundingClientRect();
+                const clickText = document.createElement('div');
+                
+                clickText.className = 'click-text';
+                clickText.textContent = `+${Math.floor(amount).toLocaleString()}`;
+                
+                // Position the text randomly near the cookie
+                const x = rect.left + window.scrollX + rect.width / 2 - 20 + (Math.random() * 40 - 20);
+                const y = rect.top + window.scrollY + rect.height / 2 - 20 + (Math.random() * 40 - 20);
+                
+                clickText.style.left = `${x}px`;
+                clickText.style.top = `${y}px`;
+                
+                document.body.appendChild(clickText);
 
-    cookie.addEventListener('click', (event) => {
-        score += clickValue;
-        updateDisplay();
-        clickSound.currentTime = 0;
-        clickSound.play();
+                // Remove the element after the animation is done
+                setTimeout(() => {
+                    clickText.remove();
+                }, 1000);
+            },
 
-        // New code to track clicks for the indicator
-        clickTimestamps.push(Date.now());
-        
-        const floatingScore = document.createElement('span');
-        floatingScore.textContent = `+${clickValue}`;
-        floatingScore.classList.add('floating-score');
+            // ** ADVANCED FEATURE 2: GOLDEN COOKIE LOGIC **
+            goldenCookie: {
+                visible: false,
+                timeout: null,
+                spawnTime: null,
+                hideTime: null,
+                spawn: function() {
+                    const self = Game.goldenCookie;
+                    if (self.visible) return;
 
-        const cookieRect = cookie.getBoundingClientRect();
-        floatingScore.style.left = `${cookieRect.left + (cookieRect.width / 2)}px`;
-        floatingScore.style.top = `${cookieRect.top + (cookieRect.height / 2)}px`;
+                    // Set random position
+                    const area = Game.cookiesDisplay.parentNode.parentNode;
+                    const areaRect = area.getBoundingClientRect();
+                    
+                    const x = Math.random() * (areaRect.width - 100) + 50;
+                    const y = Math.random() * (areaRect.height - 100) + 50;
+                    
+                    Game.goldenCookieDiv.style.left = `${x}px`;
+                    Game.goldenCookieDiv.style.top = `${y}px`;
 
-        document.body.appendChild(floatingScore);
+                    Game.goldenCookieDiv.style.opacity = '1';
+                    self.visible = true;
 
-        setTimeout(() => {
-            floatingScore.remove();
-        }, 1500);
-    });
+                    // Set a timeout to make it disappear
+                    self.hideTime = setTimeout(self.hide, 10000); // Disappears after 10 seconds
+                },
+                hide: function() {
+                    const self = Game.goldenCookie;
+                    Game.goldenCookieDiv.style.opacity = '0';
+                    self.visible = false;
+                    clearTimeout(self.hideTime);
+                    self.hideTime = null;
+                    
+                    // Reschedule the next spawn
+                    self.spawnTime = setTimeout(self.spawn, Math.random() * 60000 + 10000); // 10 to 70 seconds
+                }
+            },
 
-    grandmaUpgradeBtn.addEventListener('click', () => {
-        if (score >= grandmaCost) {
-            score -= grandmaCost;
-            clickValue += 1;
-            grandmaCost = Math.floor(grandmaCost * 1.5);
-            grandmaUpgradeBtn.innerHTML = `Grandma (Cost: ${grandmaCost}) - +1 Cookie per click`;
-            updateDisplay();
-        }
-    });
+            clickGoldenCookie: function() {
+                const gc = this.goldenCookie;
+                if (!gc.visible) return;
+                
+                gc.hide();
+                
+                // Grant reward: 10% of total cookies, or 10 minutes of CPS
+                const cpsReward = this.calculateCps() * 600; 
+                const totalReward = Math.max(this.totalClicks * 0.1, cpsReward); 
+                
+                this.totalClicks += totalReward;
+                this.showClickText(totalReward); // Use flying text to show big reward!
+                this.goldenCookieClicks++;
+                this.updateDisplay();
+            },
 
-    factoryUpgradeBtn.addEventListener('click', () => {
-        if (score >= factoryCost) {
-            score -= factoryCost;
-            clickValue += 10;
-            factoryCost = Math.floor(factoryCost * 1.5);
-            factoryUpgradeBtn.innerHTML = `Factory (Cost: ${factoryCost}) - +10 Cookies per click`;
-            updateDisplay();
-        }
-    });
+            // --- Buying/Economy Methods ---
+            calculatePrice: function(basePrice, count, numToBuy = 1) {
+                let price = 0;
+                for (let i = 0; i < numToBuy; i++) {
+                    price += Math.round(basePrice * Math.pow(this.PRICE_MULTIPLIER, count + i));
+                }
+                return price;
+            },
 
-    function updateDisplay() {
-        scoreDisplay.textContent = `${Math.floor(score)} Cookies`;
-        checkUpgrades();
-    }
-    
-    // New function to update the Clicks per second indicator
-    function updateCpsIndicator() {
-        const now = Date.now();
-        // Filter out clicks older than 1 second (or a defined window)
-        const recentClicks = clickTimestamps.filter(timestamp => now - timestamp < 1000);
-        clickTimestamps = recentClicks;
-        const clicksPerSecond = recentClicks.length;
-        cpsIndicator.textContent = `${clicksPerSecond} Clicks per second`;
-    }
+            calculateMaxBuy: function(item) {
+                let numToBuy = 0;
+                let tempCookies = this.totalClicks;
+                let currentPrice = this.calculatePrice(item.basePrice, item.count, 1);
 
-    function checkUpgrades() {
-        grandmaUpgradeBtn.disabled = score < grandmaCost;
-        factoryUpgradeBtn.disabled = score < factoryCost;
-    }
-    
-    // The main loop now updates the CPS indicator and the display
-    setInterval(() => {
-        updateDisplay();
-        updateCpsIndicator();
-    }, 1000);
+                while (tempCookies >= currentPrice) {
+                    tempCookies -= currentPrice;
+                    numToBuy++;
+                    currentPrice = this.calculatePrice(item.basePrice, item.count + numToBuy, 1);
+                }
+                return numToBuy;
+            },
 
-    updateDisplay();
-    updateCpsIndicator();
-</script>
+            buyItem: function(itemId, numToBuy = 1) {
+                const item = this.buildings[itemId];
+                if (!item) return;
 
+                const cost = this.calculatePrice(item.basePrice, item.count, numToBuy);
+
+                if (this.totalClicks >= cost) {
+                    this.totalClicks -= cost;
+                    item.count += numToBuy;
+                    
+                    item.cost = this.calculatePrice(item.basePrice, item.count, 1);
+                    
+                    this.updateDisplay();
+                    this.updateStore();
+                    this.saveGame();
+                    this.checkAchievements(); // Check if buying unlocks an achievement
+                }
+            },
+            
+            calculateCps: function() {
+                let cps = 0;
+                for (const id in this.buildings) {
+                    const item = this.buildings[id];
+                    cps += item.baseCps * item.count;
+                }
+                return cps;
+            },
+
+            // --- UI/Display Methods ---
+            updateDisplay: function() {
+                const currentCPS = this.calculateCps();
+                this.cookiesDisplay.textContent = Math.floor(this.totalClicks).toLocaleString();
+                this.cpsDisplay.textContent = currentCPS.toFixed(1).toLocaleString();
+            },
+
+            updateStore: function() {
+                for (const id in this.buildings) {
+                    const item = this.buildings[id];
+                    const itemDiv = document.getElementById(`item-${id}`);
+                    const buyOneBtn = document.getElementById(`buy-1-${id}`);
+                    const buyTenBtn = document.getElementById(`buy-10-${id}`);
+                    const buyMaxBtn = document.getElementById(`buy-max-${id}`);
+
+                    if (itemDiv) {
+                        itemDiv.querySelector('.count').textContent = item.count;
+                        
+                        const costOne = this.calculatePrice(item.basePrice, item.count, 1);
+                        const costTen = this.calculatePrice(item.basePrice, item.count, 10);
+                        const maxBuy = this.calculateMaxBuy(item);
+
+                        // Update button texts and disable state
+                        buyOneBtn.textContent = `Buy 1 (${costOne.toLocaleString()})`;
+                        buyOneBtn.disabled = this.totalClicks < costOne;
+
+                        buyTenBtn.textContent = `Buy 10 (${costTen.toLocaleString()})`;
+                        buyTenBtn.disabled = this.totalClicks < costTen;
+
+                        buyMaxBtn.textContent = `Buy Max (${maxBuy > 0 ? this.calculatePrice(item.basePrice, item.count, maxBuy).toLocaleString() : '0'})`;
+                        buyMaxBtn.disabled = maxBuy === 0;
+
+                        if (this.totalClicks >= costOne) {
+                            itemDiv.classList.remove('disabled');
+                        } else {
+                            itemDiv.classList.add('disabled');
+                        }
+                    }
+                }
+            },
+
+            renderStore: function() {
+                this.storeDiv.innerHTML = '';
+                for (const id in this.buildings) {
+                    const item = this.buildings[id];
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'upgrade-item';
+                    itemDiv.id = `item-${id}`;
+                    
+                    itemDiv.innerHTML = `
+                        <div class="info">
+                            <strong>${item.name}</strong> 
+                            (Owned: <span class="count">${item.count}</span>)
+                            <br>
+                            <small>+${item.baseCps} CPS each</small>
+                        </div>
+                        <div class="buttons">
+                            <button id="buy-1-${id}" onclick="Game.buyItem('${id}', 1)"></button>
+                            <button id="buy-10-${id}" onclick="Game.buyItem('${id}', 10)"></button>
+                            <button id="buy-max-${id}" onclick="Game.buyItem('${id}', Game.calculateMaxBuy(Game.buildings['${id}']))"></button>
+                        </div>
+                    `;
+                    this.storeDiv.appendChild(itemDiv);
+                }
+            },
+            
+            // ** ADVANCED FEATURE 3: ACHIEVEMENTS **
+            checkAchievements: function() {
+                let unlockedNew = false;
+                for (const key in this.achievementsList) {
+                    const achievement = this.achievementsList[key];
+                    if (!achievement.unlocked && achievement.check(this)) {
+                        achievement.unlocked = true;
+                        unlockedNew = true;
+                        console.log(`ACHIEVEMENT UNLOCKED: ${achievement.name}`);
+                    }
+                }
+                if (unlockedNew) {
+                    this.renderAchievements();
+                    this.saveGame();
+                }
+            },
+
+            renderAchievements: function() {
+                this.achievementDiv.innerHTML = '';
+                for (const key in this.achievementsList) {
+                    const achievement = this.achievementsList[key];
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'achievement-item';
+                    itemDiv.classList.add(achievement.unlocked ? 'unlocked' : 'locked');
+                    itemDiv.innerHTML = `
+                        <span style="font-size: 1.2em;">${achievement.unlocked ? '⭐' : '🔒'}</span> 
+                        ${achievement.name}
+                        <br>
+                        <small>Target: ${achievement.threshold.toLocaleString()} ${key.includes('cookie') || key.includes('thousand') ? 'cookies' : 'buildings'}</small>
+                    `;
+                    this.achievementDiv.appendChild(itemDiv);
+                }
+            },
+
+
+            // --- Saving/Loading ---
+            saveGame: function() {
+                const saveData = {
+                    cookies: this.totalClicks,
+                    buildings: this.buildings,
+                    achievements: this.achievementsList
+                };
+                localStorage.setItem('hyperCCSave', JSON.stringify(saveData));
+                console.log('Game Saved!');
+            },
+
+            loadGame: function() {
+                const savedData = localStorage.getItem('hyperCCSave');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    this.totalClicks = data.cookies;
+                    
+                    // Load buildings
+                    for (const id in data.buildings) {
+                        if (this.buildings[id]) {
+                            this.buildings[id].count = data.buildings[id].count;
+                            this.buildings[id].cost = this.calculatePrice(this.buildings[id].basePrice, this.buildings[id].count, 1);
+                        }
+                    }
+
+                    // Load achievements
+                    for (const key in data.achievements) {
+                        if (this.achievementsList[key]) {
+                            this.achievementsList[key].unlocked = data.achievements[key].unlocked;
+                        }
+                    }
+                    
+                    console.log('Game Loaded!');
+                }
+            },
+
+            // --- Game Initialization ---
+            init: function() {
+                this.loadGame();
+                this.renderStore();
+                this.renderAchievements();
+                this.updateDisplay();
+                
+                // Start golden cookie timer only if we are playing
+                if (this.calculateCps() > 0 || this.totalClicks > 0) {
+                    this.goldenCookie.spawnTime = setTimeout(this.goldenCookie.spawn, Math.random() * 60000 + 10000); // 10 to 70 seconds
+                }
+
+                // Global game loop (updates cookies every 100ms)
+                setInterval(() => {
+                    const currentCPS = this.calculateCps();
+                    this.totalClicks += currentCPS / 10;
+                    this.updateDisplay();
+                    this.updateStore();
+                    this.checkAchievements(); 
+                }, 100);
+                
+                // Autosave every 30 seconds
+                setInterval(this.saveGame.bind(this), 30000);
+            }
+        };
+
+        // Start the game!
+        Game.init();
+    </script>
 </body>
 </html>
