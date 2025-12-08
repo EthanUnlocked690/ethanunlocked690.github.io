@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geometry Dash Level Creator Club - Book a Session</title>
+    <title>Geometry Dash Level Creator Club Sign-Up & Cancellation</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
@@ -447,36 +447,50 @@
 
         // Helper function to format date
         function formatDate(date) {
+            // Options for display
             const options = { weekday: 'short', month: '2-digit', day: '2-digit', year: 'numeric' };
             const dateString = date.toLocaleDateString('en-US', options);
-            const yyyyMmDd = date.toISOString().split('T')[0];
+            
+            // Generate YYYY-MM-DD format for the value attribute
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months start at 0
+            const dd = String(date.getDate()).padStart(2, '0');
+            const yyyyMmDd = `${yyyy}-${mm}-${dd}`;
+            
             return {
                 value: yyyyMmDd,
-                text: dateString.replace(/,/g, '')
+                text: dateString.replace(/,/g, '') // Remove commas for cleaner display
             };
         }
 
-        // **1. Dynamic Date Population Function**
+        // **1. Dynamic Date Population Function (FIXED)**
         window.populateWeekendDates = function() {
             clubDateSelect.innerHTML = '<option value="" disabled selected>Select Date</option>';
             
             const today = new Date();
+            // Start iterating from today. Setting time to 0 prevents timezone issues.
+            today.setHours(0, 0, 0, 0); 
+
             let count = 0;
             const maxWeekends = 8; 
 
-            for (let i = 0; count < maxWeekends; i++) {
+            // Iterate through upcoming days
+            for (let i = 0; count < maxWeekends * 7; i++) { // Check up to 56 days (8 weekends)
                 const date = new Date(today);
                 date.setDate(today.getDate() + i);
 
                 const dayOfWeek = date.getDay(); // 0 = Sunday, 6 = Saturday
 
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                if (dayOfWeek === 0 || dayOfWeek === 6) { // If it's Saturday or Sunday
                     const formattedDate = formatDate(date);
                     const option = document.createElement('option');
                     option.value = formattedDate.value;
                     option.text = formattedDate.text;
                     clubDateSelect.appendChild(option);
                     count++;
+                    
+                    // Break out once we have 8 weekend dates
+                    if (count >= maxWeekends) break;
                 }
             }
         };
@@ -659,8 +673,9 @@
              // Convert military time values back to AM/PM for the email body
             const dropOffValue = dropOffTimeSelect.value;
             const pickUpValue = pickUpTimeSelect.value;
-            const dropOffTime = dropOffValue === "11:00" ? "11:00 AM" : `${parseInt(dropOffValue) - 12}:00 PM`;
-            const pickUpTime = pickUpValue === "12:00" ? "12:00 PM" : `${parseInt(pickUpValue) - 12}:00 PM`;
+            // 11:00 AM, 12:00 PM (12:00), 1:00 PM (13:00) etc.
+            const dropOffTime = dropOffValue === "11:00" ? "11:00 AM" : `${parseInt(dropOffValue) === 12 ? 12 : parseInt(dropOffValue) - 12}:00 PM`;
+            const pickUpTime = pickUpValue === "12:00" ? "12:00 PM" : `${parseInt(pickUpValue) === 12 ? 12 : parseInt(pickUpValue) - 12}:00 PM`;
             
             const numKids = hasChildCheckbox.checked ? parseInt(numKidsSelect.value) : 0;
             const bookedFor = hasChildCheckbox.checked ? `their ${numKids} children` : `themselves`;
