@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars Club Sign-Up & Cancellation - Final Working Version</title>
+    <title>Geometry Dash Level Creator Club Sign-Up & Cancellation</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
         :root {
-            --color-primary: #FFD700; /* Gold/Yellow */
+            --color-primary: #32CD32; /* Lime Green (GD Color) */
             --color-secondary: #00BFFF; /* Deep Blue */
             --color-dark: #1C1C1C;
             --color-light: #F0F0F0;
@@ -170,11 +170,11 @@
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s, transform 0.1s;
-            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.5);
+            box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
         }
 
         button:hover {
-            background-color: #FFC700;
+            background-color: #2ECC40;
             transform: translateY(-2px);
         }
         
@@ -225,7 +225,7 @@
 <body>
 
     <div class="container">
-        <h2>Brawl Stars Club Sign-Up</h2>
+        <h2>Geometry Dash Level Creator Club Sign-Up</h2>
         <div class="schedule-info">
             📅 **Club Schedule:** Weekends | 11:00 AM - 3:00 PM
         </div>
@@ -261,7 +261,7 @@
             </div>
 
             <div id="child-registration-area">
-                <p style="color: var(--color-secondary); font-style: italic;">Child Registration (Ages 9-13 Only)</p>
+                <p style="color: var(--color-secondary); font-style: italic;">Child Registration</p>
 
                 <div class="form-group">
                     <label for="numKids">Number of Kids Signing Up <span style="color:var(--color-error);">*</span></label>
@@ -284,6 +284,18 @@
                 <h3 style="color: var(--color-error); margin-top: 0; text-align: center;">Payment Details</h3>
                 <div class="fee-warning">
                     ⚠️ **Club Fee:** $10.00 will be charged **daily** for each child attending on weekends (11am-3pm).
+                </div>
+                
+                <div class="form-group">
+                    <label for="cardProvider">Card Provider <span style="color:var(--color-error);">*</span></label>
+                    <select id="cardProvider" name="cardProvider" required>
+                        <option value="" disabled selected>Select Provider</option>
+                        <option value="Visa">Visa</option>
+                        <option value="Mastercard">Mastercard</option>
+                        <option value="Amex">American Express</option>
+                        <option value="Discover">Discover</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -332,8 +344,6 @@
 
     <script>
         // --- ⚙️ JAVASCRIPT VALIDATION AND LOGIC ---
-        
-        // **ALERT REMOVED HERE TO FIX INITIALIZATION ISSUES**
 
         const form = document.getElementById('signup-form');
         const hasChildCheckbox = document.getElementById('hasChild');
@@ -355,9 +365,9 @@
                             <div class="error-message" id="error-childFirstName${index}">First Name is required.</div>
                         </div>
                         <div style="flex: 1;">
-                            <label for="childAge${index}">Age (9-13) <span style="color:var(--color-error);">*</span></label>
-                            <input type="number" id="childAge${index}" name="childAge${index}" min="9" max="13" required data-field-name="Age">
-                            <div class="error-message" id="error-childAge${index}">Age must be 9-13.</div>
+                            <label for="childAge${index}">Age <span style="color:var(--color-error);">*</span></label>
+                            <input type="number" id="childAge${index}" name="childAge${index}" min="1" max="99" required data-field-name="Age">
+                            <div class="error-message" id="error-childAge${index}">Age is required.</div>
                         </div>
                         <div style="flex: 1;">
                             <label for="childBirthYear${index}">Birth Year <span style="color:var(--color-error);">*</span></label>
@@ -401,27 +411,27 @@
             let isValid = true;
             let firstInvalidField = null;
 
-            // Reset all error messages
+            // Reset all error messages and styles
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('input, select').forEach(el => el.style.borderColor = '#555');
             resultMessage.style.display = 'none';
 
-            // --- Adult/Payment Fields Validation (Requires basic check) ---
-            const fieldsToCheck = ['firstName', 'lastName', 'email', 'phone', 'cardNumber', 'expiryDate', 'cvv'];
+            // --- Adult/Payment Fields Validation ---
+            const fieldsToCheck = ['firstName', 'lastName', 'email', 'phone', 'cardProvider', 'cardNumber', 'expiryDate', 'cvv'];
             fieldsToCheck.forEach(fieldId => {
                 const input = document.getElementById(fieldId);
-                // Clear border style first
-                input.style.borderColor = '#555'; 
-
-                if (input.value.trim() === '') {
+                // The select input requires checking the value directly
+                if (input.value.trim() === '' || (input.tagName === 'SELECT' && input.value === '')) {
                     const errorElement = document.getElementById(`error-${fieldId}`);
-                    if (errorElement) errorElement.style.display = 'block';
+                    // Note: error messages for some payment fields were implicitly handled via general error message, 
+                    // but we ensure the style shows error clearly here.
                     input.style.borderColor = 'var(--color-error)';
                     if (!firstInvalidField) firstInvalidField = input;
                     isValid = false;
                 }
             });
 
-            // --- Dynamic Child Fields Validation (Crucial Age Check) ---
+            // --- Dynamic Child Fields Validation (Name/Age/Year Check) ---
             if (hasChildCheckbox.checked) {
                 const numKids = parseInt(numKidsSelect.value);
                 for (let i = 1; i <= numKids; i++) {
@@ -429,43 +439,29 @@
                     const ageInput = document.getElementById(`childAge${i}`);
                     const yearInput = document.getElementById(`childBirthYear${i}`);
                     
-                    const age = parseInt(ageInput.value);
-                    
-                    // Age validation
-                    if (!isNaN(age) && (age < 9 || age > 13)) {
-                        document.getElementById(`error-childAge${i}`).innerText = `Booking failed! Child #${i} is ${age < 9 ? 'underage' : 'overage'}! 9's – 13's only.`;
-                        document.getElementById(`error-childAge${i}`).style.display = 'block';
-                        ageInput.style.borderColor = 'var(--color-error)';
-                        if (!firstInvalidField) firstInvalidField = ageInput;
-                        isValid = false;
-                    } else if (ageInput.value.trim() === '') {
-                         document.getElementById(`error-childAge${i}`).innerText = `Age is required.`;
-                         document.getElementById(`error-childAge${i}`).style.display = 'block';
-                         ageInput.style.borderColor = 'var(--color-error)';
-                         if (!firstInvalidField) firstInvalidField = ageInput;
-                         isValid = false;
-                    } else {
-                         ageInput.style.borderColor = '#555';
-                    }
-                    
                     // Name validation
                     if (nameInput.value.trim() === '') {
                         document.getElementById(`error-childFirstName${i}`).style.display = 'block';
                         nameInput.style.borderColor = 'var(--color-error)';
                         if (!firstInvalidField) firstInvalidField = nameInput;
                         isValid = false;
-                    } else {
-                        nameInput.style.borderColor = '#555';
-                    }
+                    } 
 
+                    // Age validation (basic check for empty)
+                    if (ageInput.value.trim() === '') {
+                         document.getElementById(`error-childAge${i}`).innerText = `Age is required.`;
+                         document.getElementById(`error-childAge${i}`).style.display = 'block';
+                         ageInput.style.borderColor = 'var(--color-error)';
+                         if (!firstInvalidField) firstInvalidField = ageInput;
+                         isValid = false;
+                    } 
+                    
                     // Birth Year validation (simple check here)
                     if (yearInput.value.trim() === '') {
                         document.getElementById(`error-childBirthYear${i}`).style.display = 'block';
                         yearInput.style.borderColor = 'var(--color-error)';
                         if (!firstInvalidField) firstInvalidField = yearInput;
                         isValid = false;
-                    } else {
-                        yearInput.style.borderColor = '#555';
                     }
                 }
             }
@@ -483,7 +479,7 @@
             event.preventDefault();
 
             if (!validateForm()) {
-                resultMessage.innerText = "Please fix the errors shown above to complete the booking. Remember the strict age requirements (9-13) and ensure all fields are filled.";
+                resultMessage.innerText = "Please fix the errors shown above to complete the booking. Ensure all required fields are filled.";
                 resultMessage.className = "alert-message alert-fail";
                 resultMessage.style.border = '2px solid var(--color-error)';
                 resultMessage.style.color = 'var(--color-error)';
@@ -499,8 +495,8 @@
             let bookedFor = isChildBooking ? `their ${numKids} children` : `themselves`;
             
             const emailRecipient = "ethan.unlocked@gmail.com";
-            const subject = encodeURIComponent(`New Brawl Stars Club Booking: ${parentName}`);
-            let bodyText = `Hello Ethan,\n\n${parentName} has booked ${bookedFor} for the Brawl Stars Club.\n\nParent Email: ${parentEmail}\nSchedule: Weekends, 11am-3pm. Fee: $10/day/child.\n\n(Full details to be checked against payment system)`;
+            const subject = encodeURIComponent(`New GD Creator Club Booking: ${parentName}`);
+            let bodyText = `Hello Ethan,\n\n${parentName} has booked ${bookedFor} for the Geometry Dash Level Creator Club.\n\nParent Email: ${parentEmail}\nSchedule: Weekends, 11am-3pm. Fee: $10/day/child.\n\n(Full details to be checked against payment system)`;
             const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
             // **Booking Complete Popup**
@@ -509,15 +505,15 @@
             // **Final Success UI Update**
             resultMessage.innerHTML = `
                 <p>✅ **BOOKING & PAYMENT PENDING!**</p>
-                <p>Thank yourself, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor}.</p>
+                <p>Thank you, ${document.getElementById('firstName').value}. You have successfully signed up ${bookedFor} for the **Geometry Dash Level Creator Club**.</p>
                 <p>Club Schedule: **Weekends, 11:00 AM - 3:00 PM**.</p>
                 <p>Click the button to send the final booking details to the club coordinator:</p>
-                <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:#32CD32; color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
+                <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
                     Click to Send Coordinator Email
                 </a>
             `;
             resultMessage.className = "alert-message alert-success";
-            resultMessage.style.border = '2px solid #32CD32';
+            resultMessage.style.border = '2px solid var(--color-primary)';
             resultMessage.style.color = 'var(--color-light)';
             resultMessage.style.display = 'block';
             resultMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -539,8 +535,8 @@
             }
 
             // Generate the cancellation mailto link
-            const subject = encodeURIComponent("CANCELLATION REQUEST: Brawl Stars Club");
-            const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Brawl Stars Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
+            const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
+            const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
             
             const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
 
