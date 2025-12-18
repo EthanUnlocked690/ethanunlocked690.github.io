@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Tic Tac Toe: Grand Series</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --cell-bg: #1e293b;
+            --text: #f8fafc;
+            --win-green: #22c55e;
+            --loss-red: #ef4444;
+            --accent: #38bdf8;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Overlays */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+        }
+
+        .glass-card {
+            background: var(--glass);
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* Mode & Setup Styling */
+        .mode-select {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .setup-options button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px;
+            width: 60px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin: 5px;
+        }
+
+        .custom-input {
+            margin-top: 20px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        input[type="number"] {
+            background: #000;
+            border: 1px solid var(--accent);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            width: 80px;
+            text-align: center;
+        }
+
+        .start-btn {
+            background: var(--win-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Game Board */
+        .game-container { text-align: center; }
+
+        .scoreboard {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .player-box {
+            background: var(--cell-bg);
+            padding: 12px 20px;
+            border-radius: 15px;
+            border-bottom: 4px solid transparent;
+        }
+
+        .o-score { border-color: var(--win-green); }
+        .x-score { border-color: var(--loss-red); }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 110px);
+            grid-template-rows: repeat(3, 110px);
+            gap: 15px;
+            margin: 20px auto;
+        }
+
+        .cell {
+            background: var(--cell-bg);
+            border-radius: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+        }
+
+        .cell:hover {
+            background: #334155;
+            transform: scale(1.02);
+        }
+
+        /* SVG Animations */
+        svg { width: 65px; height: 65px; }
+        .circle-path {
+            fill: none; stroke: var(--win-green); stroke-width: 10;
+            stroke-dasharray: 252; stroke-dashoffset: 252;
+            animation: draw 0.5s forwards ease-out;
+        }
+        .x-path {
+            fill: none; stroke: var(--loss-red); stroke-width: 10;
+            stroke-dasharray: 200; stroke-dashoffset: 200;
+            animation: draw 0.4s forwards ease-out;
+        }
+
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+
+        .status { color: var(--accent); font-weight: 600; margin-bottom: 10px; height: 24px; }
+        .reset-all { margin-top: 30px; opacity: 0.5; cursor: pointer; background: none; border: none; color: white; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div id="setup-screen" class="overlay">
+        <div class="glass-card">
+            <h1>TIC TAC TOE</h1>
+            <div class="mode-select">
+                <button id="mode-pve" class="toggle-btn active" onclick="setMode('pve')">VS BOT</button>
+                <button id="mode-pvp" class="toggle-btn" onclick="setMode('pvp')">VS PLAYER</button>
+            </div>
+            <p>Wins to win the series (Max 30):</p>
+            <div class="setup-options">
+                <button onclick="startSeries(3)">3</button>
+                <button onclick="startSeries(6)">6</button>
+                <button onclick="startSeries(9)">9</button>
+            </div>
+            <div class="custom-input">
+                <input type="number" id="custom-val" placeholder="Custom" min="1" max="30">
+                <button class="start-btn" onclick="startSeries(document.getElementById('custom-val').value)">START</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="scoreboard">
+            <div class="player-box o-score">O: <span id="s-o">0</span></div>
+            <div class="player-box">GOAL: <span id="s-target">0</span></div>
+            <div class="player-box x-score">X: <span id="s-x">0</span></div>
+        </div>
+        <div class="status" id="status">Preparing...</div>
+        <div class="board" id="board">
+            <div class="cell" onclick="makeMove(0)" data-index="0"></div>
+            <div class="cell" onclick="makeMove(1)" data-index="1"></div>
+            <div class="cell" onclick="makeMove(2)" data-index="2"></div>
+            <div class="cell" onclick="makeMove(3)" data-index="3"></div>
+            <div class="cell" onclick="makeMove(4)" data-index="4"></div>
+            <div class="cell" onclick="makeMove(5)" data-index="5"></div>
+            <div class="cell" onclick="makeMove(6)" data-index="6"></div>
+            <div class="cell" onclick="makeMove(7)" data-index="7"></div>
+            <div class="cell" onclick="makeMove(8)" data-index="8"></div>
+        </div>
+        <button class="reset-all" onclick="location.reload()">Reset Everything</button>
+    </div>
+
+    <div id="win-modal" class="overlay" style="display:none">
+        <div class="glass-card">
+            <h1 id="win-text" style="color: var(--accent);">CHAMPION!</h1>
+            <button class="start-btn" onclick="location.reload()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        let winTarget = 0;
+        let scores = { O: 0, X: 0 };
+        let gameMode = 'pve';
+        let currentPlayer = 'O';
+        let gameState = ["", "", "", "", "", "", "", "", ""];
+        let gameActive = false;
+
+        const winLines = [
+            [0,1,2], [3,4,5], [6,7,8], [0,3,6],
+            [1,4,7], [2,5,8], [0,4,8], [2,4,6]
+        ];
+
+        function setMode(m) {
+            gameMode = m;
+            document.getElementById('mode-pve').classList.toggle('active', m === 'pve');
+            document.getElementById('mode-pvp').classList.toggle('active', m === 'pvp');
+        }
+
+        function startSeries(val) {
+            let t = parseInt(val);
+            if (isNaN(t) || t < 1 || t > 30) return alert("Select 1-30 wins.");
+            winTarget = t;
+            document.getElementById('s-target').innerText = t;
+            document.getElementById('setup-screen').style.display = 'none';
+            resetRound();
+        }
+
+        function makeMove(i) {
+            if (!gameActive || gameState[i] !== "") return;
+
+            processMove(i, 'O');
+            
+            if (gameActive && gameMode === 'pve') {
+                gameActive = false; // Block player during bot "thinking"
+                setTimeout(runBot, 600);
+            }
+        }
+
+        function processMove(i, player) {
+            gameState[i] = player;
+            const cell = document.querySelector(`[data-index="${i}"]`);
+            
+            if (player === 'O') {
+                cell.innerHTML = `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" class="circle-path"/></svg>`;
+            } else {
+                cell.innerHTML = `<svg viewBox="0 0 100 100"><path d="M20 20 L80 80 M80 20 L20 80" class="x-path"/></svg>`;
+            }
+
+            if (checkWin(player)) {
+                scores[player]++;
+                updateUI();
+                gameActive = false;
+                if (scores[player] >= winTarget) {
+                    endGame(player);
+                } else {
+                    setTimeout(resetRound, 1000);
+                }
+                return;
+            }
+
+            if (!gameState.includes("")) {
+                gameActive = false;
+                setTimeout(resetRound, 1000);
+                return;
+            }
+
+            if (gameMode === 'pvp') {
+                currentPlayer = currentPlayer === 'O' ? 'X' : 'O';
+                document.getElementById('status').innerText = `Player ${currentPlayer}'s Turn`;
+            }
+        }
+
+        function checkWin(p) {
+            return winLines.some(line => line.every(i => gameState[i] === p));
+        }
+
+        function updateUI() {
+            document.getElementById('s-o').innerText = scores.O;
+            document.getElementById('s-x').innerText = scores.X;
+        }
+
+        function resetRound() {
+            gameState = ["", "", "", "", "", "", "", "", ""];
+            document.querySelectorAll('.cell').forEach(c => c.innerHTML = "");
+            currentPlayer = 'O';
+            document.getElementById('status').innerText = "Your Turn (O)";
+            gameActive = true;
+        }
+
+        function endGame(p) {
+            document.getElementById('win-text').innerText = `PLAYER ${p} IS THE CHAMPION!`;
+            document.getElementById('win-modal').style.display = 'flex';
+            confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
+        }
+
+        /* --- MINIMAX BOT --- */
+        function runBot() {
+            let bestScore = -Infinity;
+            let move;
+            for (let i = 0; i < 9; i++) {
+                if (gameState[i] === "") {
+                    gameState[i] = "X";
+                    let score = minimax(gameState, 0, false);
+                    gameState[i] = "";
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            processMove(move, 'X');
+            if (gameActive) {
+                gameActive = true;
+                document.getElementById('status').innerText = "Your Turn (O)";
+            }
+        }
+
+        function minimax(board, depth, isMaximizing) {
+            if (checkWin('X')) return 10;
+            if (checkWin('O')) return -10;
+            if (!board.includes("")) return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === "") {
+                        board[i] = "X";
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = "";
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === "") {
+                        board[i] = "O";
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = "";
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+    </script>
+</body>
+</html>
