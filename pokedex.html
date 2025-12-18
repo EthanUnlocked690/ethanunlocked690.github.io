@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<!-- saved from url=(0047)https://ethanunlocked690.github.io/pokedex.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pokédex - The Ultimate Version</title>
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-<link href="./Pokédex - The Ultimate Version_files/css2" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* General Body Styles */
 body {
@@ -681,9 +681,52 @@ h1 {
     border-radius: 10px;
     position: relative;
 }
+#add-friend-button {
+    background: url('add.png') no-repeat center;
+    background-size: contain;
+    width: 40px;
+    height: 40px;
+    border: none;
+    cursor: pointer;
+}
 #online-status {
     margin-top: 10px;
     padding: 5px;
+}
+#friends-list {
+    margin-top: 20px;
+    text-align: left;
+}
+.friend-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.friend-item img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.friend-item .friend-name {
+    flex-grow: 1;
+}
+.friend-item .friend-status {
+    font-size: 12px;
+    color: #888;
+}
+.friend-item button {
+    padding: 5px 10px;
+    margin-left: 5px;
+    background: #e4000f;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.friend-item button:hover {
+    background: #c2000d;
 }
 #cancel-premium {
     background: #f44336;
@@ -696,6 +739,50 @@ h1 {
 }
 #cancel-premium:hover {
     background: #da190b;
+}
+
+/* Message Modal */
+#message-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+#message-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    text-align: center;
+    border-radius: 10px;
+}
+#message-input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+#quick-chat-options {
+    display: none;
+    margin-top: 10px;
+}
+.quick-chat-option {
+    padding: 8px 15px;
+    margin: 5px;
+    background: #6390F0;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.quick-chat-option:hover {
+    background: #3f65b8;
 }
 
 /* Battle Modal */
@@ -809,13 +896,13 @@ h1 {
 </style>
 </head>
 <body>
-<div id="login-modal" class="modal" style="display: none;">
+<div id="login-modal">
     <div id="login-content">
-        <span class="close-button">×</span>
-        <img id="login-logo" src="./Pokédex - The Ultimate Version_files/logo.png" alt="Logo">
-        <button id="login-option" class="login-option" style="background: rgb(228, 0, 15);">Log In</button>
-        <button id="signup-option" class="login-option" style="background: rgb(228, 0, 15);">Sign Up</button>
-        <button id="admin-login-option" class="login-option" style="background: rgb(194, 0, 13);">Admin Log-in</button>
+        <span class="close-button">&times;</span>
+        <img id="login-logo" src="logo.png" alt="Logo">
+        <button id="login-option" class="login-option">Log In</button>
+        <button id="signup-option" class="login-option">Sign Up</button>
+        <button id="admin-login-option" class="login-option">Admin Log-in</button>
         <div id="login-form" style="display: none;">
             <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
@@ -832,7 +919,7 @@ h1 {
             </select>
             <button id="submit-signup" class="login-option">Submit</button>
         </div>
-        <div id="admin-login-form" style="display: block;">
+        <div id="admin-login-form" style="display: none;">
             <input type="text" id="admin-username" placeholder="Admin Username">
             <input type="password" id="admin-password" placeholder="Admin Password">
             <button id="admin-login-button" class="login-option">Submit</button>
@@ -840,98 +927,85 @@ h1 {
     </div>
 </div>
 
-<div id="profile-modal" class="modal">
+<div id="profile-modal">
     <div id="profile-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <h2>Profile</h2>
         <p>Premium: <span id="premium-status">No</span></p>
         <p>Caught Pokémon: <span id="caught-count">0</span></p>
         <p>Daily Catches Left: <span id="daily-catches">5</span></p>
         <button id="cancel-premium" style="display: none;">Cancel Premium</button>
+        <button id="add-friend-button"></button>
+        <input type="text" id="friend-search" placeholder="Search for a friend...">
+        <div id="friend-results"></div>
+        <select id="online-status">
+            <option>Online</option>
+            <option>Offline</option>
+        </select>
+        <div id="friends-list"></div>
     </div>
 </div>
 
-<div id="battle-modal" class="modal">
+<div id="message-modal">
+    <div id="message-content">
+        <span class="close-button">&times;</span>
+        <h2>Message <span id="message-recipient"></span></h2>
+        <div id="quick-chat-options">
+            <button class="quick-chat-option" data-message="Hey, want to battle?">Hey, want to battle?</button>
+            <button class="quick-chat-option" data-message="Nice Pokémon collection!">Nice Pokémon collection!</button>
+            <button class="quick-chat-option" data-message="Caught anything new?">Caught anything new?</button>
+        </div>
+        <textarea id="message-input" placeholder="Type your message..." rows="4"></textarea>
+        <button id="send-message">Send</button>
+    </div>
+</div>
+
+<div id="battle-modal">
     <div id="battle-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <h2>Battle</h2>
         <div id="team-rocket"></div>
+        <div id="battle-friend"></div>
     </div>
 </div>
 
-<div id="caught-pokemon-modal" class="modal">
+<div id="caught-pokemon-modal">
     <div id="caught-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <h2>Caught Pokémon</h2>
         <div id="caught-list"></div>
     </div>
 </div>
 
-<div id="help-modal" class="modal">
+<div id="help-modal">
     <div id="help-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <h2>Help</h2>
         <p>Welcome to the Ultimate Pokédex! Browse Pokémon, catch them in a Pokémon GO-style simulation, battle Team Rocket or friends, and play Guess the Pokémon!</p>
     </div>
 </div>
 
-<div id="guess-modal" class="modal">
+<div id="guess-modal">
     <div id="guess-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <h2>Guess the Pokémon</h2>
         <div id="guess-image"></div>
-        <input type="text" id="guess-input" placeholder="Who&#39;s that Pokémon?">
+        <input type="text" id="guess-input" placeholder="Who's that Pokémon?">
         <button id="guess-submit">Submit</button>
     </div>
 </div>
 
-<div id="edit-modal" class="modal" style="display: block;">
+<div id="edit-modal">
     <div id="edit-content">
-        <span class="close-button">×</span>
-        <p>The admin can propose changes here!</p>
-        <div id="admin-edit-forms">
-            <!-- Admin can change background image permanently -->
-            <h3>Change Background Image</h3>
-            <input type="file" id="background-upload" accept="image/*">
-            <button id="apply-background">Apply Background</button>
-            <!-- Admin can add custom Pokémon permanently -->
-            <h3>Add Custom Pokémon</h3>
-            <input type="text" id="custom-poke-name" placeholder="Pokémon Name">
-            <input type="text" id="custom-poke-types" placeholder="Types (comma separated)">
-            <input type="text" id="custom-poke-id" placeholder="ID (unique number)">
-            <input type="file" id="custom-poke-image" accept="image/*">
-            <input type="text" id="custom-poke-height" placeholder="Height (in dm)">
-            <input type="text" id="custom-poke-weight" placeholder="Weight (in hg)">
-            <input type="text" id="custom-poke-abilities" placeholder="Abilities (comma separated)">
-            <textarea id="custom-poke-description" placeholder="Description"></textarea>
-            <button id="add-custom-poke">Add Custom Pokémon</button>
-            <!-- Admin can remove Pokémon permanently -->
-            <h3>Remove Pokémon</h3>
-            <input type="text" id="remove-poke-name" placeholder="Pokémon Name to Remove">
-            <button id="remove-poke">Remove Pokémon</button>
-            <!-- Admin can add additional background images or elements -->
-            <h3>Add Additional Background Element</h3>
-            <input type="file" id="additional-bg-upload" accept="image/*">
-            <input type="text" id="additional-bg-position" placeholder="Position (e.g., top left)">
-            <button id="apply-additional-bg">Apply Additional Background</button>
-            <!-- Admin can remove custom elements -->
-            <h3>Remove Custom Element</h3>
-            <input type="text" id="remove-element-id" placeholder="Element ID to Remove">
-            <button id="remove-element">Remove Element</button>
-            <!-- Admin can add custom styles -->
-            <h3>Add Custom CSS Rule</h3>
-            <textarea id="custom-css-rule" placeholder="CSS Rule (e.g., body { color: red; })"></textarea>
-            <button id="apply-custom-css">Apply CSS</button>
-            <!-- Admin can reset all changes -->
-            <h3>Reset All Custom Changes</h3>
-            <button id="reset-changes">Reset Changes</button>
-        </div>
+        <span class="close-button">&times;</span>
+        <h2>Propose Changes</h2>
+        <p>Admin can propose changes here.</p>
     </div>
 </div>
 
-<div id="catch-modal" class="modal">
+<div id="catch-modal">
     <div id="catch-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <h2>Catch a Pokémon</h2>
         <div id="pokemon-area"></div>
         <button id="berry-button"></button>
@@ -941,9 +1015,9 @@ h1 {
     </div>
 </div>
 
-<div id="payment-modal" class="modal">
+<div id="payment-modal">
     <div id="payment-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <h2>Premium Subscription</h2>
         <p>Upgrade to Premium for unlimited catches! Cancel anytime.</p>
         <p id="weekly-price"><strong>$20/week</strong></p>
@@ -967,20 +1041,20 @@ h1 {
 </div>
 
 <button id="menu-button"></button>
-<div class="menu-options" style="display: none;">
+<div class="menu-options">
     <div id="help-option" class="menu-option" data-text="Help"></div>
     <div id="catch-option" class="menu-option" data-text="Catch a Pokémon"></div>
     <div id="guess-option" class="menu-option" data-text="Guess the Pokémon"></div>
     <div id="battle-option" class="menu-option" data-text="Battle"></div>
-    <div id="edit-option" class="menu-option admin-signed-in" data-text="Edit"></div>
+    <div id="edit-option" class="menu-option" data-text="Edit"></div>
     <div id="caught-option" class="menu-option" data-text="Show Caught Pokémon"></div>
 </div>
 
 <div class="top-navbar">
-    <a href="https://ethanunlocked690.github.io/turtle.html">Back to others</a>
+    <a href="turtle.html">Back to others</a>
 </div>
 
-<div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; position: fixed; top: 10px; right: 10px; display: block; background-image: url(&quot;default-profile.png&quot;);"></div>
+<div id="profile" style="cursor: pointer; width: 40px; height: 40px; background-size: cover; position: fixed; top: 10px; right: 10px; display: none;"></div>
 
 <h1>Pokédex</h1>
 
@@ -999,14 +1073,14 @@ h1 {
     <input type="text" id="searchInput" placeholder="Search for a Pokémon...">
 </div>
 
-<p id="loadingMessage" class="error" style="display: block;">Failed to load Pokédex. Please check your connection or try again later.</p>
-<button id="retryButton" style="display: block;">Retry</button>
+<p id="loadingMessage">Loading Pokédex...</p>
+<button id="retryButton">Retry</button>
 
 <div id="pokedex-container" class="pokedex-container"></div>
 
 <div id="pokemonModal" class="modal">
     <div class="modal-content">
-        <span class="close-button">×</span>
+        <span class="close-button">&times;</span>
         <div id="modal-body"></div>
     </div>
 </div>
@@ -1051,31 +1125,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const guessModal = document.getElementById('guess-modal');
     const editModal = document.getElementById('edit-modal');
     const editOption = document.getElementById('edit-option');
+    const addFriendButton = document.getElementById('add-friend-button');
+    const friendSearch = document.getElementById('friend-search');
+    const messageModal = document.getElementById('message-modal');
+    const messageRecipient = document.getElementById('message-recipient');
+    const messageInput = document.getElementById('message-input');
+    const quickChatOptions = document.getElementById('quick-chat-options');
+    const sendMessageButton = document.getElementById('send-message');
     const claimTrial = document.getElementById('claim-trial');
     const cancelPremium = document.getElementById('cancel-premium');
     const trialSection = document.getElementById('trial-section');
-    // Additional admin elements
-    const applyBackground = document.getElementById('apply-background');
-    const backgroundUpload = document.getElementById('background-upload');
-    const addCustomPoke = document.getElementById('add-custom-poke');
-    const customPokeName = document.getElementById('custom-poke-name');
-    const customPokeTypes = document.getElementById('custom-poke-types');
-    const customPokeId = document.getElementById('custom-poke-id');
-    const customPokeImage = document.getElementById('custom-poke-image');
-    const customPokeHeight = document.getElementById('custom-poke-height');
-    const customPokeWeight = document.getElementById('custom-poke-weight');
-    const customPokeAbilities = document.getElementById('custom-poke-abilities');
-    const customPokeDescription = document.getElementById('custom-poke-description');
-    const removePoke = document.getElementById('remove-poke');
-    const removePokeName = document.getElementById('remove-poke-name');
-    const applyAdditionalBg = document.getElementById('apply-additional-bg');
-    const additionalBgUpload = document.getElementById('additional-bg-upload');
-    const additionalBgPosition = document.getElementById('additional-bg-position');
-    const removeElement = document.getElementById('remove-element');
-    const removeElementId = document.getElementById('remove-element-id');
-    const applyCustomCss = document.getElementById('apply-custom-css');
-    const customCssRule = document.getElementById('custom-css-rule');
-    const resetChanges = document.getElementById('reset-changes');
 
     let allPokemon = [];
     const cachedSpeciesData = {};
@@ -1087,12 +1146,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let isPremium = false;
     let loginTimestamp = null;
     let currentExtendWeeks = 1;
-    // Custom admin storage keys
-    let customPokemon = JSON.parse(localStorage.getItem('customPokemon')) || [];
-    let blacklistedPokemon = JSON.parse(localStorage.getItem('blacklistedPokemon')) || [];
-    let customBackgrounds = JSON.parse(localStorage.getItem('customBackgrounds')) || [];
-    let customElements = JSON.parse(localStorage.getItem('customElements')) || [];
-    let customCssRules = JSON.parse(localStorage.getItem('customCssRules')) || [];
 
     // Device detection for payment system
     const isMobileDevice = () => {
@@ -1208,10 +1261,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const pokemonPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
             allPokemon = await Promise.all(pokemonPromises);
-            // Apply admin removals (blacklist)
-            allPokemon = allPokemon.filter(p => !blacklistedPokemon.includes(p.name));
-            // Add custom Pokémon from admin
-            allPokemon = [...allPokemon, ...customPokemon];
+
             loadingMessage.style.display = 'none';
             filterAndDisplayPokemon('all');
         } catch (error) {
@@ -1519,6 +1569,32 @@ document.addEventListener('DOMContentLoaded', () => {
         signupOption.style.background = '#e4000f';
     };
 
+    const updateFriendsList = () => {
+        const friendsList = document.getElementById('friends-list');
+        if (!friendsList) return;
+        
+        friendsList.innerHTML = '<h3>Friends</h3>';
+        if (user && user.friends && user.friends.length > 0) {
+            user.friends.forEach(friendUsername => {
+                const friend = users[friendUsername];
+                if (friend) {
+                    const friendItem = document.createElement('div');
+                    friendItem.classList.add('friend-item');
+                    friendItem.innerHTML = `
+                        <img src="${friend.profilePic}" alt="${friend.profileName}">
+                        <span class="friend-name">${friend.profileName}</span>
+                        <span class="friend-status">${friend.onlineStatus}</span>
+                        <button class="message-friend" data-username="${friendUsername}">Message</button>
+                        <button class="battle-friend" data-username="${friendUsername}">Battle</button>
+                    `;
+                    friendsList.appendChild(friendItem);
+                }
+            });
+        } else {
+            friendsList.innerHTML += '<p>No friends added yet.</p>';
+        }
+    };
+
     // Login functionality
     loginOption.addEventListener('click', showLoginForm);
 
@@ -1540,6 +1616,7 @@ document.addEventListener('DOMContentLoaded', () => {
             user = users[username];
             user.isAdmin = false;
             user.caught = user.caught || [];
+            user.friends = user.friends || [];
             user.messages = user.messages || [];
             user.onlineStatus = user.onlineStatus || 'Online';
             user.trialUsed = user.trialUsed || false;
@@ -1552,9 +1629,11 @@ document.addEventListener('DOMContentLoaded', () => {
             loginModal.style.display = 'none';
             profile.style.backgroundImage = `url(${user.profilePic})`;
             profile.style.display = 'block';
+            document.getElementById('online-status').value = user.onlineStatus;
             isPremium = user.isPremium;
             if (isPremium) dailyCatches = Infinity;
             checkPremiumExpiry();
+            updateFriendsList();
             caughtPokemon = user.caught.map(name => allPokemon.find(p => p.name === name)).filter(Boolean);
             fetchAllPokemon();
         } else {
@@ -1566,7 +1645,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const username = document.getElementById('admin-username').value;
         const password = document.getElementById('admin-password').value;
         if (username === adminCredentials.username && password === adminCredentials.password) {
-            user = { username, isAdmin: true, profilePic: 'default-profile.png', profileName: 'Admin', age: 18, caught: [], messages: [], onlineStatus: 'Online', trialUsed: false, isPremium: false, premiumExpiry: null };
+            user = { username, isAdmin: true, profilePic: 'default-profile.png', profileName: 'Admin', age: 18, caught: [], friends: [], messages: [], onlineStatus: 'Online', trialUsed: false, isPremium: false, premiumExpiry: null };
             editOption.classList.add('admin-signed-in');
             localStorage.setItem('currentUser', JSON.stringify(user));
             loginTimestamp = Date.now();
@@ -1574,6 +1653,8 @@ document.addEventListener('DOMContentLoaded', () => {
             loginModal.style.display = 'none';
             profile.style.backgroundImage = `url(${user.profilePic})`;
             profile.style.display = 'block';
+            document.getElementById('online-status').value = user.onlineStatus;
+            updateFriendsList();
             checkPremiumExpiry();
             fetchAllPokemon();
         } else {
@@ -1613,6 +1694,7 @@ document.addEventListener('DOMContentLoaded', () => {
             age,
             profilePic: profilePicUrl,
             caught: [],
+            friends: [],
             messages: [],
             onlineStatus: 'Online',
             trialUsed: false,
@@ -1642,6 +1724,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             cancelPremium.style.display = 'none';
         }
+        updateFriendsList();
         profileModal.style.display = 'block';
     });
 
@@ -1658,6 +1741,90 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('premium-status').textContent = 'No';
             document.getElementById('daily-catches').textContent = '5';
             cancelPremium.style.display = 'none';
+        }
+    });
+
+    friendSearch.addEventListener('input', () => {
+        const searchTerm = friendSearch.value.toLowerCase().trim();
+        const friendResults = document.getElementById('friend-results');
+        
+        if (searchTerm.length === 0) {
+            friendResults.innerHTML = '';
+            return;
+        }
+        
+        const results = Object.keys(users).filter(u => 
+            u.toLowerCase().includes(searchTerm) && 
+            u !== user.username &&
+            !user.friends.includes(u)
+        );
+        
+        friendResults.innerHTML = results.map(u => {
+            const userData = users[u];
+            return `<div class="friend-result" data-username="${u}" style="padding: 10px; border: 1px solid #ccc; margin: 5px 0; cursor: pointer; border-radius: 5px;">
+                        <img src="${userData.profilePic}" alt="${userData.profileName}" style="width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-right: 10px;">
+                        ${userData.profileName} (@${u})
+                    </div>`;
+        }).join('');
+        
+        if (results.length === 0) {
+            friendResults.innerHTML = '<p style="color: #888; font-style: italic;">No users found</p>';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.friend-result')) {
+            const friendResult = e.target.closest('.friend-result');
+            const friendUsername = friendResult.dataset.username;
+            if (user && !user.friends.includes(friendUsername)) {
+                user.friends.push(friendUsername);
+                users[user.username].friends = user.friends;
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                alert(`Added ${users[friendUsername].profileName} as a friend!`);
+                updateFriendsList();
+                friendSearch.value = '';
+                document.getElementById('friend-results').innerHTML = '';
+            }
+        }
+    });
+
+    document.getElementById('friends-list').addEventListener('click', (e) => {
+        if (e.target.classList.contains('message-friend')) {
+            const friendUsername = e.target.dataset.username;
+            messageRecipient.textContent = friendUsername;
+            messageModal.style.display = 'block';
+            quickChatOptions.style.display = 'block';
+        }
+        if (e.target.classList.contains('battle-friend')) {
+            const friendUsername = e.target.dataset.username;
+            alert(`Starting battle with ${friendUsername}...`);
+        }
+    });
+
+    document.getElementById('online-status').addEventListener('change', (e) => {
+        if (user) {
+            user.onlineStatus = e.target.value;
+            users[user.username].onlineStatus = user.onlineStatus;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+    });
+
+    sendMessageButton.addEventListener('click', () => {
+        const message = messageInput.value.trim();
+        if (message) {
+            alert(`Message sent to ${messageRecipient.textContent}: ${message}`);
+            messageInput.value = '';
+            messageModal.style.display = 'none';
+        }
+    });
+
+    document.getElementById('quick-chat-options').addEventListener('click', (e) => {
+        if (e.target.classList.contains('quick-chat-option')) {
+            const message = e.target.dataset.message;
+            alert(`Message sent to ${messageRecipient.textContent}: ${message}`);
+            messageModal.style.display = 'none';
         }
     });
 
@@ -1694,8 +1861,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editModal.style.display = 'block';
             menuOptions.style.display = 'none';
         } else {
-            loginModal.style.display = 'block';
-            showAdminLoginForm();
+            alert('Admin access required!');
         }
     });
 
@@ -1703,12 +1869,6 @@ document.addEventListener('DOMContentLoaded', () => {
         displayCaughtPokemon();
         caughtPokemonModal.style.display = 'block';
         menuOptions.style.display = 'none';
-    });
-
-    // Team Rocket battle
-    document.getElementById('team-rocket').addEventListener('click', () => {
-        alert('Battling Team Rocket! Prepare for trouble!');
-        // Additional battle logic can be added here if needed
     });
 
     // Catch Pokemon functionality
@@ -1868,7 +2028,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modal close handlers
     document.querySelectorAll('.close-button').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.target.closest('.modal').style.display = 'none';
+            e.target.closest('.modal, #login-modal').style.display = 'none';
             if (e.target.closest('#login-modal')) {
                 // Optionally reset to login option
                 showLoginForm();
@@ -1878,7 +2038,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal click outside to close
     window.onclick = function(event) {
-        document.querySelectorAll('.modal').forEach(modal => {
+        document.querySelectorAll('.modal, #login-modal').forEach(modal => {
             if (event.target == modal) {
                 modal.style.display = 'none';
             }
@@ -1966,163 +2126,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // Apply stored custom changes on load
-    function applyCustomChanges() {
-        // Apply custom background
-        const customBg = localStorage.getItem('customBackground');
-        if (customBg) {
-            document.body.style.backgroundImage = `url('${customBg}'), url('pokedex-top.png'), url('pokedex-bottom.png')`;
-        }
-        // Apply additional backgrounds
-        customBackgrounds.forEach(bg => {
-            document.body.style.backgroundImage += `, url('${bg.url}')`;
-            document.body.style.backgroundPosition += `, ${bg.position}`;
-        });
-        // Apply custom CSS rules
-        const styleSheet = document.createElement('style');
-        styleSheet.innerText = customCssRules.join('\n');
-        document.head.appendChild(styleSheet);
-        // Apply custom elements (if any, e.g., images)
-        customElements.forEach(el => {
-            const img = document.createElement('img');
-            img.src = el.url;
-            img.style.position = 'fixed';
-            img.style[el.position.split(' ')[0]] = '0';
-            img.style[el.position.split(' ')[1]] = '0';
-            img.id = el.id;
-            document.body.appendChild(img);
-        });
-    }
-
-    // Admin change listeners
-    if (applyBackground) {
-        applyBackground.addEventListener('click', () => {
-            const file = backgroundUpload.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const base64 = e.target.result;
-                    document.body.style.backgroundImage = `url('${base64}'), url('pokedex-top.png'), url('pokedex-bottom.png')`;
-                    localStorage.setItem('customBackground', base64);
-                    alert('Background applied and saved permanently!');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    if (addCustomPoke) {
-        addCustomPoke.addEventListener('click', () => {
-            const name = customPokeName.value.trim();
-            const types = customPokeTypes.value.split(',').map(t => ({ type: { name: t.trim() } }));
-            const id = parseInt(customPokeId.value);
-            const height = parseInt(customPokeHeight.value);
-            const weight = parseInt(customPokeWeight.value);
-            const abilities = customPokeAbilities.value.split(',').map(a => ({ ability: { name: a.trim() } }));
-            const description = customPokeDescription.value;
-            const file = customPokeImage.files[0];
-
-            if (name && types.length && id && file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const imageBase64 = e.target.result;
-                    const newPoke = {
-                        name,
-                        id,
-                        types,
-                        height,
-                        weight,
-                        abilities,
-                        sprites: { front_default: imageBase64, other: { 'official-artwork': { front_default: imageBase64 } } },
-                        stats: [], // Default empty, can add more
-                        moves: [] // Default empty
-                    };
-                    customPokemon.push(newPoke);
-                    localStorage.setItem('customPokemon', JSON.stringify(customPokemon));
-                    allPokemon.push(newPoke);
-                    filterAndDisplayPokemon('all');
-                    alert(`Custom Pokémon ${name} added permanently!`);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                alert('Please fill all fields!');
-            }
-        });
-    }
-
-    if (removePoke) {
-        removePoke.addEventListener('click', () => {
-            const name = removePokeName.value.trim().toLowerCase();
-            if (name) {
-                blacklistedPokemon.push(name);
-                localStorage.setItem('blacklistedPokemon', JSON.stringify(blacklistedPokemon));
-                allPokemon = allPokemon.filter(p => p.name.toLowerCase() !== name);
-                filterAndDisplayPokemon('all');
-                alert(`Pokémon ${name} removed permanently!`);
-            }
-        });
-    }
-
-    if (applyAdditionalBg) {
-        applyAdditionalBg.addEventListener('click', () => {
-            const file = additionalBgUpload.files[0];
-            const position = additionalBgPosition.value.trim();
-            if (file && position) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const base64 = e.target.result;
-                    document.body.style.backgroundImage += `, url('${base64}')`;
-                    document.body.style.backgroundPosition += `, ${position}`;
-                    customBackgrounds.push({ url: base64, position });
-                    localStorage.setItem('customBackgrounds', JSON.stringify(customBackgrounds));
-                    alert('Additional background applied and saved permanently!');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    if (removeElement) {
-        removeElement.addEventListener('click', () => {
-            const id = removeElementId.value.trim();
-            if (id) {
-                const el = document.getElementById(id);
-                if (el) el.remove();
-                customElements = customElements.filter(e => e.id !== id);
-                localStorage.setItem('customElements', JSON.stringify(customElements));
-                alert(`Element ${id} removed permanently!`);
-            }
-        });
-    }
-
-    if (applyCustomCss) {
-        applyCustomCss.addEventListener('click', () => {
-            const rule = customCssRule.value.trim();
-            if (rule) {
-                const styleSheet = document.createElement('style');
-                styleSheet.innerText = rule;
-                document.head.appendChild(styleSheet);
-                customCssRules.push(rule);
-                localStorage.setItem('customCssRules', JSON.stringify(customCssRules));
-                alert('Custom CSS applied and saved permanently!');
-            }
-        });
-    }
-
-    if (resetChanges) {
-        resetChanges.addEventListener('click', () => {
-            if (confirm('Reset all custom changes? This is permanent.')) {
-                localStorage.removeItem('customBackground');
-                localStorage.removeItem('customPokemon');
-                localStorage.removeItem('blacklistedPokemon');
-                localStorage.removeItem('customBackgrounds');
-                localStorage.removeItem('customElements');
-                localStorage.removeItem('customCssRules');
-                location.reload();
-            }
-        });
-    }
-
     // On load: restore user session if any and load pokedex
     function init() {
         // Try to restore session
@@ -2137,13 +2140,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             loginModal.style.display = 'block';
         }
-        applyCustomChanges();
         fetchAllPokemon();
     }
 
     init();
 });
 </script>
-
-
-</body></html>
+</body>
+</html>
