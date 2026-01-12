@@ -3,420 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL_OS_V9 // OVERLOAD_SEQUENCE</title>
+    <title>TITAN_OS // OMEGA_BUILD_V11 - Command Center</title>
     <style>
-        /* --- CORE ARCHITECTURE --- */
         :root {
-            --neon-green: #00ff41;
-            --dark-green: #003b00;
-            --dim-green: rgba(0, 255, 65, 0.2);
-            --crt-bg: #050505;
-            --error-red: #ff003c;
-            --warning-orange: #ffb300;
-            --info-blue: #00e5ff;
-            --font-stack: 'Courier New', Courier, monospace;
+            --primary: #00ff41;
+            --primary-dim: rgba(0, 255, 65, 0.15);
+            --bg: #020202;
+            --error: #ff3131;
+            --warn: #ffcc00;
+            --info: #00d4ff;
+            --font: 'Consolas', 'Courier New', monospace;
         }
-
-        * { box-sizing: border-box; cursor: text; }
 
         body, html {
             margin: 0; padding: 0;
-            width: 100vw; height: 100vh;
-            background: var(--crt-bg);
-            color: var(--neon-green);
-            font-family: var(--font-stack);
-            font-size: 14px;
+            background: #000;
+            color: var(--primary);
+            font-family: var(--font);
+            height: 100vh; width: 100vw;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
 
-        /* --- ADVANCED CRT OPTICS --- */
-        .viewport {
+        /* --- CRT GLASS EFFECT --- */
+        #container {
             position: relative;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            z-index: 10;
+            width: 100%; height: 100%;
+            background: var(--bg);
+            display: flex; flex-direction: column;
             overflow: hidden;
-            perspective: 1000px;
         }
 
-        .crt-overlay {
-            pointer-events: none;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: 
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+        #container::after {
+            content: " ";
+            position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
             background-size: 100% 2px, 3px 100%;
-            z-index: 1000;
+            z-index: 100; pointer-events: none;
         }
 
+        /* Scanline Animation */
         .scanline {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            width: 100%; height: 100px;
             background: linear-gradient(0deg, transparent 0%, rgba(0, 255, 65, 0.05) 50%, transparent 100%);
-            background-size: 100% 8px;
-            animation: scan 12s linear infinite;
-            z-index: 1001;
-            pointer-events: none;
+            position: absolute; top: -100px; z-index: 101;
+            animation: moveScanline 8s linear infinite;
         }
 
-        @keyframes scan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+        @keyframes moveScanline {
+            0% { top: -100px; }
+            100% { top: 100%; }
         }
 
-        /* --- THE GLITCH ENGINE --- */
-        .glitch-active {
-            animation: glitch-skew 0.2s infinite;
+        /* --- UI ELEMENTS --- */
+        #header {
+            padding: 10px 20px;
+            background: rgba(0, 255, 65, 0.05);
+            border-bottom: 1px solid var(--primary-dim);
+            display: flex; justify-content: space-between;
+            font-size: 0.85rem; letter-spacing: 2px;
+            z-index: 10;
         }
 
-        @keyframes glitch-skew {
-            0% { transform: skew(0deg); filter: hue-rotate(0deg); }
-            20% { transform: skew(3deg); filter: hue-rotate(90deg); }
-            40% { transform: skew(-3deg); }
-            60% { transform: skew(1deg); filter: blur(1px); }
-            100% { transform: skew(0deg); }
-        }
-
-        /* --- UI COMPONENTS --- */
-        header {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--dim-green);
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-
-        #history {
+        #terminal {
             flex: 1;
+            padding: 20px;
             overflow-y: auto;
-            margin-bottom: 10px;
+            position: relative;
+            z-index: 5;
             scrollbar-width: thin;
-            scrollbar-color: var(--dark-green) transparent;
+            scrollbar-color: var(--primary-dim) transparent;
         }
+        #terminal::-webkit-scrollbar { width: 6px; }
+        #terminal::-webkit-scrollbar-thumb { background: var(--primary-dim); }
 
-        #history::-webkit-scrollbar { width: 5px; }
-        #history::-webkit-scrollbar-thumb { background: var(--dark-green); }
+        .line { margin-bottom: 6px; line-height: 1.4; white-space: pre-wrap; }
+        .prompt-symbol { color: #fff; font-weight: bold; margin-right: 10px; }
+        .success { color: var(--primary); }
+        .error { color: var(--error); text-shadow: 0 0 5px var(--error); }
+        .info { color: var(--info); }
+        .warning { color: var(--warn); }
+        .blink { animation: blink 1s steps(2, start) infinite; }
 
-        .line { margin-bottom: 4px; line-height: 1.4; white-space: pre-wrap; word-break: break-all; }
-        .prompt { color: #fff; font-weight: bold; }
-        .success { color: var(--neon-green); }
-        .error { color: var(--error-red); text-shadow: 0 0 5px var(--error-red); }
-        .warn { color: var(--warning-orange); }
-        .info { color: var(--info-blue); }
+        @keyframes blink { to { visibility: hidden; } }
 
         .input-area {
             display: flex;
-            align-items: center;
-            border-top: 1px solid var(--dim-green);
-            padding-top: 10px;
+            padding: 15px 20px;
+            background: #050505;
+            border-top: 1px solid var(--primary-dim);
+            z-index: 10;
         }
 
         #cli-input {
-            background: transparent;
-            border: none;
-            color: var(--neon-green);
-            font-family: var(--font-stack);
-            font-size: 1.1rem;
-            width: 100%;
-            outline: none;
-            caret-color: #fff;
+            background: transparent; border: none; outline: none;
+            color: var(--primary); font-family: var(--font);
+            font-size: 1.1rem; width: 100%;
         }
 
-        /* --- CANVAS LAYERS --- */
-        #matrix-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            opacity: 0.1;
+        #matrix-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.05; z-index: 1; pointer-events: none;
         }
 
-        /* --- LOADING BARS --- */
-        .progress-container {
-            width: 300px;
-            height: 15px;
-            border: 1px solid var(--neon-green);
-            margin: 10px 0;
-        }
-        .progress-bar {
-            height: 100%;
-            background: var(--neon-green);
-            width: 0%;
-            transition: width 0.1s;
+        /* GLITCH STATE */
+        .glitch { animation: glitchSkew 0.2s infinite; filter: hue-rotate(90deg); }
+        @keyframes glitchSkew {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(5deg); }
+            40% { transform: skew(-5deg); }
+            60% { transform: skew(2deg); }
+            100% { transform: skew(0deg); }
         }
     </style>
 </head>
-<body class="crt-frame">
+<body class="theme-matrix">
 
-<canvas id="matrix-canvas"></canvas>
-<div class="crt-overlay"></div>
-<div class="scanline"></div>
+<div id="container">
+    <canvas id="matrix-bg"></canvas>
+    <div class="scanline"></div>
 
-<div class="viewport" id="main-viewport">
-    <header>
-        <div>SYSTEM: ONLINE // NODE: 0x882_GHOST</div>
+    <header id="header">
+        <div>CORE: TITAN_NODE_V11</div>
+        <div id="status-tag">STATUS: [READY]</div>
         <div id="clock">00:00:00</div>
-        <div id="latency">LATENCY: 12ms</div>
     </header>
 
-    <div id="history">
-        <div class="line info">G-OS v9.4.1 (Kernel: Ghost_Protocol_Active)</div>
-        <div class="line info">Initializing massive data buffers... SUCCESS.</div>
-        <div class="line">------------------------------------------------------------</div>
-        <div class="line">Type 'HELP' for a list of master commands.</div>
-        <div class="line">Directory loaded: root/system/bin</div>
+    <div id="terminal">
+        <div class="line info">TITAN MULTI-USER KERNEL LOADED...</div>
+        <div class="line">Current User: <span class="success">root</span></div>
+        <div class="line">Type <span class="warning">'HELP'</span> for a breakdown of commands.</div>
+        <div class="line">Type <span class="error">'STOP'</span> to abort any running process.</div>
         <br>
     </div>
 
     <div class="input-area">
-        <span class="prompt">root@ghost_net:~$ &nbsp;</span>
-        <input type="text" id="cli-input" autofocus spellcheck="false" autocomplete="off">
+        <span class="prompt-symbol">root@titan:~#</span>
+        <input type="text" id="cli-input" autofocus autocomplete="off" spellcheck="false">
     </div>
 </div>
 
 <script>
-    /**
-     * ADVANCED DATA ARCHITECTURE
-     */
-    const FS = {
-        'root': {
-            'bin': {
-                'crack.sh': 'Binary script for decrypting passwords.',
-                'nuke.exe': 'System wipe utility.'
-            },
-            'logs': {
-                'security.log': 'User root logged in from 192.168.1.1',
-                'api.log': 'Fetch requests successful for node_01'
-            },
-            'usr': {
-                'secret.txt': 'The password is: hunter2 (just kidding)'
+/** * GLOBALS & STATE 
+ */
+let ACTIVE_PROCESS = false;
+let STOP_SIGNAL = false;
+const term = document.getElementById('terminal');
+const input = document.getElementById('cli-input');
+const statusTag = document.getElementById('status-tag');
+const container = document.getElementById('container');
+
+/**
+ * MATRIX BACKGROUND
+ */
+const canvas = document.getElementById('matrix-bg');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const alphabet = "ｦｱｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄ0123456789";
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const rainDrops = Array.from({ length: columns }).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0F0";
+    ctx.font = fontSize + "px monospace";
+    for (let i = 0; i < rainDrops.length; i++) {
+        const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+        ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+        if (rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) rainDrops[i] = 0;
+        rainDrops[i]++;
+    }
+}
+setInterval(drawMatrix, 30);
+
+/**
+ * COMMAND LOGIC
+ */
+const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+async function processCommand(raw) {
+    const args = raw.toLowerCase().split(' ');
+    const cmd = args[0];
+
+    // Special case for 'stop' - though it's handled in the event listener too
+    if (cmd === 'stop') return;
+
+    ACTIVE_PROCESS = true;
+    statusTag.innerText = `STATUS: [RUNNING - ${cmd.toUpperCase()}]`;
+
+    switch(cmd) {
+        case 'help':
+            return `MASTER COMMAND LIST:
+--------------------------------------------------
+HELP        : Show this list
+STOP        : Kills any active command / Abort loops
+CLEAR       : Wipe screen buffer
+GLITCH      : Toggle visual signal noise
+MAP         : Initialize geo-tracking
+DOWNLOAD    : Simulate remote file extraction
+PING [host] : Test network connectivity
+BRUTE       : Execute password cracking logic
+CRYPTO      : Live Bitcoin/Ethereum/Solana prices
+WHOAMI      : Display user credentials
+LOGS        : Read system security logs
+IP          : Reveal local node address`;
+
+        case 'whoami':
+            return `USER: root\nUID: 0\nGID: 0\nSHELL: /bin/titan_sh\nACCESS: GLOBAL_ADMIN`;
+
+        case 'ip':
+            printLine("Pinging local gateway...", "info");
+            const ipData = await fetch('https://api.ipify.org?format=json').then(r => r.json());
+            return `LOCAL_NODE_ID: 0x${Math.random().toString(16).slice(2,8)}\nPUBLIC_IP: ${ipData.ip}`;
+
+        case 'logs':
+            return `[19:22:01] INTRUSION ATTEMPT BLOCKED - IP: 182.11.0.4\n[19:45:30] KERNEL UPDATE COMPLETED\n[20:01:12] ENCRYPTION KEYS ROTATED`;
+
+        case 'glitch':
+            container.classList.toggle('glitch');
+            return "Visual signal stability toggled.";
+
+        case 'ping':
+            const host = args[1] || "127.0.0.1";
+            for(let i=0; i<100; i++) {
+                if (STOP_SIGNAL) break;
+                printLine(`64 bytes from ${host}: icmp_seq=${i} ttl=64 time=${(Math.random()*20+5).toFixed(2)}ms`);
+                await sleep(500);
             }
-        }
-    };
+            return STOP_SIGNAL ? "PING ABORTED BY USER." : "";
 
-    let currentPath = ['root'];
-    let historyStack = [];
-    let historyIdx = -1;
+        case 'download':
+            const file = args[1] || "classified_data.db";
+            printLine(`INITIATING DOWNLOAD: ${file}`, "warning");
+            for(let i=0; i<=100; i+=5) {
+                if (STOP_SIGNAL) break;
+                let bar = "=".repeat(i/5) + ">" + ".".repeat(20 - i/5);
+                printLine(`Downloading [${bar}] ${i}%`, "info");
+                await sleep(400);
+            }
+            return STOP_SIGNAL ? "DOWNLOAD TERMINATED. CACHE PURGED." : `SUCCESS: ${file} saved to /root/downloads/`;
 
-    /**
-     * MATRIX BACKGROUND ENGINE
-     */
-    const canvas = document.getElementById('matrix-canvas');
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@&%*";
-    const fontSize = 16;
-    const columns = width / fontSize;
-    const drops = Array.from({ length: columns }).fill(1);
+        case 'brute':
+            printLine("STARTING NEURAL CRACKER...", "error");
+            for(let i=0; i<20; i++) {
+                if (STOP_SIGNAL) break;
+                const hex = Math.random().toString(16).slice(2, 10).toUpperCase();
+                printLine(`ATTEMPTING HASH: ${hex}... [DENIED]`);
+                await sleep(200);
+            }
+            return STOP_SIGNAL ? "BRUTE FORCE ABORTED." : "CRITICAL FAILURE: Firewall too strong.";
 
-    function drawMatrix() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-        ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = "#0F0";
-        ctx.font = fontSize + "px monospace";
-        drops.forEach((y, i) => {
-            const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-            ctx.fillText(text, i * fontSize, y * fontSize);
-            if (y * fontSize > height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
-        });
+        case 'crypto':
+            printLine("Connecting to Coinbase API...", "info");
+            const cRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd');
+            const cData = await cRes.json();
+            return `BTC: $${cData.bitcoin.usd} | ETH: $${cData.ethereum.usd} | SOL: $${cData.solana.usd}`;
+
+        case 'map':
+            return `TRACKING NODES:\n[N.AMERICA] - ACTIVE\n[EUROPE] - ACTIVE\n[ASIA] - OFFLINE\n[ANTARCTICA] - ACTIVE`;
+
+        case 'clear':
+            term.innerHTML = '';
+            return "";
+
+        default:
+            return `<span class="error">COMMAND NOT RECOGNIZED: ${cmd}</span>`;
     }
-    setInterval(drawMatrix, 40);
+}
 
-    /**
-     * CORE COMMAND LOGIC
-     */
-    const historyBox = document.getElementById('history');
-    const input = document.getElementById('cli-input');
-    const viewport = document.getElementById('main-viewport');
+/**
+ * UI HELPERS
+ */
+function printLine(text, type = "") {
+    const div = document.createElement('div');
+    div.className = `line ${type}`;
+    div.innerHTML = text;
+    term.appendChild(div);
+    term.scrollTop = term.scrollHeight;
+}
 
-    const COMMAND_REGISTRY = {
-        'help': () => `SYSTEM COMMANDS:
-------------------------------------------
-LS          : List directory contents
-CD [dir]    : Change directory
-CAT [file]  : Read file content
-CLEAR       : Wipe terminal history
-CRYPTO      : Live Bitcoin/Ethereum prices
-WEATHER [c] : Sat-link weather feed
-NEWS        : Global headline sync
-IP          : Locate current node
-BRUTE       : Start cracking sequence
-SUDO        : Request elevated privileges
-PROCESS     : View active system threads
-GLITCH      : Toggle visual stability
-PWD         : Show current path`,
-        
-        'pwd': () => '/' + currentPath.join('/'),
+input.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter') {
+        const val = input.value.trim();
+        if (!val) return;
 
-        'clear': () => { historyBox.innerHTML = ''; return ''; },
-
-        'glitch': () => {
-            viewport.classList.toggle('glitch-active');
-            return "Visual stability recalibrated.";
-        },
-
-        'ls': () => {
-            let dir = getDir(currentPath);
-            return Object.keys(dir).join('    ');
-        },
-
-        'process': () => {
-            return `PID    NAME         CPU    MEM
-101    kernel       0.1%   128MB
-402    matrix_bg    4.5%   64MB
-509    cli_shell    0.2%   32MB
-999    api_sync     1.2%   256MB`;
-        }
-    };
-
-    // ASYNC COMMANDS
-    async function handleAsync(cmd, args) {
-        switch(cmd) {
-            case 'ip':
-                printLine("Querying global node database...", "info");
-                const ipRes = await fetch('https://api.ipify.org?format=json');
-                const ipData = await ipRes.json();
-                return `NODE_ADDRESS: ${ipData.ip} (Status: Tracked)`;
-
-            case 'crypto':
-                printLine("Accessing blockchain ledger...", "info");
-                const cryRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
-                const cryData = await cryRes.json();
-                return `BTC: $${cryData.bitcoin.usd} | ETH: $${cryData.ethereum.usd}`;
-
-            case 'weather':
-                const city = args[0] || 'London';
-                printLine(`Connecting to weather satellite for ${city}...`, "info");
-                const wRes = await fetch(`https://wttr.in/${city}?format=3`);
-                const wData = await wRes.text();
-                return wData;
-
-            case 'news':
-                printLine("Intercepting global news feeds...", "info");
-                // Using a public proxy-free news stub for demo
-                return `[BREAKING] Neural-Link v10 Released
-[INFO] Cyber-Security Bill Passed in UN
-[WARN] Global Data Traffic Spiking in Sector 7`;
-
-            case 'brute':
-                return bruteForceSequence();
-
-            case 'cd':
-                const target = args[0];
-                if (!target || target === '..') {
-                    if (currentPath.length > 1) currentPath.pop();
-                } else {
-                    let dir = getDir(currentPath);
-                    if (dir[target] && typeof dir[target] === 'object') {
-                        currentPath.push(target);
-                    } else {
-                        throw new Error(`Directory not found: ${target}`);
-                    }
-                }
-                return `Changed directory to /${currentPath.join('/')}`;
-
-            case 'cat':
-                let dir = getDir(currentPath);
-                let file = dir[args[0]];
-                if (file && typeof file === 'string') return file;
-                throw new Error("Cannot read object or file not found.");
-
-            default:
-                if (COMMAND_REGISTRY[cmd]) return COMMAND_REGISTRY[cmd]();
-                throw new Error(`Command not recognized: ${cmd}`);
-        }
-    }
-
-    /**
-     * UTILS & HELPERS
-     */
-    function getDir(pathArr) {
-        let current = FS;
-        pathArr.forEach(p => { current = current[p]; });
-        return current;
-    }
-
-    function printLine(text, type = "") {
-        const div = document.createElement('div');
-        div.className = `line ${type}`;
-        div.innerHTML = text;
-        historyBox.appendChild(div);
-        historyBox.scrollTop = historyBox.scrollHeight;
-    }
-
-    async function bruteForceSequence() {
-        printLine("STARTING BRUTE FORCE ATTACK...", "warn");
-        for (let i = 0; i <= 10; i++) {
-            await new Promise(r => setTimeout(r, 200));
-            printLine(`Cracking sector ${i*10}%: ${Math.random().toString(16).substring(2, 15)}`, "warn");
-        }
-        viewport.classList.add('glitch-active');
-        setTimeout(() => viewport.classList.remove('glitch-active'), 1000);
-        return "CRACK COMPLETE. ACCESS GRANTED TO SECTOR_01.";
-    }
-
-    // Input Controller
-    input.addEventListener('keydown', async (e) => {
-        if (e.key === 'Enter') {
-            const raw = input.value.trim();
-            if (!raw) return;
-            
-            const [cmd, ...args] = raw.toLowerCase().split(' ');
-            printLine(`<span class="prompt">root@ghost_net:~$</span> ${raw}`);
-            
-            historyStack.unshift(raw);
-            historyIdx = -1;
+        // If command is STOP, trigger the signal immediately
+        if (val.toLowerCase() === 'stop') {
+            STOP_SIGNAL = true;
+            printLine(`<span class="prompt-symbol">root@titan:~#</span> ${val}`, "error");
             input.value = '';
-
-            try {
-                const out = await handleAsync(cmd, args);
-                if (out) printLine(out, "success");
-            } catch (err) {
-                printLine(`[ERROR] ${err.message}`, "error");
-            }
+            return;
         }
+
+        printLine(`<span class="prompt-symbol">root@titan:~#</span> ${val}`);
+        input.value = '';
         
-        // History Cycling
-        if (e.key === 'ArrowUp') {
-            if (historyIdx < historyStack.length - 1) {
-                historyIdx++;
-                input.value = historyStack[historyIdx];
-            }
-        }
-        if (e.key === 'ArrowDown') {
-            if (historyIdx > 0) {
-                historyIdx--;
-                input.value = historyStack[historyIdx];
-            } else {
-                historyIdx = -1;
-                input.value = '';
-            }
-        }
-    });
+        STOP_SIGNAL = false;
+        const result = await processCommand(val);
+        
+        if (result) printLine(result);
+        
+        ACTIVE_PROCESS = false;
+        statusTag.innerText = "STATUS: [READY]";
+    }
+});
 
-    // Clock Update
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-    }, 1000);
+// Focus handling
+window.addEventListener('click', () => input.focus());
 
-    // Latency Simulation
-    setInterval(() => {
-        const lat = Math.floor(Math.random() * 50) + 5;
-        document.getElementById('latency').innerText = `LATENCY: ${lat}ms`;
-    }, 3000);
-
-    // Auto-focus
-    window.addEventListener('click', () => input.focus());
+// Clock Update
+setInterval(() => {
+    document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+}, 1000);
 </script>
 </body>
 </html>
