@@ -1,1445 +1,422 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATLAS: DATA FLOW CONSOLE v8.3 (Security &amp; Gaming)</title>
-    <link href="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security &amp; Gaming)_files/css2" rel="stylesheet">
-    <script src="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security &amp; Gaming)_files/Tone.min.js.download"></script>
-
+    <title>TERMINAL_OS_V9 // OVERLOAD_SEQUENCE</title>
     <style>
+        /* --- CORE ARCHITECTURE --- */
         :root {
-            --terminal-color: #00ff41;
-            --terminal-background-color: #000;
-            --border-color: #00ff41;
-            --prompt-caret: #ffaa00;
-            --error-color: #ff0000;
-            --highlight-color: #00aaff;
-            --game-color: #ffffff;
-            --reaction-smile: #ffff00;
-            --reaction-thumbsup: #00ff41;
-            --reaction-heart: #ff0000;
-            --reaction-surprised: #00aaff;
-            --reaction-sad: #00ffff;
-            --accept-button: #00ff41;
-            --decline-button: #ff0000;
-            --leave-button: #ffaa00;
+            --neon-green: #00ff41;
+            --dark-green: #003b00;
+            --dim-green: rgba(0, 255, 65, 0.2);
+            --crt-bg: #050505;
+            --error-red: #ff003c;
+            --warning-orange: #ffb300;
+            --info-blue: #00e5ff;
+            --font-stack: 'Courier New', Courier, monospace;
         }
 
-        body {
-            background-color: var(--terminal-background-color);
-            font-family: 'VT323', monospace;
-            color: var(--terminal-color);
-            font-size: 1.1rem;
-            line-height: 1.4;
-            height: 100vh;
-            margin: 0;
+        * { box-sizing: border-box; cursor: text; }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            background: var(--crt-bg);
+            color: var(--neon-green);
+            font-family: var(--font-stack);
+            font-size: 14px;
             overflow: hidden;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+        }
+
+        /* --- ADVANCED CRT OPTICS --- */
+        .viewport {
             position: relative;
-        }
-
-        #terminal-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(0deg, var(--terminal-color)33, var(--terminal-color)33 1px, #000 1px, #000 3px);
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.15;
-            animation: flicker 10s infinite alternate;
-        }
-
-        @keyframes flicker {
-            0% { opacity: 0.15; }
-            50% { opacity: 0.1; }
-            100% { opacity: 0.2; }
-        }
-
-        #console-container {
-            width: 90%;
-            max-width: 1200px;
-            height: 90vh;
-            background-color: #111;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 0 20px var(--terminal-color);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
             padding: 20px;
+            z-index: 10;
             overflow: hidden;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            border-radius: 8px;
-            display: none;
+            perspective: 1000px;
         }
 
-        #console-header {
-            flex-shrink: 0;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            border-bottom: 1px dashed var(--highlight-color);
-            font-size: 1.2rem;
-            color: var(--highlight-color);
-            white-space: pre;
-        }
-
-        #terminal-output {
-            flex-grow: 1;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            padding-bottom: 10px;
-            scrollbar-width: none;
-        }
-
-        #terminal-output::-webkit-scrollbar {
-            display: none;
-        }
-
-        #command-line {
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-            margin-top: 10px;
-        }
-
-        #prompt {
-            color: var(--prompt-caret);
-            margin-right: 5px;
-            white-space: nowrap;
-        }
-
-        #command-input {
-            flex-grow: 1;
-            background: transparent;
-            border: none;
-            color: var(--terminal-color);
-            font-family: 'VT323', monospace;
-            font-size: 1.1rem;
-            outline: none;
-            caret-color: var(--terminal-color);
-            padding: 0;
-        }
-
-        #login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-
-        #login-card {
-            border: 3px solid var(--error-color);
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.8);
-            padding: 30px;
-            background-color: #111;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            border-radius: 5px;
-        }
-
-        .login-field {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .login-field label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--prompt-caret);
-        }
-
-        .login-field input {
-            width: 100%;
-            padding: 10px;
-            background-color: #000;
-            border: 1px solid var(--error-color);
-            color: var(--prompt-caret);
-            font-family: 'VT323', monospace;
-            font-size: 1.1rem;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        #passkey {
-            max-width: 50%;
-        }
-
-        #login-button {
-            background-color: var(--error-color);
-            color: #fff;
-            border: 2px solid var(--error-color);
-            padding: 10px 20px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-            transition: background-color 0.2s, box-shadow 0.2s;
-            width: 100%;
-            border-radius: 4px;
-        }
-
-        #login-button:hover {
-            background-color: #cc0000;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-        }
-
-        #login-status {
-            color: var(--prompt-caret);
-            margin-top: 15px;
-            min-height: 1.5rem;
-        }
-
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.98);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 200;
-            color: var(--terminal-color);
-        }
-
-        #loading-logo {
-            font-size: 5rem;
-            color: var(--highlight-color);
-            animation: glitch 1.5s infinite alternate;
-            margin-bottom: 20px;
-        }
-
-        @keyframes glitch {
-            0% { text-shadow: 0 0 1px var(--error-color), 0 0 5px var(--highlight-color); transform: skew(0.5deg); }
-            50% { text-shadow: 0 0 1px var(--terminal-color), 0 0 5px var(--prompt-caret); transform: skew(-0.5deg); }
-            100% { text-shadow: 0 0 1px var(--highlight-color), 0 0 5px var(--error-color); transform: skew(0deg); }
-        }
-
-        #game-container {
-            width: 90%;
-            max-width: 1200px;
-            height: 90vh;
-            background-color: #000;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 0 20px var(--terminal-color);
-            z-index: 1;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-        }
-
-        #game-canvas {
-            background-color: #000;
-            display: block;
-            border: 1px dashed var(--game-color);
-            width: 800px;
-            height: 600px;
-            max-width: 100%;
-            max-height: 80%;
-        }
-
-        #quit-game-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: var(--error-color);
-            color: #fff;
-            border: 2px solid var(--error-color);
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        #chat-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 10;
-            cursor: pointer;
-            width: 50px;
-            height: 50px;
-            display: none;
-            background-color: var(--error-color);
-            border-radius: 50%;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #chat-button img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-        }
-
-        #unread-count {
+        .crt-overlay {
+            pointer-events: none;
             position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: var(--prompt-caret);
-            color: #000;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 2px, 3px 100%;
+            z-index: 1000;
+        }
+
+        .scanline {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(0deg, transparent 0%, rgba(0, 255, 65, 0.05) 50%, transparent 100%);
+            background-size: 100% 8px;
+            animation: scan 12s linear infinite;
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* --- THE GLITCH ENGINE --- */
+        .glitch-active {
+            animation: glitch-skew 0.2s infinite;
+        }
+
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); filter: hue-rotate(0deg); }
+            20% { transform: skew(3deg); filter: hue-rotate(90deg); }
+            40% { transform: skew(-3deg); }
+            60% { transform: skew(1deg); filter: blur(1px); }
+            100% { transform: skew(0deg); }
+        }
+
+        /* --- UI COMPONENTS --- */
+        header {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.8rem;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--dim-green);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
             font-weight: bold;
-            display: none;
+            letter-spacing: 2px;
         }
 
-        #chat-window {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 400px;
-            height: 400px;
-            background-color: #111;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 0 20px var(--terminal-color);
-            display: none;
-            flex-direction: column;
-            z-index: 10;
-            border-radius: 8px;
-        }
-
-        #chat-header {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--highlight-color);
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        #start-call-button, #close-chat-button {
-            background-color: var(--error-color);
-            color: #fff;
-            border: 2px solid var(--error-color);
-            padding: 5px 10px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1rem;
-            border-radius: 4px;
-        }
-
-        #start-call-button:hover, #close-chat-button:hover {
-            background-color: #cc0000;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
-        }
-
-        #user-list {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--terminal-color);
-        }
-
-        .user-list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 5px;
-            border-radius: 4px;
-        }
-
-        .user-list-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .user-status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-
-        #chat-messages {
-            flex-grow: 1;
+        #history {
+            flex: 1;
             overflow-y: auto;
-            padding: 10px;
-            color: var(--terminal-color);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            scrollbar-width: none;
+            margin-bottom: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--dark-green) transparent;
         }
 
-        #chat-messages::-webkit-scrollbar {
-            display: none;
-        }
+        #history::-webkit-scrollbar { width: 5px; }
+        #history::-webkit-scrollbar-thumb { background: var(--dark-green); }
 
-        #chat-messages div {
-            margin-bottom: 5px;
-            cursor: pointer;
-            position: relative;
+        .line { margin-bottom: 4px; line-height: 1.4; white-space: pre-wrap; word-break: break-all; }
+        .prompt { color: #fff; font-weight: bold; }
+        .success { color: var(--neon-green); }
+        .error { color: var(--error-red); text-shadow: 0 0 5px var(--error-red); }
+        .warn { color: var(--warning-orange); }
+        .info { color: var(--info-blue); }
+
+        .input-area {
             display: flex;
             align-items: center;
-            gap: 10px;
+            border-top: 1px solid var(--dim-green);
+            padding-top: 10px;
         }
 
-        #chat-messages div:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .message-timestamp {
-            color: var(--prompt-caret);
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
-        .message-content {
-            flex-grow: 1;
-        }
-
-        #chat-input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
+        #cli-input {
             background: transparent;
             border: none;
-            border-top: 1px solid var(--border-color);
-            color: var(--terminal-color);
-            font-family: 'VT323', monospace;
+            color: var(--neon-green);
+            font-family: var(--font-stack);
             font-size: 1.1rem;
-            outline: none;
-        }
-
-        #call-window {
-            position: fixed;
-            bottom: 80px;
-            right: 430px;
-            width: 400px;
-            height: 400px;
-            background-color: #111;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 0 20px var(--terminal-color);
-            display: none;
-            flex-direction: column;
-            z-index: 10;
-            border-radius: 8px;
-        }
-
-        #call-header {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--highlight-color);
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        #call-controls {
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-        }
-
-        #call-videos {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px;
-            overflow-y: auto;
-            scrollbar-width: none;
-        }
-
-        #call-videos::-webkit-scrollbar {
-            display: none;
-        }
-
-        #call-videos video {
             width: 100%;
-            height: 150px;
-            background-color: #000;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            outline: none;
+            caret-color: #fff;
         }
 
-        #call-participants-list {
-            position: absolute;
-            top: 60px;
-            left: 10px;
-            background-color: #222;
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            display: none;
-            color: var(--terminal-color);
-            z-index: 20;
-            border-radius: 4px;
-            max-height: 200px;
-            overflow-y: auto;
+        /* --- CANVAS LAYERS --- */
+        #matrix-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            opacity: 0.1;
         }
 
-        #toggle-camera, #toggle-screen, #show-participants, #end-call, #leave-call {
-            background-color: var(--highlight-color);
-            color: #fff;
-            border: 1px solid var(--highlight-color);
-            padding: 5px 10px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1rem;
-            border-radius: 4px;
+        /* --- LOADING BARS --- */
+        .progress-container {
+            width: 300px;
+            height: 15px;
+            border: 1px solid var(--neon-green);
+            margin: 10px 0;
         }
-
-        #leave-call {
-            background-color: var(--leave-button);
-            border: 1px solid var(--leave-button);
-        }
-
-        #end-call {
-            background-color: var(--error-color);
-            border: 1px solid var(--error-color);
-        }
-
-        #toggle-camera:hover, #toggle-screen:hover, #show-participants:hover {
-            background-color: #0088cc;
-        }
-
-        #end-call:hover {
-            background-color: #cc0000;
-        }
-
-        #leave-call:hover {
-            background-color: #cc8800;
+        .progress-bar {
+            height: 100%;
+            background: var(--neon-green);
+            width: 0%;
+            transition: width 0.1s;
         }
     </style>
 </head>
-<body>
-    <div id="terminal-background"></div>
+<body class="crt-frame">
 
-    <div id="login-overlay" style="display: flex;">
-        <div id="login-card">
-            <h2 style="color: var(--error-color); margin-top: 0; margin-bottom: 20px;">ATLAS ACCESS PROTOCOL</h2>
-            <p style="color: var(--prompt-caret); font-size: 1rem;">STATUS: Three-Factor Authentication Required.</p>
-            <form id="login-form">
-                <div class="login-field">
-                    <label for="username">USERNAME:</label>
-                    <input type="text" id="username" required="">
-                </div>
-                <div class="login-field">
-                    <label for="password">PASSWORD:</label>
-                    <input type="password" id="password" required="">
-                </div>
-                <div class="login-field">
-                    <label for="passkey">PASSKEY (4 DIGITS):</label>
-                    <input type="text" id="passkey" required="" maxlength="4">
-                </div>
-                <button type="button" id="login-button">INITIATE ACCESS SEQUENCE</button>
-            </form>
-            <div id="login-status">Awaiting Authentication...</div>
-        </div>
+<canvas id="matrix-canvas"></canvas>
+<div class="crt-overlay"></div>
+<div class="scanline"></div>
+
+<div class="viewport" id="main-viewport">
+    <header>
+        <div>SYSTEM: ONLINE // NODE: 0x882_GHOST</div>
+        <div id="clock">00:00:00</div>
+        <div id="latency">LATENCY: 12ms</div>
+    </header>
+
+    <div id="history">
+        <div class="line info">G-OS v9.4.1 (Kernel: Ghost_Protocol_Active)</div>
+        <div class="line info">Initializing massive data buffers... SUCCESS.</div>
+        <div class="line">------------------------------------------------------------</div>
+        <div class="line">Type 'HELP' for a list of master commands.</div>
+        <div class="line">Directory loaded: root/system/bin</div>
+        <br>
     </div>
 
-    <div id="loading-screen">
-        <div id="loading-logo">ATLAS_INIT</div>
-        <div id="loading-text" style="color:var(--highlight-color);">Processing Authentication Handshake...</div>
+    <div class="input-area">
+        <span class="prompt">root@ghost_net:~$ &nbsp;</span>
+        <input type="text" id="cli-input" autofocus spellcheck="false" autocomplete="off">
     </div>
-
-    <div id="game-container">
-        <canvas id="game-canvas" width="800" height="600"></canvas>
-        <button id="quit-game-button">TERMINATE GAME SEQUENCE</button>
-    </div>
-
-    <div id="console-container" style="display: none;">
-        <div id="console-header">ATLAS_SYSTEM_OFFLINE</div>
-        <div id="terminal-output"></div>
-        <div id="command-line">
-            <span id="prompt">LOGIN&gt; </span>
-            <input type="text" id="command-input" autocomplete="off" spellcheck="false" placeholder="Enter command...">
-        </div>
-    </div>
-
-    <div id="chat-button">
-        <img src="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/chat.png" alt="Chat">
-        <div id="unread-count">0</div>
-    </div>
-
-    <div id="chat-window">
-        <div id="chat-header">
-            <span>ATLAS Chat</span>
-            <div>
-                <button id="start-call-button">Start Call</button>
-                <button id="close-chat-button">Close Chat</button>
-            </div>
-        </div>
-        <div id="user-list"></div>
-        <div id="chat-messages"></div>
-        <input type="text" id="chat-input" placeholder="Type message...">
-    </div>
-
-    <div id="call-window">
-        <div id="call-header">
-            <span>ATLAS Call</span>
-            <div>
-                <button id="leave-call">Leave Call</button>
-                <button id="end-call">End Call</button>
-            </div>
-        </div>
-        <div id="call-controls">
-            <button id="toggle-camera">Camera: Off</button>
-            <button id="toggle-screen">Share Screen: Off</button>
-            <button id="show-participants">Participants</button>
-        </div>
-        <div id="call-videos">
-            <video id="local-video" autoplay="" muted=""></video>
-            <video id="remote-video" autoplay=""></video>
-        </div>
-        <div id="call-participants-list"></div>
-    </div>
+</div>
 
 <script>
-// Global State Variables
-let authUsername = '';
-let userType = '';
-let isLoggedIn = false;
-let failedAttempts = 0;
-let isLockedDown = false;
-let currentCall = null;
-let localStream = null;
-let screenStream = null;
-let isSharingScreen = false;
-let audioPlayers = {};
-let soundCommandInterval = null;
-let incomingCallInterval = null;
-let isRinging = false;
-let callNotificationTimeout = null;
-let tempConsoleHandler = null;
-
-// DOM Elements
-const loginModal = document.getElementById('login-overlay');
-const loginForm = document.getElementById('login-form');
-const passwordInput = document.getElementById('password');
-const keyInput = document.getElementById('passkey');
-const loginError = document.getElementById('login-status');
-const consoleContainer = document.getElementById('console-container');
-const consoleOutput = document.getElementById('terminal-output');
-const consoleInput = document.getElementById('command-input');
-const timeDisplay = document.getElementById('console-header');
-const commandPrompt = document.getElementById('prompt');
-const chatModal = document.getElementById('chat-window');
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const chatButton = document.getElementById('chat-button');
-const userList = document.getElementById('user-list');
-const callModal = document.getElementById('call-window');
-const callTitle = document.getElementById('call-header').querySelector('span');
-const endCallButton = document.getElementById('end-call');
-const leaveCallButton = document.getElementById('leave-call');
-const toggleCameraButton = document.getElementById('toggle-camera');
-const toggleScreenButton = document.getElementById('toggle-screen');
-const showParticipantsButton = document.getElementById('show-participants');
-const callParticipantsList = document.getElementById('call-participants-list');
-const localVideo = document.getElementById('local-video');
-const remoteVideo = document.getElementById('remote-video');
-const startCallButton = document.getElementById('start-call-button');
-
-// User Data
-const USERS = {
-    'ETHANUNLOCKED': { password: 'h4cker', passkey: '1957', role: 'MANAGER', chatStatus: 'ONLINE' },
-    'BEEF WELLINGTON': { password: 'Eat_me', passkey: '2251', role: 'ADMIN', chatStatus: 'ONLINE' },
-    'GYATTMODEPLAYS': { password: 'justmyusername', passkey: '0000', role: 'ADMIN', chatStatus: 'ONLINE' }
-};
-
-// Sound Definitions - Using placeholder URLs since original paths don't work
-const SOUND_EFFECTS = {
-    'SIREN': 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
-    'CONFIRM': 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3',
-    'ALARM': 'https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3',
-    'GET OUT': 'https://assets.mixkit.co/active_storage/sfx/1994/1994-preview.mp3',
-    'VINE BOOM': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'RIZZ': 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3',
-    'YOUR IDOL': 'https://assets.mixkit.co/active_storage/sfx/1723/1723-preview.mp3',
-    'FART': 'https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3',
-    '6 7': 'https://assets.mixkit.co/active_storage/sfx/2015/2015-preview.mp3',
-    'GOLDEN': 'https://assets.mixkit.co/active_storage/sfx/1723/1723-preview.mp3',
-    'SODA POP': 'https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3',
-    'BRUH': 'https://assets.mixkit.co/active_storage/sfx/1993/1993-preview.mp3',
-    'SUI': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'JOHN CENA': 'https://assets.mixkit.co/active_storage/sfx/2016/2016-preview.mp3',
-    'PUMPKIN': 'https://assets.mixkit.co/active_storage/sfx/2014/2014-preview.mp3',
-    'B+F': 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
-    'BURP': 'https://assets.mixkit.co/active_storage/sfx/1998/1998-preview.mp3',
-    'GD_JUMP': 'https://assets.mixkit.co/active_storage/sfx/2016/2016-preview.mp3',
-    'GD_DEATH': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'DASH': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'DASH_FULL': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'LOGIN_FAIL': 'https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3',
-    'LOCKDOWN_START': 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
-    'CALL_RINGING': 'https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3'
-};
-
-const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
-const LOCATION = 'KOLLARNEY BAY SECURE NODE';
-
-const MESSAGES_FOR_CHAT = [
-    'BEEF WELLINGTON: Anyone up for a game?',
-    'GYATTMODEPLAYS: Check the latest security logs.',
-    'BEEF WELLINGTON: System looks good from here.',
-    'GYATTMODEPLAYS: Running diagnostics now.',
-    'BEEF WELLINGTON: All clear on my end.',
-    'GYATTMODEPLAYS: Confirmed. Status: GREEN.'
-];
-
-// --- Utility Functions ---
-function writeOutput(text, color = 'var(--terminal-color)', isCommand = false) {
-    const line = document.createElement('div');
-    line.style.color = color;
-    line.style.fontFamily = 'monospace';
-    line.style.whiteSpace = 'pre-wrap';
-    line.textContent = isCommand ? `${commandPrompt.textContent}${text}` : text;
-    consoleOutput.appendChild(line);
-    consoleOutput.scrollTop = consoleOutput.scrollHeight;
-}
-
-function clearOutput() {
-    consoleOutput.innerHTML = '';
-}
-
-function showLoginModal() {
-    loginModal.style.display = 'flex';
-    consoleContainer.style.display = 'none';
-    commandPrompt.textContent = 'LOGIN> ';
-}
-
-function hideLoginModal() {
-    loginModal.style.display = 'none';
-    loginError.textContent = '';
-    document.getElementById('username').value = '';
-    passwordInput.value = '';
-    keyInput.value = '';
-}
-
-function loadSound(name) {
-    if (!Tone.context || Tone.context.state !== 'running') {
-        return;
-    }
-    if (audioPlayers[name]) return;
-
-    const filePath = SOUND_EFFECTS[name];
-    audioPlayers[name] = new Tone.Player(filePath).toDestination();
-
-    audioPlayers[name].load(filePath).then(() => {
-        // Sound loaded successfully
-    }).catch(err => {
-        writeOutput(`Error loading sound ${name}: ${err.message}`, 'var(--error-color)');
-    });
-}
-
-function playSound(name, loop = false) {
-    if (Tone.context.state !== 'running') {
-        writeOutput('Error: Audio Context not initialized. Run INIT AUDIO.', 'var(--error-color)');
-        return;
-    }
-
-    const player = audioPlayers[name];
-    if (player) {
-        player.loop = loop;
-        if (player.state === 'started' && loop) {
-            return;
-        }
-        if (player.state === 'started') { player.stop(); }
-        player.start();
-    } else {
-        writeOutput(`Error: Sound file for ${name} not loaded.`, 'var(--error-color)');
-    }
-}
-
-function stopSound(name) {
-    const player = audioPlayers[name];
-    if (player && player.state === 'started') {
-        player.stop();
-    }
-}
-
-function getCurrentFormattedTime() {
-    const now = new Date();
-    const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    const day = dayNames[now.getDay()];
-    const date = now.getDate().toString().padStart(2, '0');
-    const month = monthNames[now.getMonth()];
-    const year = now.getFullYear();
-    let hours = now.getHours();
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours.toString().padStart(2, '0') : '12';
-    return `${day}, ${date}-${month}-${year} | ${hours}:${minutes}:${seconds} ${ampm} | LOCATION: ${LOCATION}`;
-}
-
-let timeUpdateInterval = null;
-
-function updateHeaderDisplay() {
-    timeDisplay.textContent = `[ ${getCurrentFormattedTime()} | USER: ${authUsername} ]`;
-}
-
-function stopTimeInterval() {
-    if (timeUpdateInterval) {
-        clearInterval(timeUpdateInterval);
-        timeUpdateInterval = null;
-        timeDisplay.textContent = 'ATLAS_SYSTEM_OFFLINE';
-    }
-}
-
-function startTimeInterval() {
-    stopTimeInterval();
-    updateHeaderDisplay();
-    timeUpdateInterval = setInterval(updateHeaderDisplay, 1000);
-}
-
-// --- Console Commands ---
-function processCommand(command) {
-    if (isLockedDown) {
-        writeOutput(`ERROR: SYSTEM LOCKED DOWN. Reason: ${isLockedDown}`, 'var(--error-color)', true);
-        return;
-    }
-    if (!isLoggedIn) {
-        writeOutput('ERROR: NOT LOGGED IN.', 'var(--error-color)', true);
-        return;
-    }
-
-    const parts = command.trim().toUpperCase().split(/\s+/);
-    const cmd = parts[0];
-    const args = parts.slice(1);
-
-    writeOutput(command, 'var(--terminal-color)', true);
-
-    if (SOUND_COMMAND_NAMES.includes(cmd)) {
-        playSound(cmd);
-        writeOutput(`SOUND TRIGGERED: ${cmd}`, 'var(--highlight-color)');
-        return;
-    }
-
-    switch (cmd) {
-        case 'HELP':
-            writeOutput('=== ATLAS COMMAND DIRECTORY ===', 'var(--highlight-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('--- SYSTEM COMMANDS ---', 'var(--highlight-color)');
-            writeOutput('  HELP             - Display this command directory', 'var(--terminal-color)');
-            writeOutput('  COMMANDS         - List all available system commands', 'var(--terminal-color)');
-            writeOutput('  SOUNDS           - List all available sound effects', 'var(--terminal-color)');
-            writeOutput('  CLEAR            - Clear the console output', 'var(--terminal-color)');
-            writeOutput('  LOGOUT           - Log out and return to login screen', 'var(--terminal-color)');
-            writeOutput('  LOCKDOWN <TEXT>  - Initiate system-wide lockdown', 'var(--terminal-color)');
-            writeOutput('  INIT AUDIO       - Initialize Web Audio Context', 'var(--terminal-color)');
-            writeOutput('  ECHO <TEXT>      - Repeat the text input', 'var(--terminal-color)');
-            writeOutput('  ACCEPT CALL      - Accept incoming call', 'var(--terminal-color)');
-            writeOutput('  REJECT CALL      - Reject incoming call', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('Type COMMANDS or SOUNDS for detailed listings.', 'var(--prompt-caret)');
-            break;
-        case 'COMMANDS':
-            writeOutput('=== SYSTEM COMMANDS LIST ===', 'var(--highlight-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('1.  HELP             - Display command directory', 'var(--terminal-color)');
-            writeOutput('2.  COMMANDS         - Show this list', 'var(--terminal-color)');
-            writeOutput('3.  SOUNDS           - Show all sound effects', 'var(--terminal-color)');
-            writeOutput('4.  CLEAR            - Clear console output', 'var(--terminal-color)');
-            writeOutput('5.  LOGOUT           - Log out of system', 'var(--terminal-color)');
-            writeOutput('6.  LOCKDOWN <TEXT>  - Initiate lockdown protocol', 'var(--terminal-color)');
-            writeOutput('7.  INIT AUDIO       - Enable sound system', 'var(--terminal-color)');
-            writeOutput('8.  ECHO <TEXT>      - Echo text to console', 'var(--terminal-color)');
-            writeOutput('9.  ACCEPT CALL      - Accept incoming call', 'var(--terminal-color)');
-            writeOutput('10. REJECT CALL      - Reject incoming call', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('Total Commands: 10', 'var(--prompt-caret)');
-            break;
-        case 'SOUNDS':
-            writeOutput('=== AVAILABLE SOUND EFFECTS ===', 'var(--highlight-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('--- SYSTEM SOUNDS ---', 'var(--highlight-color)');
-            writeOutput('1.  SIREN            - Emergency siren alert', 'var(--terminal-color)');
-            writeOutput('2.  CONFIRM          - Confirmation beep', 'var(--terminal-color)');
-            writeOutput('3.  ALARM            - Bell ringing alarm', 'var(--terminal-color)');
-            writeOutput('4.  LOGIN_FAIL       - Login failure buzzer', 'var(--terminal-color)');
-            writeOutput('5.  LOCKDOWN_START   - Lockdown siren', 'var(--terminal-color)');
-            writeOutput('6.  CALL_RINGING     - Incoming call ringtone', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('--- GAME SOUNDS ---', 'var(--highlight-color)');
-            writeOutput('7.  GD_JUMP          - Geometry Dash jump', 'var(--terminal-color)');
-            writeOutput('8.  GD_DEATH         - Geometry Dash death', 'var(--terminal-color)');
-            writeOutput('9.  DASH             - Quick dash sound', 'var(--terminal-color)');
-            writeOutput('10. DASH_FULL        - Full dash whoosh', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('--- MEME/FX SOUNDS ---', 'var(--highlight-color)');
-            writeOutput('11. GET OUT          - Get out meme', 'var(--terminal-color)');
-            writeOutput('12. VINE BOOM        - Vine boom effect', 'var(--terminal-color)');
-            writeOutput('13. RIZZ             - Rizz sound effect', 'var(--terminal-color)');
-            writeOutput('14. YOUR IDOL        - Your idol sound', 'var(--terminal-color)');
-            writeOutput('15. FART             - Fart sound', 'var(--terminal-color)');
-            writeOutput('16. 6 7              - Six seven sound', 'var(--terminal-color)');
-            writeOutput('17. GOLDEN           - Golden chime', 'var(--terminal-color)');
-            writeOutput('18. SODA POP         - Soda pop sound', 'var(--terminal-color)');
-            writeOutput('19. BRUH             - Bruh moment', 'var(--terminal-color)');
-            writeOutput('20. SUI              - Sui sound', 'var(--terminal-color)');
-            writeOutput('21. JOHN CENA        - John Cena entrance', 'var(--terminal-color)');
-            writeOutput('22. PUMPKIN          - Pumpkin sound', 'var(--terminal-color)');
-            writeOutput('23. B+F              - B+F sound', 'var(--terminal-color)');
-            writeOutput('24. BURP             - Burp sound', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('Total Sounds: 24 | Use sound name as command (e.g., SIREN)', 'var(--prompt-caret)');
-            break;
-        case 'CLEAR':
-            clearOutput();
-            break;
-        case 'LOGOUT':
-            writeOutput('LOGGING OUT...', 'var(--highlight-color)');
-            setTimeout(() => {
-                authUsername = '';
-                isLoggedIn = false;
-                isLockedDown = false;
-                stopIncomingInterval();
-                showLoginModal();
-                clearOutput();
-                stopTimeInterval();
-            }, 1000);
-            break;
-        case 'LOCKDOWN':
-            const reason = args.join(' ') || 'UNKNOWN THREAT';
-            initiateLockdown(reason);
-            break;
-        case 'INIT':
-            if (args[0] === 'AUDIO') {
-                Tone.context.resume().then(() => {
-                    writeOutput('WEB AUDIO CONTEXT RESUMED. Loading sound files...', 'var(--highlight-color)');
-                    SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
-                }).catch(err => {
-                    writeOutput(`ERROR: Failed to resume Audio Context. ${err.message}`, 'var(--error-color)');
-                });
-            } else {
-                writeOutput('ERROR: Unknown command. Type HELP for a list of commands.', 'var(--error-color)');
+    /**
+     * ADVANCED DATA ARCHITECTURE
+     */
+    const FS = {
+        'root': {
+            'bin': {
+                'crack.sh': 'Binary script for decrypting passwords.',
+                'nuke.exe': 'System wipe utility.'
+            },
+            'logs': {
+                'security.log': 'User root logged in from 192.168.1.1',
+                'api.log': 'Fetch requests successful for node_01'
+            },
+            'usr': {
+                'secret.txt': 'The password is: hunter2 (just kidding)'
             }
-            break;
-        case 'ECHO':
-            writeOutput(args.join(' '), 'var(--game-color)');
-            break;
-        case 'ACCEPT':
-            if (args[0] === 'CALL' && isRinging) {
-                const caller = incomingCaller.textContent;
-                acceptCall(caller);
-            } else {
-                writeOutput('ERROR: No incoming call to accept.', 'var(--error-color)');
-            }
-            break;
-        case 'REJECT':
-            if (args[0] === 'CALL' && isRinging) {
-                rejectCall();
-            } else {
-                writeOutput('ERROR: No incoming call to reject.', 'var(--error-color)');
-            }
-            break;
-        default:
-            writeOutput('ERROR: Unknown command. Type HELP for a list of commands.', 'var(--error-color)');
+        }
+    };
+
+    let currentPath = ['root'];
+    let historyStack = [];
+    let historyIdx = -1;
+
+    /**
+     * MATRIX BACKGROUND ENGINE
+     */
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@&%*";
+    const fontSize = 16;
+    const columns = width / fontSize;
+    const drops = Array.from({ length: columns }).fill(1);
+
+    function drawMatrix() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = "#0F0";
+        ctx.font = fontSize + "px monospace";
+        drops.forEach((y, i) => {
+            const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+            ctx.fillText(text, i * fontSize, y * fontSize);
+            if (y * fontSize > height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        });
     }
-}
+    setInterval(drawMatrix, 40);
 
-function initiateLockdown(reason) {
-    if (isLockedDown) return;
-    isLockedDown = reason;
-    stopIncomingInterval();
-    playSound('LOCKDOWN_START');
-    writeOutput('----------------------------------------------------', 'var(--error-color)');
-    writeOutput(`!!! CRITICAL ALERT: SYSTEM LOCKDOWN INITIATED !!!`, 'var(--error-color)');
-    writeOutput(`REASON: ${reason}`, 'var(--error-color)');
-    writeOutput('ALL ACCESS RESTRICTED. CONTACT SECURITY ADMIN.', 'var(--error-color)');
-    writeOutput('----------------------------------------------------', 'var(--error-color)');
-    commandPrompt.textContent = 'LOCKED> ';
-}
+    /**
+     * CORE COMMAND LOGIC
+     */
+    const historyBox = document.getElementById('history');
+    const input = document.getElementById('cli-input');
+    const viewport = document.getElementById('main-viewport');
 
-// --- Login Handler ---
-async function handleLoginAttempt(event) {
-    event.preventDefault();
+    const COMMAND_REGISTRY = {
+        'help': () => `SYSTEM COMMANDS:
+------------------------------------------
+LS          : List directory contents
+CD [dir]    : Change directory
+CAT [file]  : Read file content
+CLEAR       : Wipe terminal history
+CRYPTO      : Live Bitcoin/Ethereum prices
+WEATHER [c] : Sat-link weather feed
+NEWS        : Global headline sync
+IP          : Locate current node
+BRUTE       : Start cracking sequence
+SUDO        : Request elevated privileges
+PROCESS     : View active system threads
+GLITCH      : Toggle visual stability
+PWD         : Show current path`,
+        
+        'pwd': () => '/' + currentPath.join('/'),
 
-    const username = document.getElementById('username').value.trim().toUpperCase();
-    const password = passwordInput.value;
-    const key = keyInput.value;
-    let success = false;
-    let targetUser = null;
+        'clear': () => { historyBox.innerHTML = ''; return ''; },
 
-    for (const userKey in USERS) {
-        const user = USERS[userKey];
-        if (username === userKey && password === user.password && key === user.passkey) {
-            authUsername = userKey;
-            userType = user.role;
-            targetUser = user;
-            success = true;
-            break;
+        'glitch': () => {
+            viewport.classList.toggle('glitch-active');
+            return "Visual stability recalibrated.";
+        },
+
+        'ls': () => {
+            let dir = getDir(currentPath);
+            return Object.keys(dir).join('    ');
+        },
+
+        'process': () => {
+            return `PID    NAME         CPU    MEM
+101    kernel       0.1%   128MB
+402    matrix_bg    4.5%   64MB
+509    cli_shell    0.2%   32MB
+999    api_sync     1.2%   256MB`;
+        }
+    };
+
+    // ASYNC COMMANDS
+    async function handleAsync(cmd, args) {
+        switch(cmd) {
+            case 'ip':
+                printLine("Querying global node database...", "info");
+                const ipRes = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipRes.json();
+                return `NODE_ADDRESS: ${ipData.ip} (Status: Tracked)`;
+
+            case 'crypto':
+                printLine("Accessing blockchain ledger...", "info");
+                const cryRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+                const cryData = await cryRes.json();
+                return `BTC: $${cryData.bitcoin.usd} | ETH: $${cryData.ethereum.usd}`;
+
+            case 'weather':
+                const city = args[0] || 'London';
+                printLine(`Connecting to weather satellite for ${city}...`, "info");
+                const wRes = await fetch(`https://wttr.in/${city}?format=3`);
+                const wData = await wRes.text();
+                return wData;
+
+            case 'news':
+                printLine("Intercepting global news feeds...", "info");
+                // Using a public proxy-free news stub for demo
+                return `[BREAKING] Neural-Link v10 Released
+[INFO] Cyber-Security Bill Passed in UN
+[WARN] Global Data Traffic Spiking in Sector 7`;
+
+            case 'brute':
+                return bruteForceSequence();
+
+            case 'cd':
+                const target = args[0];
+                if (!target || target === '..') {
+                    if (currentPath.length > 1) currentPath.pop();
+                } else {
+                    let dir = getDir(currentPath);
+                    if (dir[target] && typeof dir[target] === 'object') {
+                        currentPath.push(target);
+                    } else {
+                        throw new Error(`Directory not found: ${target}`);
+                    }
+                }
+                return `Changed directory to /${currentPath.join('/')}`;
+
+            case 'cat':
+                let dir = getDir(currentPath);
+                let file = dir[args[0]];
+                if (file && typeof file === 'string') return file;
+                throw new Error("Cannot read object or file not found.");
+
+            default:
+                if (COMMAND_REGISTRY[cmd]) return COMMAND_REGISTRY[cmd]();
+                throw new Error(`Command not recognized: ${cmd}`);
         }
     }
 
-    document.getElementById('loading-screen').style.display = 'flex';
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    document.getElementById('loading-screen').style.display = 'none';
+    /**
+     * UTILS & HELPERS
+     */
+    function getDir(pathArr) {
+        let current = FS;
+        pathArr.forEach(p => { current = current[p]; });
+        return current;
+    }
 
-    if (success) {
-        failedAttempts = 0;
-        isLoggedIn = true;
-        hideLoginModal();
-        consoleContainer.style.display = 'flex';
-        startTimeInterval();
-        clearOutput();
-        writeOutput('----------------------------------------------------', 'var(--terminal-color)');
-        writeOutput(`>> ACCESS GRANTED. WELCOME, ${authUsername} (${userType}).`, 'var(--terminal-color)');
-        writeOutput('>> ATLAS CONSOLE V8.3: FULL SECURITY PROTOCOLS ONLINE.', 'var(--terminal-color)');
-        writeOutput('----------------------------------------------------', 'var(--terminal-color)');
-        writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
-        writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
-        writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
-        chatButton.style.display = 'flex';
-        commandPrompt.textContent = 'ATLAS> ';
-        startIncomingInterval();
-        if ('Notification' in window && Notification.permission !== 'granted') {
-            Notification.requestPermission();
+    function printLine(text, type = "") {
+        const div = document.createElement('div');
+        div.className = `line ${type}`;
+        div.innerHTML = text;
+        historyBox.appendChild(div);
+        historyBox.scrollTop = historyBox.scrollHeight;
+    }
+
+    async function bruteForceSequence() {
+        printLine("STARTING BRUTE FORCE ATTACK...", "warn");
+        for (let i = 0; i <= 10; i++) {
+            await new Promise(r => setTimeout(r, 200));
+            printLine(`Cracking sector ${i*10}%: ${Math.random().toString(16).substring(2, 15)}`, "warn");
         }
-    } else {
-        failedAttempts++;
-        playSound('LOGIN_FAIL');
-        loginError.textContent = 'ACCESS DENIED. Invalid Credentials.';
-        loginError.style.color = 'var(--error-color)';
-        if (failedAttempts >= 3) {
-            loginError.textContent = 'ACCESS DENIED. Initiating lockdown protocol...';
-            setTimeout(() => initiateLockdown('FAILED LOGIN ATTEMPTS'), 1500);
-        }
-    }
-    document.getElementById('username').value = '';
-    passwordInput.value = '';
-    keyInput.value = '';
-}
-
-// --- Chat Functions ---
-function addMessage(sender, message, isIncoming = true) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = isIncoming ? 'incoming-message' : 'outgoing-message';
-    const senderColor = isIncoming ? 'var(--highlight-color)' : 'var(--prompt-caret)';
-
-    messageDiv.innerHTML = `
-        <span class="message-timestamp" style="color:var(--prompt-caret);">${new Date().toLocaleTimeString()}</span>
-        <span class="message-sender" style="color: ${senderColor};">${sender}:</span>
-        <span class="message-text">${message}</span>
-    `;
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function handleChatSubmit(event) {
-    event.preventDefault();
-    const message = chatInput.value.trim();
-    if (message) {
-        addMessage(authUsername, message, false);
-        chatInput.value = '';
-        setTimeout(simulateResponse, 1500);
-    }
-}
-
-function simulateResponse() {
-    const otherUsers = Object.keys(USERS).filter(u => u !== authUsername);
-    const caller = otherUsers[Math.floor(Math.random() * otherUsers.length)];
-    const randomMessage = MESSAGES_FOR_CHAT[Math.floor(Math.random() * MESSAGES_FOR_CHAT.length)];
-    const [sender, message] = randomMessage.split(/:\s?(.+)/);
-
-    if (caller === sender) {
-        addMessage(caller, message.trim());
-    }
-}
-
-function updateUserList() {
-    userList.innerHTML = '';
-    const userNames = Object.keys(USERS).filter(u => u !== authUsername);
-
-    userNames.forEach(username => {
-        const user = USERS[username];
-        const listItem = document.createElement('div');
-        listItem.className = 'user-list-item';
-
-        // Determine real-time status based on current state
-        let statusColor;
-        let statusText;
-
-        if (currentCall && currentCall.participants.includes(username)) {
-            statusColor = '#ffaa00'; // Orange for in-call
-            statusText = 'IN CALL';
-        } else if (user.chatStatus === 'ONLINE') {
-            statusColor = 'var(--terminal-color)'; // Green for online
-            statusText = 'ONLINE';
-        } else {
-            statusColor = 'var(--error-color)'; // Red for offline
-            statusText = 'OFFLINE';
-        }
-
-        listItem.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="user-status-dot" style="background-color: ${statusColor};"></span>
-                <span>${username} (${user.role})</span>
-                <span style="color: ${statusColor}; font-size: 0.85rem; margin-left: 5px;">[${statusText}]</span>
-            </div>
-        `;
-        const callBtn = document.createElement('button');
-        callBtn.textContent = 'Call';
-        callBtn.style.cssText = 'background-color: var(--highlight-color); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 0.9rem;';
-
-        // Disable call button if user is already in a call or if current user is in a call
-        if ((currentCall && currentCall.participants.includes(username)) || currentCall) {
-            callBtn.disabled = true;
-            callBtn.style.opacity = '0.5';
-            callBtn.style.cursor = 'not-allowed';
-        } else {
-            callBtn.onclick = () => startCallWithUser(username);
-        }
-
-        listItem.appendChild(callBtn);
-        userList.appendChild(listItem);
-    });
-}
-
-// --- Call/Simulation Functions ---
-const SIMULATED_USERS = Object.keys(USERS).filter(u => u !== 'ETHANUNLOCKED');
-const incomingCaller = { textContent: '' };
-
-function startIncomingInterval() {
-    if (incomingCallInterval) return;
-    incomingCallInterval = setInterval(processIncomingEvents, (Math.random() * 10000) + 10000);
-}
-
-function stopIncomingInterval() {
-    if (incomingCallInterval) {
-        clearInterval(incomingCallInterval);
-        incomingCallInterval = null;
-    }
-}
-
-function processIncomingEvents() {
-    if (isLockedDown || callModal.style.display === 'flex' || isRinging) {
-        return;
+        viewport.classList.add('glitch-active');
+        setTimeout(() => viewport.classList.remove('glitch-active'), 1000);
+        return "CRACK COMPLETE. ACCESS GRANTED TO SECTOR_01.";
     }
 
-    const eventType = Math.random() < 0.3 ? 'CALL' : 'MESSAGE';
-    const caller = SIMULATED_USERS[Math.floor(Math.random() * SIMULATED_USERS.length)];
-
-    if (eventType === 'CALL') {
-        addCallNotification(caller);
-    } else {
-        simulateResponse();
-    }
-}
-
-function addCallNotification(caller) {
-    if (isRinging) return;
-    isRinging = true;
-    incomingCaller.textContent = caller;
-    playSound('CALL_RINGING', true);
-
-    writeOutput(`!!! INCOMING CALL FROM ${caller} !!! - Type 'ACCEPT CALL' or 'REJECT CALL'`, 'var(--error-color)');
-
-    if (tempConsoleHandler) {
-        consoleInput.removeEventListener('keydown', tempConsoleHandler);
-    }
-
-    tempConsoleHandler = (e) => {
+    // Input Controller
+    input.addEventListener('keydown', async (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault();
-            const command = consoleInput.value.trim().toUpperCase();
-            writeOutput(consoleInput.value, 'var(--terminal-color)', true);
-            consoleInput.value = '';
+            const raw = input.value.trim();
+            if (!raw) return;
+            
+            const [cmd, ...args] = raw.toLowerCase().split(' ');
+            printLine(`<span class="prompt">root@ghost_net:~$</span> ${raw}`);
+            
+            historyStack.unshift(raw);
+            historyIdx = -1;
+            input.value = '';
 
-            if (command === 'ACCEPT CALL') {
-                acceptCall(caller);
-                consoleInput.removeEventListener('keydown', tempConsoleHandler);
-                tempConsoleHandler = null;
-            } else if (command === 'REJECT CALL') {
-                rejectCall();
-                consoleInput.removeEventListener('keydown', tempConsoleHandler);
-                tempConsoleHandler = null;
+            try {
+                const out = await handleAsync(cmd, args);
+                if (out) printLine(out, "success");
+            } catch (err) {
+                printLine(`[ERROR] ${err.message}`, "error");
+            }
+        }
+        
+        // History Cycling
+        if (e.key === 'ArrowUp') {
+            if (historyIdx < historyStack.length - 1) {
+                historyIdx++;
+                input.value = historyStack[historyIdx];
+            }
+        }
+        if (e.key === 'ArrowDown') {
+            if (historyIdx > 0) {
+                historyIdx--;
+                input.value = historyStack[historyIdx];
             } else {
-                writeOutput(`ALERT: Awaiting 'ACCEPT CALL' or 'REJECT CALL'.`, 'var(--prompt-caret)');
+                historyIdx = -1;
+                input.value = '';
             }
         }
-    };
-
-    consoleInput.addEventListener('keydown', tempConsoleHandler);
-
-    callNotificationTimeout = setTimeout(() => {
-        if (isRinging) {
-            writeOutput(`CALL: Incoming call from ${caller} was missed.`, 'var(--highlight-color)');
-            rejectCall();
-            if (tempConsoleHandler) {
-                consoleInput.removeEventListener('keydown', tempConsoleHandler);
-                tempConsoleHandler = null;
-            }
-        }
-    }, 30000);
-}
-
-function rejectCall() {
-    if (callNotificationTimeout) clearTimeout(callNotificationTimeout);
-    stopSound('CALL_RINGING');
-    isRinging = false;
-    writeOutput(`CALL: Incoming call rejected.`, 'var(--highlight-color)');
-}
-
-function acceptCall(caller) {
-    if (callNotificationTimeout) clearTimeout(callNotificationTimeout);
-    stopSound('CALL_RINGING');
-    isRinging = false;
-    writeOutput(`CALL: Connecting to ${caller}...`, 'var(--highlight-color)');
-    joinCall([caller]);
-}
-
-// --- Video/Call Logic ---
-function showCallModal(title) {
-    callModal.style.display = 'flex';
-    callTitle.textContent = title;
-    toggleCameraButton.textContent = 'Camera: Off';
-    toggleScreenButton.textContent = 'Share Screen';
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
-    localVideo.style.display = 'none';
-    remoteVideo.style.display = 'none';
-    isSharingScreen = false;
-    callParticipantsList.innerHTML = '';
-    callParticipantsList.style.display = 'none';
-    leaveCallButton.style.display = 'inline-block';
-    endCallButton.style.display = 'inline-block';
-}
-
-function joinCall(targetUsers) {
-    if (currentCall) return;
-
-    const isGroupCall = Array.isArray(targetUsers) && targetUsers.length > 1;
-    const callParticipants = isGroupCall ? [...targetUsers, authUsername] : [targetUsers[0], authUsername];
-    const title = isGroupCall ? `CONFERENCE CALL (${targetUsers.length + 1})` : `Active Call: ${targetUsers[0]}`;
-
-    showCallModal(title);
-    currentCall = {
-        users: targetUsers,
-        status: 'connecting',
-        participants: callParticipants
-    };
-    updateParticipantsList();
-    updateUserList(); // Update user list to show IN CALL status
-    writeOutput(`CALL: Initiating secure stream with ${title}...`, 'var(--highlight-color)');
-
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then(stream => {
-            localStream = stream;
-            localVideo.srcObject = stream;
-            localVideo.style.display = 'block';
-            toggleCameraButton.textContent = 'Disable Camera';
-
-            setTimeout(() => {
-                currentCall.status = 'active';
-                writeOutput(`CALL: Connection established.`, 'var(--terminal-color)');
-                remoteVideo.srcObject = new MediaStream();
-                remoteVideo.style.display = 'block';
-            }, 2000);
-        })
-        .catch(err => {
-            writeOutput(`CALL ERROR: Failed to access camera/mic. (${err.name}). You may need to run this on a server/with HTTPS.`, 'var(--error-color)');
-            endCall();
-        });
-}
-
-function endCall() {
-    if (!currentCall) {
-        writeOutput('CALL: No active call to end.', 'var(--highlight-color)');
-        return;
-    }
-
-    if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-    }
-
-    if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-        screenStream = null;
-        isSharingScreen = false;
-        toggleScreenButton.textContent = 'Share Screen';
-    }
-
-    callModal.style.display = 'none';
-    currentCall = null;
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
-    updateUserList(); // Update user list to show ONLINE status again
-    writeOutput(`CALL: Call ended.`, 'var(--highlight-color)');
-}
-
-function leaveCall() {
-    endCall();
-}
-
-function startCallWithUser(targetUser) {
-    if (currentCall) {
-        writeOutput('CALL: Already in an active call. End the current call first.', 'var(--error-color)');
-        return;
-    }
-    if (!targetUser) {
-        writeOutput('CALL ERROR: Please select a user to call.', 'var(--error-color)');
-        return;
-    }
-    joinCall([targetUser]);
-}
-
-function startCall() {
-    if (currentCall) {
-        writeOutput('CALL: Already in an active call. End the current call first.', 'var(--error-color)');
-        return;
-    }
-
-    const targetUsers = Object.keys(USERS).filter(u => u !== authUsername);
-
-    if (targetUsers.length === 0) {
-        writeOutput('CALL ERROR: No other users available for a group call.', 'var(--error-color)');
-        return;
-    }
-
-    joinCall(targetUsers);
-}
-
-function toggleCamera() {
-    if (!localStream) {
-        writeOutput('CALL ERROR: No active stream to toggle camera.', 'var(--error-color)');
-        return;
-    }
-    const videoTrack = localStream.getVideoTracks()[0];
-    if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        toggleCameraButton.textContent = videoTrack.enabled ? 'Disable Camera' : 'Enable Camera';
-        writeOutput(`CALL: Camera ${videoTrack.enabled ? 'enabled' : 'disabled'}.`, 'var(--terminal-color)');
-    }
-}
-
-function toggleScreenShare() {
-    if (!currentCall) {
-        writeOutput('CALL ERROR: Start a call before attempting to share screen.', 'var(--error-color)');
-        return;
-    }
-
-    if (isSharingScreen) {
-        if (screenStream) {
-            screenStream.getTracks().forEach(track => track.stop());
-            screenStream = null;
-        }
-        localVideo.srcObject = localStream;
-        localVideo.style.display = 'block';
-        isSharingScreen = false;
-        toggleScreenButton.textContent = 'Share Screen';
-        writeOutput('CALL: Screen sharing stopped.', 'var(--terminal-color)');
-        return;
-    }
-
-    navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-        .then(stream => {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
-            screenStream = stream;
-            localVideo.srcObject = screenStream;
-            localVideo.style.display = 'block';
-            isSharingScreen = true;
-            toggleScreenButton.textContent = 'Stop Sharing';
-            writeOutput('CALL: Screen sharing started.', 'var(--terminal-color)');
-
-            screenStream.getVideoTracks()[0].onended = () => {
-                if (isSharingScreen) toggleScreenShare();
-            };
-        })
-        .catch(err => {
-            writeOutput(`CALL ERROR: Failed to start screen sharing. (${err.name})`, 'var(--error-color)');
-        });
-}
-
-function updateParticipantsList() {
-    if (!currentCall) return;
-    callParticipantsList.innerHTML = '';
-    currentCall.participants.forEach(p => {
-        const li = document.createElement('div');
-        li.textContent = p + (p === authUsername ? ' (You)' : '');
-        li.style.padding = '5px';
-        li.style.borderBottom = '1px solid var(--border-color)';
-        callParticipantsList.appendChild(li);
     });
-}
 
-// --- Event Listeners and Initialization ---
-consoleInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !tempConsoleHandler) {
-        e.preventDefault();
-        const command = consoleInput.value.trim();
-        if (command) {
-            processCommand(command);
-            consoleInput.value = '';
-        }
-    }
-});
+    // Clock Update
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    }, 1000);
 
-chatButton.addEventListener('click', () => {
-    if (chatModal.style.display === 'flex') {
-        chatModal.style.display = 'none';
-    } else {
-        chatModal.style.display = 'flex';
-        updateUserList(); // Update status when opening chat
-    }
-});
+    // Latency Simulation
+    setInterval(() => {
+        const lat = Math.floor(Math.random() * 50) + 5;
+        document.getElementById('latency').innerText = `LATENCY: ${lat}ms`;
+    }, 3000);
 
-document.getElementById('close-chat-button').addEventListener('click', () => {
-    chatModal.style.display = 'none';
-});
-
-chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        const message = chatInput.value.trim();
-        if (message) {
-            handleChatSubmit(e);
-        }
-    }
-});
-
-// Call Controls
-startCallButton.addEventListener('click', startCall);
-endCallButton.addEventListener('click', endCall);
-leaveCallButton.addEventListener('click', leaveCall);
-toggleCameraButton.addEventListener('click', toggleCamera);
-toggleScreenButton.addEventListener('click', toggleScreenShare);
-showParticipantsButton.addEventListener('click', () => {
-    callParticipantsList.style.display = callParticipantsList.style.display === 'block' ? 'none' : 'block';
-});
-
-// Login button click handler
-document.getElementById('login-button').addEventListener('click', handleLoginAttempt);
-
-window.onload = function() {
-    SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
-    document.body.addEventListener('click', () => { Tone.context.resume(); }, { once: true });
-    document.body.addEventListener('keydown', () => { Tone.context.resume(); }, { once: true });
-    showLoginModal();
-};
+    // Auto-focus
+    window.addEventListener('click', () => input.focus());
 </script>
-
-</body></html>
+</body>
+</html>
