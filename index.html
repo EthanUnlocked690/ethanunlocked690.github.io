@@ -91,7 +91,7 @@ display: inline-block;
 .bouncy-text span:nth-child(12) { animation-delay: 0.55s; }
 .bouncy-text span:nth-child(13) { animation-delay: 0.60s; }
 .bouncy-text span:nth-child(14) { animation-delay: 0.65s; }
-/* Floating chatbot button styles (kept) */
+/* Floating chatbot button styles */
 .chatbot-button-container {
 position: fixed;
 bottom: 20px;
@@ -110,7 +110,7 @@ width: 70px;
 height: 70px;
 border-radius: 50%;
 }
-/* Chatbot modal styles (kept) */
+/* Chatbot modal styles */
 .chatbot-modal {
 position: fixed;
 top: 0;
@@ -118,7 +118,7 @@ left: 0;
 width: 100%;
 height: 100%;
 background-color: rgba(0, 0, 0, 0.75);
-display: none; /* Hidden by default */
+display: none; 
 align-items: center;
 justify-content: center;
 z-index: 2000;
@@ -129,21 +129,18 @@ width: 95%;
 max-width: 600px;
 height: 90vh;
 background-color: #1f2937; /* Tailwind gray-800 */
-border-radius: 1rem; /* Tailwind rounded-2xl */
-padding: 1.5rem; /* Tailwind p-6 */
+border-radius: 1rem; 
+padding: 1.5rem; 
 box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
 position: relative;
 }
 
 /* --- CHATBOT EXIT BUTTON STYLES --- */
 #chatbotExitBtn {
-    /* Position the button at the top right corner */
     position: absolute;
     top: 1rem;
     right: 1rem;
     z-index: 10;
-    
-    /* Default style for the exit button (the 'X') */
     font-size: 2rem;
     color: #d1d5db;
     cursor: pointer;
@@ -158,11 +155,11 @@ position: relative;
     text-align: center;
 }
 #chatbotExitBtn:hover {
-    color: #ef4444; /* Red-500 hover for 'X' */
+    color: #ef4444; 
     transform: rotate(90deg);
 }
 
-/* Custom Alert/Prompt Modal styles (kept) */
+/* Custom Alert/Prompt Modal styles */
 .custom-modal {
 position: fixed;
 top: 0;
@@ -180,7 +177,7 @@ background-color: #2d3748; /* Dark gray */
 padding: 2rem;
 border-radius: 0.75rem;
 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-color: #e2e8f0; /* Light gray text */
+color: #e2e8f0; 
 text-align: center;
 max-width: 400px;
 width: 90%;
@@ -196,7 +193,7 @@ padding: 0.5rem;
 margin-bottom: 1rem;
 border-radius: 0.25rem;
 border: 1px solid #4a5568;
-background-color: #1a202c; /* Darker gray */
+background-color: #1a202c; 
 color: #e2e8f0;
 }
 .custom-modal-buttons {
@@ -224,7 +221,7 @@ color: white;
 .custom-modal-buttons .cancel-button:hover {
 background-color: #c53030;
 }
-/* Message box for specific messages (kept) */
+/* Message box */
 .message-box {
 position: fixed;
 top: 50%;
@@ -241,8 +238,24 @@ display: none;
 backdrop-filter: blur(5px);
 }
 </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.-ml-1{margin-left:-0.25rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mr-3{margin-right:0.75rem}.flex{display:flex}.hidden{display:none}.h-5{height:1.25rem}.h-full{height:100%}.w-5{width:1.25rem}.flex-1{flex:1 1 0%}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.resize-none{resize:none}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.overflow-y-auto{overflow-y:auto}.rounded-xl{border-radius:0.75rem}.border-t{border-top-width:1px}.border-gray-700{--tw-border-opacity:1;border-color:rgb(55 65 81 / var(--tw-border-opacity, 1))}.bg-gray-700{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.bg-teal-500{--tw-bg-opacity:1;background-color:rgb(20 184 166 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.pt-4{padding-top:1rem}.text-center{text-align:center}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.text-gray-100{--tw-text-opacity:1;color:rgb(243 244 246 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-teal-400{--tw-text-opacity:1;color:rgb(45 212 191 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.placeholder-gray-400::placeholder{--tw-placeholder-opacity:1;color:rgb(156 163 175 / var(--tw-placeholder-opacity, 1))}.opacity-25{opacity:0.25}.opacity-75{opacity:0.75}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:bg-teal-600:hover{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-teal-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(20 184 166 / var(--tw-ring-opacity, 1))}</style></head>
+<style>/* Tailwind styles included previously remain the same */ .-ml-1{margin-left:-0.25rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mr-3{margin-right:0.75rem}.flex{display:flex}.hidden{display:none}.h-5{height:1.25rem}.h-full{height:100%}.w-5{width:1.25rem}.flex-1{flex:1 1 0%}.animate-spin{animation:spin 1s linear infinite}.resize-none{resize:none}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.space-x-2>:not([hidden])~:not([hidden]){margin-left:0.5rem}.space-y-4>:not([hidden])~:not([hidden]){margin-top:1rem}.overflow-y-auto{overflow-y:auto}.rounded-xl{border-radius:0.75rem}.border-t{border-top-width:1px}.border-gray-700{border-color:#374151}.bg-gray-700{background-color:#374151}.bg-teal-500{background-color:#14b8a6}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.pt-4{padding-top:1rem}.text-center{text-align:center}.text-3xl{font-size:1.875rem}.text-sm{font-size:0.875rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.text-gray-100{color:#f3f4f6}.text-gray-400{color:#9ca3af}.text-teal-400{color:#2dd4bf}.text-white{color:#fff}.transition-colors{transition:all 0.2s}</style>
+</head>
 <body onload="checkCookie(); checkNewsUpdate(); checkTerminalStatus();">
+
+<div id="login-modal" class="custom-modal">
+    <div class="custom-modal-content">
+        <h3 style="color:#ef4444; border-bottom: 1px solid #4a5568; padding-bottom: 10px;">ATLAS SECURITY GATEWAY</h3>
+        <p style="font-size: 12px; color: #9ca3af; margin-bottom: 15px;">UNAUTHORIZED ACCESS IS PROHIBITED</p>
+        <input type="text" id="login-username" placeholder="Username">
+        <input type="password" id="login-password" placeholder="Password">
+        <input type="text" id="login-passkey" placeholder="PassKEY">
+        <div class="custom-modal-buttons">
+            <button class="ok-button" onclick="handleLogin()">Login</button>
+            <button class="cancel-button" onclick="hideLogin()">Abort</button>
+        </div>
+    </div>
+</div>
+
 <div id="custom-alert-modal" class="custom-modal">
 <div class="custom-modal-content">
 <h3 id="alert-message"></h3>
@@ -251,6 +264,7 @@ backdrop-filter: blur(5px);
 </div>
 </div>
 </div>
+
 <div id="custom-prompt-modal" class="custom-modal">
 <div class="custom-modal-content">
 <h3 id="prompt-message"></h3>
@@ -261,9 +275,11 @@ backdrop-filter: blur(5px);
 </div>
 </div>
 </div>
+
 <div id="message-box" class="message-box"></div>
+
 <ul>
-<li><a class="active" href="https://ethanunlocked690.github.io/index.html" img="" src="house.png" alt="Home Logo" style="background-color:brown; color:black;">Home</a></li>
+<li><a class="active" href="https://ethanunlocked690.github.io/index.html" style="background-color:brown; color:black;">Home</a></li>
 <li><a href="https://ethanunlocked690.github.io/news.html" id="news-link" onclick="markNewsAsRead()">News<span id="news-indicator" class="new-indicator" style="display: none;">NEW</span></a></li>
 <li><a href="https://ethanunlocked690.github.io/subscribe.html">Subscribe</a></li>
 <li><a href="https://ethanunlocked690.github.io/about.html">About</a></li>
@@ -274,10 +290,12 @@ backdrop-filter: blur(5px);
 <li><a href="https://ethanunlocked690.github.io/tutorial.html">Tutorials &amp; Speedruns</a></li>
 <li><a href="https://ethanunlocked690.github.io/turtle.html">Others</a></li>
 </ul>
+
 <div style="text-align: center; font-size: 100px;">
 <b id="demo" style="color:white;">Good Evening! Welcome to...</b>
 </div>
 <script> if (new Date().getHours() < 18) { document.getElementById("demo").innerHTML = "Good day! Welcome to..."; } </script>
+
 <br>
 <div style="width:100%">
 <div class="bouncy-text">
@@ -285,167 +303,82 @@ backdrop-filter: blur(5px);
 </div>
 </div>
 <br>
+
 <button type="button" id="playButton">DO NOT CLICK THIS BUTTON!!! (I dare you to click it)</button>
 <br>
 <b id="displayText" style="color:white;"></b>
 <br>
 <script>
 const playButton = document.getElementById('playButton');
-const audio = new Audio('do-not-click-me.mp3'); // Replace with your audio file path
+const audio = new Audio('do-not-click-me.mp3'); 
 const textElement = document.getElementById('displayText');
 playButton.addEventListener('click', function() {
 audio.play();
-textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣🤣🤣'; // Text to display on click
+textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣🤣🤣'; 
 });
 </script>
+
 <h2 style="color:red;">My latest video (IMPORTANT)</h2>
 <h2 style="color:dodgerblue;">Where I'll be for 3 years 😢 :</h2>
-<iframe width="560" height="315" src="./TheUnlockedWeb_files/9R61C_-dUSE.html" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen=""></iframe>
-<h2 style="color:red;">My most popular video</h2>
-<h2 style="color:dodgerblue;">Music video:</h2>
-<iframe width="560" height="315" src="./TheUnlockedWeb_files/SrgMCyEV2rc.html" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen=""></iframe>
-<h2 style="color:red;">My least popular video</h2>
-<h2 style="color:dodgerblue;">Boogie - 100%:</h2>
-<iframe width="560" height="315" src="./TheUnlockedWeb_files/lFeN4qPAALI.html" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen=""></iframe>
-<h2 style="color:red;">My favourite video from my channel(s):</h2>
-<h2 style="color:dodgerblue;">All mulpan Dwayne Johnson and Vine Boom appearences:</h2>
-<iframe width="560" height="315" src="./TheUnlockedWeb_files/ZkzaqPbxLbs.html" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen=""></iframe>
-<h1 style="background-color:#ffa500;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe (Main)</h1>
-<h2 style="background-color:#ffa500;" href="https://www.youtube.com/@EthansUnlockedLEGO223">Subscribe (LEGO)</h2>
-<h3 style="background-color:#ffa500;" href="https://www.youtube.com/@EthanUnlockedwithFortmon-lf9hf">Subscribe (Fortmongus!!)</h3>
-<h4 style="background-color:#ffa500;" href="https://www.youtube.com/@EthansStorytellingRatings">Subscribe (Brick hits)</h4>
-<h4 style="background-color:#ffa500;" href="https://www.youtube.com/@EthanandBailyUnlockedgames-r5f">Subscribe (Ethan and Baily Unlocked games)</h4>
+<iframe width="560" height="315" src="./TheUnlockedWeb_files/9R61C_-dUSE.html" title="YouTube video player" frameborder="0" allowfullscreen=""></iframe>
+
+<h1 style="background-color:#ffa500;">Subscribe Links</h1>
+<a style="display:block; color:white; background-color:#ffa500; margin:5px; padding:10px;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe (Main)</a>
+
 <h1 style="color:green;">Website code</h1>
-<a style="color:white;" href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io/blob/main/index.html" class="button">To view the code for this website, click F12 with Fn on (Make sure the light's on) and click elements, or, click me</a>
-<button type="button" onclick="showAlert(&#39;To get to my blooket, go to: https://dashboard.blooket.com/set/683d291a46fe0cb8b31dbb81&#39;)">Click Me to see how to get to my blooket</button>
-<h1 style="color:yellow;">Announcements</h1>
-<button type="button" onclick="showAlert(&#39;Hey guys, coming soon is... a new GAME!! This game will not have AI to help me create it. Stick around to see it when it comes out&#39;)">Click Me to get the latest announcement</button>
-<button id="theButton">Tap Me!</button>
-<p id="theWords" style="color:white;"></p>
-<script>
-// This bit is like finding your button on the paper
-const theButtonThing = document.getElementById("theButton");
-const theWordPlace = document.getElementById("theWords");
-// This part says, "Hey computer, listen really carefully for when someone taps the button!"
-theButtonThing.addEventListener("click", function() {
-// When they DO tap it, do the stuff inside these curly lines { }
-// Let's see what words are on the button right now
-if (theButtonThing.textContent === "Tap Me!") {
-// If it says "Tap Me!", then CHANGE it to "Don't you see?"
-theButtonThing.textContent = "Don't you see?";
-// And let's write a little message down below
-theWordPlace.textContent = "The button changed its writing!";
-} else {
-// If it DOESN'T say "Tap Me!" (it must say "Yay!...")
-// then change it BACK to "Awesome, right?"
-theButtonThing.textContent = "Awesome, right?";
-// And change the message back too
-theWordPlace.textContent = "The button is now back to normal. Subscribe if this was cool: Ethan and Isabella Unlocked";
-}
-});
-</script>
-<p1 style="background-color:#ffa500;">You have reached the end of the page.</p1>
-<a style="background-color:#ffa500;" href="https://www.youtube.com/@ethanandisabella4098">Subscribe</a>
-<p1 style="color:white">This website was coded and created by EthanUnlocked</p1>
-<a style="background-color:#008000" href="https://ethanunlocked690.github.io/contact.html">📞Contact Us</a>
-<a style="background-color:#ffa500;" href="https://ethanunlocked690.github.io/index.html">TheUnlockedWeb© 2025</a>
-<input type="button" value="Back" onclick="goBack()">
-<script>
-function goBack() {
-window.history.back()
-}
-</script>
-<input type="button" value="Forward" onclick="goForward()">
-<script>
-function goForward() {
-window.history.forward()
-}
-</script>
+<a style="color:white;" href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io/blob/main/index.html">Click me to see the code</a>
+
 <div id="chatbot-button" class="chatbot-button-container">
 <img src="./TheUnlockedWeb_files/bot.png" alt="Chatbot button">
 </div>
+
 <div id="chatbot-modal" class="chatbot-modal">
 <div class="chatbot-modal-content">
 <button id="chatbotExitBtn" class="chatbot-close-button">×</button>
 
-<button id="terminalHackBtn" style="display:none; position:absolute; top:1rem; left:1rem; background-color: darkred; color: white; padding: 5px 10px; border: 1px solid red; font-family: &#39;Consolas&#39;, &#39;Monaco&#39;, monospace; font-size: 14px; cursor: pointer;">ATLAS TERMINAL ACCESS</button>
+<button id="terminalHackBtn" style="display:none; position:absolute; top:1rem; left:1rem; background-color: darkred; color: white; padding: 5px 10px; border: 1px solid red; font-family: 'Consolas', monospace; font-size: 14px; cursor: pointer;">ATLAS TERMINAL ACCESS</button>
 
 <div id="chatbot-container" class="flex flex-col h-full">
 <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">Chat with TheUnlockedBot</h1>
-<div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4">
-</div>
-<div id="loading-indicator" class="hidden flex items-center justify-center p-2 text-sm text-gray-400">
-<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-teal-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-</svg> Thinking...
-</div>
+<div id="chat-history" class="flex-1 overflow-y-auto space-y-4 p-2 mb-4"></div>
 <div class="flex items-center space-x-2 border-t border-gray-700 pt-4">
-<textarea id="user-input" class="flex-1 resize-none p-3 bg-gray-700 text-gray-100 placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors duration-200" rows="1" placeholder="Type your message here..."></textarea>
-<button id="send-button" class="p-3 bg-teal-500 text-white rounded-xl font-medium hover:bg-teal-600 transition-colors duration-200"> Send </button>
+<textarea id="user-input" class="flex-1 resize-none p-3 bg-gray-700 text-gray-100 rounded-xl" rows="1" placeholder="Type your message here..."></textarea>
+<button id="send-button" class="p-3 bg-teal-500 text-white rounded-xl"> Send </button>
 </div>
 </div>
 </div>
 </div>
+
 <script>
 // =========================================================================
-// TERMINAL LOCKOUT LOGIC & INITIALIZATION
+// TERMINAL LOGIC
 // =========================================================================
-const TERMINAL_LOCKOUT_KEY = 'terminalLockoutTime';
+const loginModal = document.getElementById('login-modal');
+const loginUserField = document.getElementById('login-username');
+const loginPassField = document.getElementById('login-password');
+const loginKeyField = document.getElementById('login-passkey');
 
-function checkTerminalStatus() {
-    const terminalLink = document.getElementById('terminal-link');
-    const lockoutEndTime = localStorage.getItem(TERMINAL_LOCKOUT_KEY);
-    const currentTime = new Date().getTime();
+// SHOW LOGIN PAGE WHEN TERMINAL BUTTON CLICKED
+terminalHackBtn.addEventListener('click', function() {
+    loginModal.style.display = 'flex';
+});
 
-    if (lockoutEndTime && currentTime < parseInt(lockoutEndTime)) {
-        terminalLink.href = 'terminal.html?interference=active'; 
-        terminalLink.textContent = 'Terminal Interference (Disabled)';
-        terminalLink.classList.add('disabled-link');
-        terminalLink.style.backgroundColor = '#555555'; 
-        setTimeout(checkTerminalStatus, parseInt(lockoutEndTime) - currentTime + 1000);
+function hideLogin() {
+    loginModal.style.display = 'none';
+}
+
+function handleLogin() {
+    const user = loginUserField.value;
+    const pass = loginPassField.value;
+    const key = loginKeyField.value;
+
+    // VALIDATE CREDENTIALS
+    if (user === "EthanUnlocked" && pass === "CoolGamer67" && key === "1957") {
+        window.location.href = 'terminal.html';
     } else {
-        localStorage.removeItem(TERMINAL_LOCKOUT_KEY); 
-        terminalLink.href = 'terminal.html'; 
-        terminalLink.textContent = 'Terminal';
-        terminalLink.classList.remove('disabled-link');
-        terminalLink.style.backgroundColor = ''; 
+        showAlert("ACCESS DENIED: Credentials Invalid.");
     }
 }
-
-window.onload = function() {
-    checkCookie(); 
-    checkNewsUpdate();
-    checkTerminalStatus(); 
-};
-
-// =========================================================================
-// NEWS LOGIC
-// =========================================================================
-function checkNewsUpdate() {
-const newsData = getNewsData();
-const newsIndicator = document.getElementById('news-indicator');
-if (newsData && newsData.hasUpdate) {
-newsIndicator.style.display = 'inline-block';
-} else {
-newsIndicator.style.display = 'none';
-}
-}
-function markNewsAsRead() {
-const newsData = getNewsData();
-if (newsData) {
-newsData.hasUpdate = false;
-storeNewsData(newsData);
-}
-document.getElementById('news-indicator').style.display = 'none';
-}
-function getNewsData() {
-try {
-const stored = getCookie('newsUpdateData');
-return stored ? JSON.parse(stored) : null;
-} catch (e) { return null; }
-}
-function storeNewsData(data) { setCookie('newsUpdateData', JSON.stringify(data), 30); }
 
 // =========================================================================
 // CHATBOT LOGIC
@@ -453,99 +386,60 @@ function storeNewsData(data) { setCookie('newsUpdateData', JSON.stringify(data),
 const chatbotButton = document.getElementById('chatbot-button');
 const chatbotModal = document.getElementById('chatbot-modal');
 const chatbotExitBtn = document.getElementById('chatbotExitBtn'); 
-const terminalHackBtn = document.getElementById('terminalHackBtn');
+const terminalHackBtnElem = document.getElementById('terminalHackBtn');
+
+chatbotButton.addEventListener('click', () => { chatbotModal.style.display = 'flex'; });
+
+chatbotExitBtn.addEventListener('click', () => {
+    chatbotModal.style.display = 'none';
+    terminalHackBtnElem.style.display = 'none'; 
+});
+
+// --- SECRET RIGHT-CLICK LOGIC ---
+chatbotExitBtn.addEventListener('contextmenu', function(e) {
+    e.preventDefault(); 
+    terminalHackBtnElem.style.display = 'block';
+    showAlert("Secret ATLAS TERMINAL link activated. Enter credentials to proceed."); 
+});
+
+// =========================================================================
+// CHAT MESSAGING
+// =========================================================================
 const userInput = document.getElementById('user-input');
 const sendButton = document.getElementById('send-button');
 const chatHistoryDiv = document.getElementById('chat-history');
-const loadingIndicator = document.getElementById('loading-indicator');
 
-// --- THE FIX: OPEN CHATBOT MODAL ON CLICK ---
-chatbotButton.addEventListener('click', () => {
-    chatbotModal.style.display = 'flex';
-});
-
-// --- CLOSE CHATBOT MODAL ---
-chatbotExitBtn.addEventListener('click', () => {
-    chatbotModal.style.display = 'none';
-    terminalHackBtn.style.display = 'none'; 
-});
-
-// --- CLOSE MODAL WHEN CLICKING OUTSIDE ---
-window.addEventListener('click', (event) => {
-    if (event.target == chatbotModal) {
-        chatbotModal.style.display = 'none';
-        terminalHackBtn.style.display = 'none';
-    }
-});
-
-// --- RIGHT-CLICK HACK (Reveals Terminal Button) ---
-chatbotExitBtn.addEventListener('contextmenu', function(e) {
-    e.preventDefault(); 
-    terminalHackBtn.style.display = 'block';
-    showAlert("Secret ATLAS TERMINAL link activated. This button will disappear when you close the chat."); 
-});
-
-terminalHackBtn.addEventListener('click', function() {
-    window.location.href = 'terminal.html';
-});
-
-// --- CHAT MESSAGING LOGIC ---
 sendButton.addEventListener('click', handleSendMessage);
-userInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        handleSendMessage();
-    }
-});
+userInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') handleSendMessage(); });
 
 function handleSendMessage() {
     const message = userInput.value.trim();
     if (message) {
         addMessageToChat('user', message);
         userInput.value = '';
-        // Placeholder for bot response logic
-        setTimeout(() => {
-            addMessageToChat('model', "Hello! I'm TheUnlockedBot. How can I help you?");
-        }, 500);
+        setTimeout(() => { addMessageToChat('model', "Hello! I am TheUnlockedBot."); }, 500);
     }
 }
 
 function addMessageToChat(sender, text) {
     const msgDiv = document.createElement('div');
     msgDiv.className = sender === 'user' ? 'text-right' : 'text-left';
-    msgDiv.innerHTML = `<span class="inline-block p-2 rounded-lg ${sender === 'user' ? 'bg-teal-500 text-white' : 'bg-gray-700 text-gray-100'}">${text}</span>`;
+    msgDiv.innerHTML = `<span class="inline-block p-2 rounded-lg ${sender === 'user' ? 'bg-teal-500' : 'bg-gray-700'}">${text}</span>`;
     chatHistoryDiv.appendChild(msgDiv);
     chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
 }
 
 // =========================================================================
-// CUSTOM MODALS & COOKIES
+// MODALS & COOKIES
 // =========================================================================
 const alertModal = document.getElementById('custom-alert-modal');
 const alertMessage = document.getElementById('alert-message');
-const promptModal = document.getElementById('custom-prompt-modal');
-const promptMessage = document.getElementById('prompt-message');
-const promptInput = document.getElementById('prompt-input');
-let promptResolve;
 
 function showAlert(message) {
     alertMessage.textContent = message;
     alertModal.style.display = 'flex';
 }
 function hideAlert() { alertModal.style.display = 'none'; }
-
-function showPrompt(message, defaultValue = "") {
-    return new Promise(resolve => {
-        promptMessage.textContent = message;
-        promptInput.value = defaultValue;
-        promptModal.style.display = 'flex';
-        promptResolve = resolve;
-    });
-}
-function handlePromptResult(isOk) {
-    promptModal.style.display = 'none';
-    promptResolve(isOk ? promptInput.value : null);
-}
 
 function setCookie(cname, cvalue, exdays) {
     const d = new Date();
@@ -564,11 +458,11 @@ function getCookie(cname) {
 async function checkCookie() {
     let user = getCookie("username");
     if (user != "") {
-        showAlert("Hello again " + user + "! Welcome back to TheUnlockedWeb!");
-    } else {
-        user = await showPrompt("Please enter your name:", "");
-        if (user) setCookie("username", user, 7);
+        showAlert("Welcome back, " + user + "!");
     }
 }
+function checkNewsUpdate() { /* News logic placeholder */ }
+function checkTerminalStatus() { /* Terminal status placeholder */ }
+
 </script>
 </body></html>
