@@ -226,6 +226,53 @@
             50% { text-shadow: 0 0 1px var(--terminal-color), 0 0 5px var(--prompt-caret); transform: skew(-0.5deg); }
             100% { text-shadow: 0 0 1px var(--highlight-color), 0 0 5px var(--error-color); transform: skew(0deg); }
         }
+
+        /* Game overlay + canvas styling */
+        #game-overlay {
+            position: fixed;
+            z-index: 300;
+            inset: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.85);
+            flex-direction: column;
+            padding: 20px;
+        }
+        #game-container {
+            border: 2px solid var(--highlight-color);
+            padding: 12px;
+            background: #000;
+            box-shadow: 0 0 20px var(--terminal-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 95%;
+            max-height: 90%;
+        }
+        #game-canvas {
+            background: linear-gradient(180deg,#050505, #111 60%);
+            border: 1px solid var(--border-color);
+            display: block;
+        }
+        #game-controls {
+            margin-top: 8px;
+            color: var(--prompt-caret);
+            font-family: 'VT323', monospace;
+        }
+        .game-btn {
+            background: var(--highlight-color);
+            color: #000;
+            border: none;
+            padding: 6px 10px;
+            margin-left: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: 'VT323', monospace;
+        }
+        .game-btn:hover { filter: brightness(1.1); }
+
     </style>
 </head>
 <body>
@@ -268,6 +315,18 @@
         </div>
     </div>
 
+    <!-- Game Overlay (hidden until a game is started) -->
+    <div id="game-overlay" aria-hidden="true">
+        <div id="game-container">
+            <canvas id="game-canvas" width="640" height="360"></canvas>
+            <div id="game-controls">
+                <span id="game-title" style="color:var(--highlight-color);">GAME</span>
+                <button id="game-exit" class="game-btn">EXIT</button>
+                <button id="game-pause" class="game-btn">PAUSE</button>
+            </div>
+        </div>
+    </div>
+
 <script>
 // ---------- GLOBAL STATE ----------
 let authUsername = '';
@@ -292,6 +351,17 @@ const consoleInput = document.getElementById('command-input');
 const timeDisplay = document.getElementById('console-header');
 const commandPrompt = document.getElementById('prompt');
 const loginButton = document.getElementById('login-button');
+
+// Game overlay refs
+const gameOverlay = document.getElementById('game-overlay');
+const gameCanvas = document.getElementById('game-canvas');
+const gameTitle = document.getElementById('game-title');
+const gameExitBtn = document.getElementById('game-exit');
+const gamePauseBtn = document.getElementById('game-pause');
+
+let currentGame = null; // 'PONG' | 'SNAKE' | null
+let gameLoopHandle = null;
+let gamePaused = false;
 
 // ---------- STATIC DATA ----------
 const USERS = {
@@ -622,11 +692,255 @@ async function playSound(nameOrInput, loop = false) {
 }
 
 function stopSound(name) {
-    const wrapper = audioPlayers[name];
+    const normalized = normalizeSoundKey(name);
+    const originalName = SOUND_COMMAND_MAP[normalized] || (typeof name === 'string' ? name.toUpperCase() : name);
+    const wrapper = audioPlayers[originalName];
     if (wrapper && typeof wrapper.stop === 'function') {
         wrapper.stop();
+        writeOutput(`SOUND STOPPED: ${originalName}`, 'var(--prompt-caret)');
+    } else {
+        writeOutput(`No active sound named "${name}" found.`, 'var(--prompt-caret)');
     }
 }
+
+// ---------- MINI-GAMES (PONG + SNAKE) ----------
+
+// Helpers: show/hide overlay, keyboard captures
+function showGameOverlay(title = 'GAME') {
+    gameTitle.textContent = title;
+    gameOverlay.style.display = 'flex';
+    gameOverlay.setAttribute('aria-hidden', 'false');
+    // Resize canvas to fit container width while keeping ratio
+    const maxW = Math.min(window.innerWidth * 0.9, 900);
+    const maxH = Math.min(window.innerHeight * 0.8, 600);
+    const ratio = gameCanvas.width / gameCanvas.height;
+    let w = maxW;
+    let h = Math.round(w / ratio);
+    if (h > maxH) { h = maxH; w = Math.round(h * ratio); }
+    gameCanvas.style.width = w + 'px';
+    gameCanvas.style.height = h + 'px';
+}
+
+function hideGameOverlay() {
+    gameOverlay.style.display = 'none';
+    gameOverlay.setAttribute('aria-hidden', 'true');
+    stopGame();
+}
+
+// Pong implementation (simple)
+function startPong() {
+    stopGame();
+    currentGame = 'PONG';
+    showGameOverlay('PONG');
+    const ctx = gameCanvas.getContext('2d');
+    const W = 640, H = 360;
+    gameCanvas.width = W; gameCanvas.height = H;
+
+    let pa = { x: 10, y: H/2 - 30, w: 10, h: 60, dy: 0 };
+    let pb = { x: W - 20, y: H/2 - 30, w: 10, h: 60, dy: 0 };
+    let ball = { x: W/2, y: H/2, r: 6, dx: 3.5, dy: 2.5 };
+    let scoreA = 0, scoreB = 0;
+
+    const keys = {};
+    function keyDown(e) { keys[e.key] = true; }
+    function keyUp(e) { keys[e.key] = false; }
+
+    function update() {
+        // player A: W/S, player B: ArrowUp/ArrowDown
+        pa.dy = (keys['w'] || keys['W']) ? -6 : (keys['s'] || keys['S']) ? 6 : 0;
+        pb.dy = (keys['ArrowUp']) ? -6 : (keys['ArrowDown']) ? 6 : 0;
+        pa.y += pa.dy; pb.y += pb.dy;
+        pa.y = Math.max(0, Math.min(H - pa.h, pa.y));
+        pb.y = Math.max(0, Math.min(H - pb.h, pb.y));
+
+        ball.x += ball.dx; ball.y += ball.dy;
+        if (ball.y - ball.r < 0 || ball.y + ball.r > H) ball.dy *= -1;
+
+        // collisions
+        if (ball.x - ball.r < pa.x + pa.w && ball.y > pa.y && ball.y < pa.y + pa.h) {
+            ball.dx = Math.abs(ball.dx) + 0.2;
+            ball.dx *= -1;
+            ball.dy += (Math.random() - 0.5);
+            playSound('CONFIRM').catch(()=>{});
+        }
+        if (ball.x + ball.r > pb.x && ball.y > pb.y && ball.y < pb.y + pb.h) {
+            ball.dx = -Math.abs(ball.dx) - 0.2;
+            ball.dy += (Math.random() - 0.5);
+            playSound('CONFIRM').catch(()=>{});
+        }
+
+        if (ball.x < 0) { scoreB++; resetBall(); }
+        if (ball.x > W) { scoreA++; resetBall(); }
+    }
+
+    function resetBall() {
+        ball.x = W/2; ball.y = H/2;
+        ball.dx = (Math.random() > 0.5 ? 3.5 : -3.5);
+        ball.dy = (Math.random() - 0.5) * 3;
+    }
+
+    function render() {
+        ctx.clearRect(0,0,W,H);
+        // midline
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(W/2 - 2, 0, 4, H);
+        // paddles
+        ctx.fillStyle = '#00ff41';
+        ctx.fillRect(pa.x, pa.y, pa.w, pa.h);
+        ctx.fillRect(pb.x, pb.y, pb.w, pb.h);
+        // ball
+        ctx.beginPath();
+        ctx.fillStyle = '#ffaa00';
+        ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
+        ctx.fill();
+        // scores
+        ctx.fillStyle = '#00aaff'; ctx.font = '28px VT323, monospace';
+        ctx.fillText(scoreA.toString(), W/2 - 70, 40);
+        ctx.fillText(scoreB.toString(), W/2 + 46, 40);
+    }
+
+    function loop() {
+        if (gamePaused || currentGame !== 'PONG') return;
+        update();
+        render();
+        gameLoopHandle = requestAnimationFrame(loop);
+    }
+
+    function start() {
+        window.addEventListener('keydown', keyDown);
+        window.addEventListener('keyup', keyUp);
+        gamePaused = false;
+        loop();
+    }
+
+    function stop() {
+        window.removeEventListener('keydown', keyDown);
+        window.removeEventListener('keyup', keyUp);
+        cancelAnimationFrame(gameLoopHandle);
+        gameLoopHandle = null;
+    }
+
+    // expose stop/controls
+    currentGame = { name: 'PONG', stop, pause: () => { gamePaused = !gamePaused; } };
+    start();
+}
+
+// Snake implementation (simple)
+function startSnake() {
+    stopGame();
+    currentGame = 'SNAKE';
+    showGameOverlay('SNAKE');
+    const ctx = gameCanvas.getContext('2d');
+    const tile = 16;
+    const cols = 40;
+    const rows = 22;
+    gameCanvas.width = cols * tile;
+    gameCanvas.height = rows * tile;
+
+    let snake = [{x:10,y:10}];
+    let dir = {x:1, y:0};
+    let apple = {x:15, y:10};
+    let speed = 6; // ticks per second
+    let tickCounter = 0;
+    const keys = {};
+
+    function keyDown(e) { keys[e.key] = true; }
+    function keyUp(e) { keys[e.key] = false; }
+
+    function spawnApple() {
+        apple.x = Math.floor(Math.random()*cols);
+        apple.y = Math.floor(Math.random()*rows);
+    }
+
+    function update() {
+        // directional input
+        if (keys['ArrowLeft'] && dir.x === 0) dir = {x:-1,y:0};
+        if (keys['ArrowRight'] && dir.x === 0) dir = {x:1,y:0};
+        if (keys['ArrowUp'] && dir.y === 0) dir = {x:0,y:-1};
+        if (keys['ArrowDown'] && dir.y === 0) dir = {x:0,y:1};
+
+        const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+        // wrap
+        head.x = (head.x + cols) % cols;
+        head.y = (head.y + rows) % rows;
+        // collision
+        for (let i=0;i<snake.length;i++){
+            if (snake[i].x===head.x && snake[i].y===head.y) {
+                // game over
+                writeOutput('SNAKE: Collision detected. Game over.', 'var(--error-color)');
+                playSound('ALARM').catch(()=>{});
+                stopGame();
+                return;
+            }
+        }
+        snake.unshift(head);
+        if (head.x === apple.x && head.y === apple.y) {
+            // eat
+            spawnApple();
+            playSound('CONFIRM').catch(()=>{});
+        } else {
+            snake.pop();
+        }
+    }
+
+    function render() {
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0,0,gameCanvas.width, gameCanvas.height);
+        // apple
+        ctx.fillStyle = '#ff5555';
+        ctx.fillRect(apple.x*tile, apple.y*tile, tile, tile);
+        // snake
+        ctx.fillStyle = '#00ff41';
+        for (const s of snake) ctx.fillRect(s.x*tile, s.y*tile, tile-1, tile-1);
+    }
+
+    function loop(ts) {
+        if (gamePaused || currentGame !== 'SNAKE') return;
+        gameLoopHandle = requestAnimationFrame(loop);
+        tickCounter++;
+        const ticksPerFrame = Math.max(1, Math.round(60 / speed));
+        if (tickCounter % ticksPerFrame === 0) {
+            update();
+            render();
+        }
+    }
+
+    function start() {
+        window.addEventListener('keydown', keyDown);
+        window.addEventListener('keyup', keyUp);
+        spawnApple();
+        gamePaused = false;
+        loop();
+    }
+
+    function stop() {
+        window.removeEventListener('keydown', keyDown);
+        window.removeEventListener('keyup', keyUp);
+        cancelAnimationFrame(gameLoopHandle);
+        gameLoopHandle = null;
+    }
+
+    currentGame = { name: 'SNAKE', stop, pause: () => { gamePaused = !gamePaused; } };
+    start();
+}
+
+function stopGame() {
+    if (currentGame && typeof currentGame === 'object' && typeof currentGame.stop === 'function') {
+        try { currentGame.stop(); } catch (e) {}
+    }
+    currentGame = null;
+    cancelAnimationFrame(gameLoopHandle);
+    gameLoopHandle = null;
+    hideGameOverlay();
+}
+
+// game controls UI
+gameExitBtn.addEventListener('click', () => { hideGameOverlay(); });
+gamePauseBtn.addEventListener('click', () => {
+    if (currentGame && currentGame.pause) currentGame.pause();
+    gamePauseBtn.textContent = gamePaused ? 'RESUME' : 'PAUSE';
+    gamePaused = !gamePaused;
+});
 
 // ---------- COMMAND PROCESSING ----------
 function initiateLockdown(reason) {
@@ -681,6 +995,13 @@ async function processCommand(command) {
             writeOutput('  LOCKDOWN <TEXT>  - Initiate system-wide lockdown', 'var(--terminal-color)');
             writeOutput('  INIT AUDIO       - Initialize Web Audio Context', 'var(--terminal-color)');
             writeOutput('  ECHO <TEXT>      - Repeat the text input', 'var(--terminal-color)');
+            writeOutput('  GAMES            - List playable legacy games', 'var(--terminal-color)');
+            writeOutput('  PONG / SNAKE     - Start an embedded game', 'var(--terminal-color)');
+            writeOutput('  HACK <TARGET>    - Simulate a \"hack\" demo log', 'var(--terminal-color)');
+            writeOutput('  SCAN <IP>        - Fake port scan output (fun)', 'var(--terminal-color)');
+            writeOutput('  TRACE <HOST>     - Simulated traceroute', 'var(--terminal-color)');
+            writeOutput('  LOOP <SOUND>     - Play a sound in loop mode', 'var(--terminal-color)');
+            writeOutput('  STOP SOUND <NAME> - Stop a looping sound', 'var(--terminal-color)');
             writeOutput('', 'var(--terminal-color)');
             writeOutput('Type COMMANDS or SOUNDS for detailed listings.', 'var(--prompt-caret)');
             writeOutput('Tip: To play a sound, type JUST THE SOUND NAME (e.g., SIREN) and press Enter. Multi-word names work too (e.g., GET OUT).', 'var(--prompt-caret)');
@@ -697,8 +1018,10 @@ async function processCommand(command) {
             writeOutput('6.  LOCKDOWN <TEXT>  - Initiate lockdown protocol', 'var(--terminal-color)');
             writeOutput('7.  INIT AUDIO       - Enable sound system', 'var(--terminal-color)');
             writeOutput('8.  ECHO <TEXT>      - Echo text to console', 'var(--terminal-color)');
+            writeOutput('9.  GAMES            - Show playable legacy games', 'var(--terminal-color)');
+            writeOutput('10. PONG / SNAKE     - Launch classic arcade games', 'var(--terminal-color)');
             writeOutput('', 'var(--terminal-color)');
-            writeOutput('Total Commands: 8', 'var(--prompt-caret)');
+            writeOutput('Total Commands: 10', 'var(--prompt-caret)');
             break;
 
         case 'SOUNDS':
@@ -745,6 +1068,116 @@ async function processCommand(command) {
 
         case 'ECHO':
             writeOutput(args.join(' '), 'var(--game-color)');
+            break;
+
+        // New game-related commands:
+        case 'GAMES':
+            writeOutput('=== LEGACY GAMES ===', 'var(--highlight-color)');
+            writeOutput('  PONG        - Classic two-player pong (W/S and Up/Down)', 'var(--terminal-color)');
+            writeOutput('  SNAKE       - Retro snake. Arrow keys to move.', 'var(--terminal-color)');
+            writeOutput('To start a game, type its name (e.g., PONG). Type EXIT in-game to return.', 'var(--prompt-caret)');
+            break;
+
+        case 'PONG':
+            writeOutput('Launching PONG. Controls: W/S (left) | Up/Down (right). Close with EXIT or click EXIT button.', 'var(--prompt-caret)');
+            startPong();
+            break;
+
+        case 'SNAKE':
+            writeOutput('Launching SNAKE. Controls: Arrow keys. Close with EXIT or click EXIT button.', 'var(--prompt-caret)');
+            startSnake();
+            break;
+
+        // Fun simulation commands
+        case 'HACK':
+            {
+                const target = args.join(' ') || 'REMOTE_HOST';
+                writeOutput(`Initiating simulated exploit chain against ${target}...`, 'var(--highlight-color)');
+                // print a series of "hacker-y" logs
+                const steps = [
+                    `Resolving ${target}...`,
+                    `Found open ports: 22, 80, 443, 1337`,
+                    `Brute forcing creds...`,
+                    `Obtaining shell...`,
+                    `Escalating privileges...`,
+                    `Dropping beacons...`,
+                    `EXFILTRATING DATA...`,
+                    `CLEANING LOGS...`,
+                    `ACCESS GRANTED - ${target}`
+                ];
+                (async () => {
+                    for (const s of steps) {
+                        writeOutput(s, 'var(--terminal-color)');
+                        await new Promise(r => setTimeout(r, 600 + Math.random()*800));
+                    }
+                    playSound('RIZZ').catch(()=>{});
+                })();
+            }
+            break;
+
+        case 'SCAN':
+        case 'NMAP':
+            {
+                const target = args[0] || '192.168.0.1';
+                writeOutput(`Running quick scan on ${target}...`, 'var(--highlight-color)');
+                const fakePorts = [
+                    {port:22, proto:'tcp', state:'open', svc:'ssh'},
+                    {port:80, proto:'tcp', state:'open', svc:'http'},
+                    {port:443, proto:'tcp', state:'open', svc:'https'},
+                    {port:3306, proto:'tcp', state:'closed', svc:'mysql'},
+                    {port:8080, proto:'tcp', state:'open', svc:'http-proxy'}
+                ];
+                (async () => {
+                    for (const p of fakePorts) {
+                        writeOutput(`${p.port}/tcp ${p.state} ${p.svc}`, 'var(--terminal-color)');
+                        await new Promise(r => setTimeout(r, 300 + Math.random()*300));
+                    }
+                    writeOutput('Scan complete. (simulated)', 'var(--prompt-caret)');
+                })();
+            }
+            break;
+
+        case 'TRACE':
+        case 'TRACEROUTE':
+            {
+                const host = args[0] || 'example.com';
+                writeOutput(`Tracing route to ${host}...`, 'var(--highlight-color)');
+                const hops = [
+                    '10.0.0.1', '172.16.0.1', '203.0.113.5',
+                    '198.51.100.22', '93.184.216.34'
+                ];
+                (async () => {
+                    let i = 1;
+                    for (const h of hops) {
+                        writeOutput(`${i}\t${h}\t${(20 + Math.floor(Math.random()*30))} ms`, 'var(--terminal-color)');
+                        i++; await new Promise(r => setTimeout(r, 250 + Math.random()*400));
+                    }
+                    writeOutput('Trace complete (simulated).', 'var(--prompt-caret)');
+                })();
+            }
+            break;
+
+        case 'LOOP':
+            {
+                const soundName = args.join(' ');
+                if (!soundName) { writeOutput('LOOP <SOUNDNAME> - play a sound in loop mode.', 'var(--prompt-caret)'); break; }
+                const normalized = normalizeSoundKey(soundName);
+                const canonical = SOUND_COMMAND_MAP[normalized] || soundName.toUpperCase();
+                playSound(canonical, true).catch(()=>{});
+            }
+            break;
+
+        case 'STOP':
+            if (args[0] === 'SOUND') {
+                const name = args.slice(1).join(' ');
+                if (!name) { writeOutput('STOP SOUND <NAME> - stop a named sound.', 'var(--prompt-caret)'); break; }
+                stopSound(name);
+            } else if (args[0] === 'ALL') {
+                Object.keys(audioPlayers).forEach(k => stopSound(k));
+                writeOutput('All sounds stopped.', 'var(--prompt-caret)');
+            } else {
+                writeOutput('Unknown STOP usage. Try: STOP SOUND <NAME> or STOP ALL', 'var(--prompt-caret)');
+            }
             break;
 
         default:
