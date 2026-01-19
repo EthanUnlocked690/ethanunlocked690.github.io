@@ -226,306 +226,6 @@
             50% { text-shadow: 0 0 1px var(--terminal-color), 0 0 5px var(--prompt-caret); transform: skew(-0.5deg); }
             100% { text-shadow: 0 0 1px var(--highlight-color), 0 0 5px var(--error-color); transform: skew(0deg); }
         }
-
-        #game-container {
-            width: 90%;
-            max-width: 1200px;
-            height: 90vh;
-            background-color: #000;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 0 20px var(--terminal-color);
-            z-index: 1;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-        }
-
-        #game-canvas {
-            background-color: #000;
-            display: block;
-            border: 1px dashed var(--game-color);
-            width: 800px;
-            height: 600px;
-            max-width: 100%;
-            max-height: 80%;
-        }
-
-        #quit-game-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: var(--error-color);
-            color: #fff;
-            border: 2px solid var(--error-color);
-            font-family: 'VT323', monospace;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        #chat-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 10;
-            cursor: pointer;
-            width: 50px;
-            height: 50px;
-            display: none;
-            background-color: var(--error-color);
-            border-radius: 50%;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #chat-button img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-        }
-
-        #unread-count {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: var(--prompt-caret);
-            color: #000;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-            display: none;
-        }
-
-        #chat-window {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 400px;
-            height: 400px;
-            background-color: #111;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 0 20px var(--terminal-color);
-            display: none;
-            flex-direction: column;
-            z-index: 10;
-            border-radius: 8px;
-        }
-
-        #chat-header {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--highlight-color);
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        #start-call-button, #close-chat-button {
-            background-color: var(--error-color);
-            color: #fff;
-            border: 2px solid var(--error-color);
-            padding: 5px 10px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1rem;
-            border-radius: 4px;
-        }
-
-        #start-call-button:hover, #close-chat-button:hover {
-            background-color: #cc0000;
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
-        }
-
-        #user-list {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--terminal-color);
-        }
-
-        .user-list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 5px;
-            border-radius: 4px;
-        }
-
-        .user-list-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .user-status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-
-        #chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 10px;
-            color: var(--terminal-color);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            scrollbar-width: none;
-        }
-
-        #chat-messages::-webkit-scrollbar {
-            display: none;
-        }
-
-        #chat-messages div {
-            margin-bottom: 5px;
-            cursor: pointer;
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #chat-messages div:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .message-timestamp {
-            color: var(--prompt-caret);
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
-        .message-content {
-            flex-grow: 1;
-        }
-
-        #chat-input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            background: transparent;
-            border: none;
-            border-top: 1px solid var(--border-color);
-            color: var(--terminal-color);
-            font-family: 'VT323', monospace;
-            font-size: 1.1rem;
-            outline: none;
-        }
-
-        #call-window {
-            position: fixed;
-            bottom: 80px;
-            right: 430px;
-            width: 400px;
-            height: 400px;
-            background-color: #111;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 0 20px var(--terminal-color);
-            display: none;
-            flex-direction: column;
-            z-index: 10;
-            border-radius: 8px;
-        }
-
-        #call-header {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--highlight-color);
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        #call-controls {
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-        }
-
-        #call-videos {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px;
-            overflow-y: auto;
-            scrollbar-width: none;
-        }
-
-        #call-videos::-webkit-scrollbar {
-            display: none;
-        }
-
-        #call-videos video {
-            width: 100%;
-            height: 150px;
-            background-color: #000;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-        }
-
-        #call-participants-list {
-            position: absolute;
-            top: 60px;
-            left: 10px;
-            background-color: #222;
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            display: none;
-            color: var(--terminal-color);
-            z-index: 20;
-            border-radius: 4px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        #toggle-camera, #toggle-screen, #show-participants, #end-call, #leave-call {
-            background-color: var(--highlight-color);
-            color: #fff;
-            border: 1px solid var(--highlight-color);
-            padding: 5px 10px;
-            cursor: pointer;
-            font-family: 'VT323', monospace;
-            font-size: 1rem;
-            border-radius: 4px;
-        }
-
-        #leave-call {
-            background-color: var(--leave-button);
-            border: 1px solid var(--leave-button);
-        }
-
-        #end-call {
-            background-color: var(--error-color);
-            border: 1px solid var(--error-color);
-        }
-
-        #toggle-camera:hover, #toggle-screen:hover, #show-participants:hover {
-            background-color: #0088cc;
-        }
-
-        #end-call:hover {
-            background-color: #cc0000;
-        }
-
-        #leave-call:hover {
-            background-color: #cc8800;
-        }
     </style>
 </head>
 <body>
@@ -559,11 +259,6 @@
         <div id="loading-text" style="color:var(--highlight-color);">Processing Authentication Handshake...</div>
     </div>
 
-    <div id="game-container">
-        <canvas id="game-canvas" width="800" height="600"></canvas>
-        <button id="quit-game-button">TERMINATE GAME SEQUENCE</button>
-    </div>
-
     <div id="console-container" style="display: none;">
         <div id="console-header">ATLAS_SYSTEM_OFFLINE</div>
         <div id="terminal-output"></div>
@@ -573,66 +268,23 @@
         </div>
     </div>
 
-    <div id="chat-button">
-        <img src="./ATLAS_ DATA FLOW CONSOLE v8.3 (Security & Gaming)_files/chat.png" alt="Chat">
-        <div id="unread-count">0</div>
-    </div>
-
-    <div id="chat-window">
-        <div id="chat-header">
-            <span>ATLAS Chat</span>
-            <div>
-                <button id="start-call-button">Start Call</button>
-                <button id="close-chat-button">Close Chat</button>
-            </div>
-        </div>
-        <div id="user-list"></div>
-        <div id="chat-messages"></div>
-        <input type="text" id="chat-input" placeholder="Type message...">
-    </div>
-
-    <div id="call-window">
-        <div id="call-header">
-            <span>ATLAS Call</span>
-            <div>
-                <button id="leave-call">Leave Call</button>
-                <button id="end-call">End Call</button>
-            </div>
-        </div>
-        <div id="call-controls">
-            <button id="toggle-camera">Camera: Off</button>
-            <button id="toggle-screen">Share Screen: Off</button>
-            <button id="show-participants">Participants</button>
-        </div>
-        <div id="call-videos">
-            <video id="local-video" autoplay="" muted=""></video>
-            <video id="remote-video" autoplay=""></video>
-        </div>
-        <div id="call-participants-list"></div>
-    </div>
-
 <script>
-// Global State Variables
+// ---------- GLOBAL STATE ----------
 let authUsername = '';
 let userType = '';
 let isLoggedIn = false;
 let failedAttempts = 0;
 let isLockedDown = false;
-let currentCall = null;
-let localStream = null;
-let screenStream = null;
-let isSharingScreen = false;
 let audioPlayers = {};
-let soundCommandInterval = null;
-let incomingCallInterval = null;
-let isRinging = false;
-let callNotificationTimeout = null;
-let tempConsoleHandler = null;
-let incomingCaller = { textContent: '' }; // minimal placeholder
+let timeUpdateInterval = null;
 
-// DOM Elements
+// Minimal stubs for functions referenced elsewhere
+function stopIncomingInterval() { /* stub - no-op for now */ }
+function acceptCall(caller) { writeOutput(`Accepted call from ${caller}`, 'var(--highlight-color)'); isRinging = false; }
+function rejectCall() { writeOutput('Call rejected.', 'var(--prompt-caret)'); isRinging = false; }
+
+// DOM references
 const loginModal = document.getElementById('login-overlay');
-const loginForm = document.getElementById('login-form');
 const passwordInput = document.getElementById('password');
 const keyInput = document.getElementById('passkey');
 const loginError = document.getElementById('login-status');
@@ -641,71 +293,38 @@ const consoleOutput = document.getElementById('terminal-output');
 const consoleInput = document.getElementById('command-input');
 const timeDisplay = document.getElementById('console-header');
 const commandPrompt = document.getElementById('prompt');
-const chatModal = document.getElementById('chat-window');
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const chatButton = document.getElementById('chat-button');
-const userList = document.getElementById('user-list');
-const callModal = document.getElementById('call-window');
-const callTitle = document.getElementById('call-header').querySelector('span');
-const endCallButton = document.getElementById('end-call');
-const leaveCallButton = document.getElementById('leave-call');
-const toggleCameraButton = document.getElementById('toggle-camera');
-const toggleScreenButton = document.getElementById('toggle-screen');
-const showParticipantsButton = document.getElementById('show-participants');
-const callParticipantsList = document.getElementById('call-participants-list');
-const localVideo = document.getElementById('local-video');
-const remoteVideo = document.getElementById('remote-video');
-const startCallButton = document.getElementById('start-call-button');
+const loginButton = document.getElementById('login-button');
 
-// User Data
+// ---------- STATIC DATA ----------
 const USERS = {
     'ETHANUNLOCKED': { password: 'h4cker', passkey: '1957', role: 'MANAGER', chatStatus: 'ONLINE' },
     'BEEF WELLINGTON': { password: 'Eat_me', passkey: '2251', role: 'ADMIN', chatStatus: 'ONLINE' },
     'GYATTMODEPLAYS': { password: 'justmyusername', passkey: '0000', role: 'ADMIN', chatStatus: 'ONLINE' }
 };
 
-// Sound Definitions - Using placeholder URLs since original paths don't work
 const SOUND_EFFECTS = {
-    'SIREN': 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
-    'CONFIRM': 'https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3',
-    'ALARM': 'https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3',
-    'GET OUT': 'https://assets.mixkit.co/active_storage/sfx/1994/1994-preview.mp3',
-    'VINE BOOM': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'RIZZ': 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3',
-    'YOUR IDOL': 'https://assets.mixkit.co/active_storage/sfx/1723/1723-preview.mp3',
-    'FART': 'https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3',
-    '6 7': 'https://assets.mixkit.co/active_storage/sfx/2015/2015-preview.mp3',
-    'GOLDEN': 'https://assets.mixkit.co/active_storage/sfx/1723/1723-preview.mp3',
-    'SODA POP': 'https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3',
-    'BRUH': 'https://assets.mixkit.co/active_storage/sfx/1993/1993-preview.mp3',
-    'SUI': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'JOHN CENA': 'https://assets.mixkit.co/active_storage/sfx/2016/2016-preview.mp3',
-    'PUMPKIN': 'https://assets.mixkit.co/active_storage/sfx/2014/2014-preview.mp3',
-    'B+F': 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
-    'BURP': 'https://assets.mixkit.co/active_storage/sfx/1998/1998-preview.mp3',
-    'GD_JUMP': 'https://assets.mixkit.co/active_storage/sfx/2016/2016-preview.mp3',
-    'GD_DEATH': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'DASH': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'DASH_FULL': 'https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3',
-    'LOGIN_FAIL': 'https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3',
-    'LOCKDOWN_START': 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
-    'CALL_RINGING': 'https://assets.mixkit.co/active_storage/sfx/2871/2871-preview.mp3'
+    'SIREN': 'siren.mp3',
+    'CONFIRM': 'confirm.mp3',
+    'ALARM': 'alert.mp3',
+    'GET OUT': 'GET.mp3',
+    'VINE BOOM': 'vine-boom.mp3',
+    'RIZZ': 'rizz.mp3',
+    'YOUR IDOL': 'idol.mp3',
+    'FART': 'fart.mp3',
+    '6 7': '67.mp3',
+    'GOLDEN': 'gold.mp3',
+    'SODA POP': 'soda.mp3',
+    'BRUH': 'bro.mp3',
+    'SUI': 'sui.mp3',
+    'JOHN CENA': 'cena.mp3',
+    'PUMPKIN': 'pumpkin.mp3',
+    'B+F': 'b.mp3',
+    'BURP': 'burp.mp3',
+    'FAH': 'fah.mp3',
+    'FIRE IN THE HOLE': 'fire-in-the-hole.mp3'
 };
 
-const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
-const LOCATION = 'KOLLARNEY BAY SECURE NODE';
-
-const MESSAGES_FOR_CHAT = [
-    'BEEF WELLINGTON: Anyone up for a game?',
-    'GYATTMODEPLAYS: Check the latest security logs.',
-    'BEEF WELLINGTON: System looks good from here.',
-    'GYATTMODEPLAYS: Running diagnostics now.',
-    'BEEF WELLINGTON: All clear on my end.',
-    'GYATTMODEPLAYS: Confirmed. Status: GREEN.'
-];
-
-// --- Utility Functions ---
+// ---------- UTILITIES ----------
 function writeOutput(text, color = 'var(--terminal-color)', isCommand = false) {
     const line = document.createElement('div');
     line.style.color = color;
@@ -734,48 +353,8 @@ function hideLoginModal() {
     keyInput.value = '';
 }
 
-function loadSound(name) {
-    if (!Tone.context || Tone.context.state !== 'running') {
-        return;
-    }
-    if (audioPlayers[name]) return;
-
-    const filePath = SOUND_EFFECTS[name];
-    audioPlayers[name] = new Tone.Player(filePath).toDestination();
-
-    audioPlayers[name].load(filePath).then(() => {
-        // Sound loaded successfully
-    }).catch(err => {
-        writeOutput(`Error loading sound ${name}: ${err.message}`, 'var(--error-color)');
-    });
-}
-
-function playSound(name, loop = false) {
-    if (!Tone.context || Tone.context.state !== 'running') {
-        writeOutput('Error: Audio Context not initialized. Run INIT AUDIO.', 'var(--error-color)');
-        return;
-    }
-
-    const player = audioPlayers[name];
-    if (player) {
-        player.loop = loop;
-        if (player.state === 'started' && loop) {
-            return;
-        }
-        if (player.state === 'started') { player.stop(); }
-        player.start();
-    } else {
-        writeOutput(`Error: Sound file for ${name} not loaded.`, 'var(--error-color)');
-    }
-}
-
-function stopSound(name) {
-    const player = audioPlayers[name];
-    if (player && player.state === 'started') {
-        player.stop();
-    }
-}
-
+// Format time display in header
+const LOCATION = 'KOLLARNEY BAY SECURE NODE';
 function getCurrentFormattedTime() {
     const now = new Date();
     const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -792,8 +371,6 @@ function getCurrentFormattedTime() {
     hours = hours ? hours.toString().padStart(2, '0') : '12';
     return `${day}, ${date}-${month}-${year} | ${hours}:${minutes}:${seconds} ${ampm} | LOCATION: ${LOCATION}`;
 }
-
-let timeUpdateInterval = null;
 
 function updateHeaderDisplay() {
     timeDisplay.textContent = `[ ${getCurrentFormattedTime()} | USER: ${authUsername} ]`;
@@ -813,8 +390,123 @@ function startTimeInterval() {
     timeUpdateInterval = setInterval(updateHeaderDisplay, 1000);
 }
 
-// --- Console Commands ---
-function processCommand(command) {
+// ---------- AUDIO: normalization & map ----------
+function normalizeSoundKey(s) {
+    if (s === null || s === undefined) return '';
+    return s.toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+const SOUND_COMMAND_NAMES = Object.keys(SOUND_EFFECTS);
+const SOUND_COMMAND_MAP = {};
+SOUND_COMMAND_NAMES.forEach(name => {
+    SOUND_COMMAND_MAP[normalizeSoundKey(name)] = name; // normalized -> canonical key
+});
+
+// Ensure AudioContext running (try resume)
+async function ensureAudioContextRunning() {
+    if (!window.Tone || !Tone.context) {
+        writeOutput('ERROR: Tone.js not available.', 'var(--error-color)');
+        return false;
+    }
+    if (Tone.context.state === 'running') return true;
+    try {
+        await Tone.context.resume();
+        writeOutput('WEB AUDIO CONTEXT RESUMED.', 'var(--highlight-color)');
+        return true;
+    } catch (err) {
+        writeOutput(`ERROR: Unable to resume Audio Context. Try typing INIT AUDIO or interacting with the page. ${(err && err.message) ? err.message : ''}`, 'var(--error-color)');
+        return false;
+    }
+}
+
+// Load sound (returns player)
+function loadSound(originalName) {
+    const filePath = SOUND_EFFECTS[originalName];
+    if (!filePath) {
+        writeOutput(`ERROR: No sound file configured for "${originalName}".`, 'var(--error-color)');
+        return Promise.reject(new Error('No file'));
+    }
+
+    if (audioPlayers[originalName]) return Promise.resolve(audioPlayers[originalName]);
+
+    try {
+        audioPlayers[originalName] = new Tone.Player(filePath).toDestination();
+        return audioPlayers[originalName].load().then(() => audioPlayers[originalName]);
+    } catch (err) {
+        writeOutput(`Error initializing sound ${originalName}: ${err.message}`, 'var(--error-color)');
+        return Promise.reject(err);
+    }
+}
+
+// Play sound by name or user-typed input (handles multi-word and lowercase)
+async function playSound(nameOrInput, loop = false) {
+    const normalized = normalizeSoundKey(nameOrInput);
+    const originalName = SOUND_COMMAND_MAP[normalized] || nameOrInput.toString().toUpperCase();
+
+    if (!SOUND_EFFECTS[originalName]) {
+        writeOutput(`ERROR: Unknown sound "${nameOrInput}". Type SOUNDS for a list.`, 'var(--error-color)');
+        return;
+    }
+
+    const ok = await ensureAudioContextRunning();
+    if (!ok) {
+        writeOutput('Error: Audio Context not initialized. Type INIT AUDIO or interact with the page to enable audio.', 'var(--error-color)');
+        return;
+    }
+
+    try {
+        if (!audioPlayers[originalName]) {
+            audioPlayers[originalName] = new Tone.Player(SOUND_EFFECTS[originalName]).toDestination();
+            audioPlayers[originalName].loop = !!loop;
+            try {
+                await audioPlayers[originalName].load();
+            } catch (loadErr) {
+                // Some browsers/versions auto-load - warn but continue
+                writeOutput(`Warning: could not explicitly load ${originalName}: ${(loadErr && loadErr.message) ? loadErr.message : loadErr}`, 'var(--prompt-caret)');
+            }
+        }
+
+        const player = audioPlayers[originalName];
+        player.loop = !!loop;
+
+        if (player.state === 'started') {
+            if (!loop) {
+                player.stop();
+                player.start();
+            }
+            // if already looping and loop requested, leave it
+        } else {
+            player.start();
+        }
+
+        writeOutput(`SOUND TRIGGERED: ${originalName}`, 'var(--highlight-color)');
+    } catch (err) {
+        writeOutput(`ERROR: Could not play sound ${originalName}: ${(err && err.message) ? err.message : err}`, 'var(--error-color)');
+    }
+}
+
+function stopSound(name) {
+    const player = audioPlayers[name];
+    if (player && player.state === 'started') {
+        player.stop();
+    }
+}
+
+// ---------- COMMAND PROCESSING ----------
+function initiateLockdown(reason) {
+    if (isLockedDown) return;
+    isLockedDown = reason || 'UNKNOWN';
+    stopIncomingInterval();
+    playSound('LOCKDOWN_START').catch(()=>{});
+    writeOutput('----------------------------------------------------', 'var(--error-color)');
+    writeOutput(`!!! CRITICAL ALERT: SYSTEM LOCKDOWN INITIATED !!!`, 'var(--error-color)');
+    writeOutput(`REASON: ${reason}`, 'var(--error-color)');
+    writeOutput('ALL ACCESS RESTRICTED. CONTACT SECURITY ADMIN.', 'var(--error-color)');
+    writeOutput('----------------------------------------------------', 'var(--error-color)');
+    commandPrompt.textContent = 'LOCKED> ';
+}
+
+async function processCommand(command) {
     if (isLockedDown) {
         writeOutput(`ERROR: SYSTEM LOCKED DOWN. Reason: ${isLockedDown}`, 'var(--error-color)', true);
         return;
@@ -824,15 +516,18 @@ function processCommand(command) {
         return;
     }
 
-    const parts = command.trim().toUpperCase().split(/\s+/);
-    const cmd = parts[0];
+    const raw = command || '';
+    const trimmed = raw.trim();
+    const normalizedInput = normalizeSoundKey(trimmed);
+    const parts = normalizedInput.split(/\s+/).filter(Boolean);
+    const cmd = parts[0] || '';
     const args = parts.slice(1);
 
     writeOutput(command, 'var(--terminal-color)', true);
 
-    if (SOUND_COMMAND_NAMES.includes(cmd)) {
-        playSound(cmd);
-        writeOutput(`SOUND TRIGGERED: ${cmd}`, 'var(--highlight-color)');
+    // If full normalized input matches a sound name, play it
+    if (SOUND_COMMAND_MAP[normalizedInput]) {
+        playSound(normalizedInput);
         return;
     }
 
@@ -853,8 +548,9 @@ function processCommand(command) {
             writeOutput('  REJECT CALL      - Reject incoming call', 'var(--terminal-color)');
             writeOutput('', 'var(--terminal-color)');
             writeOutput('Type COMMANDS or SOUNDS for detailed listings.', 'var(--prompt-caret)');
-            writeOutput('Tip: To play a sound, type ONLY the sound name (e.g., SIREN) and press Enter.', 'var(--prompt-caret)');
+            writeOutput('Tip: To play a sound, type JUST THE SOUND NAME (e.g., SIREN) and press Enter. Multi-word names work too (e.g., GET OUT).', 'var(--prompt-caret)');
             break;
+
         case 'COMMANDS':
             writeOutput('=== SYSTEM COMMANDS LIST ===', 'var(--highlight-color)');
             writeOutput('', 'var(--terminal-color)');
@@ -871,44 +567,20 @@ function processCommand(command) {
             writeOutput('', 'var(--terminal-color)');
             writeOutput('Total Commands: 10', 'var(--prompt-caret)');
             break;
+
         case 'SOUNDS':
             writeOutput('=== AVAILABLE SOUND EFFECTS ===', 'var(--highlight-color)');
             writeOutput('', 'var(--terminal-color)');
-            writeOutput('--- SYSTEM SOUNDS ---', 'var(--highlight-color)');
-            writeOutput('1.  SIREN            - Emergency siren alert', 'var(--terminal-color)');
-            writeOutput('2.  CONFIRM          - Confirmation beep', 'var(--terminal-color)');
-            writeOutput('3.  ALARM            - Bell ringing alarm', 'var(--terminal-color)');
-            writeOutput('4.  LOGIN_FAIL       - Login failure buzzer', 'var(--terminal-color)');
-            writeOutput('5.  LOCKDOWN_START   - Lockdown siren', 'var(--terminal-color)');
-            writeOutput('6.  CALL_RINGING     - Incoming call ringtone', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('--- GAME SOUNDS ---', 'var(--highlight-color)');
-            writeOutput('7.  GD_JUMP          - Geometry Dash jump', 'var(--terminal-color)');
-            writeOutput('8.  GD_DEATH         - Geometry Dash death', 'var(--terminal-color)');
-            writeOutput('9.  DASH             - Quick dash sound', 'var(--terminal-color)');
-            writeOutput('10. DASH_FULL        - Full dash whoosh', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('--- MEME/FX SOUNDS ---', 'var(--highlight-color)');
-            writeOutput('11. GET OUT          - Get out meme', 'var(--terminal-color)');
-            writeOutput('12. VINE BOOM        - Vine boom effect', 'var(--terminal-color)');
-            writeOutput('13. RIZZ             - Rizz sound effect', 'var(--terminal-color)');
-            writeOutput('14. YOUR IDOL        - Your idol sound', 'var(--terminal-color)');
-            writeOutput('15. FART             - Fart sound', 'var(--terminal-color)');
-            writeOutput('16. 6 7              - Six seven sound', 'var(--terminal-color)');
-            writeOutput('17. GOLDEN           - Golden chime', 'var(--terminal-color)');
-            writeOutput('18. SODA POP         - Soda pop sound', 'var(--terminal-color)');
-            writeOutput('19. BRUH             - Bruh moment', 'var(--terminal-color)');
-            writeOutput('20. SUI              - Sui sound', 'var(--terminal-color)');
-            writeOutput('21. JOHN CENA        - John Cena entrance', 'var(--terminal-color)');
-            writeOutput('22. PUMPKIN          - Pumpkin sound', 'var(--terminal-color)');
-            writeOutput('23. B+F              - B+F sound', 'var(--terminal-color)');
-            writeOutput('24. BURP             - Burp sound', 'var(--terminal-color)');
-            writeOutput('', 'var(--terminal-color)');
-            writeOutput('Total Sounds: 24 | To play a sound, type JUST THE SOUND NAME (e.g., SIREN) and press Enter.', 'var(--prompt-caret)');
+            writeOutput('To play a sound, type JUST THE SOUND NAME (exact text). Case and spacing do not matter.', 'var(--prompt-caret)');
+            SOUND_COMMAND_NAMES.forEach((orig, i) => {
+                writeOutput(`  ${i + 1}. ${orig}`, 'var(--terminal-color)');
+            });
             break;
+
         case 'CLEAR':
             clearOutput();
             break;
+
         case 'LOGOUT':
             writeOutput('LOGGING OUT...', 'var(--highlight-color)');
             setTimeout(() => {
@@ -921,25 +593,27 @@ function processCommand(command) {
                 stopTimeInterval();
             }, 1000);
             break;
+
         case 'LOCKDOWN':
             const reason = args.join(' ') || 'UNKNOWN THREAT';
             initiateLockdown(reason);
             break;
+
         case 'INIT':
             if (args[0] === 'AUDIO') {
-                Tone.context.resume().then(() => {
+                ensureAudioContextRunning().then(() => {
                     writeOutput('WEB AUDIO CONTEXT RESUMED. Loading sound files...', 'var(--highlight-color)');
-                    SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
-                }).catch(err => {
-                    writeOutput(`ERROR: Failed to resume Audio Context. ${err.message}`, 'var(--error-color)');
+                    SOUND_COMMAND_NAMES.forEach(key => loadSound(key).catch(()=>{}));
                 });
             } else {
                 writeOutput('ERROR: Unknown command. Type HELP for a list of commands.', 'var(--error-color)');
             }
             break;
+
         case 'ECHO':
             writeOutput(args.join(' '), 'var(--game-color)');
             break;
+
         case 'ACCEPT':
             if (args[0] === 'CALL' && isRinging) {
                 const caller = incomingCaller.textContent;
@@ -948,6 +622,7 @@ function processCommand(command) {
                 writeOutput('ERROR: No incoming call to accept.', 'var(--error-color)');
             }
             break;
+
         case 'REJECT':
             if (args[0] === 'CALL' && isRinging) {
                 rejectCall();
@@ -955,27 +630,15 @@ function processCommand(command) {
                 writeOutput('ERROR: No incoming call to reject.', 'var(--error-color)');
             }
             break;
+
         default:
             writeOutput('ERROR: Unknown command. Type HELP for a list of commands.', 'var(--error-color)');
     }
 }
 
-function initiateLockdown(reason) {
-    if (isLockedDown) return;
-    isLockedDown = reason;
-    stopIncomingInterval();
-    playSound('LOCKDOWN_START');
-    writeOutput('----------------------------------------------------', 'var(--error-color)');
-    writeOutput(`!!! CRITICAL ALERT: SYSTEM LOCKDOWN INITIATED !!!`, 'var(--error-color)');
-    writeOutput(`REASON: ${reason}`, 'var(--error-color)');
-    writeOutput('ALL ACCESS RESTRICTED. CONTACT SECURITY ADMIN.', 'var(--error-color)');
-    writeOutput('----------------------------------------------------', 'var(--error-color)');
-    commandPrompt.textContent = 'LOCKED> ';
-}
-
-// --- Login Handler ---
+// ---------- LOGIN HANDLER ----------
 async function handleLoginAttempt(event) {
-    event.preventDefault();
+    event && event.preventDefault && event.preventDefault();
 
     const username = document.getElementById('username').value.trim().toUpperCase();
     const password = passwordInput.value;
@@ -995,85 +658,50 @@ async function handleLoginAttempt(event) {
     }
 
     document.getElementById('loading-screen').style.display = 'flex';
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     document.getElementById('loading-screen').style.display = 'none';
 
-    if (success) {
-        failedAttempts = 0;
-        isLoggedIn = true;
-        hideLoginModal();
-        consoleContainer.style.display = 'flex';
-        commandPrompt.textContent = 'ATLAS> ';
-        writeOutput(`ACCESS GRANTED. Welcome ${authUsername}.`, 'var(--highlight-color)');
-        startTimeInterval();
-        // Preload nothing by default; require user to run INIT AUDIO to enable sounds
-        // Start a simple incoming message simulation
-        startIncomingInterval();
-    } else {
+    if (!success) {
         failedAttempts++;
-        writeOutput('ACCESS DENIED. Invalid credentials.', 'var(--error-color)');
-        if (Tone && Tone.context && Tone.context.state === 'running') {
-            // try play a login-fail if loaded
-            if (!audioPlayers['LOGIN_FAIL']) {
-                loadSound('LOGIN_FAIL');
-            }
-            setTimeout(() => playSound('LOGIN_FAIL'), 300);
-        }
-        if (failedAttempts >= 3) {
-            initiateLockdown('Multiple failed authentication attempts');
-        }
+        loginError.textContent = 'AUTHENTICATION FAILURE. ACCESS DENIED.';
+        playSound('LOGIN_FAIL').catch(()=>{});
+        return;
     }
+
+    // Successful login
+    isLoggedIn = true;
+    hideLoginModal();
+    clearOutput();
+    consoleContainer.style.display = 'flex';
+    commandPrompt.textContent = 'ATLAS> ';
+    writeOutput(`Welcome ${authUsername}.`, 'var(--highlight-color)');
+    startTimeInterval();
+
+    // Attempt to preload basic audio after a user gesture (we have one now)
+    ensureAudioContextRunning().then(() => {
+        // optionally preload common sounds
+        ['SIREN','CONFIRM','CALL_RINGING'].forEach(k => loadSound(k).catch(()=>{}));
+    });
 }
 
-// Minimal incoming/notifications simulation
-function startIncomingInterval() {
-    stopIncomingInterval();
-    // show chat button
-    chatButton.style.display = 'flex';
-    incomingCallInterval = setInterval(() => {
-        // simulate chat messages appearing
-        const msg = MESSAGES_FOR_CHAT[Math.floor(Math.random() * MESSAGES_FOR_CHAT.length)];
-        const div = document.createElement('div');
-        div.textContent = msg;
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 8000);
-}
+// ---------- USER INTERACTIONS ----------
+loginButton.addEventListener('click', handleLoginAttempt);
 
-function stopIncomingInterval() {
-    chatButton.style.display = 'none';
-    if (incomingCallInterval) {
-        clearInterval(incomingCallInterval);
-        incomingCallInterval = null;
-    }
-}
-
-function acceptCall(caller) {
-    isRinging = false;
-    writeOutput(`Call accepted from ${caller}`, 'var(--highlight-color)');
-    // open call modal (simple)
-    callModal.style.display = 'flex';
-}
-
-function rejectCall() {
-    isRinging = false;
-    writeOutput('Call rejected.', 'var(--terminal-color)');
-}
-
-// Attach handlers
-loginForm.addEventListener('submit', handleLoginAttempt);
-document.getElementById('login-button').addEventListener('click', (e) => handleLoginAttempt(e));
 consoleInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        const val = consoleInput.value.trim();
-        if (val) {
-            processCommand(val);
-            consoleInput.value = '';
-        }
+        const v = consoleInput.value;
+        if (!v.trim()) { consoleInput.value = ''; return; }
+        processCommand(v);
+        consoleInput.value = '';
     }
 });
 
-// Initialize small UX defaults
+// Enable clicking anywhere to help resume audio in restrictive browsers
+document.body.addEventListener('click', () => {
+    ensureAudioContextRunning().catch(()=>{});
+});
+
+// Initialize
 showLoginModal();
 </script>
 </body>
