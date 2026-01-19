@@ -275,13 +275,11 @@ let userType = '';
 let isLoggedIn = false;
 let failedAttempts = 0;
 let isLockedDown = false;
-let audioPlayers = {};
+let audioPlayers = {}; // wrapper objects: { type: 'tone'|'html', instance, loop, state }
 let timeUpdateInterval = null;
 
-// Minimal stubs for functions referenced elsewhere
-function stopIncomingInterval() { /* stub - no-op for now */ }
-function acceptCall(caller) { writeOutput(`Accepted call from ${caller}`, 'var(--highlight-color)'); isRinging = false; }
-function rejectCall() { writeOutput('Call rejected.', 'var(--prompt-caret)'); isRinging = false; }
+// Minimal stub still used by lockdown/logout
+function stopIncomingInterval() { /* no-op */ }
 
 // DOM references
 const loginModal = document.getElementById('login-overlay');
@@ -321,7 +319,11 @@ const SOUND_EFFECTS = {
     'B+F': 'b.mp3',
     'BURP': 'burp.mp3',
     'FAH': 'fah.mp3',
-    'FIRE IN THE HOLE': 'fire-in-the-hole.mp3'
+    'FIRE IN THE HOLE': 'fire-in-the-hole.mp3',
+    // newly requested sounds
+    'LAVA CHICKEN': 'lava.mp3',
+    'I AM STEVE': 'steve.mp3',
+    'RICKROLL': 'never.mp3'
 };
 
 // ---------- UTILITIES ----------
@@ -348,7 +350,8 @@ function showLoginModal() {
 function hideLoginModal() {
     loginModal.style.display = 'none';
     loginError.textContent = '';
-    document.getElementById('username').value = '';
+    const u = document.getElementById('username');
+    if (u) u.value = '';
     passwordInput.value = '';
     keyInput.value = '';
 }
@@ -402,93 +405,226 @@ SOUND_COMMAND_NAMES.forEach(name => {
     SOUND_COMMAND_MAP[normalizeSoundKey(name)] = name; // normalized -> canonical key
 });
 
-// Ensure AudioContext running (try resume)
-async function ensureAudioContextRunning() {
-    if (!window.Tone || !Tone.context) {
-        writeOutput('ERROR: Tone.js not available.', 'var(--error-color)');
-        return false;
-    }
-    if (Tone.context.state === 'running') return true;
+// Attempt to unlock/create an AudioContext and resume it. Aggressive fallback to HTMLAudio if necessary.
+async function unlockAudio() {
     try {
-        await Tone.context.resume();
-        writeOutput('WEB AUDIO CONTEXT RESUMED.', 'var(--highlight-color)');
-        return true;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) {
+            writeOutput('AudioContext API not available; using HTMLAudio fallback.', 'var(--prompt-caret)');
+            return false;
+        }
+
+        // If Tone exists and has context, try to resume it
+        if (window.Tone && Tone.context) {
+            try {
+                if (Tone.context.state === 'running') return true;
+                if (Tone.context.state === 'suspended') {
+                    await Tone.context.resume();
+                    writeOutput('WEB AUDIO CONTEXT RESUMED (Tone).', 'var(--highlight-color)');
+                    return true;
+                }
+            } catch (e) {
+                // continue to create/assign a new context
+            }
+        }
+
+        // Create a brand new context (or reuse existing) and try to resume it
+        let ctx;
+        try {
+            ctx = new AC();
+        } catch (e) {
+            // couldn't create a new one; try to use existing Tone.context
+            ctx = (window.Tone && Tone.context) || null;
+        }
+
+        if (!ctx) {
+            writeOutput('Could not obtain AudioContext instance; will fallback to HTMLAudio.', 'var(--prompt-caret)');
+            return false;
+        }
+
+        // Create a very short silent buffer and play it to "unlock" on some platforms
+        try {
+            const buffer = ctx.createBuffer(1, 1, ctx.sampleRate || 22050);
+            const src = ctx.createBufferSource();
+            src.buffer = buffer;
+            src.connect(ctx.destination);
+            if (typeof src.start === 'function') {
+                try { src.start(0); } catch (e) { /* ignore */ }
+            }
+        } catch (e) {
+            /* ignore */
+        }
+
+        if (ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+            try { await ctx.resume(); } catch (e) { /* ignore */ }
+        }
+
+        // If Tone exists, try to set its context (best-effort)
+        if (window.Tone) {
+            try { Tone.context = ctx; } catch (e) { /* ignore */ }
+        }
+
+        writeOutput('AudioContext: unlock attempted.', 'var(--highlight-color)');
+        return ctx.state === 'running' || ctx.state === 'suspended';
     } catch (err) {
-        writeOutput(`ERROR: Unable to resume Audio Context. Try typing INIT AUDIO or interacting with the page. ${(err && err.message) ? err.message : ''}`, 'var(--error-color)');
+        writeOutput(`Audio unlock error: ${(err && err.message) ? err.message : err}`, 'var(--error-color)');
         return false;
     }
 }
 
-// Load sound (returns player)
-function loadSound(originalName) {
+// Ensure AudioContext running (best-effort). Always returns true to allow fallback to HTMLAudio.
+async function ensureAudioContextRunning() {
+    // Try to resume existing Tone context if possible
+    if (window.Tone && Tone.context) {
+        try {
+            if (Tone.context.state === 'running') return true;
+            if (Tone.context.state === 'suspended' && typeof Tone.context.resume === 'function') {
+                await Tone.context.resume();
+                writeOutput('WEB AUDIO CONTEXT RESUMED (Tone).', 'var(--highlight-color)');
+                return true;
+            }
+        } catch (e) {
+            // fallthrough to unlock attempt
+        }
+    }
+
+    // Attempt to unlock/create an AudioContext
+    await unlockAudio();
+
+    // Always return true to allow HTMLAudio fallback paths to run
+    return true;
+}
+
+// Load sound (returns wrapper object). Wrapper API: { play(loop), stop(), loop }
+async function loadSound(originalName) {
     const filePath = SOUND_EFFECTS[originalName];
     if (!filePath) {
         writeOutput(`ERROR: No sound file configured for "${originalName}".`, 'var(--error-color)');
-        return Promise.reject(new Error('No file'));
+        throw new Error('No file');
     }
 
-    if (audioPlayers[originalName]) return Promise.resolve(audioPlayers[originalName]);
+    // Return existing wrapper if already created
+    if (audioPlayers[originalName]) return audioPlayers[originalName];
 
+    // Prefer Tone.Player if Tone is available and workable
+    if (window.Tone) {
+        try {
+            const player = new Tone.Player({url: filePath, autostart: false}).toDestination();
+            player.loop = false;
+            // Attempt to load (some Tone builds auto-load)
+            try { await player.load(); } catch (e) { /* ignore load errors; file may stream */ }
+            const wrapper = {
+                type: 'tone',
+                instance: player,
+                loop: false,
+                async play(loop = false) {
+                    this.loop = !!loop;
+                    try {
+                        player.loop = !!loop;
+                        // restart if already playing
+                        if (player.state === 'started') {
+                            player.stop();
+                        }
+                        player.start();
+                        this.state = 'started';
+                    } catch (err) {
+                        this.state = 'stopped';
+                        throw err;
+                    }
+                },
+                stop() {
+                    try { player.stop(); } catch (e) {}
+                    this.state = 'stopped';
+                },
+                state: 'stopped'
+            };
+            audioPlayers[originalName] = wrapper;
+            return wrapper;
+        } catch (err) {
+            // Tone failed; fallback to HTMLAudio below
+        }
+    }
+
+    // HTMLAudio fallback
     try {
-        audioPlayers[originalName] = new Tone.Player(filePath).toDestination();
-        return audioPlayers[originalName].load().then(() => audioPlayers[originalName]);
+        const audio = new Audio(filePath);
+        audio.preload = 'auto';
+        audio.loop = false;
+        // For iOS Safari it's helpful to set playsInline
+        audio.playsInline = true;
+        const wrapper = {
+            type: 'html',
+            instance: audio,
+            loop: false,
+            async play(loop = false) {
+                this.loop = !!loop;
+                audio.loop = !!loop;
+                try {
+                    audio.currentTime = 0;
+                } catch (e) { /* ignore */ }
+                const p = audio.play();
+                if (p && p.then) {
+                    await p;
+                }
+                this.state = 'started';
+            },
+            stop() {
+                try { audio.pause(); audio.currentTime = 0; } catch (e) {}
+                this.state = 'stopped';
+            },
+            state: 'stopped'
+        };
+        audioPlayers[originalName] = wrapper;
+        return wrapper;
     } catch (err) {
-        writeOutput(`Error initializing sound ${originalName}: ${err.message}`, 'var(--error-color)');
-        return Promise.reject(err);
+        writeOutput(`ERROR: Could not create audio element for ${originalName}: ${(err && err.message) ? err.message : err}`, 'var(--error-color)');
+        throw err;
     }
 }
 
 // Play sound by name or user-typed input (handles multi-word and lowercase)
 async function playSound(nameOrInput, loop = false) {
     const normalized = normalizeSoundKey(nameOrInput);
-    const originalName = SOUND_COMMAND_MAP[normalized] || nameOrInput.toString().toUpperCase();
+    const originalName = SOUND_COMMAND_MAP[normalized] || (typeof nameOrInput === 'string' ? nameOrInput.toUpperCase() : '');
 
     if (!SOUND_EFFECTS[originalName]) {
         writeOutput(`ERROR: Unknown sound "${nameOrInput}". Type SOUNDS for a list.`, 'var(--error-color)');
         return;
     }
 
-    const ok = await ensureAudioContextRunning();
-    if (!ok) {
-        writeOutput('Error: Audio Context not initialized. Type INIT AUDIO or interact with the page to enable audio.', 'var(--error-color)');
-        return;
-    }
+    // Try to ensure audio subsystem is available (best-effort)
+    await ensureAudioContextRunning();
 
     try {
-        if (!audioPlayers[originalName]) {
-            audioPlayers[originalName] = new Tone.Player(SOUND_EFFECTS[originalName]).toDestination();
-            audioPlayers[originalName].loop = !!loop;
+        const wrapper = await loadSound(originalName);
+        try {
+            await wrapper.play(loop);
+            writeOutput(`SOUND TRIGGERED: ${originalName}`, 'var(--highlight-color)');
+        } catch (playErr) {
+            // If play failed for Tone, try HTMLAudio fallback
+            writeOutput(`Warning: primary player failed for ${originalName}: ${(playErr && playErr.message) ? playErr.message : playErr}`, 'var(--prompt-caret)');
+            // Attempt HTMLAudio fallback
             try {
-                await audioPlayers[originalName].load();
-            } catch (loadErr) {
-                // Some browsers/versions auto-load - warn but continue
-                writeOutput(`Warning: could not explicitly load ${originalName}: ${(loadErr && loadErr.message) ? loadErr.message : loadErr}`, 'var(--prompt-caret)');
+                const audio = new Audio(SOUND_EFFECTS[originalName]);
+                audio.preload = 'auto';
+                audio.loop = !!loop;
+                audio.playsInline = true;
+                const p = audio.play();
+                if (p && p.then) await p;
+                writeOutput(`SOUND TRIGGERED (fallback): ${originalName}`, 'var(--highlight-color)');
+            } catch (fallbackErr) {
+                writeOutput(`ERROR: Could not play sound ${originalName}: ${(fallbackErr && fallbackErr.message) ? fallbackErr.message : fallbackErr}`, 'var(--error-color)');
             }
         }
-
-        const player = audioPlayers[originalName];
-        player.loop = !!loop;
-
-        if (player.state === 'started') {
-            if (!loop) {
-                player.stop();
-                player.start();
-            }
-            // if already looping and loop requested, leave it
-        } else {
-            player.start();
-        }
-
-        writeOutput(`SOUND TRIGGERED: ${originalName}`, 'var(--highlight-color)');
     } catch (err) {
-        writeOutput(`ERROR: Could not play sound ${originalName}: ${(err && err.message) ? err.message : err}`, 'var(--error-color)');
+        writeOutput(`ERROR: Could not load sound ${originalName}: ${(err && err.message) ? err.message : err}`, 'var(--error-color)');
     }
 }
 
 function stopSound(name) {
-    const player = audioPlayers[name];
-    if (player && player.state === 'started') {
-        player.stop();
+    const wrapper = audioPlayers[name];
+    if (wrapper && typeof wrapper.stop === 'function') {
+        wrapper.stop();
     }
 }
 
@@ -497,7 +633,8 @@ function initiateLockdown(reason) {
     if (isLockedDown) return;
     isLockedDown = reason || 'UNKNOWN';
     stopIncomingInterval();
-    playSound('LOCKDOWN_START').catch(()=>{});
+    // don't rely on unavailable sound names
+    try { playSound('ALARM').catch(()=>{}); } catch(e){}
     writeOutput('----------------------------------------------------', 'var(--error-color)');
     writeOutput(`!!! CRITICAL ALERT: SYSTEM LOCKDOWN INITIATED !!!`, 'var(--error-color)');
     writeOutput(`REASON: ${reason}`, 'var(--error-color)');
@@ -544,8 +681,6 @@ async function processCommand(command) {
             writeOutput('  LOCKDOWN <TEXT>  - Initiate system-wide lockdown', 'var(--terminal-color)');
             writeOutput('  INIT AUDIO       - Initialize Web Audio Context', 'var(--terminal-color)');
             writeOutput('  ECHO <TEXT>      - Repeat the text input', 'var(--terminal-color)');
-            writeOutput('  ACCEPT CALL      - Accept incoming call', 'var(--terminal-color)');
-            writeOutput('  REJECT CALL      - Reject incoming call', 'var(--terminal-color)');
             writeOutput('', 'var(--terminal-color)');
             writeOutput('Type COMMANDS or SOUNDS for detailed listings.', 'var(--prompt-caret)');
             writeOutput('Tip: To play a sound, type JUST THE SOUND NAME (e.g., SIREN) and press Enter. Multi-word names work too (e.g., GET OUT).', 'var(--prompt-caret)');
@@ -562,10 +697,8 @@ async function processCommand(command) {
             writeOutput('6.  LOCKDOWN <TEXT>  - Initiate lockdown protocol', 'var(--terminal-color)');
             writeOutput('7.  INIT AUDIO       - Enable sound system', 'var(--terminal-color)');
             writeOutput('8.  ECHO <TEXT>      - Echo text to console', 'var(--terminal-color)');
-            writeOutput('9.  ACCEPT CALL      - Accept incoming call', 'var(--terminal-color)');
-            writeOutput('10. REJECT CALL      - Reject incoming call', 'var(--terminal-color)');
             writeOutput('', 'var(--terminal-color)');
-            writeOutput('Total Commands: 10', 'var(--prompt-caret)');
+            writeOutput('Total Commands: 8', 'var(--prompt-caret)');
             break;
 
         case 'SOUNDS':
@@ -614,23 +747,6 @@ async function processCommand(command) {
             writeOutput(args.join(' '), 'var(--game-color)');
             break;
 
-        case 'ACCEPT':
-            if (args[0] === 'CALL' && isRinging) {
-                const caller = incomingCaller.textContent;
-                acceptCall(caller);
-            } else {
-                writeOutput('ERROR: No incoming call to accept.', 'var(--error-color)');
-            }
-            break;
-
-        case 'REJECT':
-            if (args[0] === 'CALL' && isRinging) {
-                rejectCall();
-            } else {
-                writeOutput('ERROR: No incoming call to reject.', 'var(--error-color)');
-            }
-            break;
-
         default:
             writeOutput('ERROR: Unknown command. Type HELP for a list of commands.', 'var(--error-color)');
     }
@@ -664,7 +780,8 @@ async function handleLoginAttempt(event) {
     if (!success) {
         failedAttempts++;
         loginError.textContent = 'AUTHENTICATION FAILURE. ACCESS DENIED.';
-        playSound('LOGIN_FAIL').catch(()=>{});
+        // try to play a failure sound, but failure should not break if audio is blocked
+        playSound('ALARM').catch(()=>{});
         return;
     }
 
@@ -680,7 +797,7 @@ async function handleLoginAttempt(event) {
     // Attempt to preload basic audio after a user gesture (we have one now)
     ensureAudioContextRunning().then(() => {
         // optionally preload common sounds
-        ['SIREN','CONFIRM','CALL_RINGING'].forEach(k => loadSound(k).catch(()=>{}));
+        ['SIREN','CONFIRM','LAVA CHICKEN','I AM STEVE','RICKROLL'].forEach(k => loadSound(k).catch(()=>{}));
     });
 }
 
@@ -696,10 +813,17 @@ consoleInput.addEventListener('keydown', (e) => {
     }
 });
 
-// Enable clicking anywhere to help resume audio in restrictive browsers
-document.body.addEventListener('click', () => {
-    ensureAudioContextRunning().catch(()=>{});
-});
+// Enable clicking or keydown anywhere to help resume audio in restrictive browsers
+async function userGestureUnlock() {
+    try {
+        await ensureAudioContextRunning();
+    } catch (e) {}
+    // remove listeners after first successful attempt to avoid spamming
+    document.body.removeEventListener('click', userGestureUnlock);
+    document.body.removeEventListener('keydown', userGestureUnlock);
+}
+document.body.addEventListener('click', userGestureUnlock);
+document.body.addEventListener('keydown', userGestureUnlock);
 
 // Initialize
 showLoginModal();
