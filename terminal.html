@@ -628,6 +628,7 @@ let incomingCallInterval = null;
 let isRinging = false;
 let callNotificationTimeout = null;
 let tempConsoleHandler = null;
+let incomingCaller = { textContent: '' }; // minimal placeholder
 
 // DOM Elements
 const loginModal = document.getElementById('login-overlay');
@@ -750,7 +751,7 @@ function loadSound(name) {
 }
 
 function playSound(name, loop = false) {
-    if (Tone.context.state !== 'running') {
+    if (!Tone.context || Tone.context.state !== 'running') {
         writeOutput('Error: Audio Context not initialized. Run INIT AUDIO.', 'var(--error-color)');
         return;
     }
@@ -852,6 +853,7 @@ function processCommand(command) {
             writeOutput('  REJECT CALL      - Reject incoming call', 'var(--terminal-color)');
             writeOutput('', 'var(--terminal-color)');
             writeOutput('Type COMMANDS or SOUNDS for detailed listings.', 'var(--prompt-caret)');
+            writeOutput('Tip: To play a sound, type ONLY the sound name (e.g., SIREN) and press Enter.', 'var(--prompt-caret)');
             break;
         case 'COMMANDS':
             writeOutput('=== SYSTEM COMMANDS LIST ===', 'var(--highlight-color)');
@@ -902,7 +904,7 @@ function processCommand(command) {
             writeOutput('23. B+F              - B+F sound', 'var(--terminal-color)');
             writeOutput('24. BURP             - Burp sound', 'var(--terminal-color)');
             writeOutput('', 'var(--terminal-color)');
-            writeOutput('Total Sounds: 24 | Use sound name as command (e.g., SIREN)', 'var(--prompt-caret)');
+            writeOutput('Total Sounds: 24 | To play a sound, type JUST THE SOUND NAME (e.g., SIREN) and press Enter.', 'var(--prompt-caret)');
             break;
         case 'CLEAR':
             clearOutput();
@@ -1001,445 +1003,78 @@ async function handleLoginAttempt(event) {
         isLoggedIn = true;
         hideLoginModal();
         consoleContainer.style.display = 'flex';
-        startTimeInterval();
-        clearOutput();
-        writeOutput('----------------------------------------------------', 'var(--terminal-color)');
-        writeOutput(`>> ACCESS GRANTED. WELCOME, ${authUsername} (${userType}).`, 'var(--terminal-color)');
-        writeOutput('>> ATLAS CONSOLE V8.3: FULL SECURITY PROTOCOLS ONLINE.', 'var(--terminal-color)');
-        writeOutput('----------------------------------------------------', 'var(--terminal-color)');
-        writeOutput('Web Audio Context Status: ' + Tone.context.state.toUpperCase(), 'var(--highlight-color)');
-        writeOutput('*** PLEASE RUN: INIT AUDIO *** to enable sound playback.', 'var(--error-color)');
-        writeOutput('Type HELP for console commands.', 'var(--prompt-caret)');
-        chatButton.style.display = 'flex';
         commandPrompt.textContent = 'ATLAS> ';
+        writeOutput(`ACCESS GRANTED. Welcome ${authUsername}.`, 'var(--highlight-color)');
+        startTimeInterval();
+        // Preload nothing by default; require user to run INIT AUDIO to enable sounds
+        // Start a simple incoming message simulation
         startIncomingInterval();
-        if ('Notification' in window && Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
     } else {
         failedAttempts++;
-        playSound('LOGIN_FAIL');
-        loginError.textContent = 'ACCESS DENIED. Invalid Credentials.';
-        loginError.style.color = 'var(--error-color)';
+        writeOutput('ACCESS DENIED. Invalid credentials.', 'var(--error-color)');
+        if (Tone && Tone.context && Tone.context.state === 'running') {
+            // try play a login-fail if loaded
+            if (!audioPlayers['LOGIN_FAIL']) {
+                loadSound('LOGIN_FAIL');
+            }
+            setTimeout(() => playSound('LOGIN_FAIL'), 300);
+        }
         if (failedAttempts >= 3) {
-            loginError.textContent = 'ACCESS DENIED. Initiating lockdown protocol...';
-            setTimeout(() => initiateLockdown('FAILED LOGIN ATTEMPTS'), 1500);
+            initiateLockdown('Multiple failed authentication attempts');
         }
     }
-    document.getElementById('username').value = '';
-    passwordInput.value = '';
-    keyInput.value = '';
 }
 
-// --- Chat Functions ---
-function addMessage(sender, message, isIncoming = true) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = isIncoming ? 'incoming-message' : 'outgoing-message';
-    const senderColor = isIncoming ? 'var(--highlight-color)' : 'var(--prompt-caret)';
-
-    messageDiv.innerHTML = `
-        <span class="message-timestamp" style="color:var(--prompt-caret);">${new Date().toLocaleTimeString()}</span>
-        <span class="message-sender" style="color: ${senderColor};">${sender}:</span>
-        <span class="message-text">${message}</span>
-    `;
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function handleChatSubmit(event) {
-    event.preventDefault();
-    const message = chatInput.value.trim();
-    if (message) {
-        addMessage(authUsername, message, false);
-        chatInput.value = '';
-        setTimeout(simulateResponse, 1500);
-    }
-}
-
-function simulateResponse() {
-    const otherUsers = Object.keys(USERS).filter(u => u !== authUsername);
-    const caller = otherUsers[Math.floor(Math.random() * otherUsers.length)];
-    const randomMessage = MESSAGES_FOR_CHAT[Math.floor(Math.random() * MESSAGES_FOR_CHAT.length)];
-    const [sender, message] = randomMessage.split(/:\s?(.+)/);
-
-    if (caller === sender) {
-        addMessage(caller, message.trim());
-    }
-}
-
-function updateUserList() {
-    userList.innerHTML = '';
-    const userNames = Object.keys(USERS).filter(u => u !== authUsername);
-
-    userNames.forEach(username => {
-        const user = USERS[username];
-        const listItem = document.createElement('div');
-        listItem.className = 'user-list-item';
-
-        // Determine real-time status based on current state
-        let statusColor;
-        let statusText;
-
-        if (currentCall && currentCall.participants.includes(username)) {
-            statusColor = '#ffaa00'; // Orange for in-call
-            statusText = 'IN CALL';
-        } else if (user.chatStatus === 'ONLINE') {
-            statusColor = 'var(--terminal-color)'; // Green for online
-            statusText = 'ONLINE';
-        } else {
-            statusColor = 'var(--error-color)'; // Red for offline
-            statusText = 'OFFLINE';
-        }
-
-        listItem.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="user-status-dot" style="background-color: ${statusColor};"></span>
-                <span>${username} (${user.role})</span>
-                <span style="color: ${statusColor}; font-size: 0.85rem; margin-left: 5px;">[${statusText}]</span>
-            </div>
-        `;
-        const callBtn = document.createElement('button');
-        callBtn.textContent = 'Call';
-        callBtn.style.cssText = 'background-color: var(--highlight-color); color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 0.9rem;';
-
-        // Disable call button if user is already in a call or if current user is in a call
-        if ((currentCall && currentCall.participants.includes(username)) || currentCall) {
-            callBtn.disabled = true;
-            callBtn.style.opacity = '0.5';
-            callBtn.style.cursor = 'not-allowed';
-        } else {
-            callBtn.onclick = () => startCallWithUser(username);
-        }
-
-        listItem.appendChild(callBtn);
-        userList.appendChild(listItem);
-    });
-}
-
-// --- Call/Simulation Functions ---
-const SIMULATED_USERS = Object.keys(USERS).filter(u => u !== 'ETHANUNLOCKED');
-const incomingCaller = { textContent: '' };
-
+// Minimal incoming/notifications simulation
 function startIncomingInterval() {
-    if (incomingCallInterval) return;
-    incomingCallInterval = setInterval(processIncomingEvents, (Math.random() * 10000) + 10000);
+    stopIncomingInterval();
+    // show chat button
+    chatButton.style.display = 'flex';
+    incomingCallInterval = setInterval(() => {
+        // simulate chat messages appearing
+        const msg = MESSAGES_FOR_CHAT[Math.floor(Math.random() * MESSAGES_FOR_CHAT.length)];
+        const div = document.createElement('div');
+        div.textContent = msg;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 8000);
 }
 
 function stopIncomingInterval() {
+    chatButton.style.display = 'none';
     if (incomingCallInterval) {
         clearInterval(incomingCallInterval);
         incomingCallInterval = null;
     }
 }
 
-function processIncomingEvents() {
-    if (isLockedDown || callModal.style.display === 'flex' || isRinging) {
-        return;
-    }
-
-    const eventType = Math.random() < 0.3 ? 'CALL' : 'MESSAGE';
-    const caller = SIMULATED_USERS[Math.floor(Math.random() * SIMULATED_USERS.length)];
-
-    if (eventType === 'CALL') {
-        addCallNotification(caller);
-    } else {
-        simulateResponse();
-    }
-}
-
-function addCallNotification(caller) {
-    if (isRinging) return;
-    isRinging = true;
-    incomingCaller.textContent = caller;
-    playSound('CALL_RINGING', true);
-
-    writeOutput(`!!! INCOMING CALL FROM ${caller} !!! - Type 'ACCEPT CALL' or 'REJECT CALL'`, 'var(--error-color)');
-
-    if (tempConsoleHandler) {
-        consoleInput.removeEventListener('keydown', tempConsoleHandler);
-    }
-
-    tempConsoleHandler = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const command = consoleInput.value.trim().toUpperCase();
-            writeOutput(consoleInput.value, 'var(--terminal-color)', true);
-            consoleInput.value = '';
-
-            if (command === 'ACCEPT CALL') {
-                acceptCall(caller);
-                consoleInput.removeEventListener('keydown', tempConsoleHandler);
-                tempConsoleHandler = null;
-            } else if (command === 'REJECT CALL') {
-                rejectCall();
-                consoleInput.removeEventListener('keydown', tempConsoleHandler);
-                tempConsoleHandler = null;
-            } else {
-                writeOutput(`ALERT: Awaiting 'ACCEPT CALL' or 'REJECT CALL'.`, 'var(--prompt-caret)');
-            }
-        }
-    };
-
-    consoleInput.addEventListener('keydown', tempConsoleHandler);
-
-    callNotificationTimeout = setTimeout(() => {
-        if (isRinging) {
-            writeOutput(`CALL: Incoming call from ${caller} was missed.`, 'var(--highlight-color)');
-            rejectCall();
-            if (tempConsoleHandler) {
-                consoleInput.removeEventListener('keydown', tempConsoleHandler);
-                tempConsoleHandler = null;
-            }
-        }
-    }, 30000);
+function acceptCall(caller) {
+    isRinging = false;
+    writeOutput(`Call accepted from ${caller}`, 'var(--highlight-color)');
+    // open call modal (simple)
+    callModal.style.display = 'flex';
 }
 
 function rejectCall() {
-    if (callNotificationTimeout) clearTimeout(callNotificationTimeout);
-    stopSound('CALL_RINGING');
     isRinging = false;
-    writeOutput(`CALL: Incoming call rejected.`, 'var(--highlight-color)');
+    writeOutput('Call rejected.', 'var(--terminal-color)');
 }
 
-function acceptCall(caller) {
-    if (callNotificationTimeout) clearTimeout(callNotificationTimeout);
-    stopSound('CALL_RINGING');
-    isRinging = false;
-    writeOutput(`CALL: Connecting to ${caller}...`, 'var(--highlight-color)');
-    joinCall([caller]);
-}
-
-// --- Video/Call Logic ---
-function showCallModal(title) {
-    callModal.style.display = 'flex';
-    callTitle.textContent = title;
-    toggleCameraButton.textContent = 'Camera: Off';
-    toggleScreenButton.textContent = 'Share Screen';
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
-    localVideo.style.display = 'none';
-    remoteVideo.style.display = 'none';
-    isSharingScreen = false;
-    callParticipantsList.innerHTML = '';
-    callParticipantsList.style.display = 'none';
-    leaveCallButton.style.display = 'inline-block';
-    endCallButton.style.display = 'inline-block';
-}
-
-function joinCall(targetUsers) {
-    if (currentCall) return;
-
-    const isGroupCall = Array.isArray(targetUsers) && targetUsers.length > 1;
-    const callParticipants = isGroupCall ? [...targetUsers, authUsername] : [targetUsers[0], authUsername];
-    const title = isGroupCall ? `CONFERENCE CALL (${targetUsers.length + 1})` : `Active Call: ${targetUsers[0]}`;
-
-    showCallModal(title);
-    currentCall = {
-        users: targetUsers,
-        status: 'connecting',
-        participants: callParticipants
-    };
-    updateParticipantsList();
-    updateUserList(); // Update user list to show IN CALL status
-    writeOutput(`CALL: Initiating secure stream with ${title}...`, 'var(--highlight-color)');
-
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then(stream => {
-            localStream = stream;
-            localVideo.srcObject = stream;
-            localVideo.style.display = 'block';
-            toggleCameraButton.textContent = 'Disable Camera';
-
-            setTimeout(() => {
-                currentCall.status = 'active';
-                writeOutput(`CALL: Connection established.`, 'var(--terminal-color)');
-                remoteVideo.srcObject = new MediaStream();
-                remoteVideo.style.display = 'block';
-            }, 2000);
-        })
-        .catch(err => {
-            writeOutput(`CALL ERROR: Failed to access camera/mic. (${err.name}). You may need to run this on a server/with HTTPS.`, 'var(--error-color)');
-            endCall();
-        });
-}
-
-function endCall() {
-    if (!currentCall) {
-        writeOutput('CALL: No active call to end.', 'var(--highlight-color)');
-        return;
-    }
-
-    if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-    }
-
-    if (screenStream) {
-        screenStream.getTracks().forEach(track => track.stop());
-        screenStream = null;
-        isSharingScreen = false;
-        toggleScreenButton.textContent = 'Share Screen';
-    }
-
-    callModal.style.display = 'none';
-    currentCall = null;
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
-    updateUserList(); // Update user list to show ONLINE status again
-    writeOutput(`CALL: Call ended.`, 'var(--highlight-color)');
-}
-
-function leaveCall() {
-    endCall();
-}
-
-function startCallWithUser(targetUser) {
-    if (currentCall) {
-        writeOutput('CALL: Already in an active call. End the current call first.', 'var(--error-color)');
-        return;
-    }
-    if (!targetUser) {
-        writeOutput('CALL ERROR: Please select a user to call.', 'var(--error-color)');
-        return;
-    }
-    joinCall([targetUser]);
-}
-
-function startCall() {
-    if (currentCall) {
-        writeOutput('CALL: Already in an active call. End the current call first.', 'var(--error-color)');
-        return;
-    }
-
-    const targetUsers = Object.keys(USERS).filter(u => u !== authUsername);
-
-    if (targetUsers.length === 0) {
-        writeOutput('CALL ERROR: No other users available for a group call.', 'var(--error-color)');
-        return;
-    }
-
-    joinCall(targetUsers);
-}
-
-function toggleCamera() {
-    if (!localStream) {
-        writeOutput('CALL ERROR: No active stream to toggle camera.', 'var(--error-color)');
-        return;
-    }
-    const videoTrack = localStream.getVideoTracks()[0];
-    if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        toggleCameraButton.textContent = videoTrack.enabled ? 'Disable Camera' : 'Enable Camera';
-        writeOutput(`CALL: Camera ${videoTrack.enabled ? 'enabled' : 'disabled'}.`, 'var(--terminal-color)');
-    }
-}
-
-function toggleScreenShare() {
-    if (!currentCall) {
-        writeOutput('CALL ERROR: Start a call before attempting to share screen.', 'var(--error-color)');
-        return;
-    }
-
-    if (isSharingScreen) {
-        if (screenStream) {
-            screenStream.getTracks().forEach(track => track.stop());
-            screenStream = null;
-        }
-        localVideo.srcObject = localStream;
-        localVideo.style.display = 'block';
-        isSharingScreen = false;
-        toggleScreenButton.textContent = 'Share Screen';
-        writeOutput('CALL: Screen sharing stopped.', 'var(--terminal-color)');
-        return;
-    }
-
-    navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-        .then(stream => {
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
-            screenStream = stream;
-            localVideo.srcObject = screenStream;
-            localVideo.style.display = 'block';
-            isSharingScreen = true;
-            toggleScreenButton.textContent = 'Stop Sharing';
-            writeOutput('CALL: Screen sharing started.', 'var(--terminal-color)');
-
-            screenStream.getVideoTracks()[0].onended = () => {
-                if (isSharingScreen) toggleScreenShare();
-            };
-        })
-        .catch(err => {
-            writeOutput(`CALL ERROR: Failed to start screen sharing. (${err.name})`, 'var(--error-color)');
-        });
-}
-
-function updateParticipantsList() {
-    if (!currentCall) return;
-    callParticipantsList.innerHTML = '';
-    currentCall.participants.forEach(p => {
-        const li = document.createElement('div');
-        li.textContent = p + (p === authUsername ? ' (You)' : '');
-        li.style.padding = '5px';
-        li.style.borderBottom = '1px solid var(--border-color)';
-        callParticipantsList.appendChild(li);
-    });
-}
-
-// --- Event Listeners and Initialization ---
+// Attach handlers
+loginForm.addEventListener('submit', handleLoginAttempt);
+document.getElementById('login-button').addEventListener('click', (e) => handleLoginAttempt(e));
 consoleInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !tempConsoleHandler) {
-        e.preventDefault();
-        const command = consoleInput.value.trim();
-        if (command) {
-            processCommand(command);
+    if (e.key === 'Enter') {
+        const val = consoleInput.value.trim();
+        if (val) {
+            processCommand(val);
             consoleInput.value = '';
         }
     }
 });
 
-chatButton.addEventListener('click', () => {
-    if (chatModal.style.display === 'flex') {
-        chatModal.style.display = 'none';
-    } else {
-        chatModal.style.display = 'flex';
-        updateUserList(); // Update status when opening chat
-    }
-});
-
-document.getElementById('close-chat-button').addEventListener('click', () => {
-    chatModal.style.display = 'none';
-});
-
-chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        const message = chatInput.value.trim();
-        if (message) {
-            handleChatSubmit(e);
-        }
-    }
-});
-
-// Call Controls
-startCallButton.addEventListener('click', startCall);
-endCallButton.addEventListener('click', endCall);
-leaveCallButton.addEventListener('click', leaveCall);
-toggleCameraButton.addEventListener('click', toggleCamera);
-toggleScreenButton.addEventListener('click', toggleScreenShare);
-showParticipantsButton.addEventListener('click', () => {
-    callParticipantsList.style.display = callParticipantsList.style.display === 'block' ? 'none' : 'block';
-});
-
-// Login button click handler
-document.getElementById('login-button').addEventListener('click', handleLoginAttempt);
-
-window.onload = function() {
-    SOUND_COMMAND_NAMES.forEach(key => loadSound(key));
-    document.body.addEventListener('click', () => { Tone.context.resume(); }, { once: true });
-    document.body.addEventListener('keydown', () => { Tone.context.resume(); }, { once: true });
-    showLoginModal();
-};
+// Initialize small UX defaults
+showLoginModal();
 </script>
-
-</body></html>
+</body>
+</html>
