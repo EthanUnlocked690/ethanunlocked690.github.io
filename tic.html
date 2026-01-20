@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Tic Tac Toe: Grand Series</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             --bg: #0f172a;
@@ -28,7 +28,6 @@
             overflow: hidden;
         }
 
-        /* Overlays */
         .overlay {
             position: fixed;
             inset: 0;
@@ -51,7 +50,6 @@
             width: 90%;
         }
 
-        /* Mode & Setup Styling */
         .mode-select {
             display: flex;
             gap: 10px;
@@ -114,7 +112,6 @@
             cursor: pointer;
         }
 
-        /* Game Board */
         .game-container { text-align: center; }
 
         .scoreboard {
@@ -152,6 +149,8 @@
             font-size: 3rem;
             transition: transform 0.2s, background 0.2s;
             box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+            width: 110px;
+            height: 110px;
         }
 
         .cell:hover {
@@ -159,7 +158,6 @@
             transform: scale(1.02);
         }
 
-        /* SVG Animations */
         svg { width: 65px; height: 65px; }
         .circle-path {
             fill: none; stroke: var(--win-green); stroke-width: 10;
@@ -203,10 +201,10 @@
     <div class="game-container">
         <div class="scoreboard">
             <div class="player-box o-score">O: <span id="s-o">0</span></div>
-            <div class="player-box">GOAL: <span id="s-target">0</span></div>
+            <div class="player-box">GOAL: <span id="s-target">3</span></div>
             <div class="player-box x-score">X: <span id="s-x">0</span></div>
         </div>
-        <div class="status" id="status">Preparing...</div>
+        <div class="status" id="status">Your Turn (O)</div>
         <div class="board" id="board">
             <div class="cell" onclick="makeMove(0)" data-index="0"></div>
             <div class="cell" onclick="makeMove(1)" data-index="1"></div>
@@ -259,10 +257,10 @@
         function makeMove(i) {
             if (!gameActive || gameState[i] !== "") return;
 
-            processMove(i, 'O');
+            processMove(i, currentPlayer);
             
             if (gameActive && gameMode === 'pve') {
-                gameActive = false; // Block player during bot "thinking"
+                gameActive = false; 
                 setTimeout(runBot, 600);
             }
         }
@@ -324,7 +322,6 @@
             confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
         }
 
-        /* --- MINIMAX BOT --- */
         function runBot() {
             let bestScore = -Infinity;
             let move;
@@ -340,7 +337,8 @@
                 }
             }
             processMove(move, 'X');
-            if (gameActive) {
+            
+            if (!checkWin('X') && gameState.includes("")) {
                 gameActive = true;
                 document.getElementById('status').innerText = "Your Turn (O)";
             }
