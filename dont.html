@@ -3,95 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE ULTIMATE CHAOS GAUNTLET</title>
+    <title>THE WAR ZONE BUTTON</title>
     <style>
         body {
             height: 100vh;
             margin: 0;
-            background-color: #1a1a1a;
+            background: #222;
             font-family: 'Comic Sans MS', cursive, sans-serif;
             overflow: hidden;
             cursor: crosshair;
         }
 
-        /* The Main Button */
+        /* --- THE CITY UNDER ATTACK BACKGROUND --- */
+        #warzone {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #111, #430909);
+            z-index: -1;
+        }
+
+        .house {
+            position: absolute;
+            bottom: 0;
+            width: 120px;
+            height: 150px;
+            background: #333;
+            border: 2px solid #000;
+        }
+
+        .fire-bg {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            animation: flicker 0.2s infinite;
+        }
+
+        .soldier {
+            position: absolute;
+            bottom: 10px;
+            font-size: 30px;
+            z-index: 10;
+        }
+
+        /* --- THE BUTTON --- */
         #dangerButton {
             position: absolute;
             padding: 20px 40px;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 900;
-            color: white;
-            background-color: #ff004c;
-            border: 6px solid #a80033;
-            border-radius: 12px;
+            color: yellow;
+            background: linear-gradient(red, darkred);
+            border: 5px dashed yellow;
+            border-radius: 50px;
             cursor: pointer;
             z-index: 1000;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
-            transition: top 0.1s, left 0.1s;
         }
 
-        /* Rotating Barriers - Now with mouse detection */
-        .barrier {
+        /* --- SOLID BARRIERS --- */
+        .solid-barrier {
             position: absolute;
-            background: linear-gradient(90deg, #444, #888, #444);
-            border: 2px solid #000;
+            background: repeating-linear-gradient(45deg, #000, #000 10px, #ffcc00 10px, #ffcc00 20px);
             z-index: 500;
-            animation: rotate 3s linear infinite;
-            pointer-events: auto; /* Now detects mouse */
+            border: 3px solid black;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* Fire Zones */
-        .fire {
-            position: absolute;
-            font-size: 45px;
-            pointer-events: auto;
-            z-index: 400;
-            filter: drop-shadow(0 0 15px orange);
-            animation: flicker 0.2s infinite alternate;
-        }
-
-        @keyframes flicker {
-            from { transform: scale(1); opacity: 0.8; }
-            to { transform: scale(1.3); opacity: 1; }
-        }
-
-        /* Final Chaos Screen */
-        #chaosScreen {
+        /* --- FINAL CHAOS --- */
+        #victoryScreen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #0078d7;
-            color: white;
-            padding: 50px;
+            background: white;
             display: none;
             z-index: 9999;
             text-align: center;
+            padding-top: 100px;
         }
 
-        .glitch-text { color: yellow; font-size: 50px; animation: flash 0.1s infinite; }
-
-        @keyframes flash {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes flicker { from { opacity: 0.5; } to { opacity: 1; } }
+        @keyframes run { 0% { left: -50px; } 100% { left: 110vw; } }
     </style>
 </head>
 <body>
 
-    <div id="chaosScreen">
-        <h1>:(</h1>
-        <p style="font-size: 30px;">SYSTEM MELTDOWN INITIATED.</p>
-        <p class="glitch-text">YOU BROKE THE UNIVERSE!</p>
-        <p>THE MUSIC LIVES FOREVER. REFRESH IF YOU SURRENDER.</p>
+    <div id="warzone"></div>
+
+    <div id="victoryScreen">
+        <h1 style="font-size: 100px; color: red;">🏆 YOU DESTROYED SOCIETY! 🏆</h1>
+        <p style="font-size: 40px;">Are you happy now? Everyone is gone. 🤡</p>
+        <p style="font-size: 20px; color: gray;">(The music is your new best friend forever.)</p>
+        <h2 id="deathCount" style="font-size: 60px;">DEBT INCURRED: $0</h2>
     </div>
 
-    <button id="dangerButton">CLICK FOR TOTAL CHAOS</button>
+    <button id="dangerButton">PRESS TO END THE WAR</button>
 
     <audio id="funnySound" loop>
         <source src="your_funny_sound.mp3" type="audio/mpeg">
@@ -99,81 +106,101 @@
 
     <script>
         const btn = document.getElementById('dangerButton');
-        const chaosScreen = document.getElementById('chaosScreen');
+        const wz = document.getElementById('warzone');
+        const vic = document.getElementById('victoryScreen');
         const audio = document.getElementById('funnySound');
         let isChaosActive = false;
 
-        function teleportButton() {
+        // --- CREATE THE ATTACKED CITY ---
+        for (let i = 0; i < 15; i++) {
+            const house = document.createElement('div');
+            house.className = 'house';
+            house.style.left = (i * 120) + 'px';
+            house.innerHTML = '<div class="fire-bg">🔥</div>';
+            wz.appendChild(house);
+
+            // Add running people
+            const civilian = document.createElement('div');
+            civilian.style.position = 'absolute';
+            civilian.style.bottom = '5px';
+            civilian.style.fontSize = '25px';
+            civilian.innerHTML = '🏃‍♂️💨 AHHH!';
+            civilian.style.animation = `run ${Math.random() * 5 + 2}s linear infinite`;
+            wz.appendChild(civilian);
+        }
+
+        // Add soldiers with guns
+        for (let i = 0; i < 8; i++) {
+            const soldier = document.createElement('div');
+            soldier.className = 'soldier';
+            soldier.style.left = Math.random() * 100 + 'vw';
+            soldier.innerHTML = '🔫💂';
+            wz.appendChild(soldier);
+        }
+
+        // --- SOLID BARRIERS THAT PUSH THE MOUSE ---
+        const barriers = [];
+        for (let i = 0; i < 5; i++) {
+            const b = document.createElement('div');
+            b.className = 'solid-barrier';
+            b.style.width = '150px';
+            b.style.height = '150px';
+            b.style.left = Math.random() * 80 + 'vw';
+            b.style.top = Math.random() * 80 + 'vh';
+            document.body.appendChild(b);
+            barriers.push(b);
+        }
+
+        document.addEventListener('mousemove', (e) => {
             if (isChaosActive) return;
-            const x = Math.random() * (window.innerWidth - 200);
-            const y = Math.random() * (window.innerHeight - 100);
-            btn.style.left = x + 'px';
-            btn.style.top = y + 'px';
+
+            // 1. Barrier Physics (Push Mouse)
+            barriers.forEach(bar => {
+                const rect = bar.getBoundingClientRect();
+                if (e.clientX > rect.left && e.clientX < rect.right && 
+                    e.clientY > rect.top && e.clientY < rect.bottom) {
+                    // If mouse is inside, "teleport" mouse away (illusion of pushing)
+                    // Note: Browsers block moving the actual cursor, 
+                    // so we teleport the BUTTON instead to troll the user.
+                    teleportButton();
+                }
+            });
+
+            // 2. Aggressive Button Escape
+            const bRect = btn.getBoundingClientRect();
+            const dist = Math.hypot(e.clientX - (bRect.left + bRect.width/2), e.clientY - (bRect.top + bRect.height/2));
+            if (dist < 150) teleportButton();
+        });
+
+        function teleportButton() {
+            btn.style.left = Math.random() * 90 + 'vw';
+            btn.style.top = Math.random() * 90 + 'vh';
             btn.style.transform = 'none';
         }
 
-        // --- BARRIERS (Touching these teleports the button) ---
-        for (let i = 0; i < 10; i++) {
-            const b = document.createElement('div');
-            b.className = 'barrier';
-            b.style.width = '250px';
-            b.style.height = '15px';
-            b.style.left = Math.random() * 80 + 'vw';
-            b.style.top = Math.random() * 80 + 'vh';
-            b.style.animationDuration = (Math.random() * 3 + 1) + 's';
-            b.onmouseover = teleportButton;
-            document.body.appendChild(b);
-        }
-
-        // --- FIRE ZONES (Touching these teleports the button) ---
-        for (let i = 0; i < 12; i++) {
-            const f = document.createElement('div');
-            f.className = 'fire';
-            f.innerHTML = '🔥';
-            f.style.left = Math.random() * 95 + 'vw';
-            f.style.top = Math.random() * 95 + 'vh';
-            f.onmouseover = teleportButton;
-            document.body.appendChild(f);
-        }
-
-        // --- AGGRESSIVE MOUSE ESCAPE ---
-        document.addEventListener('mousemove', (e) => {
-            if (isChaosActive) return;
-            const rect = btn.getBoundingClientRect();
-            const dist = Math.hypot(e.clientX - (rect.left + rect.width/2), e.clientY - (rect.top + rect.height/2));
-            if (dist < 180) teleportButton();
-        });
-
-        // --- FINAL ENDLESS CHAOS ---
+        // --- FINAL FUNNY CLICK ---
         btn.onclick = () => {
             isChaosActive = true;
             btn.style.display = 'none';
-            chaosScreen.style.display = 'block';
-            
-            // Audio starts and never stops
-            audio.volume = 1.0;
+            vic.style.display = 'block';
             audio.play();
 
+            let debt = 0;
             setInterval(() => {
-                // Background strobe
-                document.body.style.backgroundColor = ['#ff0000', '#00ff00', '#ffff00', '#ff00ff', '#000000'][Math.floor(Math.random()*5)];
+                debt += 1345678;
+                document.getElementById('deathCount').innerHTML = "WAR DEBT: $" + debt.toLocaleString();
+                document.body.style.backgroundColor = ['red', 'orange', 'black'][Math.floor(Math.random()*3)];
                 
-                // Endless "HA HA" popups
-                const popup = document.createElement('div');
-                popup.style.position = 'fixed';
-                popup.style.left = Math.random() * 100 + 'vw';
-                popup.style.top = Math.random() * 100 + 'vh';
-                popup.style.fontSize = Math.random() * 60 + 'px';
-                popup.style.color = 'white';
-                popup.style.zIndex = '10000';
-                popup.innerHTML = 'HA HA HA!';
-                document.body.appendChild(popup);
+                const explosion = document.createElement('div');
+                explosion.style.position = 'fixed';
+                explosion.style.left = Math.random() * 100 + 'vw';
+                explosion.style.top = Math.random() * 100 + 'vh';
+                explosion.style.fontSize = '80px';
+                explosion.innerHTML = '💥 BOOM!';
+                document.body.appendChild(explosion);
                 
-                // Performance cleanup (keep only 100 popups at a time)
-                if (document.body.children.length > 115) {
-                    document.body.removeChild(document.body.children[15]);
-                }
-            }, 50);
+                if (document.body.children.length > 50) document.body.removeChild(document.body.children[10]);
+            }, 100);
         };
     </script>
 </body>
