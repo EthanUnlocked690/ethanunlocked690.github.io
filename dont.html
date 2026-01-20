@@ -182,13 +182,12 @@
             document.getElementById(randomID).style.display = 'block';
 
             if (randomID === 'screen-crash') {
-                // ONLY CRASH SOUND, NO LOOP, NO CHAOS
                 document.getElementById('crashSound').play();
+                // NO CHAOS INTERVAL STARTED
             } else {
                 const loops = [document.getElementById('funnySound'), document.getElementById('funny2')];
                 loops[Math.floor(Math.random() * loops.length)].play();
 
-                // Start Chaos (Only for NON-crash screens)
                 let count = 0;
                 let formatPercent = 0;
                 setInterval(() => {
@@ -200,17 +199,7 @@
                         document.getElementById('fill').style.width = formatPercent + "%";
                         document.getElementById('percentText').innerText = formatPercent.toFixed(1) + "% Complete";
                     }
-
                     body.style.backgroundColor = ['red', 'white', 'black', 'blue', 'purple'][Math.floor(Math.random() * 5)];
-                    const pop = document.createElement('div');
-                    pop.style.position = 'fixed';
-                    pop.style.left = Math.random() * 100 + 'vw';
-                    pop.style.top = Math.random() * 100 + 'vh';
-                    pop.style.fontSize = '80px';
-                    pop.style.zIndex = '10001';
-                    pop.innerHTML = '💥';
-                    document.body.appendChild(pop);
-                    if (document.body.children.length > 70) document.body.removeChild(document.body.children[20]);
                 }, 60);
             }
 
