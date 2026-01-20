@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE WAR ZONE: MULTIVERSE CHAOS</title>
+    <title>THE WAR ZONE: TOTAL ANNIHILATION</title>
     <style>
         body {
             height: 100vh;
@@ -52,44 +52,62 @@
             background: repeating-linear-gradient(45deg, #000, #000 10px, #ffcc00 10px, #ffcc00 20px);
             z-index: 500;
             border: 3px solid black;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
         }
 
-        /* --- RANDOM END SCREENS --- */
+        /* --- END SCREENS --- */
         .end-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             display: none;
             z-index: 9999;
             text-align: center;
-            padding-top: 50px;
         }
 
-        .war-end { background: white; color: red; }
+        #screen-crash {
+            background: url('crash.jpg') center center no-repeat;
+            background-size: cover;
+        }
+
+        /* Shake only applied to specific screens */
+        .shake { animation: shakeMove 0.1s infinite; }
+        @keyframes shakeMove {
+            0% { transform: translate(5px, 5px); }
+            25% { transform: translate(-5px, -5px); }
+            50% { transform: translate(-5px, 5px); }
+            75% { transform: translate(5px, -5px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        .war-end { background: white; color: red; padding-top: 50px; }
         .leak-end { background: #000; color: #0f0; font-family: 'Courier New', monospace; text-align: left; padding: 50px; }
-        .alien-end { background: #4b0082; color: #adff2f; }
+        .alien-end { background: #4b0082; color: #adff2f; padding-top: 50px; }
         .bsod-end { background: #0078d7; color: white; text-align: left; padding: 100px; }
-        .overheat-end { background: #000; color: #ff0000; }
+        .overheat-end { background: #000; color: #ff0000; padding-top: 50px; }
+        
+        /* New Solid End Screen (No Shake) */
+        .format-end { background: #111; color: #fff; padding-top: 100px; border: 20px solid red; }
+        .progress-bar { width: 80%; height: 30px; background: #333; margin: 20px auto; border: 2px solid white; position: relative; }
+        #fill { width: 0%; height: 100%; background: red; }
 
         .glitch { animation: flash 0.1s infinite; }
         @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
-<body>
+<body id="mainBody">
 
     <div id="warzone"></div>
 
     <div id="screen-war" class="end-screen war-end">
-        <h1 style="font-size: 80px;">🏆 TOTAL ANNIHILATION! 🏆</h1>
-        <h2 id="debtCount" style="font-size: 60px;">WAR DEBT: $0</h2>
+        <h1>🏆 TOTAL ANNIHILATION! 🏆</h1>
+        <h2 id="debtCount">WAR DEBT: $0</h2>
     </div>
 
     <div id="screen-leak" class="end-screen leak-end">
         <h1 class="glitch">SYSTEM EXPOSED...</h1>
         <p id="browserInfo"></p>
         <p id="batteryInfo"></p>
-        <p style="color: red;">LEAKING SEARCH: "How to hide a body in a burning city"</p>
-        <p style="color: red;">LEAKING SEARCH: "Why does my AI talk back to me"</p>
-        <div id="leakCount" style="font-size: 40px;">PRIVATE LOGS SENT: 0</div>
+        <div id="leakCount">PRIVATE LOGS SENT: 0</div>
     </div>
 
     <div id="screen-alien" class="end-screen alien-end">
@@ -103,21 +121,31 @@
     </div>
 
     <div id="screen-overheat" class="end-screen overheat-end">
-        <h1 class="glitch" style="font-size: 90px;">SYSTEM OVERHEAT!</h1>
-        <p style="font-size: 40px;">CORE TEMPERATURE: 9000°C</p>
+        <h1 class="glitch">SYSTEM OVERHEAT!</h1>
+        <p>CORE TEMPERATURE: 9000°C</p>
+    </div>
+
+    <div id="screen-crash" class="end-screen"></div>
+
+    <div id="screen-format" class="end-screen format-end">
+        <h1 class="glitch">FORMATTING C:\ DRIVE</h1>
+        <p>PLEASE DO NOT TURN OFF YOUR COMPUTER</p>
+        <div class="progress-bar"><div id="fill"></div></div>
+        <p id="percentText">0% Complete</p>
+        <p style="color: grey;">Deleting: System32/Drivers/User_Patience.sys...</p>
     </div>
 
     <button id="dangerButton">PRESS TO END THE WAR</button>
 
     <audio id="funnySound" loop><source src="your_funny_sound.mp3" type="audio/mpeg"></audio>
     <audio id="funny2" loop><source src="funny2.mp3" type="audio/mpeg"></audio>
+    <audio id="crashSound"><source src="crash.mp3" type="audio/mpeg"></audio>
 
     <script>
         const btn = document.getElementById('dangerButton');
         const wz = document.getElementById('warzone');
-        const audio1 = document.getElementById('funnySound');
-        const audio2 = document.getElementById('funny2');
-        const endScreens = ['screen-war', 'screen-leak', 'screen-alien', 'screen-bsod', 'screen-overheat'];
+        const body = document.getElementById('mainBody');
+        const endScreens = ['screen-war', 'screen-leak', 'screen-alien', 'screen-bsod', 'screen-overheat', 'screen-crash', 'screen-format'];
         let isChaosActive = false;
 
         // --- WARZONE SETUP ---
@@ -137,13 +165,12 @@
             wz.appendChild(civ);
         }
 
-        // --- SOLID BARRIER LOGIC ---
+        // --- BARRIER LOGIC ---
         const barriers = [];
         for (let i = 0; i < 6; i++) {
             const b = document.createElement('div');
             b.className = 'solid-barrier';
-            b.style.width = '140px';
-            b.style.height = '140px';
+            b.style.width = '140px'; b.style.height = '140px';
             b.style.left = Math.random() * 80 + 'vw';
             b.style.top = Math.random() * 80 + 'vh';
             document.body.appendChild(b);
@@ -173,34 +200,51 @@
             isChaosActive = true;
             btn.style.display = 'none';
             
-            // Random Audio
-            const selectedAudio = Math.random() > 0.5 ? audio1 : audio2;
-            selectedAudio.play();
-
             const randomID = endScreens[Math.floor(Math.random() * endScreens.length)];
-            document.getElementById(randomID).style.display = 'block';
+            const activeScreen = document.getElementById(randomID);
+            activeScreen.style.display = 'block';
 
-            // Fill Realistic Leak Info
+            // Audio Logic
+            if (randomID === 'screen-crash') {
+                document.getElementById('crashSound').play();
+                activeScreen.classList.add('shake'); // Shake the crash!
+            } else {
+                const loops = [document.getElementById('funnySound'), document.getElementById('funny2')];
+                loops[Math.floor(Math.random() * loops.length)].play();
+            }
+
+            // Realistic Leak Info
             if (randomID === 'screen-leak') {
                 document.getElementById('browserInfo').innerText = "DEVICE: " + navigator.userAgent;
-                navigator.getBattery().then(battery => {
-                    document.getElementById('batteryInfo').innerText = "BATTERY REMAINING: " + (battery.level * 100) + "%";
-                });
+                navigator.getBattery().then(bat => { document.getElementById('batteryInfo').innerText = "BATTERY: " + (bat.level * 100) + "%"; });
             }
 
             let count = 0;
+            let formatPercent = 0;
             setInterval(() => {
                 count += 5000;
+                
+                // End Screen specific logic
                 if (randomID === 'screen-war') document.getElementById('debtCount').innerText = "WAR DEBT: $" + count.toLocaleString();
                 if (randomID === 'screen-leak') document.getElementById('leakCount').innerText = "LOGS UPLOADED: " + (count / 100);
+                if (randomID === 'screen-format') {
+                    formatPercent = Math.min(formatPercent + 0.1, 99.9);
+                    document.getElementById('fill').style.width = formatPercent + "%";
+                    document.getElementById('percentText').innerText = formatPercent.toFixed(1) + "% Complete";
+                }
 
-                document.body.style.backgroundColor = ['red', 'white', 'black', 'blue', 'purple'][Math.floor(Math.random() * 5)];
+                // Color flashing (Still happens on format screen, but screen itself doesn't shake)
+                if (randomID !== 'screen-crash') {
+                    body.style.backgroundColor = ['red', 'white', 'black', 'blue', 'purple'][Math.floor(Math.random() * 5)];
+                }
+
                 const pop = document.createElement('div');
                 pop.style.position = 'fixed';
                 pop.style.left = Math.random() * 100 + 'vw';
                 pop.style.top = Math.random() * 100 + 'vh';
                 pop.style.fontSize = '80px';
-                pop.innerHTML = '💥 BOOM!';
+                pop.style.zIndex = '10001';
+                pop.innerHTML = '💥';
                 document.body.appendChild(pop);
                 if (document.body.children.length > 70) document.body.removeChild(document.body.children[20]);
             }, 60);
