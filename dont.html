@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE WAR ZONE BUTTON</title>
+    <title>THE WAR ZONE BUTTON: MULTIVERSE EDITION</title>
     <style>
         body {
             height: 100vh;
@@ -14,7 +14,7 @@
             cursor: crosshair;
         }
 
-        /* --- THE CITY UNDER ATTACK BACKGROUND --- */
+        /* --- WARZONE BACKGROUND --- */
         #warzone {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -22,30 +22,12 @@
             z-index: -1;
         }
 
-        .house {
-            position: absolute;
-            bottom: 0;
-            width: 120px;
-            height: 150px;
-            background: #333;
-            border: 2px solid #000;
-        }
+        .house { position: absolute; bottom: 0; width: 120px; height: 150px; background: #333; border: 2px solid #000; }
+        .fire-bg { position: absolute; top: -20px; width: 100%; text-align: center; font-size: 40px; animation: flicker 0.2s infinite; }
+        .soldier { position: absolute; bottom: 10px; font-size: 30px; z-index: 10; }
 
-        .fire-bg {
-            position: absolute;
-            top: -20px;
-            width: 100%;
-            text-align: center;
-            font-size: 40px;
-            animation: flicker 0.2s infinite;
-        }
-
-        .soldier {
-            position: absolute;
-            bottom: 10px;
-            font-size: 30px;
-            z-index: 10;
-        }
+        @keyframes flicker { from { opacity: 0.5; } to { opacity: 1; } }
+        @keyframes run { 0% { left: -50px; } 100% { left: 110vw; } }
 
         /* --- THE BUTTON --- */
         #dangerButton {
@@ -72,30 +54,45 @@
             border: 3px solid black;
         }
 
-        /* --- FINAL CHAOS --- */
-        #victoryScreen {
+        /* --- RANDOM END SCREENS --- */
+        .end-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: white;
             display: none;
             z-index: 9999;
             text-align: center;
             padding-top: 100px;
         }
 
-        @keyframes flicker { from { opacity: 0.5; } to { opacity: 1; } }
-        @keyframes run { 0% { left: -50px; } 100% { left: 110vw; } }
+        .war-end { background: white; color: red; }
+        .leak-end { background: #000; color: #0f0; font-family: 'Courier New', monospace; }
+        .alien-end { background: #4b0082; color: #adff2f; }
+
+        .glitch { animation: flash 0.1s infinite; }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="warzone"></div>
 
-    <div id="victoryScreen">
-        <h1 style="font-size: 100px; color: red;">🏆 YOU DESTROYED SOCIETY! 🏆</h1>
-        <p style="font-size: 40px;">Are you happy now? Everyone is gone. 🤡</p>
-        <p style="font-size: 20px; color: gray;">(The music is your new best friend forever.)</p>
-        <h2 id="deathCount" style="font-size: 60px;">DEBT INCURRED: $0</h2>
+    <div id="screen-war" class="end-screen war-end">
+        <h1 style="font-size: 80px;">🏆 TOTAL ANNIHILATION! 🏆</h1>
+        <p style="font-size: 40px;">YOU DESTROYED SOCIETY!</p>
+        <h2 id="debtCount" style="font-size: 60px;">WAR DEBT: $0</h2>
+    </div>
+
+    <div id="screen-leak" class="end-screen leak-end">
+        <h1 class="glitch">UPLOADING SEARCH HISTORY...</h1>
+        <p>Sending "How to talk to girls" to your Grandma...</p>
+        <p>Sending "Is 40 too old to be a pirate" to your Boss...</p>
+        <div id="leakCount" style="font-size: 40px;">FILES LEAKED: 0</div>
+    </div>
+
+    <div id="screen-alien" class="end-screen alien-end">
+        <h1 style="font-size: 100px;">🛸 ABDUCTION IN PROGRESS 🛸</h1>
+        <p>WE HAVE SEEN YOUR COMPUTER. WE ARE DISAPPOINTED.</p>
+        <div style="font-size: 150px;" class="glitch">👽</div>
     </div>
 
     <button id="dangerButton">PRESS TO END THE WAR</button>
@@ -107,11 +104,11 @@
     <script>
         const btn = document.getElementById('dangerButton');
         const wz = document.getElementById('warzone');
-        const vic = document.getElementById('victoryScreen');
         const audio = document.getElementById('funnySound');
+        const endScreens = ['screen-war', 'screen-leak', 'screen-alien'];
         let isChaosActive = false;
 
-        // --- CREATE THE ATTACKED CITY ---
+        // --- SETUP WARZONE ---
         for (let i = 0; i < 15; i++) {
             const house = document.createElement('div');
             house.className = 'house';
@@ -119,26 +116,16 @@
             house.innerHTML = '<div class="fire-bg">🔥</div>';
             wz.appendChild(house);
 
-            // Add running people
-            const civilian = document.createElement('div');
-            civilian.style.position = 'absolute';
-            civilian.style.bottom = '5px';
-            civilian.style.fontSize = '25px';
-            civilian.innerHTML = '🏃‍♂️💨 AHHH!';
-            civilian.style.animation = `run ${Math.random() * 5 + 2}s linear infinite`;
-            wz.appendChild(civilian);
+            const civ = document.createElement('div');
+            civ.style.position = 'absolute';
+            civ.style.bottom = '5px';
+            civ.style.fontSize = '25px';
+            civ.innerHTML = '🏃‍♂️💨 AHHH!';
+            civ.style.animation = `run ${Math.random() * 5 + 2}s linear infinite`;
+            wz.appendChild(civ);
         }
 
-        // Add soldiers with guns
-        for (let i = 0; i < 8; i++) {
-            const soldier = document.createElement('div');
-            soldier.className = 'soldier';
-            soldier.style.left = Math.random() * 100 + 'vw';
-            soldier.innerHTML = '🔫💂';
-            wz.appendChild(soldier);
-        }
-
-        // --- SOLID BARRIERS THAT PUSH THE MOUSE ---
+        // --- BARRIERS & MOUSE PHYSICS ---
         const barriers = [];
         for (let i = 0; i < 5; i++) {
             const b = document.createElement('div');
@@ -153,20 +140,15 @@
 
         document.addEventListener('mousemove', (e) => {
             if (isChaosActive) return;
-
-            // 1. Barrier Physics (Push Mouse)
+            
+            // Solid barrier logic
             barriers.forEach(bar => {
                 const rect = bar.getBoundingClientRect();
-                if (e.clientX > rect.left && e.clientX < rect.right && 
-                    e.clientY > rect.top && e.clientY < rect.bottom) {
-                    // If mouse is inside, "teleport" mouse away (illusion of pushing)
-                    // Note: Browsers block moving the actual cursor, 
-                    // so we teleport the BUTTON instead to troll the user.
+                if (e.clientX > rect.left && e.clientX < rect.right && e.clientY > rect.top && e.clientY < rect.bottom) {
                     teleportButton();
                 }
             });
 
-            // 2. Aggressive Button Escape
             const bRect = btn.getBoundingClientRect();
             const dist = Math.hypot(e.clientX - (bRect.left + bRect.width/2), e.clientY - (bRect.top + bRect.height/2));
             if (dist < 150) teleportButton();
@@ -178,29 +160,37 @@
             btn.style.transform = 'none';
         }
 
-        // --- FINAL FUNNY CLICK ---
+        // --- THE CHAOS CLICK ---
         btn.onclick = () => {
             isChaosActive = true;
             btn.style.display = 'none';
-            vic.style.display = 'block';
             audio.play();
 
-            let debt = 0;
+            // Select Random End Screen
+            const randomID = endScreens[Math.floor(Math.random() * endScreens.length)];
+            document.getElementById(randomID).style.display = 'block';
+
+            // Shared Final Chaos Logic
+            let counter = 0;
             setInterval(() => {
-                debt += 1345678;
-                document.getElementById('deathCount').innerHTML = "WAR DEBT: $" + debt.toLocaleString();
-                document.body.style.backgroundColor = ['red', 'orange', 'black'][Math.floor(Math.random()*3)];
+                counter += 1000;
                 
-                const explosion = document.createElement('div');
-                explosion.style.position = 'fixed';
-                explosion.style.left = Math.random() * 100 + 'vw';
-                explosion.style.top = Math.random() * 100 + 'vh';
-                explosion.style.fontSize = '80px';
-                explosion.innerHTML = '💥 BOOM!';
-                document.body.appendChild(explosion);
+                // Update specific screen counters
+                if (randomID === 'screen-war') document.getElementById('debtCount').innerText = "WAR DEBT: $" + counter.toLocaleString();
+                if (randomID === 'screen-leak') document.getElementById('leakCount').innerText = "PRIVATE FILES LEAKED: " + (counter / 100);
+
+                // Constant explosions and color flashing
+                document.body.style.backgroundColor = ['red', 'white', 'black', 'green', 'purple'][Math.floor(Math.random() * 5)];
+                const pop = document.createElement('div');
+                pop.style.position = 'fixed';
+                pop.style.left = Math.random() * 100 + 'vw';
+                pop.style.top = Math.random() * 100 + 'vh';
+                pop.style.fontSize = '80px';
+                pop.innerHTML = '💥 BOOM!';
+                document.body.appendChild(pop);
                 
-                if (document.body.children.length > 50) document.body.removeChild(document.body.children[10]);
-            }, 100);
+                if (document.body.children.length > 60) document.body.removeChild(document.body.children[15]);
+            }, 80);
         };
     </script>
 </body>
