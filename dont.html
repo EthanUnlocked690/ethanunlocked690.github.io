@@ -32,13 +32,14 @@
             transition: top 0.1s, left 0.1s;
         }
 
-        /* Rotating Barriers */
+        /* Rotating Barriers - Now with mouse detection */
         .barrier {
             position: absolute;
-            background: #555;
-            border: 2px solid #888;
+            background: linear-gradient(90deg, #444, #888, #444);
+            border: 2px solid #000;
             z-index: 500;
-            animation: rotate 4s linear infinite;
+            animation: rotate 3s linear infinite;
+            pointer-events: auto; /* Now detects mouse */
         }
 
         @keyframes rotate {
@@ -49,71 +50,61 @@
         /* Fire Zones */
         .fire {
             position: absolute;
-            font-size: 40px;
+            font-size: 45px;
             pointer-events: auto;
             z-index: 400;
-            filter: drop-shadow(0 0 10px red);
+            filter: drop-shadow(0 0 15px orange);
             animation: flicker 0.2s infinite alternate;
         }
 
         @keyframes flicker {
-            from { opacity: 0.8; transform: scale(1); }
-            to { opacity: 1; transform: scale(1.2); }
+            from { transform: scale(1); opacity: 0.8; }
+            to { transform: scale(1.3); opacity: 1; }
         }
 
-        /* Fake Crash Screen */
-        #bsod {
+        /* Final Chaos Screen */
+        #chaosScreen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: #0078d7;
             color: white;
-            padding: 100px;
+            padding: 50px;
             display: none;
             z-index: 9999;
+            text-align: center;
+        }
+
+        .glitch-text { color: yellow; font-size: 50px; animation: flash 0.1s infinite; }
+
+        @keyframes flash {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
 
-    <div id="bsod">
+    <div id="chaosScreen">
         <h1>:(</h1>
-        <p>Your mouse caught fire. System rebooting for safety.</p>
+        <p style="font-size: 30px;">SYSTEM MELTDOWN INITIATED.</p>
+        <p class="glitch-text">YOU BROKE THE UNIVERSE!</p>
+        <p>THE MUSIC LIVES FOREVER. REFRESH IF YOU SURRENDER.</p>
     </div>
 
     <button id="dangerButton">CLICK FOR TOTAL CHAOS</button>
 
+    <audio id="funnySound" loop>
+        <source src="your_funny_sound.mp3" type="audio/mpeg">
+    </audio>
+
     <script>
         const btn = document.getElementById('dangerButton');
-        const bsod = document.getElementById('bsod');
+        const chaosScreen = document.getElementById('chaosScreen');
+        const audio = document.getElementById('funnySound');
         let isChaosActive = false;
 
-        // --- GENERATE BARRIERS ---
-        for (let i = 0; i < 8; i++) {
-            const b = document.createElement('div');
-            b.className = 'barrier';
-            b.style.width = '200px';
-            b.style.height = '20px';
-            b.style.left = Math.random() * 80 + 'vw';
-            b.style.top = Math.random() * 80 + 'vh';
-            b.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            document.body.appendChild(b);
-        }
-
-        // --- GENERATE FIRE ZONES ---
-        for (let i = 0; i < 15; i++) {
-            const f = document.createElement('div');
-            f.className = 'fire';
-            f.innerHTML = '🔥';
-            f.style.left = Math.random() * 90 + 'vw';
-            f.style.top = Math.random() * 90 + 'vh';
-            // If you touch fire, the button teleports!
-            f.onmouseover = () => {
-                if(!isChaosActive) teleportButton();
-            };
-            document.body.appendChild(f);
-        }
-
         function teleportButton() {
+            if (isChaosActive) return;
             const x = Math.random() * (window.innerWidth - 200);
             const y = Math.random() * (window.innerHeight - 100);
             btn.style.left = x + 'px';
@@ -121,37 +112,68 @@
             btn.style.transform = 'none';
         }
 
-        // --- THE ESCAPE LOGIC ---
+        // --- BARRIERS (Touching these teleports the button) ---
+        for (let i = 0; i < 10; i++) {
+            const b = document.createElement('div');
+            b.className = 'barrier';
+            b.style.width = '250px';
+            b.style.height = '15px';
+            b.style.left = Math.random() * 80 + 'vw';
+            b.style.top = Math.random() * 80 + 'vh';
+            b.style.animationDuration = (Math.random() * 3 + 1) + 's';
+            b.onmouseover = teleportButton;
+            document.body.appendChild(b);
+        }
+
+        // --- FIRE ZONES (Touching these teleports the button) ---
+        for (let i = 0; i < 12; i++) {
+            const f = document.createElement('div');
+            f.className = 'fire';
+            f.innerHTML = '🔥';
+            f.style.left = Math.random() * 95 + 'vw';
+            f.style.top = Math.random() * 95 + 'vh';
+            f.onmouseover = teleportButton;
+            document.body.appendChild(f);
+        }
+
+        // --- AGGRESSIVE MOUSE ESCAPE ---
         document.addEventListener('mousemove', (e) => {
             if (isChaosActive) return;
-            
             const rect = btn.getBoundingClientRect();
             const dist = Math.hypot(e.clientX - (rect.left + rect.width/2), e.clientY - (rect.top + rect.height/2));
-
-            // Aggressive teleport if mouse gets within 150px
-            if (dist < 150) {
-                teleportButton();
-            }
+            if (dist < 180) teleportButton();
         });
 
-        // --- THE WIN (CHAOS) ---
+        // --- FINAL ENDLESS CHAOS ---
         btn.onclick = () => {
             isChaosActive = true;
             btn.style.display = 'none';
-            bsod.style.display = 'block';
+            chaosScreen.style.display = 'block';
             
-            setInterval(() => {
-                document.body.style.backgroundColor = ['red', 'yellow', 'blue', 'black'][Math.floor(Math.random()*4)];
-                const msg = document.createElement('div');
-                msg.style.position = 'fixed';
-                msg.style.left = Math.random() * 100 + 'vw';
-                msg.style.top = Math.random() * 100 + 'vh';
-                msg.style.fontSize = '50px';
-                msg.innerHTML = 'SYSTEM OVERHEAT!';
-                document.body.appendChild(msg);
-            }, 100);
+            // Audio starts and never stops
+            audio.volume = 1.0;
+            audio.play();
 
-            setTimeout(() => location.reload(), 5000);
+            setInterval(() => {
+                // Background strobe
+                document.body.style.backgroundColor = ['#ff0000', '#00ff00', '#ffff00', '#ff00ff', '#000000'][Math.floor(Math.random()*5)];
+                
+                // Endless "HA HA" popups
+                const popup = document.createElement('div');
+                popup.style.position = 'fixed';
+                popup.style.left = Math.random() * 100 + 'vw';
+                popup.style.top = Math.random() * 100 + 'vh';
+                popup.style.fontSize = Math.random() * 60 + 'px';
+                popup.style.color = 'white';
+                popup.style.zIndex = '10000';
+                popup.innerHTML = 'HA HA HA!';
+                document.body.appendChild(popup);
+                
+                // Performance cleanup (keep only 100 popups at a time)
+                if (document.body.children.length > 115) {
+                    document.body.removeChild(document.body.children[15]);
+                }
+            }, 50);
         };
     </script>
 </body>
