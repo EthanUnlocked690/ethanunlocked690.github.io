@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE WAR ZONE BUTTON: MULTIVERSE EDITION</title>
+    <title>THE WAR ZONE: MULTIVERSE CHAOS</title>
     <style>
         body {
             height: 100vh;
@@ -61,12 +61,14 @@
             display: none;
             z-index: 9999;
             text-align: center;
-            padding-top: 100px;
+            padding-top: 50px;
         }
 
         .war-end { background: white; color: red; }
-        .leak-end { background: #000; color: #0f0; font-family: 'Courier New', monospace; }
+        .leak-end { background: #000; color: #0f0; font-family: 'Courier New', monospace; text-align: left; padding: 50px; }
         .alien-end { background: #4b0082; color: #adff2f; }
+        .bsod-end { background: #0078d7; color: white; text-align: left; padding: 100px; }
+        .overheat-end { background: #000; color: #ff0000; }
 
         .glitch { animation: flash 0.1s infinite; }
         @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
@@ -78,37 +80,47 @@
 
     <div id="screen-war" class="end-screen war-end">
         <h1 style="font-size: 80px;">🏆 TOTAL ANNIHILATION! 🏆</h1>
-        <p style="font-size: 40px;">YOU DESTROYED SOCIETY!</p>
         <h2 id="debtCount" style="font-size: 60px;">WAR DEBT: $0</h2>
     </div>
 
     <div id="screen-leak" class="end-screen leak-end">
-        <h1 class="glitch">UPLOADING SEARCH HISTORY...</h1>
-        <p>Sending "How to talk to girls" to your Grandma...</p>
-        <p>Sending "Is 40 too old to be a pirate" to your Boss...</p>
-        <div id="leakCount" style="font-size: 40px;">FILES LEAKED: 0</div>
+        <h1 class="glitch">SYSTEM EXPOSED...</h1>
+        <p id="browserInfo"></p>
+        <p id="batteryInfo"></p>
+        <p style="color: red;">LEAKING SEARCH: "How to hide a body in a burning city"</p>
+        <p style="color: red;">LEAKING SEARCH: "Why does my AI talk back to me"</p>
+        <div id="leakCount" style="font-size: 40px;">PRIVATE LOGS SENT: 0</div>
     </div>
 
     <div id="screen-alien" class="end-screen alien-end">
-        <h1 style="font-size: 100px;">🛸 ABDUCTION IN PROGRESS 🛸</h1>
-        <p>WE HAVE SEEN YOUR COMPUTER. WE ARE DISAPPOINTED.</p>
+        <h1 style="font-size: 100px;">🛸 ABDUCTION 🛸</h1>
         <div style="font-size: 150px;" class="glitch">👽</div>
+    </div>
+
+    <div id="screen-bsod" class="end-screen bsod-end">
+        <h1 style="font-size: 120px;">:(</h1>
+        <p>Stop Code: BUTTON_OVERLOAD_ERROR</p>
+    </div>
+
+    <div id="screen-overheat" class="end-screen overheat-end">
+        <h1 class="glitch" style="font-size: 90px;">SYSTEM OVERHEAT!</h1>
+        <p style="font-size: 40px;">CORE TEMPERATURE: 9000°C</p>
     </div>
 
     <button id="dangerButton">PRESS TO END THE WAR</button>
 
-    <audio id="funnySound" loop>
-        <source src="your_funny_sound.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="funnySound" loop><source src="your_funny_sound.mp3" type="audio/mpeg"></audio>
+    <audio id="funny2" loop><source src="funny2.mp3" type="audio/mpeg"></audio>
 
     <script>
         const btn = document.getElementById('dangerButton');
         const wz = document.getElementById('warzone');
-        const audio = document.getElementById('funnySound');
-        const endScreens = ['screen-war', 'screen-leak', 'screen-alien'];
+        const audio1 = document.getElementById('funnySound');
+        const audio2 = document.getElementById('funny2');
+        const endScreens = ['screen-war', 'screen-leak', 'screen-alien', 'screen-bsod', 'screen-overheat'];
         let isChaosActive = false;
 
-        // --- SETUP WARZONE ---
+        // --- WARZONE SETUP ---
         for (let i = 0; i < 15; i++) {
             const house = document.createElement('div');
             house.className = 'house';
@@ -120,18 +132,18 @@
             civ.style.position = 'absolute';
             civ.style.bottom = '5px';
             civ.style.fontSize = '25px';
-            civ.innerHTML = '🏃‍♂️💨 AHHH!';
+            civ.innerHTML = '🏃‍♂️💨 HELP!';
             civ.style.animation = `run ${Math.random() * 5 + 2}s linear infinite`;
             wz.appendChild(civ);
         }
 
-        // --- BARRIERS & MOUSE PHYSICS ---
+        // --- SOLID BARRIER LOGIC ---
         const barriers = [];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 6; i++) {
             const b = document.createElement('div');
             b.className = 'solid-barrier';
-            b.style.width = '150px';
-            b.style.height = '150px';
+            b.style.width = '140px';
+            b.style.height = '140px';
             b.style.left = Math.random() * 80 + 'vw';
             b.style.top = Math.random() * 80 + 'vh';
             document.body.appendChild(b);
@@ -140,47 +152,49 @@
 
         document.addEventListener('mousemove', (e) => {
             if (isChaosActive) return;
-            
-            // Solid barrier logic
             barriers.forEach(bar => {
                 const rect = bar.getBoundingClientRect();
                 if (e.clientX > rect.left && e.clientX < rect.right && e.clientY > rect.top && e.clientY < rect.bottom) {
                     teleportButton();
                 }
             });
-
             const bRect = btn.getBoundingClientRect();
             const dist = Math.hypot(e.clientX - (bRect.left + bRect.width/2), e.clientY - (bRect.top + bRect.height/2));
-            if (dist < 150) teleportButton();
+            if (dist < 160) teleportButton();
         });
 
         function teleportButton() {
             btn.style.left = Math.random() * 90 + 'vw';
             btn.style.top = Math.random() * 90 + 'vh';
-            btn.style.transform = 'none';
         }
 
-        // --- THE CHAOS CLICK ---
+        // --- FINAL CHAOS ---
         btn.onclick = () => {
             isChaosActive = true;
             btn.style.display = 'none';
-            audio.play();
+            
+            // Random Audio
+            const selectedAudio = Math.random() > 0.5 ? audio1 : audio2;
+            selectedAudio.play();
 
-            // Select Random End Screen
             const randomID = endScreens[Math.floor(Math.random() * endScreens.length)];
             document.getElementById(randomID).style.display = 'block';
 
-            // Shared Final Chaos Logic
-            let counter = 0;
-            setInterval(() => {
-                counter += 1000;
-                
-                // Update specific screen counters
-                if (randomID === 'screen-war') document.getElementById('debtCount').innerText = "WAR DEBT: $" + counter.toLocaleString();
-                if (randomID === 'screen-leak') document.getElementById('leakCount').innerText = "PRIVATE FILES LEAKED: " + (counter / 100);
+            // Fill Realistic Leak Info
+            if (randomID === 'screen-leak') {
+                document.getElementById('browserInfo').innerText = "DEVICE: " + navigator.userAgent;
+                navigator.getBattery().then(battery => {
+                    document.getElementById('batteryInfo').innerText = "BATTERY REMAINING: " + (battery.level * 100) + "%";
+                });
+            }
 
-                // Constant explosions and color flashing
-                document.body.style.backgroundColor = ['red', 'white', 'black', 'green', 'purple'][Math.floor(Math.random() * 5)];
+            let count = 0;
+            setInterval(() => {
+                count += 5000;
+                if (randomID === 'screen-war') document.getElementById('debtCount').innerText = "WAR DEBT: $" + count.toLocaleString();
+                if (randomID === 'screen-leak') document.getElementById('leakCount').innerText = "LOGS UPLOADED: " + (count / 100);
+
+                document.body.style.backgroundColor = ['red', 'white', 'black', 'blue', 'purple'][Math.floor(Math.random() * 5)];
                 const pop = document.createElement('div');
                 pop.style.position = 'fixed';
                 pop.style.left = Math.random() * 100 + 'vw';
@@ -188,9 +202,8 @@
                 pop.style.fontSize = '80px';
                 pop.innerHTML = '💥 BOOM!';
                 document.body.appendChild(pop);
-                
-                if (document.body.children.length > 60) document.body.removeChild(document.body.children[15]);
-            }, 80);
+                if (document.body.children.length > 70) document.body.removeChild(document.body.children[20]);
+            }, 60);
         };
     </script>
 </body>
