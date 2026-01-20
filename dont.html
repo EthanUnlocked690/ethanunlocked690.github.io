@@ -3,317 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE MUTE-BREAKING BUTTON</title>
+    <title>THE ULTIMATE CHAOS GAUNTLET</title>
     <style>
-        /* --- General Styling --- */
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #1a1a1a;
             font-family: 'Comic Sans MS', cursive, sans-serif;
             overflow: hidden;
-            transition: background-color 0.5s ease;
-            position: relative;
+            cursor: crosshair;
         }
 
-        /* --- Main Button Styling & Darkening Effect --- */
+        /* The Main Button */
         #dangerButton {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            padding: 25px 50px;
-            font-size: 28px;
+            padding: 20px 40px;
+            font-size: 22px;
             font-weight: 900;
             color: white;
             background-color: #ff004c;
-            border: 8px solid #a80033;
-            border-radius: 15px;
+            border: 6px solid #a80033;
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 12px #c9003c;
-            transition: all 0.2s ease;
-            z-index: 100;
-            transform: translate(-50%, -50%); 
-        }
-
-        /* OUT FEATURE 4: Dark overlay for mouse proximity */
-        #overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0); 
-            pointer-events: none; 
-            transition: background-color 0.5s;
-            z-index: 99;
-        }
-
-        /* --- OUT FEATURE 2: Persistent Warning Box Styling --- */
-        #sideWarning {
-            position: absolute;
-            width: 200px;
-            padding: 10px;
-            background-color: #000;
-            color: #ffcc00;
-            border: 3px solid #ffcc00;
-            text-align: center;
-            font-weight: bold;
-            font-size: 14px;
-            pointer-events: none;
-            z-index: 90;
-            animation: bounce 2s infinite alternate;
-        }
-        
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-15px); }
-        }
-
-        /* --- IN FEATURE 1: Chaos Message Styling --- */
-        #message {
-            position: fixed;
+            z-index: 1000;
+            left: 50%;
             top: 50%;
-            left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 80px;
-            color: black;
-            text-shadow: 4px 4px 0 white, -4px -4px 0 white;
-            display: none;
-            z-index: 150;
-            text-align: center;
-            animation: pulse 1s infinite;
-        }
-        
-        /* --- IN FEATURE 5: Loud Volume Joke Message Styling --- */
-        #volumeJoke {
-            position: fixed;
-            top: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px;
-            font-size: 40px;
-            font-weight: extra-bold;
-            background-color: yellow;
-            color: red;
-            border: 5px dashed red;
-            display: none;
-            z-index: 160;
-            animation: flash 0.1s infinite alternate;
-        }
-        
-        /* --- IN FEATURE 6: Mute Joke Message Styling --- */
-        #muteJoke {
-            position: fixed;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px;
-            font-size: 30px;
-            background-color: blue;
-            color: white;
-            border: 5px solid cyan;
-            display: none;
-            z-index: 160;
-            animation: pulse 0.5s infinite alternate;
+            transition: top 0.1s, left 0.1s;
         }
 
-
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
-            100% { transform: translate(-50%, -50%) scale(1); }
-        }
-        
-        @keyframes flash {
-            from { opacity: 1; }
-            to { opacity: 0.5; }
-        }
-
-
-        /* --- IN FEATURE 4: Falling Text Style --- */
-        .falling-text {
+        /* Rotating Barriers */
+        .barrier {
             position: absolute;
-            top: -50px;
-            font-size: 30px;
-            font-weight: bold;
-            color: rgba(255, 0, 0, 0.7);
-            z-index: 120;
-            pointer-events: none;
-            animation: fall linear forwards;
+            background: #555;
+            border: 2px solid #888;
+            z-index: 500;
+            animation: rotate 4s linear infinite;
         }
-        
-        @keyframes fall {
-            to { transform: translateY(100vh); }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Fire Zones */
+        .fire {
+            position: absolute;
+            font-size: 40px;
+            pointer-events: auto;
+            z-index: 400;
+            filter: drop-shadow(0 0 10px red);
+            animation: flicker 0.2s infinite alternate;
+        }
+
+        @keyframes flicker {
+            from { opacity: 0.8; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Fake Crash Screen */
+        #bsod {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0078d7;
+            color: white;
+            padding: 100px;
+            display: none;
+            z-index: 9999;
         }
     </style>
 </head>
 <body>
 
-    <div id="overlay"></div> 
+    <div id="bsod">
+        <h1>:(</h1>
+        <p>Your mouse caught fire. System rebooting for safety.</p>
+    </div>
 
-    <button id="dangerButton" onclick="startChaos()">
-        🛑 ABSOLUTELY DO NOT CLICK ME 🛑
-    </button>
-    
-    <div id="sideWarning">!!! WARNING !!! DANGER IS IMMINENT.</div>
-    
-    <div id="message">TOO LATE! YOU BROKE IT!</div>
-    
-    <div id="volumeJoke">VOLUME MAXED! MUTE BUTTON FAILED! 🔊</div>
-
-    <div id="muteJoke"></div>
-
-
-    <audio id="funnySound" loop>
-        <source src="your_funny_sound.mp3" type="audio/mpeg">
-        <source src="your_funny_sound.wav" type="audio/wav">
-    </audio>
+    <button id="dangerButton">CLICK FOR TOTAL CHAOS</button>
 
     <script>
-        const button = document.getElementById('dangerButton');
-        const overlay = document.getElementById('overlay');
-        const warning = document.getElementById('sideWarning');
-        const message = document.getElementById('message');
-        const volumeJoke = document.getElementById('volumeJoke');
-        const muteJoke = document.getElementById('muteJoke'); // New element
-        const audio = document.getElementById('funnySound');
-        const colors = ['#FFC300', '#FF5733', '#C70039', '#900C3F', '#581845'];
-        const runAwayText = ["STOP IT!", "GO AWAY!", "DON'T TOUCH!", "LEAVE ME ALONE!"];
+        const btn = document.getElementById('dangerButton');
+        const bsod = document.getElementById('bsod');
         let isChaosActive = false;
-        let textIntervalId;
-        let warningIntervalId;
-        let rainIntervalId;
 
-        // --- OUT FEATURE 1: Running Away ---
-        function runAway(e) {
-            if (isChaosActive) return;
-            const rect = button.getBoundingClientRect();
-            let newX = rect.left + (rect.left > e.clientX ? 150 : -150);
-            let newY = rect.top + (rect.top > e.clientY ? 150 : -150);
-            newX = Math.max(0, Math.min(newX, window.innerWidth - rect.width));
-            newY = Math.max(0, Math.min(newY, window.innerHeight - rect.height));
-            button.style.left = `${newX}px`;
-            button.style.top = `${newY}px`;
-            button.style.transform = 'none'; 
-        }
-        button.addEventListener('mousemove', runAway);
-
-        // --- OUT FEATURE 3: Darkening Page on Hover ---
-        button.addEventListener('mouseenter', () => {
-            if (!isChaosActive) overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        });
-        button.addEventListener('mouseleave', () => {
-            if (!isChaosActive) overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-        });
-
-        // --- OUT FEATURE 2: Distracting Text Flash & Warning Box Movement ---
-        let textIndex = 0;
-        textIntervalId = setInterval(() => {
-            if (!isChaosActive) {
-                 button.innerHTML = runAwayText[textIndex++ % runAwayText.length];
-            }
-        }, 500);
-
-        warningIntervalId = setInterval(() => {
-            if (!isChaosActive) {
-                // Warning box random movement
-                const bodyWidth = window.innerWidth;
-                const bodyHeight = window.innerHeight;
-                const warnWidth = warning.offsetWidth;
-                const warnHeight = warning.offsetHeight;
-
-                const randX = Math.floor(Math.random() * (bodyWidth - warnWidth));
-                const randY = Math.floor(Math.random() * (bodyHeight - warnHeight));
-
-                warning.style.left = `${randX}px`;
-                warning.style.top = `${randY}px`;
-            }
-        }, 1500);
-
-        // --- IN FEATURE 4: Falling Text Blocks ---
-        function startTextRain() {
-            rainIntervalId = setInterval(() => {
-                const text = document.createElement('div');
-                text.className = 'falling-text';
-                text.innerHTML = 'NO!';
-                text.style.left = `${Math.random() * 100}vw`;
-                text.style.animationDuration = `${Math.random() * 2 + 1}s`; 
-
-                document.body.appendChild(text);
-                
-                text.addEventListener('animationend', () => text.remove());
-            }, 50); 
+        // --- GENERATE BARRIERS ---
+        for (let i = 0; i < 8; i++) {
+            const b = document.createElement('div');
+            b.className = 'barrier';
+            b.style.width = '200px';
+            b.style.height = '20px';
+            b.style.left = Math.random() * 80 + 'vw';
+            b.style.top = Math.random() * 80 + 'vh';
+            b.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            document.body.appendChild(b);
         }
 
+        // --- GENERATE FIRE ZONES ---
+        for (let i = 0; i < 15; i++) {
+            const f = document.createElement('div');
+            f.className = 'fire';
+            f.innerHTML = '🔥';
+            f.style.left = Math.random() * 90 + 'vw';
+            f.style.top = Math.random() * 90 + 'vh';
+            // If you touch fire, the button teleports!
+            f.onmouseover = () => {
+                if(!isChaosActive) teleportButton();
+            };
+            document.body.appendChild(f);
+        }
 
-        // --- IN FEATURE: Chaos on Click ---
-        function startChaos() {
+        function teleportButton() {
+            const x = Math.random() * (window.innerWidth - 200);
+            const y = Math.random() * (window.innerHeight - 100);
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+            btn.style.transform = 'none';
+        }
+
+        // --- THE ESCAPE LOGIC ---
+        document.addEventListener('mousemove', (e) => {
             if (isChaosActive) return;
+            
+            const rect = btn.getBoundingClientRect();
+            const dist = Math.hypot(e.clientX - (rect.left + rect.width/2), e.clientY - (rect.top + rect.height/2));
+
+            // Aggressive teleport if mouse gets within 150px
+            if (dist < 150) {
+                teleportButton();
+            }
+        });
+
+        // --- THE WIN (CHAOS) ---
+        btn.onclick = () => {
             isChaosActive = true;
+            btn.style.display = 'none';
+            bsod.style.display = 'block';
             
-            // 1. Stop all OUT features
-            button.removeEventListener('mousemove', runAway);
-            clearInterval(textIntervalId);
-            clearInterval(warningIntervalId);
-            warning.style.display = 'none';
-            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0)'; 
-            
-            // 2. IN FEATURE 2: Hide the button (The trick!)
-            button.style.display = 'none'; 
-            
-            // 3. IN FEATURE 3: Set volume to max and start sound
-            audio.volume = 1.0; 
-            audio.play();
+            setInterval(() => {
+                document.body.style.backgroundColor = ['red', 'yellow', 'blue', 'black'][Math.floor(Math.random()*4)];
+                const msg = document.createElement('div');
+                msg.style.position = 'fixed';
+                msg.style.left = Math.random() * 100 + 'vw';
+                msg.style.top = Math.random() * 100 + 'vh';
+                msg.style.fontSize = '50px';
+                msg.innerHTML = 'SYSTEM OVERHEAT!';
+                document.body.appendChild(msg);
+            }, 100);
 
-            // 4. IN FEATURE 6: Mute Check!
-            if (audio.muted || audio.volume === 0) {
-                 volumeJoke.style.display = 'none'; // Hide volume joke
-                 muteJoke.innerHTML = "HA! You had to mute your whole computer! The page wins! 😜";
-                 muteJoke.style.display = 'block';
-            } else {
-                 // IN FEATURE 5: Show the Volume Joke message if sound is playing
-                 volumeJoke.style.display = 'block';
-                 muteJoke.style.display = 'none';
-            }
-
-            // 5. Show giant flashing message
-            message.style.display = 'block';
-            
-            // 6. IN FEATURE 4: Start the text rain
-            startTextRain();
-
-
-            // 7. Start color flashing
-            let colorIndex = 0;
-            const chaosIntervalId = setInterval(() => {
-                document.body.style.backgroundColor = colors[colorIndex++ % colors.length];
-            }, 75); 
-
-            // 8. Stop the chaos after 5 seconds
-            setTimeout(() => {
-                clearInterval(chaosIntervalId);
-                clearInterval(rainIntervalId);
-                audio.pause(); 
-                document.body.style.backgroundColor = '#f0f0f0';
-                message.style.display = 'none';
-                volumeJoke.style.display = 'none';
-                muteJoke.style.display = 'none';
-                
-                // Final State
-                button.style.display = 'block';
-                button.innerHTML = '👑 YOU ARE THE CHAOS KING/QUEEN! 🎉';
-                button.style.transform = 'none';
-                button.style.left = '50%';
-                button.style.top = '50%';
-                button.style.backgroundColor = '#00cc66';
-                button.style.borderColor = '#008040';
-                button.onclick = null;
-            }, 5000);
-        }
+            setTimeout(() => location.reload(), 5000);
+        };
     </script>
-
 </body>
 </html>
