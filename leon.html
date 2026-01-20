@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leon - The Stealthy Assassin | Brawl Stars Fan Page</title>
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --primary-color: #55E6C1; /* Leon Green */
+            --secondary-color: #3B3B98; /* Hoodie Blue */
+            --accent-color: #F8EFBA; /* Yellow Accent */
+            --dark-bg: #1e272e;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #d2dae2;
+            --neon-glow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- BACKGROUND ANIMATION --- */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #2c3e50, #000);
+        }
+
+        /* --- LAYOUT UTILITIES --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section {
+            margin-bottom: 80px;
+            opacity: 0; /* For scroll animation */
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /* --- HEADER / HERO --- */
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .glitch-wrapper {
+            position: relative;
+        }
+
+        h1.hero-title {
+            font-size: 5rem;
+            font-weight: 900;
+            position: relative;
+            color: var(--primary-color);
+            text-shadow: var(--neon-glow);
+        }
+
+        /* Simple Glitch Effect */
+        h1.hero-title::before, h1.hero-title::after {
+            content: "LEON";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg); 
+            opacity: 0.8;
+        }
+        h1.hero-title::before {
+            color: #ff00de;
+            z-index: -1;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        h1.hero-title::after {
+            color: #00ff00;
+            z-index: -2;
+            animation: glitch-anim-2 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 0); }
+            20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, 0); }
+            40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 0); }
+            60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, 0); }
+            80% { clip-path: inset(10% 0 60% 0); transform: translate(-2px, 0); }
+            100% { clip-path: inset(30% 0 40% 0); transform: translate(2px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, 0); }
+            20% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 0); }
+            40% { clip-path: inset(30% 0 20% 0); transform: translate(2px, 0); }
+            60% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 0); }
+            80% { clip-path: inset(50% 0 10% 0); transform: translate(2px, 0); }
+            100% { clip-path: inset(0% 0 70% 0); transform: translate(-2px, 0); }
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-top: 10px;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 30px;
+            animation: bounce 2s infinite;
+            font-size: 2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* --- STATS GRID (Glassmorphism) --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--neon-glow);
+            border-color: var(--primary-color);
+        }
+
+        .stat-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .stat-bar-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%; /* JS will animate this */
+            transition: width 1.5s ease-out;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        /* --- ABILITIES TABS --- */
+        .abilities-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--primary-color);
+            color: var(--dark-bg);
+            box-shadow: var(--neon-glow);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+            /* Grid layout applied when active */
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media(min-width: 768px) {
+            .tab-content.active {
+                grid-template-columns: 1fr 2fr;
+                align-items: center;
+            }
+        }
+
+        .tab-content.active {
+            display: grid; 
+        }
+
+        .ability-icon {
+            font-size: 4rem;
+            text-align: center;
+            color: var(--accent-color);
+            background: rgba(0,0,0,0.3);
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            border: 3px solid var(--accent-color);
+        }
+
+        .ability-info h3 {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+
+        .ability-info p {
+            font-size: 1.1rem;
+            color: #bdc3c7;
+        }
+
+        /* --- 3D ROTATING CARD (GADGETS & STAR POWERS) --- */
+        .power-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 350px;
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .flip-card-front {
+            background: linear-gradient(135deg, #2c3e50, #000000);
+            border: 2px solid var(--secondary-color);
+        }
+
+        .flip-card-back {
+            background: linear-gradient(135deg, var(--secondary-color), var(--dark-bg));
+            transform: rotateY(180deg);
+            border: 2px solid var(--primary-color);
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #000;
+        }
+
+        /* --- LORE SECTION (Typewriter) --- */
+        .lore-box {
+            background: rgba(0,0,0,0.6);
+            padding: 40px;
+            border-left: 5px solid var(--primary-color);
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        #typewriter {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            background-color: var(--primary-color);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 40px;
+            background: #000;
+            color: #7f8c8d;
+            border-top: 1px solid #333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .emoji-icon {
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <header>
+        <div class="container">
+            <div class="glitch-wrapper">
+                <h1 class="hero-title">LEON</h1>
+            </div>
+            <p class="hero-subtitle">"Sneaky Time!"</p>
+            <div style="margin-top: 20px;">
+                <span style="background:var(--secondary-color); padding: 5px 15px; border-radius: 5px; font-weight:bold;">LEGENDARY</span>
+                <span style="background:#c0392b; padding: 5px 15px; border-radius: 5px; font-weight:bold; margin-left: 10px;">ASSASSIN</span>
+            </div>
+        </div>
+        <div class="scroll-down" onclick="document.getElementById('stats').scrollIntoView({behavior: 'smooth'})">
+            ▼
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <section id="stats" class="section">
+            
+            <h2>Combat Statistics (Lvl 11)</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Health</h3>
+                    <span class="stat-value">6400</span>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar-fill" data-width="60%"></div>
+                    </div>
+                    <p style="margin-top:10px; font-size:0.8rem; color:#aaa;">Moderate Survivability</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Movement Speed</h3>
+                    <span class="stat-value">Very Fast</span>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar-fill" data-width="95%"></div>
+                    </div>
+                    <p style="margin-top:10px; font-size:0.8rem; color:#aaa;">820 (1070 w/ Super)</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Damage (Max Range)</h3>
+                    <span class="stat-value">1920</span>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar-fill" data-width="40%"></div>
+                    </div>
+                    <p style="margin-top:10px; font-size:0.8rem; color:#aaa;">(4 Blades x 480)</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Damage (Close Range)</h3>
+                    <span class="stat-value">3400+</span>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar-fill" data-width="90%"></div>
+                    </div>
+                    <p style="margin-top:10px; font-size:0.8rem; color:#aaa;">Devastating up close</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="abilities" class="section">
+            <h2>Kit Breakdown</h2>
+            <div class="abilities-container">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="openTab('attack')">Attack</button>
+                    <button class="tab-btn" onclick="openTab('super')">Super</button>
+                    <button class="tab-btn" onclick="openTab('mythic')">Mythic Gear</button>
+                </div>
+
+                <div id="attack" class="tab-content active">
+                    <div class="ability-icon">
+                        <span class="emoji-icon">🌀</span>
+                    </div>
+                    <div class="ability-info">
+                        <h3>Spinner Blades</h3>
+                        <p>Leon flicks his wrist and fires four spinner blades. The blades deal less damage the further they travel.</p>
+                        <br>
+                        <ul>
+                            <li><strong>Range:</strong> Long (9.67 tiles)</li>
+                            <li><strong>Reload Speed:</strong> Normal (1.9s)</li>
+                            <li><strong>Projectile Speed:</strong> 3500</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="super" class="tab-content">
+                    <div class="ability-icon">
+                        <span class="emoji-icon">👻</span>
+                    </div>
+                    <div class="ability-info">
+                        <h3>Smoke Bomb</h3>
+                        <p>Leon becomes invisible for 6 seconds. If he attacks, he will be revealed. Enemies close to Leon will be able to spot him.</p>
+                        <br>
+                        <ul>
+                            <li><strong>Duration:</strong> 6 Seconds</li>
+                            <li><strong>Detection Radius:</strong> 4 Tiles</li>
+                            <li><strong>Note:</strong> Taking damage does not reveal Leon, but the damage number is visible.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="mythic" class="tab-content">
+                    <div class="ability-icon">
+                        <span class="emoji-icon">💨</span>
+                    </div>
+                    <div class="ability-info">
+                        <h3>Lingering Smoke</h3>
+                        <p>Increases the duration of Leon's Super by 1 second.</p>
+                        <br>
+                        <p><em>Essential for crossing large maps or repositioning behind enemy lines effectively.</em></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="builds" class="section">
+            <h2>Gadgets & Star Powers</h2>
+            <div class="power-grid">
+                
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-circle">🧬</div>
+                            <h3>Clone Projector</h3>
+                            <p style="color:#aaa;">Gadget</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h3>Deception</h3>
+                            <p>Leon creates an illusion of himself to confuse his enemies. The clone chases enemies but deals no damage and takes double damage.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-circle">🍭</div>
+                            <h3>Lollipop Drop</h3>
+                            <p style="color:#aaa;">Gadget</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h3>Stealth Field</h3>
+                            <p>Leon drops a lollipop that creates an invisibility area for him and his teammates. The lollipop has health and decays over time.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-circle">👟</div>
+                            <h3>Smoke Trails</h3>
+                            <p style="color:#aaa;">Star Power</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h3>Speed Boost</h3>
+                            <p>When Leon uses his Super, he moves 30% faster for the duration of his invisibility.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <div class="icon-circle">❤️‍🩹</div>
+                            <h3>Invisiheal</h3>
+                            <p style="color:#aaa;">Star Power</p>
+                        </div>
+                        <div class="flip-card-back">
+                            <h3>Sustainability</h3>
+                            <p>Leon recovers 1360 health per second while his Super is active.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Brawler Dossier</h2>
+            <div class="lore-box">
+                <p id="typewriter"></p><span class="cursor">&nbsp;</span>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>Fan-made content. Not affiliated with Supercell.</p>
+        <p>Brawl Stars is a registered trademark of Supercell Oy.</p>
+    </footer>
+
+    <script>
+        // --- 1. Background Particle Animation ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 2 - 1;
+                this.color = Math.random() > 0.5 ? '#55E6C1' : '#3B3B98';
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+
+        // --- 2. Tab Functionality ---
+        function openTab(tabName) {
+            // Hide all tab contents
+            const contents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < contents.length; i++) {
+                contents[i].style.display = 'none';
+                contents[i].classList.remove('active');
+            }
+
+            // Remove active class from buttons
+            const buttons = document.getElementsByClassName('tab-btn');
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+
+            // Show current tab
+            const selectedTab = document.getElementById(tabName);
+            selectedTab.style.display = 'grid'; // Maintain grid layout
+            selectedTab.classList.add('active');
+            
+            // Highlight button
+            const allButtons = document.querySelectorAll('.tab-btn');
+            allButtons.forEach(btn => {
+                if(btn.getAttribute('onclick').includes(tabName)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+
+        // --- 3. Scroll Observer (Animations on Scroll) ---
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Trigger Skill Bar Animations if it's the stats section
+                    if (entry.target.id === 'stats') {
+                        const bars = document.querySelectorAll('.stat-bar-fill');
+                        bars.forEach(bar => {
+                            const width = bar.getAttribute('data-width');
+                            bar.style.width = width;
+                        });
+                    }
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+
+
+        // --- 4. Typewriter Effect ---
+        const textToType = "Leon is a stealthy assassin who can punish enemies that stray too far from their team. His sister is Nita. Rumor has it he never takes off his hoodie because he's hiding a bad haircut... or perhaps he just likes being mysterious. Keep your distance, watch for the shimmer in the air, and never trust a lone lollipop.";
+        const typeWriterElement = document.getElementById('typewriter');
+        let typeIndex = 0;
+
+        function typeWriter() {
+            if (typeIndex < textToType.length) {
+                typeWriterElement.innerHTML += textToType.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeWriter, 30); // Typing speed
+            }
+        }
+
+        // Trigger typewriter when dossier comes into view
+        const loreObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    typeWriter();
+                    loreObserver.disconnect();
+                }
+            });
+        });
+        loreObserver.observe(document.querySelector('.lore-box'));
+    </script>
+</body>
+</html>
