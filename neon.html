@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Vengeance</title>
+    <style>
+        /* ADVANCED CSS: Reset & Immersive Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050505; /* Deep dark background */
+            overflow: hidden; /* Prevent scrollbars */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none; /* Prevent text selection during gameplay */
+        }
+
+        /* UI Overlay Layer */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Let clicks pass through to canvas */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* HUD: Score Display */
+        #score-board {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Modal: Start/Game Over Screen */
+        #modal {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px); /* Glassmorphism effect */
+            padding: 3rem;
+            border-radius: 15px;
+            text-align: center;
+            pointer-events: auto; /* Re-enable clicks for buttons */
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            color: white;
+            font-size: 4rem;
+            margin: 0 0 1rem 0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            background: linear-gradient(to right, #00f260, #0575E6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: #ccc;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+
+        #points-display {
+            display: block;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        button {
+            background: linear-gradient(45deg, #FF512F, #DD2476);
+            border: none;
+            padding: 15px 40px;
+            color: white;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            text-transform: uppercase;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(221, 36, 118, 0.5);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(221, 36, 118, 0.8);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Hide elements utility */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="score-board">Score: <span id="scoreEl">0</span></div>
+    
+    <div id="ui-layer">
+        <div id="modal">
+            <h1 id="game-title">Neon Vengeance</h1>
+            <p id="desc">Aim with Mouse. Click to Shoot.</p>
+            <span id="points-display" class="hidden">0</span>
+            <button id="startGameBtn">Start Game</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        /* * ADVANCED JAVASCRIPT ARCHITECTURE
+         * Concepts: ES6 Classes, Canvas API, Trigonometry, Particle Physics, Event Listeners
+         */
+
+        const canvas = document.querySelector('canvas');
+        const c = canvas.getContext('2d');
+
+        // Dynamic Resizing
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+
+        const scoreEl = document.querySelector('#scoreEl');
+        const startGameBtn = document.querySelector('#startGameBtn');
+        const modal = document.querySelector('#modal');
+        const pointsDisplay = document.querySelector('#points-display');
+        const gameTitle = document.querySelector('#game-title');
+        const desc = document.querySelector('#desc');
+
+        // --- MATH HELPERS ---
+        // Friction factor creates the "drag" effect on explosion particles
+        const FRICTION = 0.98;
+
+        // --- CLASSES ---
+
+        class Player {
+            constructor(x, y, radius, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+            }
+
+            draw() {
+                c.beginPath();
+                c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                c.fillStyle = this.color;
+                c.fill();
+                // Add a glow effect
+                c.shadowColor = this.color;
+                c.shadowBlur = 15;
+            }
+        }
+
+        class Projectile {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+            }
+
+            draw() {
+                c.beginPath();
+                c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                c.fillStyle = this.color;
+                c.fill();
+                c.shadowBlur = 0; // Reset shadow for performance on projectiles
+            }
+
+            update() {
+                this.draw();
+                this.x = this.x + this.velocity.x;
+                this.y = this.y + this.velocity.y;
+            }
+        }
+
+        class Enemy {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+            }
+
+            draw() {
+                c.beginPath();
+                c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                c.fillStyle = this.color;
+                c.fill();
+                c.shadowColor = this.color;
+                c.shadowBlur = 10;
+            }
+
+            update() {
+                this.draw();
+                this.x = this.x + this.velocity.x;
+                this.y = this.y + this.velocity.y;
+            }
+        }
+
+        // Particle System for Explosions
+        class Particle {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+                this.alpha = 1; // Transparency
+            }
+
+            draw() {
+                c.save();
+                c.globalAlpha = this.alpha;
+                c.beginPath();
+                c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                c.fillStyle = this.color;
+                c.fill();
+                c.restore();
+            }
+
+            update() {
+                this.draw();
+                // Physics: Velocity slows down over time (friction)
+                this.velocity.x *= FRICTION;
+                this.velocity.y *= FRICTION;
+                this.x = this.x + this.velocity.x;
+                this.y = this.y + this.velocity.y;
+                // Fade out
+                this.alpha -= 0.01;
+            }
+        }
+
+        // --- GAME VARIABLES ---
+        
+        // Use "let" for variables that change on game reset
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
+        let player = new Player(x, y, 15, 'white');
+        let projectiles = [];
+        let enemies = [];
+        let particles = [];
+        let animationId;
+        let score = 0;
+        let spawnInterval;
+
+        // --- CORE FUNCTIONS ---
+
+        function init() {
+            player = new Player(canvas.width / 2, canvas.height / 2, 15, 'white');
+            projectiles = [];
+            enemies = [];
+            particles = [];
+            score = 0;
+            scoreEl.innerHTML = score;
+            pointsDisplay.innerHTML = score;
+        }
+
+        function spawnEnemies() {
+            spawnInterval = setInterval(() => {
+                // Randomly determine radius (size of enemy)
+                const radius = Math.random() * (30 - 8) + 8;
+                let x;
+                let y;
+
+                // Spawn logic: Randomly pick a side of the screen
+                if (Math.random() < 0.5) {
+                    x = Math.random() < 0.5 ? 0 - radius : canvas.width + radius;
+                    y = Math.random() * canvas.height;
+                } else {
+                    x = Math.random() * canvas.width;
+                    y = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
+                }
+
+                // Random Color HSL for Neon effect
+                const color = `hsl(${Math.random() * 360}, 50%, 50%)`;
+
+                // Calculate angle to player using atan2 (Trigonometry)
+                const angle = Math.atan2(canvas.height / 2 - y, canvas.width / 2 - x);
+                const velocity = {
+                    x: Math.cos(angle), // Simple speed, increase multiplier to make harder
+                    y: Math.sin(angle)
+                };
+
+                enemies.push(new Enemy(x, y, radius, color, velocity));
+            }, 1000); // Spawn every 1 second
+        }
+
+        // --- THE GAME LOOP ---
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            
+            // Clear canvas with slight opacity for "Trailing/Motion Blur" effect
+            c.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            c.fillRect(0, 0, canvas.width, canvas.height);
+            
+            player.draw();
+
+            // Update Particles (Explosions)
+            particles.forEach((particle, index) => {
+                if (particle.alpha <= 0) {
+                    particles.splice(index, 1);
+                } else {
+                    particle.update();
+                }
+            });
+
+            // Update Projectiles
+            projectiles.forEach((projectile, index) => {
+                projectile.update();
+
+                // Garbage collection: Remove projectiles off-screen
+                if (
+                    projectile.x + projectile.radius < 0 ||
+                    projectile.x - projectile.radius > canvas.width ||
+                    projectile.y + projectile.radius < 0 ||
+                    projectile.y - projectile.radius > canvas.height
+                ) {
+                    setTimeout(() => {
+                        projectiles.splice(index, 1);
+                    }, 0);
+                }
+            });
+
+            // Update Enemies
+            enemies.forEach((enemy, index) => {
+                enemy.update();
+
+                // DISTANCE CALCULATION (Hypotenuse)
+                const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y);
+
+                // End Game Condition: Enemy hits player
+                if (dist - enemy.radius - player.radius < 1) {
+                    cancelAnimationFrame(animationId);
+                    clearInterval(spawnInterval);
+                    modal.classList.remove('hidden'); // Show UI
+                    pointsDisplay.classList.remove('hidden');
+                    gameTitle.innerText = "Game Over";
+                    desc.innerText = "The neon lights have faded.";
+                    startGameBtn.innerText = "Restart";
+                    pointsDisplay.innerText = score;
+                }
+
+                // Collision: Projectile hits Enemy
+                projectiles.forEach((projectile, projectileIndex) => {
+                    const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
+
+                    // Collision detected
+                    if (dist - enemy.radius - projectile.radius < 1) {
+                        
+                        // Create Explosions (8 particles)
+                        for (let i = 0; i < 8; i++) {
+                            particles.push(new Particle(
+                                projectile.x, 
+                                projectile.y, 
+                                Math.random() * 2, 
+                                enemy.color, 
+                                {
+                                    x: (Math.random() - 0.5) * (Math.random() * 6),
+                                    y: (Math.random() - 0.5) * (Math.random() * 6)
+                                }
+                            ));
+                        }
+
+                        // Shrink enemy if hit, or remove if too small
+                        if (enemy.radius - 10 > 5) {
+                            // Score increment
+                            score += 100;
+                            scoreEl.innerHTML = score;
+                            
+                            // Smooth shrinking (GSAP lite approach manually)
+                            // For simplicity, we just instant shrink, but we add a flash effect
+                            enemy.radius -= 10;
+                            setTimeout(() => {
+                                projectiles.splice(projectileIndex, 1);
+                            }, 0);
+                        } else {
+                            // Big Score for kill
+                            score += 250;
+                            scoreEl.innerHTML = score;
+
+                            setTimeout(() => {
+                                enemies.splice(index, 1);
+                                projectiles.splice(projectileIndex, 1);
+                            }, 0);
+                        }
+                    }
+                });
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+
+        window.addEventListener('click', (event) => {
+            // Calculate angle from center (player) to mouse click
+            const angle = Math.atan2(
+                event.clientY - canvas.height / 2,
+                event.clientX - canvas.width / 2
+            );
+            
+            const velocity = {
+                x: Math.cos(angle) * 5, // Projectile speed
+                y: Math.sin(angle) * 5
+            };
+
+            projectiles.push(
+                new Projectile(
+                    canvas.width / 2, 
+                    canvas.height / 2, 
+                    5, 
+                    'white', 
+                    velocity
+                )
+            );
+        });
+
+        startGameBtn.addEventListener('click', () => {
+            init();
+            animate();
+            spawnEnemies();
+            modal.classList.add('hidden'); // Hide UI
+        });
+
+        // Handle window resize to keep game full screen
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init(); // Reset game on resize for simplicity
+            modal.classList.remove('hidden');
+        });
+
+    </script>
+</body>
+</html>
