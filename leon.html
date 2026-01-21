@@ -2,159 +2,171 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Brawl Stars Wiki | Brawler Database 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Wiki 2026</title>
     <style>
         :root {
-            --hc-color: #ff00ff; --gold: #f1c40f; --purple: #a133ff;
-            --bg: #0b0e14; --panel: #1a1f2b; --text: #ffffff;
+            --rare: #66bb6a;
+            --super-rare: #42a5f5;
+            --epic: #ab47bc;
+            --mythic: #ef5350;
+            --legendary: #ffca28;
+            --bg: #1a1a1a;
+            --card-bg: #2d2d2d;
         }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; height: 100vh; margin: 0; }
-        
-        /* --- SIDEBAR NAV --- */
-        #wiki-nav { width: 120px; background: #000; overflow-y: scroll; display: flex; flex-direction: column; align-items: center; padding: 20px 0; border-right: 2px solid var(--purple); }
-        .b-thumb { width: 75px; height: 75px; border-radius: 15px; margin-bottom: 15px; cursor: pointer; border: 3px solid transparent; transition: 0.2s; background-size: cover; position: relative; }
-        .b-thumb:hover, .b-thumb.active { border-color: var(--gold); transform: scale(1.1); box-shadow: 0 0 15px var(--hc-color); }
-        .hc-badge-small { position: absolute; bottom: -5px; right: -5px; width: 25px; height: 25px; background: var(--hc-color); border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 10px; }
 
-        /* --- MAIN WIKI VIEW --- */
-        #wiki-view { flex: 1; padding: 40px; overflow-y: auto; background-image: radial-gradient(circle at top right, #1a0b2e, #0b0e14); }
-        .wiki-header { display: flex; gap: 30px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 20px; margin-bottom: 30px; }
-        .wiki-portrait { width: 180px; height: 180px; border-radius: 20px; border: 4px solid var(--purple); }
-        
-        /* --- HYPERCHARGE PANEL --- */
-        .hc-section { background: rgba(255, 0, 255, 0.05); border: 2px solid var(--hc-color); border-radius: 20px; padding: 25px; margin-top: 30px; }
-        .hc-flex { display: flex; align-items: center; gap: 40px; }
-        .hc-gif { width: 140px; height: 140px; border-radius: 15px; background: #000; border: 1px solid var(--hc-color); }
-        .asset-box { text-align: center; }
-        .asset-img { width: 60px; height: 60px; display: block; margin: 5px auto; filter: drop-shadow(0 0 5px var(--hc-color)); }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: white;
+            margin: 0;
+            display: flex;
+        }
 
-        /* --- INFO TABLE --- */
-        .wiki-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .wiki-table td { padding: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .wiki-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-        .label { font-weight: bold; color: var(--gold); width: 150px; }
+        /* Sidebar Styling */
+        #sidebar {
+            width: 250px;
+            background: #111;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 2px solid #333;
+            padding: 10px;
+        }
 
-        /* --- PINS --- */
-        .pin-grid { display: flex; gap: 10px; margin-top: 15px; }
-        .pin { width: 50px; height: 50px; background: var(--panel); border-radius: 8px; padding: 5px; }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: #333;
+        }
+
+        .sidebar-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+            border-radius: 4px;
+        }
+
+        /* Main Content */
+        #content {
+            flex-grow: 1;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .brawler-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            width: 500px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 4px solid transparent;
+        }
+
+        .portrait {
+            width: 180px;
+            height: 180px;
+            margin-bottom: 20px;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .s-tier { background: #ff4d4d; color: white; }
+        .a-tier { background: #ffa500; color: white; }
+        .b-tier { background: #ffff4d; color: black; }
+
+        .hc-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid #f0f;
+        }
     </style>
 </head>
 <body>
 
-<div id="wiki-nav"></div>
-<main id="wiki-view">
-    <div style="text-align: center; margin-top: 100px;">
-        <img src="https://static.wikia.nocookie.net/brawlstars/images/5/5a/Logo.png" width="300"><br>
-        <h1>Brawler Wiki Database 2026</h1>
-        <p>Select one of the 98 Brawlers to load Wiki Assets...</p>
+<div id="sidebar">
+    <h3 style="text-align:center">Brawlers</h3>
+    <div id="brawler-list"></div>
+</div>
+
+<div id="content">
+    <div id="display-card">
+        <h2>Select a Brawler</h2>
     </div>
-</main>
+</div>
 
 <script>
-// Database of 98 Brawlers (Mapped with Fandom Wiki style logic)
-const brawlers = [
-    { 
-        name: "Pierce", date: "Dec 18, 2025", rarity: "Legendary", wasChroma: false,
-        pass: "None", hc: "Double Agent", 
-        hcDesc: "Super bullets bounce off walls and drop reload-speed boosting shells.",
-        mastery: "https://static.wikia.nocookie.net/brawlstars/images/0/0e/Mastery_Icon_Leon.png",
-        pins: ["😃", "😠", "😭", "⚡"],
-        skins: ["Vampire Hunter (BP+)", "Silver", "Gold"]
-    },
-    { 
-        name: "Kaze", date: "Jan 12, 2025", rarity: "Ultra-Legendary", wasChroma: false,
-        pass: "Katana Kingdom", hc: "Ancient Energy", 
-        hcDesc: "Both Ninja and Geisha forms activate simultaneously for double damage area.",
-        mastery: "https://placehold.co/100?text=Kaze",
-        pins: ["🌸", "🗡️", "👺"],
-        skins: ["Oni Kaze", "Mecha Kaze"]
-    },
-    { 
-        name: "Surge", date: "July 6, 2020", rarity: "Legendary", wasChroma: true,
-        pass: "Summer of Monsters", hc: "Stage 5", 
-        hcDesc: "Super instantly evolves Surge to Stage 5, gaining massive range and 6-way split.",
-        mastery: "https://static.wikia.nocookie.net/brawlstars/images/d/d3/Mastery_Icon_Surge.png",
-        pins: ["🥤", "🕶️", "🤖"],
-        skins: ["Mecha Paladin Surge (S2)", "Kraken Surge", "Genie Surge"]
-    },
-    { 
-        name: "Pearl", date: "Sept 5, 2023", rarity: "Epic", wasChroma: true,
-        pass: "Wasteland Cookout", hc: "Pyrolytic", 
-        hcDesc: "Super leaves a massive burning ring of fire for 5 seconds.",
-        mastery: "https://static.wikia.nocookie.net/brawlstars/images/0/05/Mastery_Icon_Pearl.png",
-        pins: ["🍪", "🔥", "😤"],
-        skins: ["Periscope Pearl (S20)", "Vintage Pearl"]
+    const brawlers = [
+        // RARE
+        { id: "nita", name: "Nita", rarity: "Rare", tier: "B", hcTier: "B", icon: "nita.png", portrait: "nita-hypercharge.png", hc: "Hyper Bear", hcEffect: "Bruce is larger and attacks 25% faster." },
+        // ... (Repeat for Colt, Bull, Brock, El Primo, Barley, Poco, Rosa)
+        
+        // EPIC
+        { id: "pearl", name: "Pearl", rarity: "Epic", wasChroma: true, tier: "A", hcTier: "A", icon: "pearl.png", portrait: "pearl-hypercharge.png", hc: "Pyrolytic", hcEffect: "Leaves a burning area on the ground." },
+        { id: "meeple", name: "Meeple", rarity: "Epic", tier: "S", hcTier: "A", icon: "meeple.png", portrait: "meeple-hypercharge.png", hc: "Toy Box", hcEffect: "Drops random power-up boxes for allies." },
+
+        // MYTHIC
+        { id: "mortis", name: "Mortis", rarity: "Mythic", tier: "A", hcTier: "S", icon: "mortis.png", portrait: "mortis-hypercharge.png", hc: "Blood Boomerang", hcEffect: "Bats return to heal a second time." },
+        { id: "clancy", name: "Clancy", rarity: "Mythic", tier: "S", hcTier: "S", icon: "clancy.png", portrait: "clancy-hypercharge.png", hc: "Recall of Duty", hcEffect: "Super paintballs pierce and return." },
+        { id: "jaeyong", name: "Jae-Yong", rarity: "Mythic", tier: "S", hcTier: "A", icon: "jaeyong.png", portrait: "jaeyong-hypercharge.png", hc: "Crowd-Pleaser", hcEffect: "Super provides 15% shield to allies." },
+        { id: "glowbert", name: "Glowbert", rarity: "Mythic", tier: "A", hcTier: "N/A", icon: "glowbert.png", portrait: "glowbert.png", hc: "None", hcEffect: "No Hypercharge yet." },
+
+        // LEGENDARY
+        { id: "kenji", name: "Kenji", rarity: "Legendary", tier: "S", hcTier: "S", icon: "kenji.png", portrait: "kenji-hypercharge.png", hc: "Sashimi Slash", hcEffect: "100% lifesteal during Super." },
+        { id: "surge", name: "Surge", rarity: "Legendary", wasChroma: true, tier: "S", hcTier: "S", icon: "surge.png", portrait: "surge-hypercharge.png", hc: "Ultimate Evolution", hcEffect: "Instantly reaches Level 5." },
+        { id: "cordelius", name: "Cordelius", rarity: "Legendary", wasChroma: true, tier: "S", hcTier: "A", icon: "cordelius.png", portrait: "cordelius-hypercharge.png", hc: "Complete Darkness", hcEffect: "Enemies in Shadow Realm slowed." }
+    ];
+
+    function renderList() {
+        const listContainer = document.getElementById('brawler-list');
+        brawlers.forEach(b => {
+            const div = document.createElement('div');
+            div.className = 'sidebar-item';
+            div.innerHTML = `<img src="${b.icon}" class="sidebar-icon"> <span>${b.name}</span>`;
+            div.onclick = () => showBrawler(b);
+            listContainer.appendChild(div);
+        });
     }
-];
 
-// Fill out to 98
-for(let i=5; i<=98; i++) {
-    brawlers.push({ name: `Brawler ${i}`, date: "2018-2025", rarity: "Mythic", wasChroma: i < 20, pass: "TBD", hc: "Overload", hcDesc: "Stat boost 25%", mastery: "https://placehold.co/100", pins: ["👍"], skins: ["Default"] });
-}
-
-const nav = document.getElementById('wiki-nav');
-const view = document.getElementById('wiki-view');
-
-brawlers.forEach((b, i) => {
-    const div = document.createElement('div');
-    div.className = 'b-thumb';
-    div.style.backgroundImage = `url('https://placehold.co/100?text=${b.name[0]}')`;
-    if(b.hc) div.innerHTML = `<div class="hc-badge-small">⚡</div>`;
-    div.onclick = () => {
-        document.querySelectorAll('.b-thumb').forEach(el => el.classList.remove('active'));
-        div.classList.add('active');
-        render(b);
-    };
-    nav.appendChild(div);
-});
-
-function render(b) {
-    view.innerHTML = `
-        <div class="wiki-header">
-            <img src="https://placehold.co/200?text=${b.name}" class="wiki-portrait">
-            <div>
-                <h1 style="font-size: 3rem; margin:0;">${b.name}</h1>
-                <p style="color:var(--gold); font-weight:bold; font-size:1.2rem;">${b.rarity} Brawler</p>
-                <div class="pin-grid">
-                    ${b.pins.map(p => `<div class="pin">${p}</div>`).join('')}
-                    <div class="pin" style="border: 1px solid var(--hc-color)">⚡</div>
-                </div>
-            </div>
-        </div>
-
-        <table class="wiki-table">
-            <tr><td class="label">Release Date</td><td>${b.date}</td></tr>
-            <tr><td class="label">Ex-Chromatic</td><td>${b.wasChroma ? 'Yes (Converted 2024)' : 'No'}</td></tr>
-            <tr><td class="label">Brawl Pass Skin</td><td>${b.pass}</td></tr>
-            <tr><td class="label">Total Skins</td><td>${b.skins.join(' • ')}</td></tr>
-        </table>
-
-        <div class="hc-section">
-            <h2 style="color:var(--hc-color); margin-top:0;">⚡ HYPERCHARGE: ${b.hc}</h2>
-            <div class="hc-flex">
-                <img src="https://static.wikia.nocookie.net/brawlstars/images/0/03/Hypercharge_Icon.gif" class="hc-gif">
+    function showBrawler(b) {
+        const card = document.getElementById('display-card');
+        const rarityColor = `var(--${b.rarity.toLowerCase().replace(' ', '-')})`;
+        
+        card.innerHTML = `
+            <div class="brawler-card" style="border-color: ${rarityColor}">
+                <img src="${b.portrait}" class="portrait">
+                <h1 style="color:${rarityColor}">${b.name}</h1>
+                <p><strong>Rarity:</strong> ${b.rarity} ${b.wasChroma ? '(Ex-Chromatic)' : ''}</p>
                 <div>
-                    <p><strong>Ability:</strong> ${b.hcDesc}</p>
-                    <div style="display:flex; gap:20px;">
-                        <div class="asset-box">
-                            <span style="font-size:0.7rem;">HC PIN</span>
-                            <div class="pin" style="background:#000; border:1px solid var(--hc-color)">😈</div>
-                        </div>
-                        <div class="asset-box">
-                            <span style="font-size:0.7rem;">HC SPRAY</span>
-                            <img src="https://static.wikia.nocookie.net/brawlstars/images/e/e0/Hypercharge_Spray.png" class="asset-img">
-                        </div>
-                    </div>
+                    <span class="tier-badge ${b.tier.toLowerCase()}-tier">Brawler: ${b.tier} Tier</span>
+                    <span class="tier-badge ${b.hcTier.toLowerCase()}-tier">HC: ${b.hcTier} Tier</span>
+                </div>
+                <div class="hc-section">
+                    <h4>Hypercharge: ${b.hc}</h4>
+                    <p>${b.hcEffect}</p>
                 </div>
             </div>
-        </div>
+        `;
+    }
 
-        <div style="margin-top:30px; background:var(--panel); padding:20px; border-radius:15px; text-align:center;">
-            <h3 style="color:var(--gold)">GOLD III MASTERY ICON</h3>
-            <img src="${b.mastery}" width="120" style="filter: drop-shadow(0 0 10px var(--gold));">
-        </div>
-    `;
-}
+    renderList();
 </script>
+
 </body>
 </html>
