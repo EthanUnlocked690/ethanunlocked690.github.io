@@ -112,26 +112,101 @@
 </div>
 
 <script>
-    const brawlers = [
-        // RARE
-        { id: "nita", name: "Nita", rarity: "Rare", tier: "B", hcTier: "B", icon: "nita.png", portrait: "nita-hypercharge.png", hc: "Hyper Bear", hcEffect: "Bruce is larger and attacks 25% faster." },
-        // ... (Repeat for Colt, Bull, Brock, El Primo, Barley, Poco, Rosa)
-        
-        // EPIC
-        { id: "pearl", name: "Pearl", rarity: "Epic", wasChroma: true, tier: "A", hcTier: "A", icon: "pearl.png", portrait: "pearl-hypercharge.png", hc: "Pyrolytic", hcEffect: "Leaves a burning area on the ground." },
-        { id: "meeple", name: "Meeple", rarity: "Epic", tier: "S", hcTier: "A", icon: "meeple.png", portrait: "meeple-hypercharge.png", hc: "Toy Box", hcEffect: "Drops random power-up boxes for allies." },
+const brawlers = [
+    // --- RARE ---
+    { id: "nita", name: "Nita", icon: "Nita.png", portrait: "Nita-Hypercharge.png", rarity: "Rare", tier: "B", hcTier: "B", hc: "Hyper Bear", hcEffect: "Bruce is larger and attacks 25% faster." },
+    { id: "colt", name: "Colt", icon: "Colt.png", portrait: "Colt-Hypercharge.png", rarity: "Rare", tier: "A", hcTier: "S", hc: "Dual Wielding", hcEffect: "Super bullets travel faster and break more cover." },
+    { id: "bull", name: "Bull", icon: "Bull.png", portrait: "Bull-Hypercharge.png", rarity: "Rare", tier: "B", hcTier: "B", hc: "Juggernaut", hcEffect: "Takes 80% less damage while charging." },
+    { id: "brock", name: "Brock", icon: "Brock.png", portrait: "Brock-Hypercharge.png", rarity: "Rare", tier: "A", hcTier: "A", hc: "Rocket Rain", hcEffect: "Super fires more rockets over a larger area." },
+    { id: "elprimo", name: "El Primo", icon: "El-Primo.png", portrait: "El-Primo-Hypercharge.png", rarity: "Rare", tier: "B", hcTier: "A", hc: "Gravity Leap", hcEffect: "Super pulls enemies toward the impact center." },
+    { id: "barley", name: "Barley", icon: "Barley.png", portrait: "Barley-Hypercharge.png", rarity: "Rare", tier: "B", hcTier: "B", hc: "Messy Order", hcEffect: "Bottles cover a larger area and deal more damage." },
+    { id: "poco", name: "Poco", icon: "Poco.png", portrait: "Poco-Hypercharge.png", rarity: "Rare", tier: "A", hcTier: "S", hc: "Medicinal Melodies", hcEffect: "Super provides a shield and removes debuffs." },
+    { id: "rosa", name: "Rosa", icon: "Rosa.png", portrait: "Rosa-Hypercharge.png", rarity: "Rare", tier: "B", hcTier: "A", hc: "Grasping Vines", hcEffect: "Super slows enemies within a radius." },
 
-        // MYTHIC
-        { id: "mortis", name: "Mortis", rarity: "Mythic", tier: "A", hcTier: "S", icon: "mortis.png", portrait: "mortis-hypercharge.png", hc: "Blood Boomerang", hcEffect: "Bats return to heal a second time." },
-        { id: "clancy", name: "Clancy", rarity: "Mythic", tier: "S", hcTier: "S", icon: "clancy.png", portrait: "clancy-hypercharge.png", hc: "Recall of Duty", hcEffect: "Super paintballs pierce and return." },
-        { id: "jaeyong", name: "Jae-Yong", rarity: "Mythic", tier: "S", hcTier: "A", icon: "jaeyong.png", portrait: "jaeyong-hypercharge.png", hc: "Crowd-Pleaser", hcEffect: "Super provides 15% shield to allies." },
-        { id: "glowbert", name: "Glowbert", rarity: "Mythic", tier: "A", hcTier: "N/A", icon: "glowbert.png", portrait: "glowbert.png", hc: "None", hcEffect: "No Hypercharge yet." },
+    // --- SUPER RARE ---
+    { id: "jessie", name: "Jessie", icon: "Jessie.png", portrait: "Jessie-Hypercharge.png", rarity: "Super Rare", tier: "A", hcTier: "A", hc: "Scrappy 2.0", hcEffect: "Turret has more HP and fires faster." },
+    { id: "dynamike", name: "Dynamike", icon: "Dynamike.png", portrait: "Dynamike-Hypercharge.png", rarity: "Super Rare", tier: "A", hcTier: "S", hc: "Boomer", hcEffect: "Super spawns smaller bombs after exploding." },
+    { id: "tick", name: "Tick", icon: "Tick.png", portrait: "Tick-Hypercharge.png", rarity: "Super Rare", tier: "B", hcTier: "B", hc: "Headstrong", hcEffect: "Tick's head travels faster and leaves mines." },
+    { id: "8bit", name: "8-Bit", icon: "8-Bit.png", portrait: "8-Bit-Hypercharge.png", rarity: "Super Rare", tier: "B", hcTier: "B", hc: "Overclocked", hcEffect: "Turret radius is larger and increases damage more." },
+    { id: "rico", name: "Rico", icon: "Rico.png", portrait: "Rico-Hypercharge.png", rarity: "Super Rare", tier: "A", hcTier: "S", hc: "Bouncing Bullets", hcEffect: "Bullets bounce further and move faster." },
+    { id: "darryl", name: "Darryl", icon: "Darryl.png", portrait: "Darryl-Hypercharge.png", rarity: "Super Rare", tier: "B", hcTier: "B", hc: "Barrel Roll", hcEffect: "Darryl shoots while rolling." },
+    { id: "penny", name: "Penny", icon: "Penny.png", portrait: "Penny-Hypercharge.png", rarity: "Super Rare", tier: "C", hcTier: "B", hc: "Heavy Artillery", hcEffect: "Turret fires two bombs at once." },
+    { id: "carl", name: "Carl", icon: "Carl.png", portrait: "Carl-Hypercharge.png", rarity: "Super Rare", tier: "B", hcTier: "A", hc: "Tailspin", hcEffect: "Carl moves faster and shields during Super." },
+    { id: "jacky", name: "Jacky", icon: "Jacky.png", portrait: "Jacky-Hypercharge.png", rarity: "Super Rare", tier: "B", hcTier: "B", hc: "Seismic Event", hcEffect: "Super slows enemies for longer." },
+    { id: "gus", name: "Gus", icon: "Gus.png", portrait: "Gus-Hypercharge.png", rarity: "Super Rare", tier: "A", hcTier: "A", hc: "Spirit Shield", hcEffect: "Ghost spirits heal more and provide speed." },
 
-        // LEGENDARY
-        { id: "kenji", name: "Kenji", rarity: "Legendary", tier: "S", hcTier: "S", icon: "kenji.png", portrait: "kenji-hypercharge.png", hc: "Sashimi Slash", hcEffect: "100% lifesteal during Super." },
-        { id: "surge", name: "Surge", rarity: "Legendary", wasChroma: true, tier: "S", hcTier: "S", icon: "surge.png", portrait: "surge-hypercharge.png", hc: "Ultimate Evolution", hcEffect: "Instantly reaches Level 5." },
-        { id: "cordelius", name: "Cordelius", rarity: "Legendary", wasChroma: true, tier: "S", hcTier: "A", icon: "cordelius.png", portrait: "cordelius-hypercharge.png", hc: "Complete Darkness", hcEffect: "Enemies in Shadow Realm slowed." }
-    ];
+    // --- EPIC ---
+    { id: "bo", name: "Bo", icon: "Bo.png", portrait: "Bo-Hypercharge.png", rarity: "Epic", tier: "B", hcTier: "B", hc: "Track Shot", hcEffect: "Mines now track enemies slightly before exploding." },
+    { id: "emz", name: "Emz", icon: "Emz.png", portrait: "Emz-Hypercharge.png", rarity: "Epic", tier: "A", hcTier: "A", hc: "Haze", hcEffect: "Super radius is larger and leaves a slowing trail." },
+    { id: "stu", name: "Stu", icon: "Stu.png", portrait: "Stu-Hypercharge.png", rarity: "Epic", tier: "S", hcTier: "A", hc: "Nitro Boost", hcEffect: "Super dash is 50% longer and leaves more fire." },
+    { id: "piper", name: "Piper", icon: "Piper.png", portrait: "Piper-Hypercharge.png", rarity: "Epic", tier: "S", hcTier: "S", hc: "Boppin'", hcEffect: "Super drops more bombs and pushes enemies further." },
+    { id: "pam", name: "Pam", icon: "Pam.png", portrait: "Pam-Hypercharge.png", rarity: "Epic", tier: "B", hcTier: "B", hc: "Mama's Hug", hcEffect: "Turret healing is increased by 25%." },
+    { id: "frank", name: "Frank", icon: "Frank.png", portrait: "Frank-Hypercharge.png", rarity: "Epic", tier: "A", hcTier: "S", hc: "Seismic Smash", hcEffect: "Super is instant and pulls enemies in." },
+    { id: "bibi", name: "Bibi", icon: "Bibi.png", portrait: "Bibi-Hypercharge.png", rarity: "Epic", tier: "B", hcTier: "A", hc: "Out of Orbit", hcEffect: "Bubble splits into two after hitting an enemy." },
+    { id: "bea", name: "Bea", icon: "Bea.png", portrait: "Bea-Hypercharge.png", rarity: "Epic", tier: "B", hcTier: "B", hc: "Hive Mind", hcEffect: "Super bees travel in a circle and slow longer." },
+    { id: "nani", name: "Nani", icon: "Nani.png", portrait: "Nani-Hypercharge.png", rarity: "Epic", tier: "S", hcTier: "A", hc: "Peep Show", hcEffect: "Peep travels faster and can go through one wall." },
+    { id: "edgar", name: "Edgar", icon: "Edgar.png", portrait: "Edgar-Hypercharge.png", rarity: "Epic", tier: "B", hcTier: "S", hc: "Outburst", hcEffect: "Reload and Super charge speed are increased." },
+    { id: "griff", name: "Griff", icon: "Griff.png", portrait: "Griff-Hypercharge.png", rarity: "Epic", tier: "B", hcTier: "B", hc: "Cashback", hcEffect: "Super cards return faster and heal Griff." },
+    { id: "grom", name: "Grom", icon: "Grom.png", portrait: "Grom-Hypercharge.png", rarity: "Epic", tier: "C", hcTier: "B", hc: "Radioactive", hcEffect: "Super splits into 8 directions instead of 4." },
+    { id: "bonnie", name: "Bonnie", icon: "Bonnie.png", portrait: "Bonnie-Hypercharge.png", rarity: "Epic", tier: "B", hcTier: "B", hc: "Clyde's Revenge", hcEffect: "Bonnie stays in Clyde form longer with more speed." },
+    { id: "gale", name: "Gale", icon: "Gale.png", portrait: "Gale-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "A", hcTier: "S", hc: "Blizzard", hcEffect: "Super creates a snowstorm that slows for 5s." },
+    { id: "colette", name: "Colette", icon: "Colette.png", portrait: "Colette-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "A", hcTier: "S", hc: "Teen Spirit", hcEffect: "Spirit follows Colette and deals extra damage." },
+    { id: "ash", name: "Ash", icon: "Ash.png", portrait: "Ash-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "C", hcTier: "B", hc: "Rage Mode", hcEffect: "Ash stays at max rage for the full duration." },
+    { id: "lola", name: "Lola", icon: "Lola.png", portrait: "Lola-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "B", hcTier: "B", hc: "Double Trouble", hcEffect: "Ego has same HP as Lola and shoots faster." },
+    { id: "sam", name: "Sam", icon: "Sam.png", portrait: "Sam-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "B", hcTier: "B", hc: "Knuckle Sandwich", hcEffect: "Pulls enemies when Sam retrieves his gloves." },
+    { id: "mandy", name: "Mandy", icon: "Mandy.png", portrait: "Mandy-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "A", hcTier: "A", hc: "Sugar Ray", hcEffect: "Super projectile is wider and pierces walls." },
+    { id: "maisie", name: "Maisie", icon: "Maisie.png", portrait: "Maisie-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "B", hcTier: "S", hc: "Aftershock", hcEffect: "Super fires projectiles in all directions." },
+    { id: "pearl", name: "Pearl", icon: "Pearl.png", portrait: "Pearl-Hypercharge.png", rarity: "Epic", wasChroma: true, tier: "A", hcTier: "A", hc: "Pyrolytic", hcEffect: "Super leaves a burning area." },
+    { id: "angelo", name: "Angelo", icon: "Angelo.png", portrait: "Angelo-Hypercharge.png", rarity: "Epic", tier: "S", hcTier: "A", hc: "Toxic Haze", hcEffect: "Super cloud follows Angelo." },
+    { id: "larrylawrie", name: "Larry & Lawrie", icon: "Larry-Lawrie.png", portrait: "Larry-Hypercharge.png", rarity: "Epic", tier: "A", hcTier: "B", hc: "Protocol: Protect", hcEffect: "Lawrie takes 50% of damage for Larry." },
+    { id: "meeple", name: "Meeple", icon: "Meeple.png", portrait: "Meeple-Hypercharge.png", rarity: "Epic", tier: "S", hcTier: "A", hc: "Toy Box", hcEffect: "Drops random power-up boxes for allies." },
+
+    // --- MYTHIC ---
+    { id: "mortis", name: "Mortis", icon: "Mortis.png", portrait: "Mortis-Hypercharge.png", rarity: "Mythic", tier: "A", hcTier: "S", hc: "Blood Boomerang", hcEffect: "Bats return to heal a second time." },
+    { id: "tara", name: "Tara", icon: "Tara.png", portrait: "Tara-Hypercharge.png", rarity: "Mythic", tier: "B", hcTier: "A", hc: "Supermassive", hcEffect: "Gravity pull is 25% larger." },
+    { id: "gene", name: "Gene", icon: "Gene.png", portrait: "Gene-Hypercharge.png", rarity: "Mythic", tier: "S", hcTier: "S", hc: "Hyper Hands", hcEffect: "Fires three hands instead of one." },
+    { id: "max", name: "Max", icon: "Max.png", portrait: "Max-Hypercharge.png", rarity: "Mythic", tier: "A", hcTier: "A", hc: "Unlimited Energy", hcEffect: "Provides a reload speed boost to allies." },
+    { id: "mrp", name: "Mr. P", icon: "Mr-P.png", portrait: "Mr-P-Hypercharge.png", rarity: "Mythic", tier: "C", hcTier: "B", hc: "Carrier Service", hcEffect: "Spawns two porters at once." },
+    { id: "sprout", name: "Sprout", icon: "Sprout.png", portrait: "Sprout-Hypercharge.png", rarity: "Mythic", tier: "B", hcTier: "B", hc: "Thorns", hcEffect: "Wall deals damage to nearby enemies." },
+    { id: "byron", name: "Byron", icon: "Byron.png", portrait: "Byron-Hypercharge.png", rarity: "Mythic", tier: "A", hcTier: "A", hc: "Triple Threat", hcEffect: "Super splits into three small splashes." },
+    { id: "squeak", name: "Squeak", icon: "Squeak.png", portrait: "Squeak-Hypercharge.png", rarity: "Mythic", tier: "B", hcTier: "B", hc: "Sticky Mess", hcEffect: "Super blobs slow enemies on impact." },
+    { id: "lou", name: "Lou", icon: "Lou.png", portrait: "Lou-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "A", hcTier: "S", hc: "Slushy Storm", hcEffect: "Instantly freezes enemies in the Super." },
+    { id: "ruffs", name: "Ruffs", icon: "Ruffs.png", portrait: "Ruffs-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "B", hcTier: "B", hc: "Air Support", hcEffect: "Drops three power-ups instead of one." },
+    { id: "buzz", name: "Buzz", icon: "Buzz.png", portrait: "Buzz-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "A", hcTier: "S", hc: "Buzzwatch", hcEffect: "Infinite Super if a wall is hit." },
+    { id: "fang", name: "Fang", icon: "Fang.png", portrait: "Fang-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "A", hcTier: "A", hc: "Dragon Kick", hcEffect: "Super travels through walls." },
+    { id: "eve", name: "Eve", icon: "Eve.png", portrait: "Eve-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "B", hcTier: "B", hc: "Mothership", hcEffect: "Spawns extra hatchlings when hit." },
+    { id: "janet", name: "Janet", icon: "Janet.png", portrait: "Janet-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "C", hcTier: "B", hc: "Aerial Ace", hcEffect: "Drops bombs faster and wider." },
+    { id: "otis", name: "Otis", icon: "Otis.png", portrait: "Otis-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "B", hcTier: "A", hc: "Silent Night", hcEffect: "Silence lasts 1.5s longer." },
+    { id: "buster", name: "Buster", icon: "Buster.png", portrait: "Buster-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "A", hcTier: "B", hc: "Box Office", hcEffect: "Shield reflects 50% more damage." },
+    { id: "gray", name: "Gray", icon: "Gray.png", portrait: "Gray-Hypercharge.png", rarity: "Mythic", tier: "A", hcTier: "A", hc: "Dimensional Jump", hcEffect: "Portals pull enemies toward the exit." },
+    { id: "rt", name: "R-T", icon: "R-T.png", portrait: "R-T-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "B", hcTier: "B", hc: "Deep Surveillance", hcEffect: "Signal marks deal 10% more damage." },
+    { id: "willow", name: "Willow", icon: "Willow.png", portrait: "Willow-Hypercharge.png", rarity: "Mythic", tier: "D", hcTier: "C", hc: "Mind Siphon", hcEffect: "Hexed enemies move 20% faster." },
+    { id: "doug", name: "Doug", icon: "Doug.png", portrait: "Doug-Hypercharge.png", rarity: "Mythic", tier: "B", hcTier: "A", hc: "Second Serving", hcEffect: "Resurrected allies get a speed boost." },
+    { id: "chuck", name: "Chuck", icon: "Chuck.png", portrait: "Chuck-Hypercharge.png", rarity: "Mythic", tier: "A", hcTier: "B", hc: "Full Steam Ahead", hcEffect: "Can place a 5th post." },
+    { id: "charlie", name: "Charlie", icon: "Charlie.png", portrait: "Charlie-Hypercharge.png", rarity: "Mythic", wasChroma: true, tier: "S", hcTier: "S", hc: "Pestilence", hcEffect: "Cocooned enemies take decay damage." },
+    { id: "mico", name: "Mico", icon: "Mico.png", portrait: "Mico-Hypercharge.png", rarity: "Mythic", tier: "B", hcTier: "A", hc: "Sound Check", hcEffect: "Super landing radius stuns enemies." },
+    { id: "melodie", name: "Melodie", icon: "Melodie.png", portrait: "Melodie-Hypercharge.png", rarity: "Mythic", tier: "S", hcTier: "A", hc: "Encore", hcEffect: "Notes travel 20% faster." },
+    { id: "lily", name: "Lily", icon: "Lily.png", portrait: "Lily-Hypercharge.png", rarity: "Mythic", tier: "S", hcTier: "A", hc: "Shadow Sting", hcEffect: "AOE Shadow Realm pull." },
+    { id: "clancy", name: "Clancy", icon: "Clancy.png", portrait: "Clancy-Hypercharge.png", rarity: "Mythic", tier: "S", hcTier: "S", hc: "Recall of Duty", hcEffect: "Super paintballs pierce and return." },
+    { id: "moe", name: "Moe", icon: "Moe.png", portrait: "Moe-Hypercharge.png", rarity: "Mythic", tier: "S", hcTier: "A", hc: "Rat Race", hcEffect: "Super drill travels faster." },
+    { id: "jaeyong", name: "Jae-Yong", icon: "Jae-Yong.png", portrait: "Jae-Yong-Hypercharge.png", rarity: "Mythic", tier: "S", hcTier: "A", hc: "Crowd-Pleaser", hcEffect: "Super provides 15% shield to allies." },
+    { id: "juju", name: "Juju", icon: "Juju.png", portrait: "Juju-Hypercharge.png", rarity: "Mythic", tier: "A", hcTier: "B", hc: "Elemental Overload", hcEffect: "Doll gains a permanent shield." },
+    { id: "glowbert", name: "Glowbert", icon: "Glowbert.png", portrait: "Glowbert.png", rarity: "Mythic", tier: "A", hcTier: "N/A", hc: "None", hcEffect: "No Hypercharge released yet." },
+
+    // --- LEGENDARY ---
+    { id: "spike", name: "Spike", icon: "Spike.png", portrait: "Spike-Hypercharge.png", rarity: "Legendary", tier: "A", hcTier: "A", hc: "Blooming Season", hcEffect: "Larger slow area." },
+    { id: "crow", name: "Crow", icon: "Crow.png", portrait: "Crow-Hypercharge.png", rarity: "Legendary", tier: "B", hcTier: "S", hc: "Utility Knife", hcEffect: "Daggers pierce and return." },
+    { id: "leon", name: "Leon", icon: "Leon.png", portrait: "Leon-Hypercharge.png", rarity: "Legendary", tier: "S", hcTier: "S", hc: "Liminal Space", hcEffect: "Attack while invisible." },
+    { id: "sandy", name: "Sandy", icon: "Sandy.png", portrait: "Sandy-Hypercharge.png", rarity: "Legendary", tier: "A", hcTier: "A", hc: "Swift Sands", hcEffect: "Ally speed boost in storm." },
+    { id: "amber", name: "Amber", icon: "Amber.png", portrait: "Amber-Hypercharge.png", rarity: "Legendary", tier: "B", hcTier: "B", hc: "Inferno Torrent", hcEffect: "Oil puddles damage early." },
+    { id: "meg", name: "Meg", icon: "Meg.png", portrait: "Meg-Hypercharge.png", rarity: "Legendary", tier: "A", hcTier: "B", hc: "Titanium Tech", hcEffect: "Mecha swing shockwave." },
+    { id: "surge", name: "Surge", icon: "Surge.png", portrait: "Surge-Hypercharge.png", rarity: "Legendary", wasChroma: true, tier: "S", hcTier: "S", hc: "Ultimate Evolution", hcEffect: "Instantly reaches Level 5." },
+    { id: "chester", name: "Chester", icon: "Chester.png", portrait: "Chester-Hypercharge.png", rarity: "Legendary", tier: "A", hcTier: "S", hc: "Jackpot!", hcEffect: "Two Supers at once." },
+    { id: "cordelius", name: "Cordelius", icon: "Cordelius.png", portrait: "Cordelius-Hypercharge.png", rarity: "Legendary", wasChroma: true, tier: "S", hcTier: "A", hc: "Complete Darkness", hcEffect: "Silence in Shadow Realm." },
+    { id: "kit", name: "Kit", icon: "Kit.png", portrait: "Kit-Hypercharge.png", rarity: "Legendary", tier: "A", hcTier: "B", hc: "Nine Lives", hcEffect: "Attached allies gain 20% damage reduction." },
+    { id: "draco", name: "Draco", icon: "Draco.png", portrait: "Draco-Hypercharge.png", rarity: "Legendary", tier: "A", hcTier: "A", hc: "Dragon's Breath", hcEffect: "Fire breath leaves a trail." },
+    { id: "kenji", name: "Kenji", icon: "Kenji.png", portrait: "Kenji-Hypercharge.png", rarity: "Legendary", tier: "S", hcTier: "S", hc: "Sashimi Slash", hcEffect: "100% lifesteal during Super." }
+];
 
     function renderList() {
         const listContainer = document.getElementById('brawler-list');
