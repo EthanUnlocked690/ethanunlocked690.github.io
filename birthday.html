@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EthanUnlocked | Hypercharged Birthday</title>
+    <style>
+        :root {
+            --hc-purple: #bc13fe;
+            --hc-glow: #ff00ff;
+            --hc-cyan: #00f3ff;
+        }
+
+        body {
+            margin: 0;
+            background: #020205;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* --- THE PURPLE FLAME OUTLINE EFFECT --- */
+        .character-container {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            margin-bottom: 20px;
+            z-index: 5;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* This creates the "Flames" outline */
+            filter: 
+                drop-shadow(0 0 10px var(--hc-purple))
+                drop-shadow(0 0 20px var(--hc-glow))
+                drop-shadow(0 0 40px var(--hc-purple));
+            animation: flamePulse 1.5s infinite alternate;
+        }
+
+        @keyframes flamePulse {
+            0% { filter: drop-shadow(0 0 10px var(--hc-purple)) drop-shadow(0 0 20px var(--hc-glow)); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 20px var(--hc-purple)) drop-shadow(0 0 40px var(--hc-glow)) drop-shadow(0 0 60px var(--hc-purple)); transform: scale(1.02); }
+        }
+
+        /* --- HYPERCHARGE ICONS (⚡) --- */
+        .hc-icon {
+            position: absolute;
+            font-size: 2rem;
+            color: white;
+            text-shadow: 0 0 10px var(--hc-purple), 0 0 20px var(--hc-glow);
+            animation: float-up 5s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- UI ELEMENTS --- */
+        .ui-panel {
+            text-align: center;
+            padding: 20px;
+            background: rgba(188, 19, 254, 0.1);
+            border: 2px solid var(--hc-purple);
+            border-radius: 15px;
+            box-shadow: inset 0 0 20px var(--hc-purple);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        #timer {
+            font-size: 2.5rem;
+            color: var(--hc-cyan);
+            text-shadow: 0 0 15px var(--hc-cyan);
+            margin: 10px 0;
+        }
+
+        .activate-btn {
+            background: linear-gradient(45deg, var(--hc-purple), var(--hc-glow));
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px var(--hc-purple);
+        }
+
+        .activate-btn:active { transform: scale(0.9); }
+
+        /* --- SCREEN SHAKE (When Hypercharged) --- */
+        .shake { animation: screen-shake 0.1s infinite; }
+        @keyframes screen-shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -2px); }
+            100% { transform: translate(1px, 2px); }
+        }
+
+    </style>
+</head>
+<body id="mainBody">
+
+    <div class="character-container">
+        <img src="https://www.pngall.com/wp-content/uploads/5/Gaming-Character-PNG-Image.png" class="hero-img" alt="EthanUnlocked">
+    </div>
+
+    <div class="ui-panel">
+        <h1 style="margin:0; letter-spacing: 5px;">ETHANUNLOCKED</h1>
+        <div id="timer">00:00:00:00</div>
+        <button class="activate-btn" onclick="goHypercharge()">HYPERCHARGE ⚡</button>
+    </div>
+
+    <script>
+        // 1. COUNTDOWN TO JAN 25
+        function updateTimer() {
+            const now = new Date();
+            let target = new Date(now.getFullYear(), 0, 25);
+            if (now > target) target.setFullYear(now.getFullYear() + 1);
+            
+            const diff = target - now;
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            
+            document.getElementById('timer').innerText = `${d}D ${h}H ${m}M ${s}S`;
+        }
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        // 2. CREATE FLOATING HYPERCHARGE ICONS (⚡)
+        function spawnIcon() {
+            const icon = document.createElement('div');
+            icon.className = 'hc-icon';
+            icon.innerHTML = '⚡';
+            icon.style.left = Math.random() * 100 + 'vw';
+            icon.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            document.body.appendChild(icon);
+            setTimeout(() => icon.remove(), 5000);
+        }
+        setInterval(spawnIcon, 400);
+
+        // 3. TRIGGER HYPERCHARGE MODE
+        function goHypercharge() {
+            const body = document.getElementById('mainBody');
+            body.classList.add('shake');
+            
+            // Speed up the flame pulse
+            document.querySelector('.hero-img').style.animationDuration = '0.2s';
+            
+            // Burst of icons
+            for(let i=0; i<20; i++) { setTimeout(spawnIcon, i*50); }
+
+            setTimeout(() => {
+                body.classList.remove('shake');
+                document.querySelector('.hero-img').style.animationDuration = '1.5s';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
