@@ -3,170 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EthanUnlocked | Hypercharged Birthday</title>
+    <title>Pro-Stream Image Engine</title>
     <style>
         :root {
-            --hc-purple: #bc13fe;
-            --hc-glow: #ff00ff;
-            --hc-cyan: #00f3ff;
+            --bg-dark: #0a0a0c;
+            --panel-bg: #16161a;
+            --accent-blue: #2563eb;
+            --border-color: #2d2d35;
+            --text-main: #e4e4e7;
         }
 
         body {
             margin: 0;
-            background: #020205;
-            color: white;
-            font-family: 'Orbitron', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: grid;
+            grid-template-columns: 300px 1fr 320px;
+            height: 100vh;
             overflow: hidden;
+        }
+
+        /* Toolbar Styles */
+        #toolbar {
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .tool-section {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: #71717a; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        button {
+            background: #27272a;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover { background: var(--accent-blue); }
+        button.active { background: var(--accent-blue); border-color: white; }
+
+        input[type="range"], input[type="color"] { width: 100%; cursor: pointer; }
+
+        /* Canvas Viewport */
+        #viewport {
+            display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-        }
-
-        /* --- THE PURPLE FLAME OUTLINE EFFECT --- */
-        .character-container {
+            background: #000;
             position: relative;
-            width: 300px;
-            height: 400px;
-            margin-bottom: 20px;
-            z-index: 5;
+            outline: none;
         }
 
-        .hero-img {
+        canvas {
+            max-width: 95%;
+            max-height: 95%;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            image-rendering: pixelated; /* Essential for pixel mode art */
+        }
+
+        /* AI Chatbot Area */
+        #ai-console {
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-log {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .msg { padding: 8px 12px; border-radius: 6px; line-height: 1.4; }
+        .msg-ai { background: #1e1e24; border-left: 3px solid var(--accent-blue); }
+        .msg-user { background: #27272a; align-self: flex-end; }
+
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        #ai-prompt {
             width: 100%;
-            height: 100%;
-            object-fit: contain;
-            /* This creates the "Flames" outline */
-            filter: 
-                drop-shadow(0 0 10px var(--hc-purple))
-                drop-shadow(0 0 20px var(--hc-glow))
-                drop-shadow(0 0 40px var(--hc-purple));
-            animation: flamePulse 1.5s infinite alternate;
-        }
-
-        @keyframes flamePulse {
-            0% { filter: drop-shadow(0 0 10px var(--hc-purple)) drop-shadow(0 0 20px var(--hc-glow)); transform: scale(1); }
-            100% { filter: drop-shadow(0 0 20px var(--hc-purple)) drop-shadow(0 0 40px var(--hc-glow)) drop-shadow(0 0 60px var(--hc-purple)); transform: scale(1.02); }
-        }
-
-        /* --- HYPERCHARGE ICONS (⚡) --- */
-        .hc-icon {
-            position: absolute;
-            font-size: 2rem;
+            background: #0a0a0c;
+            border: 1px solid var(--border-color);
+            padding: 12px;
             color: white;
-            text-shadow: 0 0 10px var(--hc-purple), 0 0 20px var(--hc-glow);
-            animation: float-up 5s linear infinite;
-            z-index: 1;
+            border-radius: 4px;
+            box-sizing: border-box;
         }
-
-        @keyframes float-up {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
-        }
-
-        /* --- UI ELEMENTS --- */
-        .ui-panel {
-            text-align: center;
-            padding: 20px;
-            background: rgba(188, 19, 254, 0.1);
-            border: 2px solid var(--hc-purple);
-            border-radius: 15px;
-            box-shadow: inset 0 0 20px var(--hc-purple);
-            backdrop-filter: blur(5px);
-            z-index: 10;
-        }
-
-        #timer {
-            font-size: 2.5rem;
-            color: var(--hc-cyan);
-            text-shadow: 0 0 15px var(--hc-cyan);
-            margin: 10px 0;
-        }
-
-        .activate-btn {
-            background: linear-gradient(45deg, var(--hc-purple), var(--hc-glow));
-            border: none;
-            color: white;
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 0 0 20px var(--hc-purple);
-        }
-
-        .activate-btn:active { transform: scale(0.9); }
-
-        /* --- SCREEN SHAKE (When Hypercharged) --- */
-        .shake { animation: screen-shake 0.1s infinite; }
-        @keyframes screen-shake {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -2px); }
-            100% { transform: translate(1px, 2px); }
-        }
-
     </style>
 </head>
-<body id="mainBody">
+<body>
 
-    <div class="character-container">
-        <img src="https://www.pngall.com/wp-content/uploads/5/Gaming-Character-PNG-Image.png" class="hero-img" alt="EthanUnlocked">
-    </div>
+    <aside id="toolbar">
+        <h2>Editor Pro</h2>
+        
+        <div class="tool-section">
+            <h3>File</h3>
+            <input type="file" id="img-upload" style="display:none">
+            <button onclick="document.getElementById('img-upload').click()" style="width:100%">Import Image</button>
+            <button onclick="exportImage()" style="width:100%; margin-top:8px;">Export PNG</button>
+        </div>
 
-    <div class="ui-panel">
-        <h1 style="margin:0; letter-spacing: 5px;">ETHANUNLOCKED</h1>
-        <div id="timer">00:00:00:00</div>
-        <button class="activate-btn" onclick="goHypercharge()">HYPERCHARGE ⚡</button>
-    </div>
+        <div class="tool-section">
+            <h3>Drawing Tools</h3>
+            <div class="btn-grid">
+                <button class="active" id="tool-brush" onclick="setTool('brush')">Brush</button>
+                <button id="tool-rect" onclick="setTool('rect')">Rect</button>
+                <button id="tool-pixel" onclick="setTool('pixel')">Pixel Mode</button>
+                <button onclick="clearCanvas()">Clear</button>
+            </div>
+        </div>
+
+        <div class="tool-section">
+            <h3>Brush Settings</h3>
+            <label>Size: <input type="range" id="size-slider" min="1" max="100" value="10"></label>
+            <label>Pixel Grid: <input type="range" id="grid-slider" min="4" max="50" value="20"></label>
+            <label>Color: <input type="color" id="color-hex" value="#2563eb"></label>
+        </div>
+
+        <div class="tool-section">
+            <h3>Filters</h3>
+            <button onclick="applyBW()" style="width:100%">Grayscale</button>
+            <button onclick="pixelateProcess()" style="width:100%; margin-top:8px;">Full Pixelate</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="mainCanvas"></canvas>
+    </main>
+
+    <aside id="ai-console">
+        <div style="padding:15px; border-bottom: 1px solid var(--border-color)">
+            <strong>AI Editor Assistant</strong>
+        </div>
+        <div id="chat-log">
+            <div class="msg msg-ai">System ready. You can ask me to "generate a landscape", "pixelate the image", or "make it black and white".</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="ai-prompt" placeholder="Type a command...">
+        </div>
+    </aside>
 
     <script>
-        // 1. COUNTDOWN TO JAN 25
-        function updateTimer() {
-            const now = new Date();
-            let target = new Date(now.getFullYear(), 0, 25);
-            if (now > target) target.setFullYear(now.getFullYear() + 1);
-            
-            const diff = target - now;
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            
-            document.getElementById('timer').innerText = `${d}D ${h}H ${m}M ${s}S`;
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const aiPrompt = document.getElementById('ai-prompt');
+        const chatLog = document.getElementById('chat-log');
+
+        let isDrawing = false;
+        let tool = 'brush';
+        let startX, startY;
+
+        // Initialize Canvas
+        canvas.width = 800;
+        canvas.height = 600;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // --- Interaction Logic ---
+
+        function setTool(t) {
+            tool = t;
+            document.querySelectorAll('#toolbar button').forEach(b => b.classList.remove('active'));
+            document.getElementById('tool-' + t)?.classList.add('active');
         }
-        setInterval(updateTimer, 1000);
-        updateTimer();
 
-        // 2. CREATE FLOATING HYPERCHARGE ICONS (⚡)
-        function spawnIcon() {
-            const icon = document.createElement('div');
-            icon.className = 'hc-icon';
-            icon.innerHTML = '⚡';
-            icon.style.left = Math.random() * 100 + 'vw';
-            icon.style.fontSize = (Math.random() * 20 + 20) + 'px';
-            document.body.appendChild(icon);
-            setTimeout(() => icon.remove(), 5000);
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const {x, y} = getMousePos(e);
+            startX = x;
+            startY = y;
+            if (tool === 'brush') {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+            if (tool === 'pixel') drawPixel(x, y);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            const {x, y} = getMousePos(e);
+
+            if (tool === 'brush') {
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.strokeStyle = document.getElementById('color-hex').value;
+                ctx.lineWidth = document.getElementById('size-slider').value;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            } else if (tool === 'pixel') {
+                drawPixel(x, y);
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (tool === 'rect') {
+                const {x, y} = getMousePos(e);
+                ctx.fillStyle = document.getElementById('color-hex').value;
+                ctx.fillRect(startX, startY, x - startX, y - startY);
+            }
+            isDrawing = false;
+        });
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
         }
-        setInterval(spawnIcon, 400);
 
-        // 3. TRIGGER HYPERCHARGE MODE
-        function goHypercharge() {
-            const body = document.getElementById('mainBody');
-            body.classList.add('shake');
-            
-            // Speed up the flame pulse
-            document.querySelector('.hero-img').style.animationDuration = '0.2s';
-            
-            // Burst of icons
-            for(let i=0; i<20; i++) { setTimeout(spawnIcon, i*50); }
+        // --- Core Pixel Mode Logic ---
+        function drawPixel(x, y) {
+            const gridSize = parseInt(document.getElementById('grid-slider').value);
+            const gx = Math.floor(x / gridSize) * gridSize;
+            const gy = Math.floor(y / gridSize) * gridSize;
+            ctx.fillStyle = document.getElementById('color-hex').value;
+            ctx.fillRect(gx, gy, gridSize, gridSize);
+        }
 
+        // --- Advanced Filters ---
+        function applyBW() {
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const d = imgData.data;
+            for (let i = 0; i < d.length; i += 4) {
+                let avg = (d[i] + d[i+1] + d[i+2]) / 3;
+                d[i] = d[i+1] = d[i+2] = avg;
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function pixelateProcess() {
+            const size = parseInt(document.getElementById('grid-slider').value);
+            const w = canvas.width;
+            const h = canvas.height;
+            for (let y = 0; y < h; y += size) {
+                for (let x = 0; x < w; x += size) {
+                    const pixels = ctx.getImageData(x, y, 1, 1).data;
+                    ctx.fillStyle = `rgb(${pixels[0]},${pixels[1]},${pixels[2]})`;
+                    ctx.fillRect(x, y, size, size);
+                }
+            }
+        }
+
+        // --- AI System Logic ---
+        aiPrompt.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const prompt = aiPrompt.value;
+                addChat('user', prompt);
+                processAICommand(prompt.toLowerCase());
+                aiPrompt.value = '';
+            }
+        });
+
+        function addChat(role, text) {
+            const div = document.createElement('div');
+            div.className = `msg msg-${role}`;
+            div.innerText = (role === 'ai' ? 'AI: ' : '') + text;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function processAICommand(cmd) {
             setTimeout(() => {
-                body.classList.remove('shake');
-                document.querySelector('.hero-img').style.animationDuration = '1.5s';
-            }, 2000);
+                if (cmd.includes('generate')) {
+                    addChat('ai', "Generating neural pattern based on prompt...");
+                    generateNoiseArt();
+                } else if (cmd.includes('pixel')) {
+                    pixelateProcess();
+                    addChat('ai', "Pixelation filter applied.");
+                } else if (cmd.includes('bw') || cmd.includes('black')) {
+                    applyBW();
+                    addChat('ai', "Converted to grayscale.");
+                } else {
+                    addChat('ai', "Command not recognized. Try 'generate art' or 'pixelate'.");
+                }
+            }, 600);
+        }
+
+        function generateNoiseArt() {
+            // Advanced Procedural Pattern Generation
+            for (let i = 0; i < 50; i++) {
+                ctx.fillStyle = `hsl(${Math.random() * 360}, 60%, 50%)`;
+                ctx.beginPath();
+                ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*100, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+
+        // --- File Operations ---
+        document.getElementById('img-upload').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
+        function clearCanvas() {
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function exportImage() {
+            const link = document.createElement('a');
+            link.download = 'edited-image.png';
+            link.href = canvas.toDataURL();
+            link.click();
         }
     </script>
 </body>
