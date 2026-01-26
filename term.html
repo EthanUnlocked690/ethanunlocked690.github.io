@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; width: 100%; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-image: url('terms.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover; 
+            background-attachment: fixed; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .terms-container {
+            background-color: rgba(255, 255, 255, 0.98);
+            width: 100%;
+            max-width: 800px;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 50px 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+            perspective: 1000px; 
+        }
+
+        .header-image-wrapper { position: relative; display: inline-block; }
+        .main-header-img { max-width: 280px; height: auto; display: block; }
+
+        .jump-img {
+            position: absolute;
+            top: -25px;
+            right: -35px;
+            width: 70px;
+            z-index: 2;
+        }
+
+        .create-img {
+            position: absolute;
+            bottom: -20px;
+            right: -40px;
+            width: 80px;
+            z-index: 3;
+            transform: rotateZ(15deg) rotateY(-20deg);
+            filter: drop-shadow(5px 10px 8px rgba(0,0,0,0.3));
+        }
+
+        .content-box {
+            padding: 40px;
+            overflow-y: auto;
+            color: #444;
+            line-height: 1.7;
+            background-color: #ffffff;
+        }
+
+        .content-box h2 { margin: 20px 0 10px; font-size: 1.3rem; color: #000; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .content-box p { margin-bottom: 15px; }
+
+        .actions {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f9f9f9;
+            border-top: 1px solid #eee;
+        }
+
+        .button-group { display: flex; gap: 10px; }
+
+        button { padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-back { background: #6c757d; color: white; display: none; }
+        .btn-decline { background: #e0e0e0; color: #444; }
+        .btn-accept { background: #28a745; color: white; }
+        .btn-accept:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .content-box::-webkit-scrollbar { width: 6px; }
+        .content-box::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="terms-container">
+        <div class="header">
+            <div class="header-image-wrapper">
+                <img src="terms-text.png" alt="Header Text" class="main-header-img">
+                <img src="jump.png" alt="Jump" class="jump-img">
+                <img src="create.png" alt="Create" class="create-img">
+            </div>
+            <h1>Terms and Conditions</h1>
+        </div>
+
+        <div class="content-box" id="termsContent">
+            
+            <h2>1. Introduction</h2>
+            <p>Delete this and paste your own text here!</p>
+            
+            </div>
+
+        <div class="actions">
+            <span id="statusMsg" style="font-size: 0.85rem; color: #777;">Scroll to read all terms</span>
+            <div class="button-group">
+                <button class="btn-back" id="backBtn" onclick="window.location.href='book.html'">Back to Booking</button>
+                <button class="btn-decline" onclick="window.location.href='about:blank'">Decline</button>
+                <button class="btn-accept" id="acceptBtn" disabled onclick="window.location.href='book.html'">I Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const termsBox = document.getElementById('termsContent');
+        const acceptBtn = document.getElementById('acceptBtn');
+        const backBtn = document.getElementById('backBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        termsBox.addEventListener('scroll', () => {
+            const isBottom = termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - 30;
+            if (isBottom) {
+                acceptBtn.disabled = false;
+                backBtn.style.display = "block";
+                statusMsg.textContent = "Terms read.";
+            }
+        });
+    </script>
+</body>
+</html>
