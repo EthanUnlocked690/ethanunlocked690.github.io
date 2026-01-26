@@ -153,14 +153,17 @@
         .forgot-link { display:block; text-align:center; margin-top:8px; color:var(--color-secondary); text-decoration:underline; cursor:pointer; }
         .info-message { font-size:0.95em; color:#ccc; text-align:center; margin-top:8px; display:none; }
 
+        /* small helper list of holidays */
+        .holiday-list { margin-top:10px; font-size:0.95em; color:#bbb; text-align:center; }
+
     </style>
 </head>
 <body>
     <div class="container" id="app-container">
         <section id="auth-section">
             <h2>Geometry Dash Creator Club</h2>
-            <div class="schedule-info">
-                📅 **Club Schedule:** Weekends | 11:00 AM - 3:00 PM
+            <div class="schedule-info" id="schedule-info">
+                📅 <strong>Club Schedule:</strong> Public Holidays — see available dates below
             </div>
             <h3 style="color: var(--color-light);">Sign In or Sign Up</h3>
             
@@ -244,7 +247,8 @@
         <section id="booking-form-section" class="hidden">
             <h2>Geometry Dash Club Booking</h2>
             <div class="schedule-info">
-                📅 **Club Schedule:** Weekends | 11:00 AM - 3:00 PM
+                📅 <strong>Club Schedule:</strong> Public Holidays — sessions held only on listed public holidays
+                <div id="holiday-list" class="holiday-list"></div>
             </div>
 
             <form id="signup-form-app">
@@ -285,17 +289,15 @@
                 <hr style="border-color: #555; margin-top: 30px;"/>
 
                 <div id="date-selection-section">
-                    <h3 style="color: var(--color-primary); margin-top: 0; text-align: center;">📅 Choose Preferred Day & Time Slot</h3>
+                    <h3 style="color: var(--color-primary); margin-top: 0; text-align: center;">📅 Choose Preferred Public Holiday Date</h3>
 
                     <div class="form-group">
-                        <label for="clubDay">Select Preferred Weekend Day <span style="color:var(--color-error);">*</span></label>
+                        <label for="clubDay">Select Preferred Holiday Date <span style="color:var(--color-error);">*</span></label>
                         <select id="clubDay" name="clubDay" required>
-                            <option value="" disabled selected>Select Day (Saturday or Sunday)</option>
-                            <option value="Saturday">Saturday</option>
-                            <option value="Sunday">Sunday</option>
+                            <!-- Options populated dynamically from publicHolidays -->
                         </select>
-                        <div class="error-message" id="error-clubDay">Please select a preferred weekend day.</div>
-                        <p style="font-size: 0.85em; color: #888; margin-top: 5px;">**The coordinator will contact you to confirm the exact date based on availability.**</p>
+                        <div class="error-message" id="error-clubDay">Please select a valid public holiday from the list.</div>
+                        <p style="font-size: 0.85em; color: #888; margin-top: 5px;">Only the dates shown above (public holidays) are valid for club sessions.</p>
                     </div>
 
                     <div class="date-time-group">
@@ -306,7 +308,7 @@
                                     <option value="" disabled selected>Select Drop-off</option>
                                     <option value="11:00">11:00 AM</option>
                                     <option value="12:00">12:00 PM</option>
-                                    <option value="13:00">1:00 PM</option>
+                                    <option value="13:00">13:00</option>
                                 </select>
                                 <div class="error-message" id="error-dropOffTime">Drop-off time is required.</div>
                             </div>
@@ -339,7 +341,7 @@
                 <button type="submit">Complete Club Booking Request</button>
 
                 <div id="result-message" class="alert-message"></div>
-                <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
+                <button class="secondary" type="button" onclick="showSection('dashboard-section')">Back to Dashboard</button>
             </form>
             
         </section>
@@ -374,6 +376,16 @@
         
         const ADMIN_USERNAME = "EthanUnlocked";
         const ADMIN_PASSWORD = "CoolGamer67";
+
+        // Public holidays: list of available dates (ISO) and labels.
+        // Replace or extend these dates with your local public holidays as needed.
+        const publicHolidays = [
+            { date: '2026-01-01', name: "New Year's Day" },
+            { date: '2026-04-10', name: "Spring Holiday (example)" },
+            { date: '2026-07-04', name: "National Day" },
+            { date: '2026-11-26', name: "Thanksgiving (example)" },
+            { date: '2026-12-25', name: "Christmas Day" }
+        ];
 
         // Global variable to hold current user info
         let currentUser = null; 
@@ -417,7 +429,8 @@
             document.querySelectorAll('#app-container > section').forEach(section => {
                 section.classList.add('hidden');
             });
-            document.getElementById(sectionId).classList.remove('hidden');
+            const el = document.getElementById(sectionId);
+            if (el) el.classList.remove('hidden');
         }
 
         /** Helper to convert military time to 12-hour format */
@@ -428,6 +441,31 @@
             if (hour === 0) return "12:00 AM";
             if (hour < 12) return `${hour}:00 AM`;
             return `${hour - 12}:00 PM`;
+        }
+
+        /** Format holiday date string YYYY-MM-DD to a friendlier format */
+        function formatDateISO(iso) {
+            if (!iso) return '';
+            const d = new Date(iso + 'T00:00:00');
+            return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        /** Populate holiday options into the select and show short list in schedule area */
+        function populateHolidayOptions() {
+            const select = document.getElementById('clubDay');
+            const listContainer = document.getElementById('holiday-list');
+            if (select) {
+                select.innerHTML = '<option value="" disabled selected>Select a public holiday date</option>';
+                publicHolidays.forEach(h => {
+                    const opt = document.createElement('option');
+                    opt.value = h.date;
+                    opt.textContent = `${formatDateISO(h.date)} — ${h.name}`;
+                    select.appendChild(opt);
+                });
+            }
+            if (listContainer) {
+                listContainer.innerHTML = publicHolidays.map(h => `${formatDateISO(h.date)} (${h.name})`).join(' • ');
+            }
         }
 
         // --- 2. AUTHENTICATION LOGIC ---
@@ -447,7 +485,7 @@
             const usernameInput = document.getElementById('login-username').value;
             const passwordInput = document.getElementById('login-password').value;
             const statusDiv = document.getElementById('login-status');
-            statusDiv.style.display = 'none';
+            if (statusDiv) statusDiv.style.display = 'none';
 
             const users = getUsers();
             const user = users.find(u => u.username === usernameInput && u.password === passwordInput);
@@ -457,8 +495,10 @@
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 showDashboard();
             } else {
-                statusDiv.innerText = "Invalid username or password.";
-                statusDiv.style.display = 'block';
+                if (statusDiv) {
+                    statusDiv.innerText = "Invalid username or password.";
+                    statusDiv.style.display = 'block';
+                }
             }
         }
 
@@ -469,21 +509,25 @@
 
             const users = getUsers();
             const statusDiv = document.getElementById('login-status');
-            statusDiv.style.display = 'none';
+            if (statusDiv) statusDiv.style.display = 'none';
 
             const found = users.find(u => (u.username && u.username.toLowerCase() === identifier.toLowerCase()) || (u.email && u.email.toLowerCase() === identifier.toLowerCase()));
             if (found) {
-                const coordinatorEmail = "ethan.unlocked@gmail.com";
+                const coordinatorEmail = "ethan.ioannou@icloud.com";
                 const subject = encodeURIComponent(`Password reset request for ${found.username}`);
                 const body = encodeURIComponent(`Hello Ethan,\n\nPlease assist with resetting the password for the following account:\n\nUsername: ${found.username}\nEmail: ${found.email}\n\nThank you.`);
                 const mailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
                 window.open(mailtoLink, '_blank');
 
-                statusDiv.innerText = "A password reset request has been opened in your mail client. Follow the email to complete the reset.";
-                statusDiv.style.display = 'block';
+                if (statusDiv) {
+                    statusDiv.innerText = "A password reset request has been opened in your mail client. Follow the email to complete the reset.";
+                    statusDiv.style.display = 'block';
+                }
             } else {
-                statusDiv.innerText = "No account found for that username or email.";
-                statusDiv.style.display = 'block';
+                if (statusDiv) {
+                    statusDiv.innerText = "No account found for that username or email.";
+                    statusDiv.style.display = 'block';
+                }
             }
         }
 
@@ -524,18 +568,22 @@
             const password = document.getElementById('signup-password').value;
             const email = document.getElementById('signup-email').value.trim();
             const statusDiv = document.getElementById('signup-status');
-            statusDiv.style.display = 'none';
+            if (statusDiv) statusDiv.style.display = 'none';
 
             if (!username || !password || !email) {
-                statusDiv.innerText = "Please complete all required fields.";
-                statusDiv.style.display = 'block';
+                if (statusDiv) {
+                    statusDiv.innerText = "Please complete all required fields.";
+                    statusDiv.style.display = 'block';
+                }
                 return;
             }
 
             const users = getUsers();
             if (users.find(u => u.username === username)) {
-                statusDiv.innerText = "Username already exists.";
-                statusDiv.style.display = 'block';
+                if (statusDiv) {
+                    statusDiv.innerText = "Username already exists.";
+                    statusDiv.style.display = 'block';
+                }
                 return;
             }
 
@@ -562,8 +610,10 @@
             localStorage.removeItem('currentUser');
             currentUser = null;
             showSection('auth-section');
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
+            const lu = document.getElementById('login-username');
+            const lp = document.getElementById('login-password');
+            if (lu) lu.value = '';
+            if (lp) lp.value = '';
         }
         
         // --- 3. DASHBOARD / UI LOGIC ---
@@ -571,16 +621,21 @@
         function showDashboard() {
             if (!currentUser) return;
 
-            document.getElementById('welcome-message').innerText = `Welcome, ${currentUser.username}!`;
+            const welcome = document.getElementById('welcome-message');
+            if (welcome) welcome.innerText = `Welcome, ${currentUser.username}!`;
             showSection('dashboard-section');
 
             if (currentUser.is_admin) {
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                document.getElementById('user-dash-title').innerText = 'Your Admin Bookings';
+                const adminDash = document.getElementById('admin-dashboard');
+                if (adminDash) adminDash.classList.remove('hidden');
+                const title = document.getElementById('user-dash-title');
+                if (title) title.innerText = 'Your Admin Bookings';
                 renderAdminBookings();
             } else {
-                document.getElementById('admin-dashboard').classList.add('hidden');
-                document.getElementById('user-dash-title').innerText = 'Your Recent Bookings';
+                const adminDash = document.getElementById('admin-dashboard');
+                if (adminDash) adminDash.classList.add('hidden');
+                const title = document.getElementById('user-dash-title');
+                if (title) title.innerText = 'Your Recent Bookings';
             }
             
             renderUserBookings();
@@ -588,9 +643,10 @@
 
         function showBookingForm() {
             // Pre-fill fields with user data if available
-            document.getElementById('firstName').value = currentUser.firstName || '';
-            document.getElementById('lastName').value = currentUser.lastName || '';
-            // Email and Phone are intentionally not pre-filled unless stored in user profile (currently only storing name on signup/login)
+            const fn = document.getElementById('firstName');
+            const ln = document.getElementById('lastName');
+            if (fn) fn.value = currentUser && currentUser.firstName ? currentUser.firstName : '';
+            if (ln) ln.value = currentUser && currentUser.lastName ? currentUser.lastName : '';
             showSection('booking-form-section');
         }
 
@@ -602,6 +658,7 @@
             if (!currentUser) return;
             const userBookings = bookings.filter(b => b.userId === currentUser.id);
             const listContainer = document.getElementById('user-booking-list');
+            if (!listContainer) return;
             listContainer.innerHTML = '';
 
             if (userBookings.length === 0) {
@@ -614,7 +671,7 @@
                 const html = `
                     <div class="booking-list-item" style="border-left-color: var(--color-${booking.status.toLowerCase()});">
                         <div>
-                            <strong>Day: ${booking.preferredDay}</strong> (${booking.dropOffTime} - ${booking.pickUpTime})<br>
+                            <strong>Date: ${formatDateISO(booking.preferredDay)}</strong> (${booking.dropOffTime} - ${booking.pickUpTime})<br>
                             Kids: ${booking.numKids} | Parent: ${booking.parentName}
                         </div>
                         <span class="status-badge ${statusClass}">${booking.status.toUpperCase()}</span>
@@ -628,6 +685,7 @@
             const bookings = getBookings();
             const pendingBookings = bookings.filter(b => b.status === 'Pending');
             const listContainer = document.getElementById('admin-booking-list');
+            if (!listContainer) return;
             listContainer.innerHTML = '';
 
             if (pendingBookings.length === 0) {
@@ -640,7 +698,7 @@
                     <div class="booking-list-item admin-item" style="border-left-color: var(--color-pending);">
                         <div style="flex-grow: 1;">
                             <strong>User: ${booking.username}</strong> | Kids: ${booking.numKids}<br>
-                            Pref: ${booking.preferredDay} (${booking.dropOffTime} - ${booking.pickUpTime})<br>
+                            Date: ${formatDateISO(booking.preferredDay)} (${booking.dropOffTime} - ${booking.pickUpTime})<br>
                             Email: ${booking.parentEmail}
                         </div>
                         <div id="admin-actions">
@@ -659,15 +717,12 @@
 
             if (bookingIndex > -1) {
                 bookings[bookingIndex].status = newStatus;
-                // Optional: Ethan can update the confirmed date here in a real app, but for this mock, we just update status.
                 saveBookings(bookings);
                 
-                // Re-render dashboards
                 renderAdminBookings();
                 renderUserBookings();
                 alert(`Booking ${bookingId} status changed to ${newStatus}.`);
 
-                // Send Confirmation Email Mock
                 if (newStatus === 'Confirmed') {
                     const booking = bookings[bookingIndex];
                     const emailRecipient = booking.parentEmail;
@@ -677,7 +732,7 @@
 
 Your booking request for the Geometry Dash Level Creator Club has been CONFIRMED.
 
-Preferred day: ${booking.preferredDay}
+Date: ${formatDateISO(booking.preferredDay)}
 Time: ${booking.dropOffTime} - ${booking.pickUpTime}
 Children: ${booking.numKids}
 
@@ -711,10 +766,9 @@ Geometry Dash Club Coordinator`
             const data = getBookingData();
             
             // 1. Save Parent Name to User Profile (if empty)
-            if (!currentUser.firstName && data.firstName) {
+            if (currentUser && !currentUser.firstName && data.firstName) {
                 currentUser.firstName = data.firstName;
                 currentUser.lastName = data.lastName;
-                // Update localStorage for current user details
                 let users = getUsers();
                 const userIndex = users.findIndex(u => u.id === currentUser.id);
                 if (userIndex > -1) {
@@ -722,7 +776,7 @@ Geometry Dash Club Coordinator`
                     users[userIndex].lastName = data.lastName;
                     localStorage.setItem('clubUsers', JSON.stringify(users));
                 }
-                localStorage.setItem('currentUser', JSON.stringify(currentUser)); // Update current session
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
             }
 
             // 2. Create and Save Booking Record
@@ -731,13 +785,13 @@ Geometry Dash Club Coordinator`
                 userId: currentUser.id,
                 username: currentUser.username,
                 parentName: `${data.firstName} ${data.lastName}`,
-                parentEmail: currentUser.email, // Email from signup
+                parentEmail: currentUser.email || '',
                 phone: data.phone,
-                preferredDay: data.preferredDay,
+                preferredDay: data.preferredDay, // ISO date string
                 dropOffTime: data.dropOffTime,
                 pickUpTime: data.pickUpTime,
                 numKids: data.numKids,
-                status: 'Pending', // All new bookings are Pending
+                status: 'Pending',
                 created_at: new Date().toISOString()
             };
 
@@ -745,28 +799,26 @@ Geometry Dash Club Coordinator`
             bookings.push(newBooking);
             saveBookings(bookings);
 
-            // 3. Display Success Message and Email Ethan (Admin)
             displayFinalSuccess(data, newBooking.id);
-            renderUserBookings(); // Update user dashboard immediately
+            renderUserBookings();
             if (currentUser.is_admin) renderAdminBookings();
         }
         
         function getBookingData() {
             const form = document.getElementById('signup-form-app');
             const data = {};
-            // Using existing field IDs from the form section
             data.firstName = form.querySelector('#firstName').value.trim();
             data.lastName = form.querySelector('#lastName').value.trim();
             data.phone = form.querySelector('#phone').value.trim();
-            data.preferredDay = form.querySelector('#clubDay').value;
-            data.dropOffTime = formatTime(form.querySelector('#dropOffTime').value);
-            data.pickUpTime = formatTime(form.querySelector('#pickUpTime').value);
+            data.preferredDay = form.querySelector('#clubDay').value; // ISO date
+            data.dropOffTime = form.querySelector('#dropOffTime').value;
+            data.pickUpTime = form.querySelector('#pickUpTime').value;
             data.numKids = document.getElementById('hasChild').checked ? parseInt(document.getElementById('numKids').value, 10) : 0;
             return data;
         }
 
         function displayFinalSuccess(data, bookingId) {
-            const subject = encodeURIComponent(`NEW BOOKING REQUEST: ${data.preferredDay} - ${data.firstName} ${data.lastName} (${bookingId})`);
+            const subject = encodeURIComponent(`NEW BOOKING REQUEST: ${data.preferredDay} (${bookingId})`);
             
             let bodyText = `Hello Ethan,
 
@@ -777,8 +829,8 @@ Email: ${currentUser.email}
 Phone: ${data.phone}
 
 Booking Request:
-Preferred Day: ${data.preferredDay}
-Time Slot: ${data.dropOffTime} - ${data.pickUpTime}
+Date: ${formatDateISO(data.preferredDay)}
+Time Slot: ${formatTime(data.dropOffTime)} - ${formatTime(data.pickUpTime)}
 Children: ${data.numKids}
 Status: PENDING - Check Admin Dashboard to Confirm/Decline.
 
@@ -791,8 +843,8 @@ FEE STATUS: $10.00 per child, per session.
             if (resultEl) {
                 resultEl.innerHTML = `
                     <p>✅ <strong>REQUEST SUBMITTED! Booking ID: ${bookingId}</strong></p>
-                    <p>Thank you, <strong>${data.firstName}</strong>. Your request for a <strong>${data.preferredDay}</strong> session is <strong>PENDING</strong> confirmation.</p>
-                    <p style="color: var(--color-error); font-weight: bold; margin-top: 15px;">The coordinator will contact you to confirm the exact date and secure your slot.</p>
+                    <p>Thank you, <strong>${data.firstName}</strong>. Your request for <strong>${formatDateISO(data.preferredDay)}</strong> is <strong>PENDING</strong> confirmation.</p>
+                    <p style="color: var(--color-error); font-weight: bold; margin-top: 15px;">The coordinator will contact you to confirm the exact details and secure your slot.</p>
                     <p>Click the button below to notify the coordinator (This sends the official request):</p>
                     <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; text-align:center;">
                         Click to Send Coordinator Notification
@@ -813,7 +865,7 @@ FEE STATUS: $10.00 per child, per session.
                 resultEl.innerHTML = `
                     <p>🛑 <strong>BOOKING BLOCKED: APP REQUIRED</strong></p>
                     <p style="font-weight: bold; color: var(--color-error);">Sorry, the $4.99 Geometry Dash app is required! The app is not provided at the club.</p>
-                    <p>Please purchase the full game and then re-submit the form once you have the app ready for a <strong>${data.preferredDay}</strong> session.</p>
+                    <p>Please purchase the full game and then re-submit the form once you have the app ready for a <strong>${formatDateISO(data.preferredDay)}</strong> session.</p>
                 `;
                 resultEl.className = "alert-message alert-fail";
                 resultEl.style.border = '2px solid var(--color-error)';
@@ -831,7 +883,8 @@ FEE STATUS: $10.00 per child, per session.
 
             // hide previous errors within booking section
             document.querySelectorAll('#booking-form-section .error-message').forEach(el => el.style.display = 'none');
-            document.getElementById('result-message').style.display = 'none';
+            const resultMsg = document.getElementById('result-message');
+            if (resultMsg) resultMsg.style.display = 'none';
 
             const requiredFields = ['firstName', 'lastName', 'phone', 'clubDay', 'dropOffTime', 'pickUpTime'];
 
@@ -845,6 +898,25 @@ FEE STATUS: $10.00 per child, per session.
                     isValid = false;
                 }
             });
+
+            // Ensure selected clubDay is one of the publicHolidays
+            const selectedDay = document.getElementById('clubDay').value;
+            const validDates = publicHolidays.map(h => h.date);
+            if (!validDates.includes(selectedDay)) {
+                const err = document.getElementById('error-clubDay');
+                const container = document.getElementById('date-selection-section');
+                if (err) err.style.display = 'block';
+                if (container) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    container.classList.remove('shake');
+                    void container.offsetWidth;
+                    container.classList.add('shake');
+                }
+                const cd = document.getElementById('clubDay');
+                if (cd) cd.style.borderColor = 'var(--color-error)';
+                if (!firstInvalidField) firstInvalidField = document.getElementById('clubDay');
+                isValid = false;
+            }
 
             // Time logic
             const dropOffValue = document.getElementById('dropOffTime').value;
@@ -896,6 +968,9 @@ FEE STATUS: $10.00 per child, per session.
         // --- 7. INITIALIZATION AND EVENT LISTENERS ---
 
         document.addEventListener('DOMContentLoaded', () => {
+            // populate holiday options first
+            populateHolidayOptions();
+
             // AUTH LISTENERS
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.addEventListener('submit', loginUser);
