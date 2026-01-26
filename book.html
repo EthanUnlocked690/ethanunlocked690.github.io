@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Geometry Dash Level Creator Club - Book a session</title>
     <style>
         /* --- 🎨 ADVANCED CSS STYLING (Cool Theme) --- */
@@ -42,7 +42,7 @@
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 5px var(--color-primary);
             width: 90%;
-            max-width: 600px;
+            max-width: 900px;
             animation: fadeIn 1s ease-out;
             position: relative; 
             margin-bottom: 20px; /* Space for large content */
@@ -69,16 +69,18 @@
         input:focus, select:focus { border-color: var(--color-secondary); outline: none; box-shadow: 0 0 10px rgba(0, 191, 255, 0.5); }
         
         button {
-            width: 100%; padding: 15px; background-color: var(--color-primary); color: var(--color-dark); border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: background-color 0.15s, transform 0.15s;
+            width: 100%; padding: 15px; background-color: var(--color-primary); color: var(--color-dark); border: none; border-radius: 8px; font-size: 1.05em; font-weight: bold; cursor: pointer; transition: background-color 0.15s, transform 0.15s;
             margin-top: 15px;
         }
 
         button.secondary {
+            width: auto;
             background-color: #444;
             color: var(--color-light);
             box-shadow: none;
             font-size: 1em;
             padding: 10px;
+            margin-left: 10px;
         }
 
         button:hover { background-color: #2ECC40; transform: translateY(-2px); }
@@ -156,6 +158,11 @@
         /* small helper list of holidays */
         .holiday-list { margin-top:10px; font-size:0.95em; color:#bbb; text-align:center; }
 
+        .spots-info { font-size:0.95em; color:#ddd; margin-top:6px; text-align:center; }
+        .full-note { color: var(--color-error); font-weight: bold; }
+
+        .admin-note { margin-top:8px; font-size:0.9em; color:#ccc; }
+
     </style>
 </head>
 <body>
@@ -223,7 +230,10 @@
         <section id="dashboard-section" class="hidden">
             <div class="dashboard-header">
                 <h3 id="welcome-message">Welcome!</h3>
-                <button class="secondary" onclick="logoutUser()">Log Out</button>
+                <div>
+                    <button class="secondary" onclick="showSection('booking-form-section')">Book a New Slot</button>
+                    <button class="secondary" onclick="logoutUser()">Log Out</button>
+                </div>
             </div>
             
             <div id="admin-dashboard" class="hidden">
@@ -240,7 +250,6 @@
                     <p style="text-align: center;">You have no active bookings.</p>
                 </div>
                 <hr style="border-color: #555; margin: 30px 0;"/>
-                <button onclick="showBookingForm()">Book a New Slot</button>
             </div>
         </section>
 
@@ -296,6 +305,7 @@
                         <select id="clubDay" name="clubDay" required>
                             <!-- Options populated dynamically from publicHolidays -->
                         </select>
+                        <div id="spots-info" class="spots-info" aria-live="polite"></div>
                         <div class="error-message" id="error-clubDay">Please select a valid public holiday from the list.</div>
                         <p style="font-size: 0.85em; color: #888; margin-top: 5px;">Only the dates shown above (public holidays) are valid for club sessions.</p>
                     </div>
@@ -308,7 +318,7 @@
                                     <option value="" disabled selected>Select Drop-off</option>
                                     <option value="11:00">11:00 AM</option>
                                     <option value="12:00">12:00 PM</option>
-                                    <option value="13:00">13:00</option>
+                                    <option value="13:00">1:00 PM</option>
                                 </select>
                                 <div class="error-message" id="error-dropOffTime">Drop-off time is required.</div>
                             </div>
@@ -386,6 +396,9 @@
             { date: '2026-11-26', name: "Thanksgiving (example)" },
             { date: '2026-12-25', name: "Christmas Day" }
         ];
+
+        // Maximum spots per session (per date)
+        const MAX_SPOTS_PER_DATE = 10;
 
         // Global variable to hold current user info
         let currentUser = null; 
@@ -466,6 +479,49 @@
             if (listContainer) {
                 listContainer.innerHTML = publicHolidays.map(h => `${formatDateISO(h.date)} (${h.name})`).join(' • ');
             }
+            // attach listener to update spots info when date changes
+            const clubDaySelect = document.getElementById('clubDay');
+            if (clubDaySelect) {
+                clubDaySelect.addEventListener('change', () => {
+                    updateSpotsInfo(clubDaySelect.value);
+                });
+            }
+        }
+
+        /** Returns how many spots are already reserved for a date (Pending or Confirmed) */
+        function spotsReservedForDate(dateISO, excludeBookingId) {
+            const bookings = getBookings();
+            let reserved = 0;
+            bookings.forEach(b => {
+                if (!b || !b.preferredDay) return;
+                if (b.preferredDay === dateISO && b.status !== 'Declined') {
+                    if (excludeBookingId && b.id === excludeBookingId) return;
+                    reserved += Number(b.numKids || 0);
+                }
+            });
+            return reserved;
+        }
+
+        /** Returns how many spots remain for a date */
+        function spotsRemainingForDate(dateISO, excludeBookingId) {
+            const reserved = spotsReservedForDate(dateISO, excludeBookingId);
+            return Math.max(0, MAX_SPOTS_PER_DATE - reserved);
+        }
+
+        /** Updates the spots-info UI under the date select */
+        function updateSpotsInfo(dateISO) {
+            const spotsEl = document.getElementById('spots-info');
+            if (!spotsEl) return;
+            if (!dateISO) {
+                spotsEl.innerHTML = '';
+                return;
+            }
+            const remaining = spotsRemainingForDate(dateISO);
+            if (remaining === 0) {
+                spotsEl.innerHTML = `<span class="full-note">This date is FULL (0 spots remaining).</span>`;
+            } else {
+                spotsEl.innerHTML = `Spots remaining for ${formatDateISO(dateISO)}: <strong>${remaining}</strong> / ${MAX_SPOTS_PER_DATE}`;
+            }
         }
 
         // --- 2. AUTHENTICATION LOGIC ---
@@ -513,7 +569,7 @@
 
             const found = users.find(u => (u.username && u.username.toLowerCase() === identifier.toLowerCase()) || (u.email && u.email.toLowerCase() === identifier.toLowerCase()));
             if (found) {
-                const coordinatorEmail = "ethan.ioannou@icloud.com";
+                const coordinatorEmail = "ethan.unlocked@gmail.com";
                 const subject = encodeURIComponent(`Password reset request for ${found.username}`);
                 const body = encodeURIComponent(`Hello Ethan,\n\nPlease assist with resetting the password for the following account:\n\nUsername: ${found.username}\nEmail: ${found.email}\n\nThank you.`);
                 const mailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
@@ -671,8 +727,9 @@
                 const html = `
                     <div class="booking-list-item" style="border-left-color: var(--color-${booking.status.toLowerCase()});">
                         <div>
-                            <strong>Date: ${formatDateISO(booking.preferredDay)}</strong> (${booking.dropOffTime} - ${booking.pickUpTime})<br>
+                            <strong>Date: ${formatDateISO(booking.preferredDay)}</strong> (${formatTime(booking.dropOffTime)} - ${formatTime(booking.pickUpTime)})<br>
                             Kids: ${booking.numKids} | Parent: ${booking.parentName}
+                            ${booking.adminNote ? `<div class="admin-note">Admin note: ${escapeHtml(booking.adminNote)}</div>` : ''}
                         </div>
                         <span class="status-badge ${statusClass}">${booking.status.toUpperCase()}</span>
                     </div>
@@ -693,17 +750,30 @@
                 return;
             }
 
+            // show current spots summary per date at the top for admin
+            const grouped = {};
+            bookings.forEach(b => {
+                if (!grouped[b.preferredDay]) grouped[b.preferredDay] = 0;
+                grouped[b.preferredDay] += Number(b.numKids || 0);
+            });
+
+            let summaryHtml = '<div style="margin-bottom:10px; font-size:0.95em; color:#ccc;">Current spots used by date: ';
+            summaryHtml += Object.keys(grouped).map(d => `${formatDateISO(d)}: ${grouped[d]}/${MAX_SPOTS_PER_DATE}`).join(' • ');
+            summaryHtml += '</div>';
+            listContainer.insertAdjacentHTML('beforeend', summaryHtml);
+
             pendingBookings.forEach(booking => {
                 const html = `
                     <div class="booking-list-item admin-item" style="border-left-color: var(--color-pending);">
                         <div style="flex-grow: 1;">
                             <strong>User: ${booking.username}</strong> | Kids: ${booking.numKids}<br>
-                            Date: ${formatDateISO(booking.preferredDay)} (${booking.dropOffTime} - ${booking.pickUpTime})<br>
+                            Date: ${formatDateISO(booking.preferredDay)} (${formatTime(booking.dropOffTime)} - ${formatTime(booking.pickUpTime)})<br>
                             Email: ${booking.parentEmail}
+                            ${booking.adminNote ? `<div class="admin-note">Previous admin note: ${escapeHtml(booking.adminNote)}</div>` : ''}
                         </div>
                         <div id="admin-actions">
-                            <button onclick="updateBookingStatus('${booking.id}', 'Confirmed')">Confirm</button>
-                            <button onclick="updateBookingStatus('${booking.id}', 'Declined')">Decline</button>
+                            <button onclick="adminRespond('${booking.id}', 'Confirmed')">Confirm</button>
+                            <button onclick="adminRespond('${booking.id}', 'Declined')">Decline</button>
                         </div>
                     </div>
                 `;
@@ -711,42 +781,83 @@
             });
         }
 
-        window.updateBookingStatus = function(bookingId, newStatus) {
-            let bookings = getBookings();
-            const bookingIndex = bookings.findIndex(b => b.id === bookingId);
+        // escape simple HTML for admin notes display
+        function escapeHtml(s) {
+            if (!s) return '';
+            return s.replace(/[&<>"']/g, function(m) {
+                return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m];
+            });
+        }
 
-            if (bookingIndex > -1) {
-                bookings[bookingIndex].status = newStatus;
-                saveBookings(bookings);
-                
-                renderAdminBookings();
-                renderUserBookings();
-                alert(`Booking ${bookingId} status changed to ${newStatus}.`);
+        // Admin respond flow: ask for optional note/reason, validate capacity when confirming
+        window.adminRespond = function(bookingId, newStatus) {
+            const bookings = getBookings();
+            const idx = bookings.findIndex(b => b.id === bookingId);
+            if (idx === -1) return alert('Booking not found.');
 
-                if (newStatus === 'Confirmed') {
-                    const booking = bookings[bookingIndex];
-                    const emailRecipient = booking.parentEmail;
-                    const subject = encodeURIComponent("Geometry Dash Club Booking Confirmed");
-                    const emailBody = encodeURIComponent(
-`Hello ${booking.parentName},
+            const booking = bookings[idx];
 
-Your booking request for the Geometry Dash Level Creator Club has been CONFIRMED.
-
-Date: ${formatDateISO(booking.preferredDay)}
-Time: ${booking.dropOffTime} - ${booking.pickUpTime}
-Children: ${booking.numKids}
-
-We will follow up with any additional details.
-
-Regards,
-Geometry Dash Club Coordinator`
-                    );
-
-                    const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${emailBody}`;
-                    window.open(mailtoLink, '_blank');
+            // If confirming: check capacity (exclude this booking if it's pending)
+            if (newStatus === 'Confirmed') {
+                const remaining = spotsRemainingForDate(booking.preferredDay, booking.id);
+                // remaining already excludes this booking, so we need to ensure remaining >= booking.numKids
+                if (Number(booking.numKids || 0) > remaining) {
+                    return alert(`Cannot confirm: Not enough spots left on ${formatDateISO(booking.preferredDay)}. Current spots available: ${remaining}. Please decline or ask user to reduce spots or pick another date.`);
                 }
             }
-        }
+
+            const promptText = newStatus === 'Confirmed'
+                ? 'Optional: Enter a confirmation message or note to send to the parent (or leave blank):'
+                : 'Optional: Enter a reason for decline to send to the parent (or leave blank):';
+
+            const note = prompt(promptText, booking.adminNote || '');
+            // update booking
+            bookings[idx].status = newStatus;
+            bookings[idx].adminNote = note ? String(note).trim() : '';
+
+            saveBookings(bookings);
+            renderAdminBookings();
+            renderUserBookings();
+
+            // send mailto to parent
+            const recipient = bookings[idx].parentEmail || '';
+            const subject = encodeURIComponent(`Geometry Dash Club Booking ${newStatus}: ${formatDateISO(bookings[idx].preferredDay)}`);
+            const bodyLines = [];
+            if (newStatus === 'Confirmed') {
+                bodyLines.push(`Hello ${bookings[idx].parentName},`);
+                bodyLines.push('');
+                bodyLines.push(`Your booking for ${formatDateISO(bookings[idx].preferredDay)} has been CONFIRMED.`);
+                bodyLines.push(`Time: ${formatTime(bookings[idx].dropOffTime)} - ${formatTime(bookings[idx].pickUpTime)}`);
+                bodyLines.push(`Children booked: ${bookings[idx].numKids}`);
+                bodyLines.push('');
+                if (bookings[idx].adminNote) bodyLines.push(`Message from coordinator: ${bookings[idx].adminNote}`);
+                bodyLines.push('');
+                bodyLines.push('Regards,');
+                bodyLines.push('Geometry Dash Club Coordinator');
+            } else {
+                bodyLines.push(`Hello ${bookings[idx].parentName},`);
+                bodyLines.push('');
+                bodyLines.push(`We are sorry to inform you that your booking for ${formatDateISO(bookings[idx].preferredDay)} has been DECLINED.`);
+                if (bookings[idx].adminNote) {
+                    bodyLines.push('');
+                    bodyLines.push(`Reason: ${bookings[idx].adminNote}`);
+                } else {
+                    bodyLines.push('');
+                    bodyLines.push('Please contact the coordinator for more details.');
+                }
+                bodyLines.push('');
+                bodyLines.push('Regards,');
+                bodyLines.push('Geometry Dash Club Coordinator');
+            }
+
+            const body = encodeURIComponent(bodyLines.join('\n'));
+            if (recipient) {
+                const mailto = `mailto:${recipient}?subject=${subject}&body=${body}`;
+                window.open(mailto, '_blank');
+            } else {
+                alert('No parent email on file to notify.');
+            }
+        };
 
 
         // --- 5. BOOKING SUBMISSION AND VALIDATION ---
@@ -764,11 +875,35 @@ Geometry Dash Club Coordinator`
 
         function submitBooking() {
             const data = getBookingData();
-            
+
+            // ensure user is logged in
+            if (!currentUser) {
+                alert('You must be signed in to make a booking.');
+                showSection('auth-section');
+                return;
+            }
+
+            // check capacity BEFORE saving
+            const requested = Number(data.numKids || 0);
+            const remaining = spotsRemainingForDate(data.preferredDay);
+            if (requested > remaining) {
+                const resultEl = document.getElementById('result-message');
+                const msg = `Sorry, there is not enough room. Current spot count: ${remaining}. Please try booking ${remaining} or fewer spots, or pick a different date.`;
+                if (resultEl) {
+                    resultEl.innerHTML = `<p class="full-note">🛑 ${msg}</p>`;
+                    resultEl.style.display = 'block';
+                } else {
+                    alert(msg);
+                }
+                updateSpotsInfo(data.preferredDay);
+                return;
+            }
+
             // 1. Save Parent Name to User Profile (if empty)
-            if (currentUser && !currentUser.firstName && data.firstName) {
+            if (!currentUser.firstName && data.firstName) {
                 currentUser.firstName = data.firstName;
                 currentUser.lastName = data.lastName;
+                // Update localStorage for current user details
                 let users = getUsers();
                 const userIndex = users.findIndex(u => u.id === currentUser.id);
                 if (userIndex > -1) {
@@ -776,7 +911,7 @@ Geometry Dash Club Coordinator`
                     users[userIndex].lastName = data.lastName;
                     localStorage.setItem('clubUsers', JSON.stringify(users));
                 }
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser)); // Update current session
             }
 
             // 2. Create and Save Booking Record
@@ -787,11 +922,12 @@ Geometry Dash Club Coordinator`
                 parentName: `${data.firstName} ${data.lastName}`,
                 parentEmail: currentUser.email || '',
                 phone: data.phone,
-                preferredDay: data.preferredDay, // ISO date string
+                preferredDay: data.preferredDay, // ISO date
                 dropOffTime: data.dropOffTime,
                 pickUpTime: data.pickUpTime,
-                numKids: data.numKids,
-                status: 'Pending',
+                numKids: Number(data.numKids || 0),
+                status: 'Pending', // All new bookings are Pending and go to admin for review
+                adminNote: '',
                 created_at: new Date().toISOString()
             };
 
@@ -799,14 +935,19 @@ Geometry Dash Club Coordinator`
             bookings.push(newBooking);
             saveBookings(bookings);
 
+            // 3. Notify admin by opening mailto (mock) and show success message
             displayFinalSuccess(data, newBooking.id);
             renderUserBookings();
             if (currentUser.is_admin) renderAdminBookings();
+
+            // update spots info UI
+            updateSpotsInfo(newBooking.preferredDay);
         }
         
         function getBookingData() {
             const form = document.getElementById('signup-form-app');
             const data = {};
+            // Using existing field IDs from the form section
             data.firstName = form.querySelector('#firstName').value.trim();
             data.lastName = form.querySelector('#lastName').value.trim();
             data.phone = form.querySelector('#phone').value.trim();
@@ -825,7 +966,7 @@ Geometry Dash Club Coordinator`
 A new booking request has been submitted by ${data.firstName} ${data.lastName}.
 
 Parent Details:
-Email: ${currentUser.email}
+Email: ${currentUser.email || ''}
 Phone: ${data.phone}
 
 Booking Request:
@@ -836,7 +977,6 @@ Status: PENDING - Check Admin Dashboard to Confirm/Decline.
 
 FEE STATUS: $10.00 per child, per session.
 `;
-
             const mailtoLink = `mailto:ethan.unlocked@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
             const resultEl = document.getElementById('result-message');
