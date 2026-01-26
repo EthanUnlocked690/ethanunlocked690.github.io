@@ -36,7 +36,7 @@
 
         .header {
             text-align: center;
-            padding: 60px 20px;
+            padding: 70px 20px; /* Extra padding for floating icons */
             background-color: #fff;
             border-bottom: 1px solid #eee;
             perspective: 1000px; 
@@ -47,40 +47,33 @@
             display: inline-block;
         }
 
-        /* terms-text.png is now BIGGER and in FRONT */
+        /* terms-text.png is BIGGER and in FRONT */
         .main-header-img { 
-            max-width: 400px; /* Increased size from 280px */
+            max-width: 420px; 
             height: auto; 
             display: block; 
             position: relative;
-            z-index: 20; /* Higher number puts it in front of others */
+            z-index: 20; /* Keep on top of jump/create images */
         }
 
-        /* Jump Image - now behind the text */
+        /* Jump Image - behind the main text */
         .jump-img {
             position: absolute;
-            top: -30px;
-            right: -20px;
-            width: 80px;
-            z-index: 10; /* Lower than text */
+            top: -40px;
+            right: -30px;
+            width: 85px;
+            z-index: 10; 
         }
 
-        /* Create Image - now behind the text */
+        /* Create Image - behind the main text */
         .create-img {
             position: absolute;
-            bottom: -20px;
-            right: -20px;
-            width: 90px;
-            z-index: 10; /* Lower than text */
+            bottom: -30px;
+            right: -30px;
+            width: 95px;
+            z-index: 10; 
             transform: rotateZ(15deg) rotateY(-20deg);
             filter: drop-shadow(5px 10px 8px rgba(0,0,0,0.3));
-        }
-
-        .header h1 {
-            font-size: 1.6rem;
-            color: #222;
-            margin-top: 25px;
-            letter-spacing: 1px;
         }
 
         .content-box {
@@ -120,12 +113,11 @@
     <div class="terms-container">
         <div class="header">
             <div class="header-image-wrapper">
-                <img src="terms-text.png" alt="Header Text" class="main-header-img">
+                <img src="terms-text.png" alt="Terms and Conditions" class="main-header-img">
                 <img src="jump.png" alt="Jump" class="jump-img">
                 <img src="create.png" alt="Create" class="create-img">
             </div>
-            <h1>Terms and Conditions</h1>
-        </div>
+            </div>
 
         <div class="content-box" id="termsContent">
             <h2>Geometry Dash Level Creator Club</h2>
@@ -167,6 +159,7 @@
         const statusMsg = document.getElementById('statusMsg');
 
         termsBox.addEventListener('scroll', () => {
+            // Unlocks navigation once scrolled to the bottom
             const isBottom = termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - 30;
             if (isBottom) {
                 acceptBtn.disabled = false;
