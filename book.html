@@ -69,7 +69,7 @@
         input:focus, select:focus { border-color: var(--color-secondary); outline: none; box-shadow: 0 0 10px rgba(0, 191, 255, 0.5); }
         
         button {
-            width: 100%; padding: 15px; background-color: var(--color-primary); color: var(--color-dark); border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: background-color 0.3s, transform 0.1s; box-shadow: 0 5px 15px rgba(50, 205, 50, 0.5);
+            width: 100%; padding: 15px; background-color: var(--color-primary); color: var(--color-dark); border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; transi[...]
             margin-top: 15px;
         }
 
@@ -126,6 +126,29 @@
         #cancellation-link { text-align: center; margin-top: 20px; cursor: pointer; text-decoration: underline; color: var(--color-cancel); }
         #cancellation-form-area { margin-top: 20px; padding: 15px; border: 2px solid var(--color-cancel); border-radius: 8px; background-color: rgba(112, 128, 144, 0.1); }
         .cancel-button { background-color: var(--color-cancel); color: white; padding: 10px; margin-top: 10px; }
+
+        /* --- TERMS AGREEMENT VALIDATION / ANIMATION STYLES --- */
+        @keyframes shakeX {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+            100% { transform: translateX(0); }
+        }
+        .shake {
+            animation: shakeX 0.6s cubic-bezier(.36,.07,.19,.97);
+        }
+        /* Container highlight when error */
+        .error-highlight label {
+            color: var(--color-error) !important;
+        }
+        .error-highlight input[type="checkbox"] {
+            box-shadow: 0 0 8px rgba(255,69,0,0.9);
+            border-radius: 4px;
+            outline: 2px solid rgba(255,69,0,0.15);
+        }
+
     </style>
 </head>
 <body>
@@ -168,6 +191,18 @@
                     <label for="signup-email">Email (Required for booking notifications) <span style="color:var(--color-error);">*</span></label>
                     <input type="email" id="signup-email" required>
                 </div>
+
+                <!-- TERMS AGREEMENT CHECKBOX -->
+                <div class="form-group" id="agree-terms-container" style="display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                    <label for="agreeTerms" style="margin:0; font-weight:normal;">
+                        I agree to the <a href="term.html" target="_blank" rel="noopener noreferrer" style="color:var(--color-secondary); text-decoration:underline;">Terms and Conditions</a>
+                    </label>
+                    <div class="error-message" id="error-agreeTerms" style="display:none; margin-left:0;">
+                        You must agree to the Terms and Conditions to continue.
+                    </div>
+                </div>
+
                 <button type="submit">Sign Up</button>
                 <div class="alert-message" id="signup-status" style="border-color: var(--color-error);"></div>
             </form>
@@ -421,6 +456,37 @@
 
         window.signupUser = function(e) {
             e.preventDefault();
+
+            // TERMS/CONDITIONS CHECK: custom animated error if not agreed
+            const agreeCheckbox = document.getElementById('agreeTerms');
+            const agreeContainer = document.getElementById('agree-terms-container');
+            const agreeError = document.getElementById('error-agreeTerms');
+            if (!agreeCheckbox || !agreeCheckbox.checked) {
+                // Scroll to the checkbox container and animate/shake it
+                if (agreeContainer) {
+                    agreeContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // re-trigger animation
+                    agreeContainer.classList.remove('shake', 'error-highlight');
+                    void agreeContainer.offsetWidth;
+                    agreeContainer.classList.add('shake', 'error-highlight');
+                }
+                if (agreeError) {
+                    agreeError.style.display = 'block';
+                }
+                if (agreeCheckbox) {
+                    agreeCheckbox.focus();
+                }
+                return; // stop submission until they agree
+            } else {
+                // remove any previous error styling if checked
+                if (agreeContainer) {
+                    agreeContainer.classList.remove('shake', 'error-highlight');
+                }
+                if (agreeError) {
+                    agreeError.style.display = 'none';
+                }
+            }
+
             const username = document.getElementById('signup-username').value;
             const password = document.getElementById('signup-password').value;
             const email = document.getElementById('signup-email').value;
@@ -568,7 +634,7 @@
                     const subject = encodeURIComponent("Geometry Dash Club Booking Confirmed");
                     
                     // Note: User needs to manually fill in the Date Options, as per their request.
-                    const emailBody = encodeURIComponent(`Hello ${booking.parentName},\n\nI am emailing to let you know that I have confirmed your booking request. \n\nYour preferred day was ${booking.preferredDay} from ${booking.dropOffTime} to ${booking.pickUpTime} for ${booking.numKids} child(ren).\n\nYour date options will be (Option 1) (Option 2).\n\nPlease reply to this email to select your date and secure your slot. \n\nThank you.`);
+                    const emailBody = encodeURIComponent(`Hello ${booking.parentName},\n\nI am emailing to let you know that I have confirmed your booking request. \n\nYour preferred day was ${booking[...]
 
                     const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${emailBody}`;
                     window.open(mailtoLink, '_blank');
@@ -669,7 +735,7 @@
                 <p>Thank you, **${data.firstName}**. Your request for a **${data.preferredDay}** session is **PENDING** confirmation.</p>
                 <p style="color: var(--color-error); font-weight: bold; margin-top: 15px;">The coordinator will contact you to confirm the exact date and secure your slot.</p>
                 <p>Click the button below to notify the coordinator (This sends the official request):</p>
-                <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; font-weight:bold;">
+                <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:no[...]
                     Click to Send Coordinator Notification
                 </a>
             `;
@@ -703,7 +769,7 @@
             let firstInvalidField = null;
 
             document.querySelectorAll('#booking-form-section .error-message').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('#booking-form-section input[type="text"], #booking-form-section input[type="email"], #booking-form-section input[type="tel"], #booking-form-section select').forEach(el => el.style.borderColor = '#555');
+            document.querySelectorAll('#booking-form-section input[type="text"], #booking-form-section input[type="email"], #booking-form-section input[type="tel"], #booking-form-section select').forE[...]
             document.getElementById('result-message').style.display = 'none';
 
             const requiredFields = ['firstName', 'lastName', 'phone', 'clubDay', 'dropOffTime', 'pickUpTime'];
@@ -850,7 +916,7 @@
                 // For a real app, this would check the database for bookings associated with the email.
                 // Here we just prepare the email link.
                 const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
-                const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the cancellation and process any necessary refunds. \n\nThank you.`);
+                const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the ca[...]
                 const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
 
                 document.getElementById('cancellation-form-section').innerHTML = `
@@ -859,12 +925,25 @@
                         Confirmation Required! Your cancellation request is ready.
                     </p>
                     <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
-                    <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decoration:none; font-weight:bold; text-align:center;">
+                    <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decora[...]
                         SEND CANCELLATION EMAIL
                     </a>
                     <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">You must send this email to complete the cancellation process.</p>
                     <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
                 `;
+            }
+
+            // Remove error styles on checkbox interaction for signup form
+            const signupAgreeCheckbox = document.getElementById('agreeTerms');
+            if (signupAgreeCheckbox) {
+                signupAgreeCheckbox.addEventListener('change', function() {
+                    const container = document.getElementById('agree-terms-container');
+                    const agreeError = document.getElementById('error-agreeTerms');
+                    if (this.checked) {
+                        if (container) container.classList.remove('shake', 'error-highlight');
+                        if (agreeError) agreeError.style.display = 'none';
+                    }
+                });
             }
 
             // START THE APPLICATION
