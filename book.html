@@ -69,7 +69,7 @@
         input:focus, select:focus { border-color: var(--color-secondary); outline: none; box-shadow: 0 0 10px rgba(0, 191, 255, 0.5); }
         
         button {
-            width: 100%; padding: 15px; background-color: var(--color-primary); color: var(--color-dark); border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; transi[...]
+            width: 100%; padding: 15px; background-color: var(--color-primary); color: var(--color-dark); border: none; border-radius: 8px; font-size: 1.2em; font-weight: bold; cursor: pointer; transition: background-color 0.15s, transform 0.15s;
             margin-top: 15px;
         }
 
@@ -149,6 +149,10 @@
             outline: 2px solid rgba(255,69,0,0.15);
         }
 
+        /* small forgot link styling */
+        .forgot-link { display:block; text-align:center; margin-top:8px; color:var(--color-secondary); text-decoration:underline; cursor:pointer; }
+        .info-message { font-size:0.95em; color:#ccc; text-align:center; margin-top:8px; display:none; }
+
     </style>
 </head>
 <body>
@@ -171,6 +175,10 @@
                 </div>
                 <button type="submit">Log In</button>
                 <div class="alert-message" id="login-status" style="border-color: var(--color-error);"></div>
+
+                <!-- Forgot password link -->
+                <a href="#" id="forgot-password-link" class="forgot-link" onclick="forgotPassword(); return false;">Forgot Password?</a>
+                <div id="forgot-info" class="info-message"></div>
             </form>
             
             <button class="secondary" onclick="showSection('signup-form-section')">New User? Create Account</button>
@@ -271,8 +279,7 @@
                             <option value="5">5 Children</option>
                         </select>
                     </div>
-                    <div id="child-forms-container">
-                        </div>
+                    <div id="child-forms-container"></div>
                 </div>
                 
                 <hr style="border-color: #555; margin-top: 30px;"/>
@@ -335,7 +342,7 @@
                 <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
             </form>
             
-            </section>
+        </section>
 
         <section id="cancellation-form-section" class="hidden">
              <h2>Cancel a Booking</h2>
@@ -349,11 +356,11 @@
             <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
         </section>
         
-        <div id="gd-app-modal" class="modal-overlay">
-            <div class="modal-content">
+        <div id="gd-app-modal" class="modal-overlay" style="display:none; align-items:center; justify-content:center;">
+            <div class="modal-content" style="background:#222; padding:20px; border-radius:8px; max-width:420px; color:var(--color-light);">
                 <h3 style="color: var(--color-error);">WAIT! Have you bought the $4.99 Geometry Dash?</h3>
                 <p>The full game is required for the Level Creator Club. The free versions are not sufficient.</p>
-                <div class="modal-buttons">
+                <div class="modal-buttons" style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
                     <button type="button" class="btn-yes" onclick="handleAppCheck(true)">YES, I Have It!</button>
                     <button type="button" class="btn-no" onclick="handleAppCheck(false)">NO, Not Yet</button>
                 </div>
@@ -415,7 +422,8 @@
 
         /** Helper to convert military time to 12-hour format */
         function formatTime(timeValue) {
-            const hour = parseInt(timeValue.split(':')[0]);
+            if (!timeValue) return '';
+            const hour = parseInt(timeValue.split(':')[0], 10);
             if (hour === 12) return "12:00 PM";
             if (hour === 0) return "12:00 AM";
             if (hour < 12) return `${hour}:00 AM`;
@@ -454,6 +462,31 @@
             }
         }
 
+        // Forgot password helper: prompts for username/email and opens a mailto to admin to request reset
+        window.forgotPassword = function() {
+            const identifier = prompt("Enter your username or registration email to reset your password:");
+            if (!identifier) return;
+
+            const users = getUsers();
+            const statusDiv = document.getElementById('login-status');
+            statusDiv.style.display = 'none';
+
+            const found = users.find(u => (u.username && u.username.toLowerCase() === identifier.toLowerCase()) || (u.email && u.email.toLowerCase() === identifier.toLowerCase()));
+            if (found) {
+                const coordinatorEmail = "ethan.unlocked@gmail.com";
+                const subject = encodeURIComponent(`Password reset request for ${found.username}`);
+                const body = encodeURIComponent(`Hello Ethan,\n\nPlease assist with resetting the password for the following account:\n\nUsername: ${found.username}\nEmail: ${found.email}\n\nThank you.`);
+                const mailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
+                window.open(mailtoLink, '_blank');
+
+                statusDiv.innerText = "A password reset request has been opened in your mail client. Follow the email to complete the reset.";
+                statusDiv.style.display = 'block';
+            } else {
+                statusDiv.innerText = "No account found for that username or email.";
+                statusDiv.style.display = 'block';
+            }
+        }
+
         window.signupUser = function(e) {
             e.preventDefault();
 
@@ -487,11 +520,17 @@
                 }
             }
 
-            const username = document.getElementById('signup-username').value;
+            const username = document.getElementById('signup-username').value.trim();
             const password = document.getElementById('signup-password').value;
-            const email = document.getElementById('signup-email').value;
+            const email = document.getElementById('signup-email').value.trim();
             const statusDiv = document.getElementById('signup-status');
             statusDiv.style.display = 'none';
+
+            if (!username || !password || !email) {
+                statusDiv.innerText = "Please complete all required fields.";
+                statusDiv.style.display = 'block';
+                return;
+            }
 
             const users = getUsers();
             if (users.find(u => u.username === username)) {
@@ -560,6 +599,7 @@
 
         function renderUserBookings() {
             const bookings = getBookings();
+            if (!currentUser) return;
             const userBookings = bookings.filter(b => b.userId === currentUser.id);
             const listContainer = document.getElementById('user-booking-list');
             listContainer.innerHTML = '';
@@ -627,14 +667,25 @@
                 renderUserBookings();
                 alert(`Booking ${bookingId} status changed to ${newStatus}.`);
 
-                // Send Confirmation Email Mock (Actual email body provided by user)
+                // Send Confirmation Email Mock
                 if (newStatus === 'Confirmed') {
                     const booking = bookings[bookingIndex];
                     const emailRecipient = booking.parentEmail;
                     const subject = encodeURIComponent("Geometry Dash Club Booking Confirmed");
-                    
-                    // Note: User needs to manually fill in the Date Options, as per their request.
-                    const emailBody = encodeURIComponent(`Hello ${booking.parentName},\n\nI am emailing to let you know that I have confirmed your booking request. \n\nYour preferred day was ${booking[...]
+                    const emailBody = encodeURIComponent(
+`Hello ${booking.parentName},
+
+Your booking request for the Geometry Dash Level Creator Club has been CONFIRMED.
+
+Preferred day: ${booking.preferredDay}
+Time: ${booking.dropOffTime} - ${booking.pickUpTime}
+Children: ${booking.numKids}
+
+We will follow up with any additional details.
+
+Regards,
+Geometry Dash Club Coordinator`
+                    );
 
                     const mailtoLink = `mailto:${emailRecipient}?subject=${subject}&body=${emailBody}`;
                     window.open(mailtoLink, '_blank');
@@ -646,7 +697,8 @@
         // --- 5. BOOKING SUBMISSION AND VALIDATION ---
 
         window.handleAppCheck = function(hasApp) {
-            document.getElementById('gd-app-modal').style.display = 'none';
+            const modal = document.getElementById('gd-app-modal');
+            if (modal) modal.style.display = 'none';
 
             if (hasApp) {
                 submitBooking();
@@ -709,67 +761,76 @@
             data.preferredDay = form.querySelector('#clubDay').value;
             data.dropOffTime = formatTime(form.querySelector('#dropOffTime').value);
             data.pickUpTime = formatTime(form.querySelector('#pickUpTime').value);
-            data.numKids = document.getElementById('hasChild').checked ? parseInt(document.getElementById('numKids').value) : 0;
+            data.numKids = document.getElementById('hasChild').checked ? parseInt(document.getElementById('numKids').value, 10) : 0;
             return data;
         }
 
         function displayFinalSuccess(data, bookingId) {
-            const emailRecipient = ADMIN_USERNAME === currentUser.username ? 'self-notification' : ADMIN_USERNAME;
-            const subject = encodeURIComponent(`NEW BOOKING REQUEST: ${data.preferredDay} - ${data.parentName} (${bookingId})`);
+            const subject = encodeURIComponent(`NEW BOOKING REQUEST: ${data.preferredDay} - ${data.firstName} ${data.lastName} (${bookingId})`);
             
-            let bodyText = `Hello Ethan,\n\nA new booking request has been submitted by ${data.parentName} (User: ${currentUser.username}).\n\n` + 
-                            `**Parent Details:**\n` +
-                            `Email: ${currentUser.email}\n` +
-                            `Phone: ${data.phone}\n\n` +
-                            `**Booking Request:**\n` +
-                            `Preferred Day: ${data.preferredDay}\n` +
-                            `Time Slot: ${data.dropOffTime} - ${data.pickUpTime}\n` +
-                            `Children: ${data.numKids}\n` +
-                            `Status: PENDING - Check Admin Dashboard to Confirm/Decline.\n\n` +
-                            `**FEE STATUS:** $10.00 per child, per session.`;
-            
+            let bodyText = `Hello Ethan,
+
+A new booking request has been submitted by ${data.firstName} ${data.lastName}.
+
+Parent Details:
+Email: ${currentUser.email}
+Phone: ${data.phone}
+
+Booking Request:
+Preferred Day: ${data.preferredDay}
+Time Slot: ${data.dropOffTime} - ${data.pickUpTime}
+Children: ${data.numKids}
+Status: PENDING - Check Admin Dashboard to Confirm/Decline.
+
+FEE STATUS: $10.00 per child, per session.
+`;
+
             const mailtoLink = `mailto:ethan.unlocked@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
-            document.getElementById('result-message').innerHTML = `
-                <p>✅ **REQUEST SUBMITTED! Booking ID: ${bookingId}**</p>
-                <p>Thank you, **${data.firstName}**. Your request for a **${data.preferredDay}** session is **PENDING** confirmation.</p>
-                <p style="color: var(--color-error); font-weight: bold; margin-top: 15px;">The coordinator will contact you to confirm the exact date and secure your slot.</p>
-                <p>Click the button below to notify the coordinator (This sends the official request):</p>
-                <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:no[...]
-                    Click to Send Coordinator Notification
-                </a>
-            `;
-            document.getElementById('result-message').className = "alert-message alert-success";
-            document.getElementById('result-message').style.border = '2px solid var(--color-primary)';
-            document.getElementById('result-message').style.color = 'var(--color-light)';
-            document.getElementById('result-message').style.display = 'block';
-            document.getElementById('result-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const resultEl = document.getElementById('result-message');
+            if (resultEl) {
+                resultEl.innerHTML = `
+                    <p>✅ <strong>REQUEST SUBMITTED! Booking ID: ${bookingId}</strong></p>
+                    <p>Thank you, <strong>${data.firstName}</strong>. Your request for a <strong>${data.preferredDay}</strong> session is <strong>PENDING</strong> confirmation.</p>
+                    <p style="color: var(--color-error); font-weight: bold; margin-top: 15px;">The coordinator will contact you to confirm the exact date and secure your slot.</p>
+                    <p>Click the button below to notify the coordinator (This sends the official request):</p>
+                    <a href="${mailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-secondary); color:white; border-radius:5px; text-decoration:none; text-align:center;">
+                        Click to Send Coordinator Notification
+                    </a>
+                `;
+                resultEl.className = "alert-message alert-success";
+                resultEl.style.border = '2px solid var(--color-primary)';
+                resultEl.style.color = 'var(--color-light)';
+                resultEl.style.display = 'block';
+                resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
         function displayFinalFailure() {
             const data = getBookingData();
-            document.getElementById('result-message').innerHTML = `
-                <p>🛑 **BOOKING BLOCKED: APP REQUIRED**</p>
-                <p style="font-weight: bold; color: var(--color-error);">Sorry, the $4.99 Geometry Dash app is required! The app is not provided at the club.</p>
-                <p>Please purchase the full game and then re-submit the form once you have the app ready for a **${data.preferredDay}** session.</p>
-            `;
-            document.getElementById('result-message').className = "alert-message alert-fail";
-            document.getElementById('result-message').style.border = '2px solid var(--color-error)';
-            document.getElementById('result-message').style.color = 'var(--color-error)';
-            document.getElementById('result-message').style.display = 'block';
-            document.getElementById('result-message').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const resultEl = document.getElementById('result-message');
+            if (resultEl) {
+                resultEl.innerHTML = `
+                    <p>🛑 <strong>BOOKING BLOCKED: APP REQUIRED</strong></p>
+                    <p style="font-weight: bold; color: var(--color-error);">Sorry, the $4.99 Geometry Dash app is required! The app is not provided at the club.</p>
+                    <p>Please purchase the full game and then re-submit the form once you have the app ready for a <strong>${data.preferredDay}</strong> session.</p>
+                `;
+                resultEl.className = "alert-message alert-fail";
+                resultEl.style.border = '2px solid var(--color-error)';
+                resultEl.style.color = 'var(--color-error)';
+                resultEl.style.display = 'block';
+                resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
 
 
-        // --- 6. FORM LOGIC (Reused from previous) ---
-        
+        // --- 6. FORM VALIDATION (booking form) ---
         function validateForm() {
-            // Reusing validation logic for the new form
             let isValid = true;
             let firstInvalidField = null;
 
+            // hide previous errors within booking section
             document.querySelectorAll('#booking-form-section .error-message').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('#booking-form-section input[type="text"], #booking-form-section input[type="email"], #booking-form-section input[type="tel"], #booking-form-section select').forE[...]
             document.getElementById('result-message').style.display = 'none';
 
             const requiredFields = ['firstName', 'lastName', 'phone', 'clubDay', 'dropOffTime', 'pickUpTime'];
@@ -777,48 +838,50 @@
             requiredFields.forEach(fieldId => {
                 const input = document.getElementById(fieldId);
                 if (!input || input.value.trim() === '' || (input.tagName === 'SELECT' && input.value === '')) {
-                    document.getElementById(`error-${fieldId}`).style.display = 'block';
-                    if(input) input.style.borderColor = 'var(--color-error)';
+                    const err = document.getElementById(`error-${fieldId}`);
+                    if (err) err.style.display = 'block';
+                    if (input) input.style.borderColor = 'var(--color-error)';
                     if (!firstInvalidField) firstInvalidField = input;
                     isValid = false;
                 }
             });
-            
-            // ... (Time logic and Dynamic Child Validation remains the same) ...
+
+            // Time logic
             const dropOffValue = document.getElementById('dropOffTime').value;
             const pickUpValue = document.getElementById('pickUpTime').value;
             const timeErrorElement = document.getElementById('error-pickUpTime');
 
             if (dropOffValue !== '' && pickUpValue !== '') {
-                const dropOffHour = parseInt(dropOffValue.split(':')[0]);
-                const pickUpHour = parseInt(pickUpValue.split(':')[0]);
+                const dropOffHour = parseInt(dropOffValue.split(':')[0], 10);
+                const pickUpHour = parseInt(pickUpValue.split(':')[0], 10);
                 
                 if (pickUpHour <= dropOffHour) {
-                    timeErrorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
-                    timeErrorElement.style.display = 'block';
-                    document.getElementById('pickUpTime').style.borderColor = 'var(--color-error)';
+                    if (timeErrorElement) {
+                        timeErrorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
+                        timeErrorElement.style.display = 'block';
+                    }
+                    const pickUpEl = document.getElementById('pickUpTime');
+                    if (pickUpEl) pickUpEl.style.borderColor = 'var(--color-error)';
                     if (!firstInvalidField) firstInvalidField = document.getElementById('pickUpTime');
                     isValid = false;
                 } else {
-                     timeErrorElement.innerText = "Pick-up time is required.";
+                     if (timeErrorElement) timeErrorElement.innerText = "Pick-up time is required.";
                 }
             }
 
+            // Child validation (if present)
             const hasChildCheckbox = document.getElementById('hasChild');
-            if (hasChildCheckbox.checked) {
-                const numKids = parseInt(document.getElementById('numKids').value);
+            if (hasChildCheckbox && hasChildCheckbox.checked) {
+                const numKids = parseInt(document.getElementById('numKids').value, 10) || 0;
                 for (let i = 1; i <= numKids; i++) {
                     const nameInput = document.getElementById(`childFirstName${i}`);
-                    const ageInput = document.getElementById(`childAge${i}`);
-                    const yearInput = document.getElementById(`childBirthYear${i}`);
-                    
-                    if (nameInput.value.trim() === '') {
-                        document.getElementById(`error-childFirstName${i}`).style.display = 'block';
+                    if (nameInput && nameInput.value.trim() === '') {
+                        const err = document.getElementById(`error-childFirstName${i}`);
+                        if (err) err.style.display = 'block';
                         nameInput.style.borderColor = 'var(--color-error)';
                         if (!firstInvalidField) firstInvalidField = nameInput;
                         isValid = false;
-                    } 
-                    // ... (rest of child validation omitted for brevity, assumed correct)
+                    }
                 }
             }
 
@@ -834,14 +897,19 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // AUTH LISTENERS
-            document.getElementById('login-form').addEventListener('submit', loginUser);
-            document.getElementById('signup-form').addEventListener('submit', signupUser);
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) loginForm.addEventListener('submit', loginUser);
+
+            const signupForm = document.getElementById('signup-form');
+            if (signupForm) signupForm.addEventListener('submit', signupUser);
             
             // BOOKING FORM LISTENERS
-            document.getElementById('signup-form-app').addEventListener('submit', function(event) {
+            const bookingForm = document.getElementById('signup-form-app');
+            if (bookingForm) bookingForm.addEventListener('submit', function(event) {
                 event.preventDefault();
                 if (validateForm()) {
-                    document.getElementById('gd-app-modal').style.display = 'flex';
+                    const modal = document.getElementById('gd-app-modal');
+                    if (modal) modal.style.display = 'flex';
                 }
             });
             
@@ -851,23 +919,27 @@
             const numKidsSelect = document.getElementById('numKids');
             const childFormsContainer = document.getElementById('child-forms-container');
 
-            hasChildCheckbox.addEventListener('change', () => {
-                if (hasChildCheckbox.checked) {
-                    childRegistrationArea.classList.add('visible');
-                    generateChildForms(parseInt(numKidsSelect.value)); 
-                } else {
-                    childRegistrationArea.classList.remove('visible');
-                    childFormsContainer.innerHTML = '';
-                }
-            });
+            if (hasChildCheckbox) {
+                hasChildCheckbox.addEventListener('change', () => {
+                    if (hasChildCheckbox.checked) {
+                        if (childRegistrationArea) childRegistrationArea.classList.add('visible');
+                        if (numKidsSelect) generateChildForms(parseInt(numKidsSelect.value, 10)); 
+                    } else {
+                        if (childRegistrationArea) childRegistrationArea.classList.remove('visible');
+                        if (childFormsContainer) childFormsContainer.innerHTML = '';
+                    }
+                });
+            }
 
-            numKidsSelect.addEventListener('change', (e) => {
-                if (hasChildCheckbox.checked) {
-                    generateChildForms(parseInt(e.target.value));
-                }
-            });
+            if (numKidsSelect) {
+                numKidsSelect.addEventListener('change', (e) => {
+                    if (hasChildCheckbox && hasChildCheckbox.checked) {
+                        generateChildForms(parseInt(e.target.value, 10));
+                    }
+                });
+            }
             
-            // DYNAMIC CHILD FORM CREATION (reused)
+            // DYNAMIC CHILD FORM CREATION
             const CURRENT_YEAR = new Date().getFullYear();
             function createChildFormHTML(index) {
                 return `
@@ -877,6 +949,7 @@
                             <div style="flex: 2;">
                                 <label for="childFirstName${index}">Child First Name <span style="color:var(--color-error);">*</span></label>
                                 <input type="text" id="childFirstName${index}" name="childFirstName${index}" required data-field-name="First Name">
+                                <div class="error-message" id="error-childFirstName${index}" style="display:none;">Please enter the child's first name.</div>
                             </div>
                             <div style="flex: 1;">
                                 <label for="childAge${index}">Age <span style="color:var(--color-error);">*</span></label>
@@ -891,6 +964,7 @@
                 `;
             }
             function generateChildForms(count) {
+                if (!childFormsContainer) return;
                 childFormsContainer.innerHTML = '';
                 for (let i = 1; i <= count; i++) {
                     childFormsContainer.insertAdjacentHTML('beforeend', createChildFormHTML(i));
@@ -898,39 +972,50 @@
             }
 
 
-            // CANCELLATION LOGIC (Reused and adapted to link to dashboard)
+            // CANCELLATION LOGIC
             window.initiateCancellation = function() {
                 const cancelEmailInput = document.getElementById('cancelEmail');
                 const statusElement = document.getElementById('cancel-status');
                 const coordinatorEmail = "ethan.unlocked@gmail.com";
-                const email = cancelEmailInput.value.trim();
+                const email = cancelEmailInput ? cancelEmailInput.value.trim() : '';
 
-                statusElement.style.display = 'none';
+                if (statusElement) statusElement.style.display = 'none';
 
                 if (!email) {
-                    statusElement.innerText = "Please enter your registration email address.";
-                    statusElement.style.display = 'block';
+                    if (statusElement) {
+                        statusElement.innerText = "Please enter your registration email address.";
+                        statusElement.style.display = 'block';
+                    }
                     return;
                 }
                 
-                // For a real app, this would check the database for bookings associated with the email.
-                // Here we just prepare the email link.
                 const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
-                const body = encodeURIComponent(`Dear Ethan,\n\nI wish to formally cancel my booking for the Geometry Dash Level Creator Club. \n\nRegistration Email: ${email}\n\nPlease confirm the ca[...]
+                const body = encodeURIComponent(`Dear Ethan,
+
+I wish to formally cancel my booking for the Geometry Dash Level Creator Club.
+
+Registration Email: ${email}
+
+Please confirm the cancellation and any next steps.
+
+Thank you.`);
                 const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
 
-                document.getElementById('cancellation-form-section').innerHTML = `
-                    <h2>Cancel a Booking</h2>
-                    <p style="color: var(--color-cancel); font-weight: bold;">
-                        Confirmation Required! Your cancellation request is ready.
-                    </p>
-                    <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
-                    <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decora[...]
-                        SEND CANCELLATION EMAIL
-                    </a>
-                    <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">You must send this email to complete the cancellation process.</p>
-                    <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
-                `;
+                const sect = document.getElementById('cancellation-form-section');
+                if (sect) {
+                    sect.innerHTML = `
+                        <h2>Cancel a Booking</h2>
+                        <p style="color: var(--color-cancel); font-weight: bold;">
+                            Confirmation Required! Your cancellation request is ready.
+                        </p>
+                        <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
+                        <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decoration:none; text-align:center;">
+                            SEND CANCELLATION EMAIL
+                        </a>
+                        <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">You must send this email to complete the cancellation process.</p>
+                        <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
+                    `;
+                }
             }
 
             // Remove error styles on checkbox interaction for signup form
