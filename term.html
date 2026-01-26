@@ -36,7 +36,7 @@
 
         .header {
             text-align: center;
-            padding: 70px 20px; /* Extra padding for floating icons */
+            padding: 80px 20px; 
             background-color: #fff;
             border-bottom: 1px solid #eee;
             perspective: 1000px; 
@@ -53,19 +53,19 @@
             height: auto; 
             display: block; 
             position: relative;
-            z-index: 20; /* Keep on top of jump/create images */
+            z-index: 20; 
         }
 
-        /* Jump Image - behind the main text */
+        /* FIXED: Jump Image - NOW TOP LEFT */
         .jump-img {
             position: absolute;
-            top: -40px;
-            right: -30px;
+            top: -45px;
+            left: -35px; /* Moved to Left side */
             width: 85px;
             z-index: 10; 
         }
 
-        /* Create Image - behind the main text */
+        /* Create Image - Bottom Right */
         .create-img {
             position: absolute;
             bottom: -30px;
@@ -117,7 +117,7 @@
                 <img src="jump.png" alt="Jump" class="jump-img">
                 <img src="create.png" alt="Create" class="create-img">
             </div>
-            </div>
+        </div>
 
         <div class="content-box" id="termsContent">
             <h2>Geometry Dash Level Creator Club</h2>
@@ -159,7 +159,6 @@
         const statusMsg = document.getElementById('statusMsg');
 
         termsBox.addEventListener('scroll', () => {
-            // Unlocks navigation once scrolled to the bottom
             const isBottom = termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - 30;
             if (isBottom) {
                 acceptBtn.disabled = false;
