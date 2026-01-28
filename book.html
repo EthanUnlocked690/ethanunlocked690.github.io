@@ -63,7 +63,7 @@
         /* General Form Styling */
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; }
-        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], select, input[type="date"] {
+        input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], select {
             width: 100%; padding: 12px; border: 2px solid #555; border-radius: 8px; background-color: #2a2a2a; color: var(--color-light); box-sizing: border-box; transition: border-color 0.3s;
         }
         input:focus, select:focus { border-color: var(--color-secondary); outline: none; box-shadow: 0 0 10px rgba(0, 191, 255, 0.5); }
@@ -155,14 +155,13 @@
         .forgot-link { display:block; text-align:center; margin-top:8px; color:var(--color-secondary); text-decoration:underline; cursor:pointer; }
         .info-message { font-size:0.95em; color:#ccc; text-align:center; margin-top:8px; display:none; }
 
+        /* small helper list of holidays */
+        .holiday-list { margin-top:10px; font-size:0.95em; color:#bbb; text-align:center; }
+
         .spots-info { font-size:0.95em; color:#ddd; margin-top:6px; text-align:center; }
         .full-note { color: var(--color-error); font-weight: bold; }
 
         .admin-note { margin-top:8px; font-size:0.9em; color:#ccc; }
-
-        .child-details { margin-top:8px; font-size:0.95em; color:#ddd; background:#222; padding:8px; border-radius:6px; }
-
-        .booking-actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; }
 
     </style>
 </head>
@@ -171,7 +170,7 @@
         <section id="auth-section">
             <h2>Geometry Dash Creator Club</h2>
             <div class="schedule-info" id="schedule-info">
-                📅 <strong>Club Schedule:</strong> Sessions can be booked for any date.
+                📅 <strong>Club Schedule:</strong> Public Holidays — see available dates below
             </div>
             <h3 style="color: var(--color-light);">Sign In or Sign Up</h3>
             
@@ -256,6 +255,10 @@
 
         <section id="booking-form-section" class="hidden">
             <h2>Geometry Dash Club Booking</h2>
+            <div class="schedule-info">
+                📅 <strong>Club Schedule:</strong> Public Holidays — sessions held only on listed public holidays
+                <div id="holiday-list" class="holiday-list"></div>
+            </div>
 
             <form id="signup-form-app">
                 <h3 style="text-align: left; color: var(--color-secondary);">Guardian Details</h3>
@@ -269,7 +272,7 @@
                 </div>
                 <div class="form-group">
                     <label for="phone">Phone Number <span style="color:var(--color-error);">*</span></label>
-                    <input type="tel" id="phone" name="phone" required pattern="[0-9]{6,15}">
+                    <input type="tel" id="phone" name="phone" required pattern="[0-9]{10,15}">
                 </div>
 
                 <div class="checkbox-group">
@@ -295,14 +298,16 @@
                 <hr style="border-color: #555; margin-top: 30px;"/>
 
                 <div id="date-selection-section">
-                    <h3 style="color: var(--color-primary); margin-top: 0; text-align: center;">📅 Choose Preferred Date</h3>
+                    <h3 style="color: var(--color-primary); margin-top: 0; text-align: center;">📅 Choose Preferred Public Holiday Date</h3>
 
                     <div class="form-group">
-                        <label for="clubDay">Select Preferred Date <span style="color:var(--color-error);">*</span></label>
-                        <input type="date" id="clubDay" name="clubDay" required>
+                        <label for="clubDay">Select Preferred Holiday Date <span style="color:var(--color-error);">*</span></label>
+                        <select id="clubDay" name="clubDay" required>
+                            <!-- Options populated dynamically from publicHolidays -->
+                        </select>
                         <div id="spots-info" class="spots-info" aria-live="polite"></div>
-                        <div class="error-message" id="error-clubDay">Please select a valid date.</div>
-                        <p style="font-size: 0.85em; color: #888; margin-top: 5px;">You may choose any date. Sessions are limited per date.</p>
+                        <div class="error-message" id="error-clubDay">Please select a valid public holiday from the list.</div>
+                        <p style="font-size: 0.85em; color: #888; margin-top: 5px;">Only the dates shown above (public holidays) are valid for club sessions.</p>
                     </div>
 
                     <div class="date-time-group">
@@ -382,30 +387,46 @@
         const ADMIN_USERNAME = "EthanUnlocked";
         const ADMIN_PASSWORD = "CoolGamer67";
 
+        // Public holidays: list of available dates (ISO) and labels.
+        // Replace or extend these dates with your local public holidays as needed.
+        const publicHolidays = [
+            { date: '2026-01-01', name: "New Year's Day" },
+            { date: '2026-04-10', name: "Spring Holiday (example)" },
+            { date: '2026-07-04', name: "National Day" },
+            { date: '2026-11-26', name: "Thanksgiving (example)" },
+            { date: '2026-12-25', name: "Christmas Day" }
+        ];
+
         // Maximum spots per session (per date)
         const MAX_SPOTS_PER_DATE = 10;
 
         // Global variable to hold current user info
         let currentUser = null; 
 
-        const CURRENT_YEAR = new Date().getFullYear();
+        // --- 1. UTILITY FUNCTIONS ---
 
-        // --- UTILS ---
+        /** Fetches all bookings from localStorage, or returns an empty array. */
         function getBookings() {
             const bookings = localStorage.getItem('clubBookings');
             return bookings ? JSON.parse(bookings) : [];
         }
+
+        /** Saves the updated bookings array back to localStorage. */
         function saveBookings(bookings) {
             localStorage.setItem('clubBookings', JSON.stringify(bookings));
         }
+
+        /** Gets the list of users from localStorage. */
         function getUsers() {
             const users = localStorage.getItem('clubUsers');
+            // Ensure EthanUnlocked exists on first load
             const userList = users ? JSON.parse(users) : [];
+            
             if (!userList.find(u => u.username === ADMIN_USERNAME)) {
                  userList.push({
                     id: 'admin',
                     username: ADMIN_USERNAME,
-                    password: ADMIN_PASSWORD,
+                    password: ADMIN_PASSWORD, // Mocked password
                     email: 'ethan.ioannou@icloud.com',
                     is_admin: true,
                     firstName: 'Ethan',
@@ -416,6 +437,16 @@
             return userList;
         }
 
+        /** Simple section toggling function */
+        function showSection(sectionId) {
+            document.querySelectorAll('#app-container > section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            const el = document.getElementById(sectionId);
+            if (el) el.classList.remove('hidden');
+        }
+
+        /** Helper to convert military time to 12-hour format */
         function formatTime(timeValue) {
             if (!timeValue) return '';
             const hour = parseInt(timeValue.split(':')[0], 10);
@@ -424,19 +455,40 @@
             if (hour < 12) return `${hour}:00 AM`;
             return `${hour - 12}:00 PM`;
         }
+
+        /** Format holiday date string YYYY-MM-DD to a friendlier format */
         function formatDateISO(iso) {
             if (!iso) return '';
             const d = new Date(iso + 'T00:00:00');
             return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
         }
-        function escapeHtml(s) {
-            if (!s) return '';
-            return s.replace(/[&<>"']/g, function(m) {
-                return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m];
-            });
+
+        /** Populate holiday options into the select and show short list in schedule area */
+        function populateHolidayOptions() {
+            const select = document.getElementById('clubDay');
+            const listContainer = document.getElementById('holiday-list');
+            if (select) {
+                select.innerHTML = '<option value="" disabled selected>Select a public holiday date</option>';
+                publicHolidays.forEach(h => {
+                    const opt = document.createElement('option');
+                    opt.value = h.date;
+                    opt.textContent = `${formatDateISO(h.date)} — ${h.name}`;
+                    select.appendChild(opt);
+                });
+            }
+            if (listContainer) {
+                listContainer.innerHTML = publicHolidays.map(h => `${formatDateISO(h.date)} (${h.name})`).join(' • ');
+            }
+            // attach listener to update spots info when date changes
+            const clubDaySelect = document.getElementById('clubDay');
+            if (clubDaySelect) {
+                clubDaySelect.addEventListener('change', () => {
+                    updateSpotsInfo(clubDaySelect.value);
+                });
+            }
         }
 
-        // spots functions
+        /** Returns how many spots are already reserved for a date (Pending or Confirmed) */
         function spotsReservedForDate(dateISO, excludeBookingId) {
             const bookings = getBookings();
             let reserved = 0;
@@ -449,10 +501,14 @@
             });
             return reserved;
         }
+
+        /** Returns how many spots remain for a date */
         function spotsRemainingForDate(dateISO, excludeBookingId) {
             const reserved = spotsReservedForDate(dateISO, excludeBookingId);
             return Math.max(0, MAX_SPOTS_PER_DATE - reserved);
         }
+
+        /** Updates the spots-info UI under the date select */
         function updateSpotsInfo(dateISO) {
             const spotsEl = document.getElementById('spots-info');
             if (!spotsEl) return;
@@ -468,39 +524,8 @@
             }
         }
 
-        // child form helpers
-        function createChildFormHTML(index) {
-            return `
-                <div class="child-form" data-child-index="${index}">
-                    <div class="child-form-header">Child #${index} Details</div>
-                    <div class="form-group">
-                        <div style="flex: 2;">
-                            <label for="childFirstName${index}">Child First Name <span style="color:var(--color-error);">*</span></label>
-                            <input type="text" id="childFirstName${index}" name="childFirstName${index}" required data-field-name="First Name">
-                            <div class="error-message" id="error-childFirstName${index}" style="display:none;">Please enter the child's first name.</div>
-                        </div>
-                        <div style="flex: 1;">
-                            <label for="childAge${index}">Age <span style="color:var(--color-error);">*</span></label>
-                            <input type="number" id="childAge${index}" name="childAge${index}" min="1" max="99" required data-field-name="Age">
-                        </div>
-                        <div style="flex: 1;">
-                            <label for="childBirthYear${index}">Birth Year <span style="color:var(--color-error);">*</span></label>
-                            <input type="number" id="childBirthYear${index}" name="childBirthYear${index}" min="1900" max="${CURRENT_YEAR}" required data-field-name="Birth Year">
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        function generateChildForms(count) {
-            const childFormsContainer = document.getElementById('child-forms-container');
-            if (!childFormsContainer) return;
-            childFormsContainer.innerHTML = '';
-            for (let i = 1; i <= count; i++) {
-                childFormsContainer.insertAdjacentHTML('beforeend', createChildFormHTML(i));
-            }
-        }
+        // --- 2. AUTHENTICATION LOGIC ---
 
-        // --- Auth handlers ---
         function checkAuth() {
             const storedUser = localStorage.getItem('currentUser');
             if (storedUser) {
@@ -531,8 +556,9 @@
                     statusDiv.style.display = 'block';
                 }
             }
-        };
+        }
 
+        // Forgot password helper: prompts for username/email and opens a mailto to admin to request reset
         window.forgotPassword = function() {
             const identifier = prompt("Enter your username or registration email to reset your password:");
             if (!identifier) return;
@@ -543,7 +569,7 @@
 
             const found = users.find(u => (u.username && u.username.toLowerCase() === identifier.toLowerCase()) || (u.email && u.email.toLowerCase() === identifier.toLowerCase()));
             if (found) {
-                const coordinatorEmail = "ethan.ioannou@icloud.com";
+                const coordinatorEmail = "ethan.unlocked@gmail.com";
                 const subject = encodeURIComponent(`Password reset request for ${found.username}`);
                 const body = encodeURIComponent(`Hello Ethan,\n\nPlease assist with resetting the password for the following account:\n\nUsername: ${found.username}\nEmail: ${found.email}\n\nThank you.`);
                 const mailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
@@ -559,26 +585,39 @@
                     statusDiv.style.display = 'block';
                 }
             }
-        };
+        }
 
         window.signupUser = function(e) {
             e.preventDefault();
+
+            // TERMS/CONDITIONS CHECK: custom animated error if not agreed
             const agreeCheckbox = document.getElementById('agreeTerms');
             const agreeContainer = document.getElementById('agree-terms-container');
             const agreeError = document.getElementById('error-agreeTerms');
             if (!agreeCheckbox || !agreeCheckbox.checked) {
+                // Scroll to the checkbox container and animate/shake it
                 if (agreeContainer) {
                     agreeContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // re-trigger animation
                     agreeContainer.classList.remove('shake', 'error-highlight');
                     void agreeContainer.offsetWidth;
                     agreeContainer.classList.add('shake', 'error-highlight');
                 }
-                if (agreeError) agreeError.style.display = 'block';
-                if (agreeCheckbox) agreeCheckbox.focus();
-                return;
+                if (agreeError) {
+                    agreeError.style.display = 'block';
+                }
+                if (agreeCheckbox) {
+                    agreeCheckbox.focus();
+                }
+                return; // stop submission until they agree
             } else {
-                if (agreeContainer) agreeContainer.classList.remove('shake', 'error-highlight');
-                if (agreeError) agreeError.style.display = 'none';
+                // remove any previous error styling if checked
+                if (agreeContainer) {
+                    agreeContainer.classList.remove('shake', 'error-highlight');
+                }
+                if (agreeError) {
+                    agreeError.style.display = 'none';
+                }
             }
 
             const username = document.getElementById('signup-username').value.trim();
@@ -605,7 +644,7 @@
             }
 
             const newUser = {
-                id: Date.now().toString(),
+                id: Date.now().toString(), // Simple unique ID
                 username: username,
                 password: password,
                 email: email,
@@ -617,10 +656,11 @@
             users.push(newUser);
             localStorage.setItem('clubUsers', JSON.stringify(users));
 
+            // Log user in automatically
             currentUser = newUser;
             localStorage.setItem('currentUser', JSON.stringify(newUser));
             showDashboard();
-        };
+        }
 
         window.logoutUser = function() {
             localStorage.removeItem('currentUser');
@@ -630,11 +670,13 @@
             const lp = document.getElementById('login-password');
             if (lu) lu.value = '';
             if (lp) lp.value = '';
-        };
+        }
+        
+        // --- 3. DASHBOARD / UI LOGIC ---
 
-        // --- Dashboard & Rendering ---
         function showDashboard() {
             if (!currentUser) return;
+
             const welcome = document.getElementById('welcome-message');
             if (welcome) welcome.innerText = `Welcome, ${currentUser.username}!`;
             showSection('dashboard-section');
@@ -651,8 +693,21 @@
                 const title = document.getElementById('user-dash-title');
                 if (title) title.innerText = 'Your Recent Bookings';
             }
+            
             renderUserBookings();
         }
+
+        function showBookingForm() {
+            // Pre-fill fields with user data if available
+            const fn = document.getElementById('firstName');
+            const ln = document.getElementById('lastName');
+            if (fn) fn.value = currentUser && currentUser.firstName ? currentUser.firstName : '';
+            if (ln) ln.value = currentUser && currentUser.lastName ? currentUser.lastName : '';
+            showSection('booking-form-section');
+        }
+
+
+        // --- 4. BOOKING RENDERING AND STATUS MANAGEMENT ---
 
         function renderUserBookings() {
             const bookings = getBookings();
@@ -669,47 +724,18 @@
 
             userBookings.forEach(booking => {
                 const statusClass = `status-${booking.status.toLowerCase()}`;
-                const childCount = Number(booking.numKids || 0);
-                const childToggleId = `child-details-${booking.id}`;
-                const repliesHtml = (booking.replies && booking.replies.length)
-                    ? `<div style="margin-top:8px; font-size:0.9em; color:#ccc;">Replies:<br>${booking.replies.map(r => `<div style="margin-top:6px;">${escapeHtml(r.from)} (${new Date(r.created_at).toLocaleString()}): ${escapeHtml(r.text)}</div>`).join('')}</div>`
-                    : '';
-                const adminReplyBtn = booking.adminAllowReply ? `<button class="secondary" onclick="replyToAdmin('${booking.id}')">Reply to Admin</button>` : '';
-                const copyBtn = `<button class="secondary" onclick="copyBooking('${booking.id}')">Copy Booking</button>`;
-                const phoneAndEmail = `<div style="margin-top:6px; font-size:0.9em; color:#bbb;">Contact: ${escapeHtml(booking.parentEmail || '')} • ${escapeHtml(booking.phone || '')}</div>`;
-                const childDetailsHtml = (booking.children && booking.children.length > 0)
-                    ? booking.children.map((c, idx) => `<div>Child ${idx+1}: ${escapeHtml(c.firstName)} — Age: ${escapeHtml(String(c.age))} — Birth Year: ${escapeHtml(String(c.birthYear))}</div>`).join('')
-                    : '<div>No child details recorded.</div>';
-
                 const html = `
                     <div class="booking-list-item" style="border-left-color: var(--color-${booking.status.toLowerCase()});">
-                        <div style="max-width:72%;">
-                            <div><strong>Date:</strong> ${formatDateISO(booking.preferredDay)}</div>
-                            <div><strong>Time:</strong> ${formatTime(booking.dropOffTime)} - ${formatTime(booking.pickUpTime)}</div>
-                            <div><strong>Children:</strong> <a href="#" onclick="toggleChildDetails('${childToggleId}'); return false;" style="color:var(--color-secondary);">${childCount}</a></div>
-                            <div id="${childToggleId}" class="child-details hidden">${childDetailsHtml}</div>
+                        <div>
+                            <strong>Date: ${formatDateISO(booking.preferredDay)}</strong> (${formatTime(booking.dropOffTime)} - ${formatTime(booking.pickUpTime)})<br>
+                            Kids: ${booking.numKids} | Parent: ${booking.parentName}
                             ${booking.adminNote ? `<div class="admin-note">Admin note: ${escapeHtml(booking.adminNote)}</div>` : ''}
-                            ${phoneAndEmail}
-                            ${repliesHtml}
                         </div>
-                        <div class="booking-actions">
-                            <span class="status-badge ${statusClass}" style="margin-right:8px;">${booking.status.toUpperCase()}</span>
-                            ${adminReplyBtn}
-                            ${copyBtn}
-                        </div>
+                        <span class="status-badge ${statusClass}">${booking.status.toUpperCase()}</span>
                     </div>
                 `;
                 listContainer.insertAdjacentHTML('beforeend', html);
             });
-        }
-
-        function toggleChildDetails(elementId) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            el.classList.toggle('hidden');
-            if (!el.classList.contains('hidden')) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
         }
 
         function renderAdminBookings() {
@@ -737,19 +763,13 @@
             listContainer.insertAdjacentHTML('beforeend', summaryHtml);
 
             pendingBookings.forEach(booking => {
-                const childList = (booking.children && booking.children.length > 0) ? booking.children.map(c => escapeHtml(c.firstName)).join(', ') : 'N/A';
-                const repliesHtml = (booking.replies && booking.replies.length)
-                    ? `<div style="margin-top:8px; font-size:0.9em; color:#ccc;">Replies:<br>${booking.replies.map(r => `<div style="margin-top:6px;">${escapeHtml(r.from)} (${new Date(r.created_at).toLocaleString()}): ${escapeHtml(r.text)}</div>`).join('')}</div>`
-                    : '';
                 const html = `
                     <div class="booking-list-item admin-item" style="border-left-color: var(--color-pending);">
                         <div style="flex-grow: 1;">
-                            <div><strong>User:</strong> ${booking.username} | <strong>Kids:</strong> ${booking.numKids}</div>
-                            <div><strong>Date:</strong> ${formatDateISO(booking.preferredDay)} | <strong>Time:</strong> ${formatTime(booking.dropOffTime)} - ${formatTime(booking.pickUpTime)}</div>
-                            <div><strong>Email:</strong> ${escapeHtml(booking.parentEmail || '')} | <strong>Phone:</strong> ${escapeHtml(booking.phone || '')}</div>
-                            <div class="admin-note">Child names: ${childList}</div>
+                            <strong>User: ${booking.username}</strong> | Kids: ${booking.numKids}<br>
+                            Date: ${formatDateISO(booking.preferredDay)} (${formatTime(booking.dropOffTime)} - ${formatTime(booking.pickUpTime)})<br>
+                            Email: ${booking.parentEmail}
                             ${booking.adminNote ? `<div class="admin-note">Previous admin note: ${escapeHtml(booking.adminNote)}</div>` : ''}
-                            ${repliesHtml}
                         </div>
                         <div id="admin-actions">
                             <button onclick="adminRespond('${booking.id}', 'Confirmed')">Confirm</button>
@@ -761,15 +781,26 @@
             });
         }
 
-        // Admin respond flow includes an option to allow replies from the user
+        // escape simple HTML for admin notes display
+        function escapeHtml(s) {
+            if (!s) return '';
+            return s.replace(/[&<>"']/g, function(m) {
+                return ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m];
+            });
+        }
+
+        // Admin respond flow: ask for optional note/reason, validate capacity when confirming
         window.adminRespond = function(bookingId, newStatus) {
             const bookings = getBookings();
             const idx = bookings.findIndex(b => b.id === bookingId);
             if (idx === -1) return alert('Booking not found.');
+
             const booking = bookings[idx];
 
+            // If confirming: check capacity (exclude this booking if it's pending)
             if (newStatus === 'Confirmed') {
                 const remaining = spotsRemainingForDate(booking.preferredDay, booking.id);
+                // remaining already excludes this booking, so we need to ensure remaining >= booking.numKids
                 if (Number(booking.numKids || 0) > remaining) {
                     return alert(`Cannot confirm: Not enough spots left on ${formatDateISO(booking.preferredDay)}. Current spots available: ${remaining}. Please decline or ask user to reduce spots or pick another date.`);
                 }
@@ -780,16 +811,9 @@
                 : 'Optional: Enter a reason for decline to send to the parent (or leave blank):';
 
             const note = prompt(promptText, booking.adminNote || '');
-
-            // Ask whether to allow replies from the user about this note
-            const allowReply = confirm('Allow the person who booked to reply to this admin message? (OK = allow, Cancel = do not allow)');
-
+            // update booking
             bookings[idx].status = newStatus;
             bookings[idx].adminNote = note ? String(note).trim() : '';
-            bookings[idx].adminAllowReply = !!allowReply;
-
-            // initialize replies array if not present
-            if (!Array.isArray(bookings[idx].replies)) bookings[idx].replies = [];
 
             saveBookings(bookings);
             renderAdminBookings();
@@ -808,8 +832,6 @@
                 bodyLines.push('');
                 if (bookings[idx].adminNote) bodyLines.push(`Message from coordinator: ${bookings[idx].adminNote}`);
                 bodyLines.push('');
-                bodyLines.push(`You ${bookings[idx].adminAllowReply ? 'may' : 'may NOT'} reply to this message through the booking page.`);
-                bodyLines.push('');
                 bodyLines.push('Regards,');
                 bodyLines.push('Geometry Dash Club Coordinator');
             } else {
@@ -824,8 +846,6 @@
                     bodyLines.push('Please contact the coordinator for more details.');
                 }
                 bodyLines.push('');
-                bodyLines.push(`You ${bookings[idx].adminAllowReply ? 'may' : 'may NOT'} reply to this message through the booking page.`);
-                bodyLines.push('');
                 bodyLines.push('Regards,');
                 bodyLines.push('Geometry Dash Club Coordinator');
             }
@@ -837,190 +857,33 @@
             } else {
                 alert('No parent email on file to notify.');
             }
-
-            updateSpotsInfo(booking.preferredDay);
         };
 
-        // Reply from user to admin about a booking
-        window.replyToAdmin = function(bookingId) {
-            if (!currentUser) return alert('You must be signed in to reply.');
-            const bookings = getBookings();
-            const idx = bookings.findIndex(b => b.id === bookingId);
-            if (idx === -1) return alert('Booking not found.');
-            const booking = bookings[idx];
-            if (!booking.adminAllowReply) return alert('Replies are not allowed for this admin message.');
 
-            const reply = prompt('Enter your reply to the admin:');
-            if (!reply || !reply.trim()) return;
+        // --- 5. BOOKING SUBMISSION AND VALIDATION ---
 
-            if (!Array.isArray(booking.replies)) booking.replies = [];
-            booking.replies.push({
-                from: currentUser.username,
-                text: reply.trim(),
-                created_at: new Date().toISOString()
-            });
+        window.handleAppCheck = function(hasApp) {
+            const modal = document.getElementById('gd-app-modal');
+            if (modal) modal.style.display = 'none';
 
-            saveBookings(bookings);
-            renderUserBookings();
-            renderAdminBookings();
-
-            // Optionally open mailto to admin for immediate contact
-            const coordinatorEmail = 'ethan.unlocked@gmail.com';
-            const subject = encodeURIComponent(`Reply to admin about booking ${booking.id}`);
-            const body = encodeURIComponent(`User ${currentUser.username} replied regarding booking ${booking.id}:\n\n${reply.trim()}`);
-            window.open(`mailto:${coordinatorEmail}?subject=${subject}&body=${body}`, '_blank');
-            alert('Your reply was saved and an email draft to the coordinator has been opened.');
-        };
-
-        // copy booking into form so user can quickly re-book same details
-        function copyBooking(bookingId) {
-            const bookings = getBookings();
-            const booking = bookings.find(b => b.id === bookingId);
-            if (!booking) return alert('Booking not found.');
-
-            showSection('booking-form-section');
-
-            const fn = document.getElementById('firstName');
-            const ln = document.getElementById('lastName');
-            const phone = document.getElementById('phone');
-            const clubDay = document.getElementById('clubDay');
-            const dropOff = document.getElementById('dropOffTime');
-            const pickUp = document.getElementById('pickUpTime');
-            const hasChild = document.getElementById('hasChild');
-            const numKids = document.getElementById('numKids');
-
-            if (fn) fn.value = (booking.parentName || '').split(' ')[0] || '';
-            if (ln) ln.value = (booking.parentName || '').split(' ').slice(1).join(' ') || '';
-            if (phone) phone.value = booking.phone || '';
-            if (clubDay) clubDay.value = booking.preferredDay || '';
-            if (dropOff) dropOff.value = booking.dropOffTime || '';
-            if (pickUp) pickUp.value = booking.pickUpTime || '';
-
-            if (booking.children && booking.children.length > 0) {
-                if (hasChild) hasChild.checked = true;
-                if (numKids) numKids.value = String(booking.children.length);
-                generateChildForms(booking.children.length);
-                booking.children.forEach((c, idx) => {
-                    const i = idx + 1;
-                    const fnc = document.getElementById(`childFirstName${i}`);
-                    const agec = document.getElementById(`childAge${i}`);
-                    const yrc = document.getElementById(`childBirthYear${i}`);
-                    if (fnc) fnc.value = c.firstName || '';
-                    if (agec) agec.value = c.age || '';
-                    if (yrc) yrc.value = c.birthYear || '';
-                });
+            if (hasApp) {
+                submitBooking();
             } else {
-                if (hasChild) hasChild.checked = false;
-                if (numKids) numKids.value = '1';
-                const childFormsContainer = document.getElementById('child-forms-container');
-                if (childFormsContainer) childFormsContainer.innerHTML = '';
+                displayFinalFailure();
             }
-
-            updateSpotsInfo(clubDay ? clubDay.value : '');
-            document.getElementById('signup-form-app').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        // collect children from current booking form
-        function collectChildrenFromForm() {
-            const children = [];
-            const hasChild = document.getElementById('hasChild');
-            if (!hasChild || !hasChild.checked) return children;
-            const num = parseInt(document.getElementById('numKids').value || '0', 10) || 0;
-            for (let i = 1; i <= num; i++) {
-                const firstNameEl = document.getElementById(`childFirstName${i}`);
-                const ageEl = document.getElementById(`childAge${i}`);
-                const yearEl = document.getElementById(`childBirthYear${i}`);
-                if (firstNameEl) {
-                    children.push({
-                        firstName: firstNameEl.value.trim(),
-                        age: ageEl ? ageEl.value : '',
-                        birthYear: yearEl ? yearEl.value : ''
-                    });
-                }
-            }
-            return children;
-        }
-
-        // --- Booking submission & validation ---
-        function validateForm() {
-            let isValid = true;
-            let firstInvalidField = null;
-            document.querySelectorAll('#booking-form-section .error-message').forEach(el => el.style.display = 'none');
-            const resultMsg = document.getElementById('result-message');
-            if (resultMsg) resultMsg.style.display = 'none';
-
-            const requiredFields = ['firstName', 'lastName', 'phone', 'clubDay', 'dropOffTime', 'pickUpTime'];
-            requiredFields.forEach(fieldId => {
-                const input = document.getElementById(fieldId);
-                if (!input || input.value.trim() === '' || (input.tagName === 'SELECT' && input.value === '')) {
-                    const err = document.getElementById(`error-${fieldId}`);
-                    if (err) err.style.display = 'block';
-                    if (input) input.style.borderColor = 'var(--color-error)';
-                    if (!firstInvalidField) firstInvalidField = input;
-                    isValid = false;
-                }
-            });
-
-            // check clubDay is a valid date string
-            const selectedDay = document.getElementById('clubDay').value;
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDay)) {
-                const err = document.getElementById('error-clubDay');
-                if (err) err.style.display = 'block';
-                if (!firstInvalidField) firstInvalidField = document.getElementById('clubDay');
-                isValid = false;
-            }
-
-            const dropOffValue = document.getElementById('dropOffTime').value;
-            const pickUpValue = document.getElementById('pickUpTime').value;
-            const timeErrorElement = document.getElementById('error-pickUpTime');
-
-            if (dropOffValue !== '' && pickUpValue !== '') {
-                const dropOffHour = parseInt(dropOffValue.split(':')[0], 10);
-                const pickUpHour = parseInt(pickUpValue.split(':')[0], 10);
-                if (pickUpHour <= dropOffHour) {
-                    if (timeErrorElement) {
-                        timeErrorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
-                        timeErrorElement.style.display = 'block';
-                    }
-                    const pickUpEl = document.getElementById('pickUpTime');
-                    if (pickUpEl) pickUpEl.style.borderColor = 'var(--color-error)';
-                    if (!firstInvalidField) firstInvalidField = document.getElementById('pickUpTime');
-                    isValid = false;
-                } else {
-                    if (timeErrorElement) timeErrorElement.innerText = "Pick-up time is required.";
-                }
-            }
-
-            const hasChildCheckbox = document.getElementById('hasChild');
-            if (hasChildCheckbox && hasChildCheckbox.checked) {
-                const numKids = parseInt(document.getElementById('numKids').value, 10) || 0;
-                for (let i = 1; i <= numKids; i++) {
-                    const nameInput = document.getElementById(`childFirstName${i}`);
-                    if (nameInput && nameInput.value.trim() === '') {
-                        const err = document.getElementById(`error-childFirstName${i}`);
-                        if (err) err.style.display = 'block';
-                        nameInput.style.borderColor = 'var(--color-error)';
-                        if (!firstInvalidField) firstInvalidField = nameInput;
-                        isValid = false;
-                    }
-                }
-            }
-
-            if (firstInvalidField) {
-                firstInvalidField.focus();
-                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-            return isValid;
         }
 
         function submitBooking() {
             const data = getBookingData();
+
+            // ensure user is logged in
             if (!currentUser) {
                 alert('You must be signed in to make a booking.');
                 showSection('auth-section');
                 return;
             }
 
+            // check capacity BEFORE saving
             const requested = Number(data.numKids || 0);
             const remaining = spotsRemainingForDate(data.preferredDay);
             if (requested > remaining) {
@@ -1036,9 +899,11 @@
                 return;
             }
 
+            // 1. Save Parent Name to User Profile (if empty)
             if (!currentUser.firstName && data.firstName) {
                 currentUser.firstName = data.firstName;
                 currentUser.lastName = data.lastName;
+                // Update localStorage for current user details
                 let users = getUsers();
                 const userIndex = users.findIndex(u => u.id === currentUser.id);
                 if (userIndex > -1) {
@@ -1046,11 +911,10 @@
                     users[userIndex].lastName = data.lastName;
                     localStorage.setItem('clubUsers', JSON.stringify(users));
                 }
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser)); // Update current session
             }
 
-            const children = collectChildrenFromForm();
-
+            // 2. Create and Save Booking Record
             const newBooking = {
                 id: 'BOOK-' + Date.now(),
                 userId: currentUser.id,
@@ -1058,15 +922,12 @@
                 parentName: `${data.firstName} ${data.lastName}`,
                 parentEmail: currentUser.email || '',
                 phone: data.phone,
-                preferredDay: data.preferredDay,
+                preferredDay: data.preferredDay, // ISO date
                 dropOffTime: data.dropOffTime,
                 pickUpTime: data.pickUpTime,
                 numKids: Number(data.numKids || 0),
-                children: children,
-                status: 'Pending',
+                status: 'Pending', // All new bookings are Pending and go to admin for review
                 adminNote: '',
-                adminAllowReply: false,
-                replies: [],
                 created_at: new Date().toISOString()
             };
 
@@ -1074,19 +935,23 @@
             bookings.push(newBooking);
             saveBookings(bookings);
 
+            // 3. Notify admin by opening mailto (mock) and show success message
             displayFinalSuccess(data, newBooking.id);
             renderUserBookings();
             if (currentUser.is_admin) renderAdminBookings();
+
+            // update spots info UI
             updateSpotsInfo(newBooking.preferredDay);
         }
-
+        
         function getBookingData() {
             const form = document.getElementById('signup-form-app');
             const data = {};
+            // Using existing field IDs from the form section
             data.firstName = form.querySelector('#firstName').value.trim();
             data.lastName = form.querySelector('#lastName').value.trim();
             data.phone = form.querySelector('#phone').value.trim();
-            data.preferredDay = form.querySelector('#clubDay').value;
+            data.preferredDay = form.querySelector('#clubDay').value; // ISO date
             data.dropOffTime = form.querySelector('#dropOffTime').value;
             data.pickUpTime = form.querySelector('#pickUpTime').value;
             data.numKids = document.getElementById('hasChild').checked ? parseInt(document.getElementById('numKids').value, 10) : 0;
@@ -1095,6 +960,7 @@
 
         function displayFinalSuccess(data, bookingId) {
             const subject = encodeURIComponent(`NEW BOOKING REQUEST: ${data.preferredDay} (${bookingId})`);
+            
             let bodyText = `Hello Ethan,
 
 A new booking request has been submitted by ${data.firstName} ${data.lastName}.
@@ -1111,7 +977,7 @@ Status: PENDING - Check Admin Dashboard to Confirm/Decline.
 
 FEE STATUS: $10.00 per child, per session.
 `;
-            const mailtoLink = `mailto:ethan.ioannou@icloud.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
+            const mailtoLink = `mailto:ethan.unlocked@gmail.com?subject=${subject}&body=${encodeURIComponent(bodyText)}`;
 
             const resultEl = document.getElementById('result-message');
             if (resultEl) {
@@ -1149,65 +1015,110 @@ FEE STATUS: $10.00 per child, per session.
             }
         }
 
-        // cancellation helper
-        window.initiateCancellation = function() {
-            const cancelEmailInput = document.getElementById('cancelEmail');
-            const statusElement = document.getElementById('cancel-status');
-            const coordinatorEmail = "ethan.unlocked@gmail.com";
-            const email = cancelEmailInput ? cancelEmailInput.value.trim() : '';
 
-            if (statusElement) statusElement.style.display = 'none';
-            if (!email) {
-                if (statusElement) {
-                    statusElement.innerText = "Please enter your registration email address.";
-                    statusElement.style.display = 'block';
+        // --- 6. FORM VALIDATION (booking form) ---
+        function validateForm() {
+            let isValid = true;
+            let firstInvalidField = null;
+
+            // hide previous errors within booking section
+            document.querySelectorAll('#booking-form-section .error-message').forEach(el => el.style.display = 'none');
+            const resultMsg = document.getElementById('result-message');
+            if (resultMsg) resultMsg.style.display = 'none';
+
+            const requiredFields = ['firstName', 'lastName', 'phone', 'clubDay', 'dropOffTime', 'pickUpTime'];
+
+            requiredFields.forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                if (!input || input.value.trim() === '' || (input.tagName === 'SELECT' && input.value === '')) {
+                    const err = document.getElementById(`error-${fieldId}`);
+                    if (err) err.style.display = 'block';
+                    if (input) input.style.borderColor = 'var(--color-error)';
+                    if (!firstInvalidField) firstInvalidField = input;
+                    isValid = false;
                 }
-                return;
+            });
+
+            // Ensure selected clubDay is one of the publicHolidays
+            const selectedDay = document.getElementById('clubDay').value;
+            const validDates = publicHolidays.map(h => h.date);
+            if (!validDates.includes(selectedDay)) {
+                const err = document.getElementById('error-clubDay');
+                const container = document.getElementById('date-selection-section');
+                if (err) err.style.display = 'block';
+                if (container) {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    container.classList.remove('shake');
+                    void container.offsetWidth;
+                    container.classList.add('shake');
+                }
+                const cd = document.getElementById('clubDay');
+                if (cd) cd.style.borderColor = 'var(--color-error)';
+                if (!firstInvalidField) firstInvalidField = document.getElementById('clubDay');
+                isValid = false;
             }
 
-            const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
-            const body = encodeURIComponent(`Dear Ethan,
+            // Time logic
+            const dropOffValue = document.getElementById('dropOffTime').value;
+            const pickUpValue = document.getElementById('pickUpTime').value;
+            const timeErrorElement = document.getElementById('error-pickUpTime');
 
-I wish to formally cancel my booking for the Geometry Dash Level Creator Club.
-
-Registration Email: ${email}
-
-Please confirm the cancellation and any next steps.
-
-Thank you.`);
-            const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
-
-            const sect = document.getElementById('cancellation-form-section');
-            if (sect) {
-                sect.innerHTML = `
-                    <h2>Cancel a Booking</h2>
-                    <p style="color: var(--color-cancel); font-weight: bold;">
-                        Confirmation Required! Your cancellation request is ready.
-                    </p>
-                    <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
-                    <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decoration:none; text-align:center;">
-                        SEND CANCELLATION EMAIL
-                    </a>
-                    <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">You must send this email to complete the cancellation process.</p>
-                    <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
-                `;
+            if (dropOffValue !== '' && pickUpValue !== '') {
+                const dropOffHour = parseInt(dropOffValue.split(':')[0], 10);
+                const pickUpHour = parseInt(pickUpValue.split(':')[0], 10);
+                
+                if (pickUpHour <= dropOffHour) {
+                    if (timeErrorElement) {
+                        timeErrorElement.innerText = "Pick-up time must be after the drop-off time (minimum 1 hour session).";
+                        timeErrorElement.style.display = 'block';
+                    }
+                    const pickUpEl = document.getElementById('pickUpTime');
+                    if (pickUpEl) pickUpEl.style.borderColor = 'var(--color-error)';
+                    if (!firstInvalidField) firstInvalidField = document.getElementById('pickUpTime');
+                    isValid = false;
+                } else {
+                     if (timeErrorElement) timeErrorElement.innerText = "Pick-up time is required.";
+                }
             }
-        };
 
-        // --- Initialization ---
+            // Child validation (if present)
+            const hasChildCheckbox = document.getElementById('hasChild');
+            if (hasChildCheckbox && hasChildCheckbox.checked) {
+                const numKids = parseInt(document.getElementById('numKids').value, 10) || 0;
+                for (let i = 1; i <= numKids; i++) {
+                    const nameInput = document.getElementById(`childFirstName${i}`);
+                    if (nameInput && nameInput.value.trim() === '') {
+                        const err = document.getElementById(`error-childFirstName${i}`);
+                        if (err) err.style.display = 'block';
+                        nameInput.style.borderColor = 'var(--color-error)';
+                        if (!firstInvalidField) firstInvalidField = nameInput;
+                        isValid = false;
+                    }
+                }
+            }
+
+            if (firstInvalidField) {
+                firstInvalidField.focus();
+                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            return isValid;
+        }
+
+        // --- 7. INITIALIZATION AND EVENT LISTENERS ---
+
         document.addEventListener('DOMContentLoaded', () => {
-            // populate basic listeners
-            const clubDay = document.getElementById('clubDay');
-            if (clubDay) {
-                clubDay.addEventListener('change', () => updateSpotsInfo(clubDay.value));
-            }
+            // populate holiday options first
+            populateHolidayOptions();
 
+            // AUTH LISTENERS
             const loginForm = document.getElementById('login-form');
             if (loginForm) loginForm.addEventListener('submit', loginUser);
 
             const signupForm = document.getElementById('signup-form');
             if (signupForm) signupForm.addEventListener('submit', signupUser);
-
+            
+            // BOOKING FORM LISTENERS
             const bookingForm = document.getElementById('signup-form-app');
             if (bookingForm) bookingForm.addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -1216,10 +1127,12 @@ Thank you.`);
                     if (modal) modal.style.display = 'flex';
                 }
             });
-
+            
+            // CHILD FORM LISTENERS
             const hasChildCheckbox = document.getElementById('hasChild');
             const childRegistrationArea = document.getElementById('child-registration-area');
             const numKidsSelect = document.getElementById('numKids');
+            const childFormsContainer = document.getElementById('child-forms-container');
 
             if (hasChildCheckbox) {
                 hasChildCheckbox.addEventListener('change', () => {
@@ -1228,7 +1141,6 @@ Thank you.`);
                         if (numKidsSelect) generateChildForms(parseInt(numKidsSelect.value, 10)); 
                     } else {
                         if (childRegistrationArea) childRegistrationArea.classList.remove('visible');
-                        const childFormsContainer = document.getElementById('child-forms-container');
                         if (childFormsContainer) childFormsContainer.innerHTML = '';
                     }
                 });
@@ -1241,7 +1153,87 @@ Thank you.`);
                     }
                 });
             }
+            
+            // DYNAMIC CHILD FORM CREATION
+            const CURRENT_YEAR = new Date().getFullYear();
+            function createChildFormHTML(index) {
+                return `
+                    <div class="child-form" data-child-index="${index}">
+                        <div class="child-form-header">Child #${index} Details</div>
+                        <div class="form-group">
+                            <div style="flex: 2;">
+                                <label for="childFirstName${index}">Child First Name <span style="color:var(--color-error);">*</span></label>
+                                <input type="text" id="childFirstName${index}" name="childFirstName${index}" required data-field-name="First Name">
+                                <div class="error-message" id="error-childFirstName${index}" style="display:none;">Please enter the child's first name.</div>
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="childAge${index}">Age <span style="color:var(--color-error);">*</span></label>
+                                <input type="number" id="childAge${index}" name="childAge${index}" min="1" max="99" required data-field-name="Age">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="childBirthYear${index}">Birth Year <span style="color:var(--color-error);">*</span></label>
+                                <input type="number" id="childBirthYear${index}" name="childBirthYear${index}" min="1900" max="${CURRENT_YEAR}" required data-field-name="Birth Year">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            function generateChildForms(count) {
+                if (!childFormsContainer) return;
+                childFormsContainer.innerHTML = '';
+                for (let i = 1; i <= count; i++) {
+                    childFormsContainer.insertAdjacentHTML('beforeend', createChildFormHTML(i));
+                }
+            }
 
+
+            // CANCELLATION LOGIC
+            window.initiateCancellation = function() {
+                const cancelEmailInput = document.getElementById('cancelEmail');
+                const statusElement = document.getElementById('cancel-status');
+                const coordinatorEmail = "ethan.unlocked@gmail.com";
+                const email = cancelEmailInput ? cancelEmailInput.value.trim() : '';
+
+                if (statusElement) statusElement.style.display = 'none';
+
+                if (!email) {
+                    if (statusElement) {
+                        statusElement.innerText = "Please enter your registration email address.";
+                        statusElement.style.display = 'block';
+                    }
+                    return;
+                }
+                
+                const subject = encodeURIComponent("CANCELLATION REQUEST: Geometry Dash Level Creator Club");
+                const body = encodeURIComponent(`Dear Ethan,
+
+I wish to formally cancel my booking for the Geometry Dash Level Creator Club.
+
+Registration Email: ${email}
+
+Please confirm the cancellation and any next steps.
+
+Thank you.`);
+                const cancelMailtoLink = `mailto:${coordinatorEmail}?subject=${subject}&body=${body}`;
+
+                const sect = document.getElementById('cancellation-form-section');
+                if (sect) {
+                    sect.innerHTML = `
+                        <h2>Cancel a Booking</h2>
+                        <p style="color: var(--color-cancel); font-weight: bold;">
+                            Confirmation Required! Your cancellation request is ready.
+                        </p>
+                        <p>Click the button below to send the formal cancellation email to the club coordinator.</p>
+                        <a href="${cancelMailtoLink}" target="_blank" style="display:block; margin-top:15px; padding:10px; background-color:var(--color-cancel); color:white; border-radius:5px; text-decoration:none; text-align:center;">
+                            SEND CANCELLATION EMAIL
+                        </a>
+                        <p style="margin-top: 10px; font-size: 0.9em; text-align: center;">You must send this email to complete the cancellation process.</p>
+                        <button class="secondary" onclick="showSection('dashboard-section')">Back to Dashboard</button>
+                    `;
+                }
+            }
+
+            // Remove error styles on checkbox interaction for signup form
             const signupAgreeCheckbox = document.getElementById('agreeTerms');
             if (signupAgreeCheckbox) {
                 signupAgreeCheckbox.addEventListener('change', function() {
@@ -1254,12 +1246,10 @@ Thank you.`);
                 });
             }
 
-            // initial spots info empty
-            updateSpotsInfo('');
-
-            // show dashboard if logged in
+            // START THE APPLICATION
             checkAuth();
         });
+
     </script>
 </body>
 </html>
