@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GD Creator Club | Level Up</title>
+    <style>
+        :root {
+            --primary-glow: #2ecc71;
+            --secondary-glow: #3498db;
+            --bg-dark: #0a0a0a;
+            --panel-bg: rgba(20, 20, 20, 0.85);
+            --header-white: rgba(255, 255, 255, 0.84); /* 84% Opacity as requested */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: url('info.png') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Dark overlay for body readability */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        /* Header Section */
+        header {
+            height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        /* The White Rectangle Panel */
+        .white-panel {
+            background: var(--header-white);
+            padding: 60px 100px;
+            border-radius: 25px; /* Slightly curved corners */
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s ease-out;
+        }
+
+        .top-text-img {
+            max-width: 65vw;
+            height: auto;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Icons positioned relative to the white panel */
+        .icon-jump {
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 140px; /* Bigger */
+            z-index: 10;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+        }
+
+        .icon-create {
+            position: absolute;
+            bottom: -30px;
+            right: -30px;
+            width: 100px;
+            transform: rotate(15deg); /* Slightly rotated */
+            z-index: 10;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+        }
+
+        /* Content Area */
+        .container {
+            max-width: 1200px;
+            margin: -50px auto 0;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 20;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-glow);
+        }
+
+        /* YOUR CUSTOM SPACE */
+        .user-writing-zone {
+            margin-top: 50px;
+            padding: 40px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 20px;
+            border: 2px solid #333;
+            min-height: 200px;
+        }
+
+        /* Sticky Button */
+        .book-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 20px 45px;
+            background: #2ecc71;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 0px #27ae60;
+            z-index: 9999;
+            transition: all 0.1s;
+        }
+
+        .book-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 5px 0px #27ae60;
+        }
+
+        footer { text-align: center; padding: 100px; opacity: 0.5; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="white-panel" id="tiltPanel">
+            <img src="jump.png" alt="Jump" class="icon-jump">
+            <img src="top-text.png" alt="Header" class="top-text-img">
+            <img src="create.png" alt="Create" class="icon-create">
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card-grid">
+            <div class="card">
+                <h2>Join the Collab</h2>
+                <p>Collaborate with builders from around the world on massive Mega-Collabs.</p>
+            </div>
+            <div class="card">
+                <h2>Verified Only</h2>
+                <p>We host exclusive streams where we playtest and verify your hardest demons.</p>
+            </div>
+        </div>
+
+        <div class="user-writing-zone">
+            <h1>Club News</h1>
+            <p></p>
+        </div>
+        </div>
+
+    <footer>
+        <p>&copy; 2026 Geometry Dash Creator Club</p>
+    </footer>
+
+    <a href="book.html" class="book-btn">Book Now!</a>
+
+    <script>
+        // Interactive 3D tilt effect for the white panel
+        const panel = document.getElementById('tiltPanel');
+        
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 40;
+            const y = (window.innerHeight / 2 - e.pageY) / 40;
+            panel.style.transform = `rotateX(${y}deg) rotateY(${-x}deg)`;
+        });
+
+        // Simple enter animation
+        window.onload = () => {
+            panel.style.opacity = '0';
+            panel.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                panel.style.transition = 'all 1s ease';
+                panel.style.opacity = '1';
+                panel.style.transform = 'scale(1)';
+                setTimeout(() => panel.style.transition = 'none', 1000);
+            }, 100);
+        };
+    </script>
+</body>
+</html>
