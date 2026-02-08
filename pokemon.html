@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pokémon: Shimmering Paths</title>
+<style>
+  body {
+    margin: 0;
+    background: #a0d8f1;
+    font-family: sans-serif;
+  }
+  canvas {
+    display: block;
+    margin: 0 auto;
+    background: #7ec850;
+    border: 4px solid #333;
+  }
+  #info {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 16px;
+  }
+  .popup {
+    position: absolute;
+    background: #fff8dc;
+    border: 2px solid #333;
+    padding: 10px;
+    display: none;
+    font-weight: bold;
+  }
+  button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game" width="600" height="400"></canvas>
+<div id="info">Items Collected: <span id="items">0</span></div>
+<div id="popup" class="popup">
+  <div id="popupText"></div>
+  <button onclick="closePopup()">OK</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const TILE_SIZE = 40;
+const ROWS = canvas.height / TILE_SIZE;
+const COLS = canvas.width / TILE_SIZE;
+
+// Player
+const player = { x: 1, y: 1, color: "#ff0000" };
+
+// Maze: 0 = empty, 1 = wall, 2 = shiny item, 3 = puzzle tile
+let maze = [];
+for(let r=0; r<ROWS; r++){
+  maze[r] = [];
+  for(let c=0; c<COLS; c++){
+    if(r===0 || c===0 || r===ROWS-1 || c===COLS-1) maze[r][c]=1;
+    else maze[r][c]=0;
+  }
+}
+
+// Random walls
+for(let i=0;i<50;i++){
+  let r=Math.floor(Math.random()*(ROWS-2))+1;
+  let c=Math.floor(Math.random()*(COLS-2))+1;
+  maze[r][c]=1;
+}
+
+// Place shiny items
+let itemsCollected = 0;
+function placeItems(count){
+  for(let i=0;i<count;i++){
+    let r,c;
+    do {
+      r=Math.floor(Math.random()*(ROWS-2))+1;
+      c=Math.floor(Math.random()*(COLS-2))+1;
+    } while(maze[r][c]!=0);
+    maze[r][c]=2;
+  }
+}
+placeItems(10);
+
+// Place puzzle tiles
+for(let i=0;i<5;i++){
+  let r,c;
+  do {
+    r=Math.floor(Math.random()*(ROWS-2))+1;
+    c=Math.floor(Math.random()*(COLS-2))+1;
+  } while(maze[r][c]!=0);
+  maze[r][c]=3;
+}
+
+// Movement
+document.addEventListener("keydown", (e)=>{
+  let newX = player.x;
+  let newY = player.y;
+  if(e.key==="ArrowUp") newY--;
+  if(e.key==="ArrowDown") newY++;
+  if(e.key==="ArrowLeft") newX--;
+  if(e.key==="ArrowRight") newX++;
+  if(maze[newY][newX] !== 1){
+    player.x = newX;
+    player.y = newY;
+    checkTile();
+  }
+});
+
+function checkTile(){
+  let tile = maze[player.y][player.x];
+  if(tile===2){
+    itemsCollected++;
+    document.getElementById("items").textContent = itemsCollected;
+    maze[player.y][player.x]=0;
+    showPopup("You found a shiny item!");
+  }
+  if(tile===3){
+    showPopup("You triggered a puzzle tile! Solve the mini puzzle!");
+  }
+}
+
+// Popup functions
+const popup = document.getElementById("popup");
+function showPopup(text){
+  document.getElementById("popupText").textContent=text;
+  popup.style.display="block";
+}
+function closePopup(){
+  popup.style.display="none";
+}
+
+// Draw
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      if(maze[r][c]===1){
+        ctx.fillStyle="#555555"; // wall
+        ctx.fillRect(c*TILE_SIZE,r*TILE_SIZE,TILE_SIZE,TILE_SIZE);
+      } else if(maze[r][c]===2){
+        ctx.fillStyle="#ffff00"; // shiny item
+        ctx.fillRect(c*TILE_SIZE+10,r*TILE_SIZE+10,TILE_SIZE-20,TILE_SIZE-20);
+      } else if(maze[r][c]===3){
+        ctx.fillStyle="#00ffff"; // puzzle tile
+        ctx.fillRect(c*TILE_SIZE+5,r*TILE_SIZE+5,TILE_SIZE-10,TILE_SIZE-10);
+      }
+    }
+  }
+  // draw player
+  ctx.fillStyle=player.color;
+  ctx.fillRect(player.x*TILE_SIZE,player.y*TILE_SIZE,TILE_SIZE,TILE_SIZE);
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>
