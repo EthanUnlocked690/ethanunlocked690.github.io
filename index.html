@@ -292,25 +292,35 @@ backdrop-filter: blur(5px);
 <li><a href="https://ethanunlocked690.github.io/animate.html">LEGO Animations</a></li>
 <li><a href="https://ethanunlocked690.github.io/tutorial.html">Tutorials &amp; Speedruns</a></li>
 <li><a href="https://ethanunlocked690.github.io/turtle.html">Others</a></li>
-<li>
+<li style="list-style: none;">
   <style>
     @keyframes move-rainbow {
       0% { background-position: 0% 50%; }
-      100% { background-position: 100% 50%; }
+      100% { background-position: 200% 50%; }
     }
-  </style>
-  <a href="https://discord.gg/vBMNDBTFn" style="text-decoration: none;">
-    <img src="discord.png" alt="Discord Logo" width="30" height="30" style="vertical-align: middle;">
-    <span style="
+    .rainbow-link {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      background-color: #000033; /* Very Dark Blue */
+      padding: 5px 15px;
+      border-radius: 8px;
+    }
+    .rainbow-text-fade {
       font-weight: bold;
+      /* The rainbow gradient that "moves" */
       background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet, red);
       background-size: 200% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      display: inline-block;
-      filter: drop-shadow(0 0 2px rgba(255,255,255,0.7));
+      filter: drop-shadow(0 0 1px rgba(255,255,255,0.5));
       animation: move-rainbow 3s linear infinite;
-    ">Join Discord!</span>
+    }
+  </style>
+
+  <a href="https://discord.gg/vBMNDBTFn" class="rainbow-link">
+    <img src="discord.png" alt="Discord Logo" width="30" height="30" style="margin-right: 8px;">
+    <span class="rainbow-text-fade">Join Discord!</span>
   </a>
 </li>
 </ul>
