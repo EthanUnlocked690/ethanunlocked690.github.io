@@ -294,33 +294,36 @@ backdrop-filter: blur(5px);
 <li><a href="https://ethanunlocked690.github.io/turtle.html">Others</a></li>
 <li style="list-style: none;">
   <style>
-    @keyframes move-rainbow {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
+    @keyframes rainbow-fade-true {
+      0%   { color: #ff0000; } /* Red */
+      17%  { color: #ff8000; } /* Orange */
+      33%  { color: #ffff00; } /* Yellow */
+      50%  { color: #00ff00; } /* Green */
+      67%  { color: #0000ff; } /* Blue */
+      84%  { color: #4b0082; } /* Indigo */
+      100% { color: #ff0000; } /* Back to Red */
     }
-    .rainbow-link {
+    
+    .discord-button {
       display: inline-flex;
       align-items: center;
       text-decoration: none;
-      background-color: #000033; /* Very Dark Blue */
-      padding: 5px 15px;
-      border-radius: 8px;
+      background-color: #000033; /* Dark Blue Background */
+      padding: 8px 16px;
+      border-radius: 5px;
     }
-    .rainbow-text-fade {
+
+    .fading-text {
       font-weight: bold;
-      /* The rainbow gradient that "moves" */
-      background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet, red);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 1px rgba(255,255,255,0.5));
-      animation: move-rainbow 3s linear infinite;
+      filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
+      /* This handles the smooth color transition */
+      animation: rainbow-fade-true 6s infinite ease-in-out;
     }
   </style>
 
-  <a href="https://discord.gg/vBMNDBTFn" class="rainbow-link">
-    <img src="discord.png" alt="Discord Logo" width="30" height="30" style="margin-right: 8px;">
-    <span class="rainbow-text-fade">Join Discord!</span>
+  <a href="https://discord.gg/vBMNDBTFn" class="discord-button">
+    <img src="discord.png" alt="Discord Logo" width="30" height="30" style="margin-right: 10px;">
+    <span class="fading-text">Join Discord!</span>
   </a>
 </li>
 </ul>
