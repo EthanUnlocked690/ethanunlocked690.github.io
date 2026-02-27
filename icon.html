@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<!-- saved from url=(0030)https://gdbrowser.com/iconkit/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async="" src="./Online Icon Kit_files/analytics.js.download"></script><script type="text/javascript" async="" src="./Online Icon Kit_files/js"></script><script type="text/javascript" async="" src="./Online Icon Kit_files/js(1)"></script><script async="" src="./Online Icon Kit_files/js(2)"></script><script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-135255146-3');</script>
+    <title>Online Icon Kit</title>
+    <link href="./Online Icon Kit_files/iconkit.css" type="text/css" rel="stylesheet">
+    <meta name="viewport" content="width=1024">
+    <meta property="og:description" content="Build and save your very own Geometry Dash icons, right from the internet!">
+    <meta property="og:title" content="Geometry Dash Online Icon Kit">
+    <meta property="og:type" content="website">
+    <meta name="og:image" itemprop="image" content="https://gdbrowser.com/assets/icon.png">
+    <meta name="theme-color" content="#CCFF55">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" href="https://gdbrowser.com/assets/icon.png">
+    <link rel="canonical" href="https://gdbrowser.com/iconkit/">
+</head>
+<body onbeforeunload="sessionStorage.setItem(&#39;prevUrl&#39;, window.location.href)" class="filterHide">
+<div class="center">
+
+    <div class="popup" id="iconInfoPopup">
+        <div class="fancybox bounce center supercenter" style="min-width: 580px; padding: 0px 25px 20px">
+            <h1 id="extraInfoText" class="center gold" style="margin-top: 14px; margin-bottom: 20px; overflow: visible;">Info</h1>
+            <div id="extraInfoPopup"></div>
+            <img src="./Online Icon Kit_files/ok.png" class="gdButton center" style="height: 55px; margin-top: 30px" onclick="$(&#39;#iconInfoPopup&#39;).hide()" "="">
+		</div>
+    </div>
+
+    <div class="popup" id="filter">
+        <div class="brownbox bounce center supercenter" style="width: 820px">
+            <h1 class="center gold" style="margin-top: 10px">Filter</h1>
+
+            <div class="filterOption" style="margin-top: 32px">
+                <h2>Version</h2>
+                <select id="filter-startversion" class="gdSelect iconFilter versionFilter"></select>
+                <h2> to </h2>
+                <select id="filter-endversion" class="gdSelect iconFilter versionFilter"></select>
+            </div>
+
+            <div class="filterCheckboxes" id="filterCheckboxList">
+                <div class="filterCheckbox">
+                    <input class="iconFilterBox" type="checkbox" checked="" id="filterbox-template">
+                    <label for="filterbox-template" class="gdcheckbox gdButton"></label>
+                    <h2>Label</h2>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 30px; margin-top: 8px">
+                <button class="blankButton gdButton" onclick="toggleAllFilters(true)"><img src="./Online Icon Kit_files/select-all.png" style="height: 40px"></button>
+                <button class="blankButton gdButton" onclick="toggleAllFilters(false)"><img src="./Online Icon Kit_files/select-none.png" style="height: 40px"></button>
+            </div>
+            
+            <p class="white" style="margin: 20px 0px 0px 0px">More filters when I feel like it</p>
+
+            <div class="cornerCheckbox" style="position: absolute; bottom: 14px; left: 10px">
+                <input type="checkbox" checked="" id="filterhide">
+                <label for="filterhide" class="gdcheckbox gdButton"></label>
+                <h2 class="smallCheckboxLabel">Hide others</h2>
+            </div>
+
+            <div class="cornerCheckbox" style="position: absolute; bottom: 0px; right: 0px">
+                <button class="blankButton gdButton" id="resetAllFilters">
+                    <img src="./Online Icon Kit_files/trash.png" style="width: 64px">
+                </button>
+            </div>
+        
+            <img src="./Online Icon Kit_files/ok.png" class="postButton gdButton center" style="height: 55px; margin-top: 30px" onclick="$(&#39;#filter&#39;).hide()">
+            <img class="gdButton xButton" src="./Online Icon Kit_files/close.png" style="width: 70px" onclick="$(&#39;#filter&#39;).hide()">
+		</div>
+    </div>
+
+    <div class="popup" id="steal" style="display: none;">
+        <div class="brownbox bounce center supercenter" style="height: 350px; width: 700px">
+            <h1 class="center gold" style="margin-top: 10px">Copy Icon</h1>
+            <p id="copyFrom" class="white" style="font-size: 24px; margin: 10px auto 5px auto"></p>
+            <input type="text" name="gdbrowser" id="playerName" autocomplete="off" placeholder="Username" maxlength="32" style="height: 58px; width: 90%; text-align: center; margin-top: 25px; margin-bottom: 10px;">
+            <div id="copyForms"><button form="cube" title="Cube" class="blankButton copyForm"><img src="./Online Icon Kit_files/cube_on.png" style="width: 50px"></button><button form="ship" title="Ship" class="blankButton copyForm"><img src="./Online Icon Kit_files/ship_off.png" style="width: 50px"></button><button form="ball" title="Ball" class="blankButton copyForm"><img src="./Online Icon Kit_files/ball_off.png" style="width: 50px"></button><button form="ufo" title="UFO" class="blankButton copyForm"><img src="./Online Icon Kit_files/ufo_off.png" style="width: 50px"></button><button form="wave" title="Wave" class="blankButton copyForm"><img src="./Online Icon Kit_files/wave_off.png" style="width: 50px"></button><button form="robot" title="Robot" class="blankButton copyForm"><img src="./Online Icon Kit_files/robot_off.png" style="width: 50px"></button><button form="spider" title="Spider" class="blankButton copyForm"><img src="./Online Icon Kit_files/spider_off.png" style="width: 50px"></button><button form="swing" title="Swing" class="blankButton copyForm"><img src="./Online Icon Kit_files/swing_off.png" style="width: 50px"></button><button form="jetpack" title="Jetpack" class="blankButton copyForm"><img src="./Online Icon Kit_files/jetpack_off.png" style="width: 50px"></button></div>
+
+            <div class="cornerCheckbox" id="copyAllCheckbox" style="position: absolute; bottom: 14px; left: 10px; display: none;">
+                <input type="checkbox" checked="" id="copyFullSet">
+                <label for="copyFullSet" class="gdcheckbox gdButton"></label>
+                <h2>Full set</h2>
+            </div>
+
+            <img src="./Online Icon Kit_files/ok.png" class="postButton gdButton center" style="height: 55px; margin-top: 30px" id="fetchUser">
+            <img class="gdButton xButton" src="./Online Icon Kit_files/close.png" style="width: 70px" onclick="$(&#39;#steal&#39;).hide()">
+		</div>
+    </div>
+    
+    <div class="popup" data-nosnippet="" id="settings" style="display: none;">
+        <div class="brownbox bounce center supercenter" style="width: 820px">
+            <h1 class="center gold" style="margin-top: 10px; margin-bottom: 20px;">Settings</h1>
+            <div class="settingList">
+                <div class="help" help="Allows robots to play spider animations and vice versa" style="color: rgb(255, 255, 255);"><input type="checkbox" class="iconsetting" id="box-cursed"><label for="box-cursed" class="gdcheckbox gdButton"></label><h2>Cursed animations</h2></div>
+                <div class="help" help="Remembers the last icon you selected for each form, and automatically re-selects it when switching to that tab" style="color: rgb(255, 255, 255);"><input type="checkbox" class="iconsetting" id="box-rememberform"><label for="box-rememberform" class="gdcheckbox gdButton"></label><h2>Icon set mode</h2></div>
+            </div> 
+            <div class="settingList">
+                <div class="help" help="Sorts the colors by internal ID instead of their in-game order" style="color: rgb(255, 255, 255);"><input type="checkbox" class="iconsetting" id="box-sort"><label for="box-sort" class="gdcheckbox gdButton"></label><h2>Unsort Colors</h2></div>
+                <div class="help" help="Prevents glow color from auto-changing whenever color 2 is changed" style="color: rgb(255, 255, 255);"><input type="checkbox" class="iconsetting" id="box-unlinkglow"><label for="box-unlinkglow" class="gdcheckbox gdButton"></label><h2>Unlink glow from col2</h2></div>
+            </div>
+            <p class="white" id="helpText" style="font-size: 24px; margin-bottom: 0; height: 50px;">(Hover over a setting for information)</p>
+            <img src="./Online Icon Kit_files/ok.png" class="postButton gdButton center" style="height: 55px; margin-top: 30px; margin-bottom: 20px" onclick="$(&#39;#settings&#39;).hide()">
+            <img class="gdButton xButton" src="./Online Icon Kit_files/close.png" style="width: 70px" onclick="$(&#39;#settings&#39;).hide()">
+        </div>
+	</div>
+
+    <img id="iconKitLogo" src="./Online Icon Kit_files/iconkit.png" style="margin: 7px 0px; height: 50px"><br>
+    <h2 style="margin: 5px auto 0px auto; display: none; height: 45px" id="howto"><span style="color: #aaaaaa">(hover over an icon for info)</span></h2>
+
+    <div class="iconbox">
+        <canvas id="result" style="transform: translateY(-35px); touch-action: none; cursor: inherit;" width="300" height="300">
+    </canvas></div>
+
+    <hr id="gdfloor">
+    <div class="menuButtons">
+        <button class="blankButton menuButton" onclick="icon.psdExport()" title="Download layered PSD"><img src="./Online Icon Kit_files/psd.png"></button>
+         <button class="blankButton menuButton" id="copyURL" title="Copy icon kit URL"><img src="./Online Icon Kit_files/link.png"></button>
+        <button class="blankButton menuButton" id="copyToClipboard" title="Copy to clipboard" style="margin-left: 30px"><img src="./Online Icon Kit_files/copy.png"></button>
+        <button class="blankButton menuButton" onclick="icon.pngExport()" title="Download icon" style="margin-right: 30px"><img src="./Online Icon Kit_files/save.png"></button>
+        <button class="blankButton menuButton" id="getUserIcon" title="Get player icon"><img src="./Online Icon Kit_files/steal.png"></button>
+        <button class="blankButton menuButton" id="randomIcon" title="Random Icon"><img src="./Online Icon Kit_files/shuffle.png"></button>
+    </div>
+
+    <div id="iconTabs"><button form="cube" title="Cube" class="blankButton iconTabButton activeForm"><img src="./Online Icon Kit_files/cube_on.png" style="width: 50px"></button><button form="ship" title="Ship" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/ship_off.png" style="width: 50px"></button><button form="ball" title="Ball" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/ball_off.png" style="width: 50px"></button><button form="ufo" title="UFO" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/ufo_off.png" style="width: 50px"></button><button form="wave" title="Wave" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/wave_off.png" style="width: 50px"></button><button form="robot" title="Robot" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/robot_off.png" style="width: 50px"></button><button form="spider" title="Spider" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/spider_off.png" style="width: 50px"></button><button form="swing" title="Swing" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/swing_off.png" style="width: 50px"></button><button form="jetpack" title="Jetpack" class="blankButton iconTabButton"><img src="./Online Icon Kit_files/jetpack_off.png" style="width: 50px"></button><button form="extraItem" title="Extra" class="blankButton" id="extraItemsToggle" style="display: none"><img src="./Online Icon Kit_files/extra_off.png" style="width: 50px"></button></div><br>
+
+    <div id="extraUnlockText_off" style="display: none">
+        <p style="margin: 0px 0px 16px 0px; color: white">Check back soon!</p>
+    </div>
+
+    <div id="iconLayer">
+        <div class="sideButtons" id="leftSide">
+            <button title="Colors" class="blankButton gdButton" id="colorToggle"><img src="./Online Icon Kit_files/colors.png" style="width: 75px"></button>
+            <button title="Glow" class="blankButton glowToggle gdButton" id="glowbtn"><img id="glow" src="./Online Icon Kit_files/streak_off.png"></button>
+            <button title="Dev Tools" class="blankButton gdButton" id="devToolsToggle"><img id="devToolsIcon" src="./Online Icon Kit_files/dev_off.png"></button>
+        </div>
+
+        <div id="iconKitParent" class="iconKit iconSetup" style="display: none;">
+            <div id="iconprogressbar"><div id="iconloading" style="width: 100%;"></div></div>
+        <div id="cubes" class="iconContainer" style=""><button num="1" form="cube" class="blankButton iconButton" id="cube-1"><img title="Cube 1" src="./Online Icon Kit_files/cube_1.png"></button><button num="2" form="cube" class="blankButton iconButton" id="cube-2"><img title="Cube 2" src="./Online Icon Kit_files/cube_2.png"></button><button num="3" form="cube" class="blankButton iconButton" id="cube-3"><img title="Cube 3" src="./Online Icon Kit_files/cube_3.png"></button><button num="4" form="cube" class="blankButton iconButton" id="cube-4"><img title="Cube 4" src="./Online Icon Kit_files/cube_4.png"></button><button num="5" form="cube" class="blankButton iconButton" id="cube-5"><img title="Cube 5" src="./Online Icon Kit_files/cube_5.png"></button><button num="6" form="cube" class="blankButton iconButton" id="cube-6"><img title="Cube 6" src="./Online Icon Kit_files/cube_6.png"></button><button num="7" form="cube" class="blankButton iconButton" id="cube-7"><img title="Cube 7" src="./Online Icon Kit_files/cube_7.png"></button><button num="8" form="cube" class="blankButton iconButton" id="cube-8"><img title="Cube 8" src="./Online Icon Kit_files/cube_8.png"></button><button num="9" form="cube" class="blankButton iconButton" id="cube-9"><img title="Cube 9" src="./Online Icon Kit_files/cube_9.png"></button><button num="10" form="cube" class="blankButton iconButton" id="cube-10"><img title="Cube 10" src="./Online Icon Kit_files/cube_10.png"></button><button num="11" form="cube" class="blankButton iconButton" id="cube-11"><img title="Cube 11" src="./Online Icon Kit_files/cube_11.png"></button><button num="12" form="cube" class="blankButton iconButton" id="cube-12"><img title="Cube 12" src="./Online Icon Kit_files/cube_12.png"></button><button num="13" form="cube" class="blankButton iconButton" id="cube-13"><img title="Cube 13" src="./Online Icon Kit_files/cube_13.png"></button><button num="14" form="cube" class="blankButton iconButton" id="cube-14"><img title="Cube 14" src="./Online Icon Kit_files/cube_14.png"></button><button num="15" form="cube" class="blankButton iconButton" id="cube-15"><img title="Cube 15" src="./Online Icon Kit_files/cube_15.png"></button><button num="16" form="cube" class="blankButton iconButton" id="cube-16"><img title="Cube 16" src="./Online Icon Kit_files/cube_16.png"></button><button num="17" form="cube" class="blankButton iconButton" id="cube-17"><img title="Cube 17" src="./Online Icon Kit_files/cube_17.png"></button><button num="18" form="cube" class="blankButton iconButton" id="cube-18"><img title="Cube 18" src="./Online Icon Kit_files/cube_18.png"></button><button num="19" form="cube" class="blankButton iconButton" id="cube-19"><img title="Cube 19" src="./Online Icon Kit_files/cube_19.png"></button><button num="20" form="cube" class="blankButton iconButton" id="cube-20"><img title="Cube 20" src="./Online Icon Kit_files/cube_20.png"></button><button num="21" form="cube" class="blankButton iconButton" id="cube-21"><img title="Cube 21" src="./Online Icon Kit_files/cube_21.png"></button><button num="22" form="cube" class="blankButton iconButton" id="cube-22"><img title="Cube 22" src="./Online Icon Kit_files/cube_22.png"></button><button num="23" form="cube" class="blankButton iconButton" id="cube-23"><img title="Cube 23" src="./Online Icon Kit_files/cube_23.png"></button><button num="24" form="cube" class="blankButton iconButton" id="cube-24"><img title="Cube 24" src="./Online Icon Kit_files/cube_24.png"></button><button num="25" form="cube" class="blankButton iconButton" id="cube-25"><img title="Cube 25" src="./Online Icon Kit_files/cube_25.png"></button><button num="26" form="cube" class="blankButton iconButton" id="cube-26"><img title="Cube 26" src="./Online Icon Kit_files/cube_26.png"></button><button num="27" form="cube" class="blankButton iconButton" id="cube-27"><img title="Cube 27" src="./Online Icon Kit_files/cube_27.png"></button><button num="28" form="cube" class="blankButton iconButton" id="cube-28"><img title="Cube 28" src="./Online Icon Kit_files/cube_28.png"></button><button num="29" form="cube" class="blankButton iconButton" id="cube-29"><img title="Cube 29" src="./Online Icon Kit_files/cube_29.png"></button><button num="30" form="cube" class="blankButton iconButton" id="cube-30"><img title="Cube 30" src="./Online Icon Kit_files/cube_30.png"></button><button num="31" form="cube" class="blankButton iconButton" id="cube-31"><img title="Cube 31" src="./Online Icon Kit_files/cube_31.png"></button><button num="32" form="cube" class="blankButton iconButton" id="cube-32"><img title="Cube 32" src="./Online Icon Kit_files/cube_32.png"></button><button num="33" form="cube" class="blankButton iconButton" id="cube-33"><img title="Cube 33" src="./Online Icon Kit_files/cube_33.png"></button><button num="34" form="cube" class="blankButton iconButton" id="cube-34"><img title="Cube 34" src="./Online Icon Kit_files/cube_34.png"></button><button num="35" form="cube" class="blankButton iconButton" id="cube-35"><img title="Cube 35" src="./Online Icon Kit_files/cube_35.png"></button><button num="36" form="cube" class="blankButton iconButton" id="cube-36"><img title="Cube 36" src="./Online Icon Kit_files/cube_36.png"></button><button num="37" form="cube" class="blankButton iconButton" id="cube-37"><img title="Cube 37" src="./Online Icon Kit_files/cube_37.png"></button><button num="38" form="cube" class="blankButton iconButton" id="cube-38"><img title="Cube 38" src="./Online Icon Kit_files/cube_38.png"></button><button num="39" form="cube" class="blankButton iconButton" id="cube-39"><img title="Cube 39" src="./Online Icon Kit_files/cube_39.png"></button><button num="40" form="cube" class="blankButton iconButton" id="cube-40"><img title="Cube 40" src="./Online Icon Kit_files/cube_40.png"></button><button num="41" form="cube" class="blankButton iconButton" id="cube-41"><img title="Cube 41" src="./Online Icon Kit_files/cube_41.png"></button><button num="42" form="cube" class="blankButton iconButton" id="cube-42"><img title="Cube 42" src="./Online Icon Kit_files/cube_42.png"></button><button num="43" form="cube" class="blankButton iconButton" id="cube-43"><img title="Cube 43" src="./Online Icon Kit_files/cube_43.png"></button><button num="44" form="cube" class="blankButton iconButton" id="cube-44"><img title="Cube 44" src="./Online Icon Kit_files/cube_44.png"></button><button num="45" form="cube" class="blankButton iconButton" id="cube-45"><img title="Cube 45" src="./Online Icon Kit_files/cube_45.png"></button><button num="46" form="cube" class="blankButton iconButton" id="cube-46"><img title="Cube 46" src="./Online Icon Kit_files/cube_46.png"></button><button num="47" form="cube" class="blankButton iconButton" id="cube-47"><img title="Cube 47" src="./Online Icon Kit_files/cube_47.png"></button><button num="48" form="cube" class="blankButton iconButton" id="cube-48"><img title="Cube 48" src="./Online Icon Kit_files/cube_48.png"></button><button num="49" form="cube" class="blankButton iconButton" id="cube-49"><img title="Cube 49" src="./Online Icon Kit_files/cube_49.png"></button><button num="50" form="cube" class="blankButton iconButton" id="cube-50"><img title="Cube 50" src="./Online Icon Kit_files/cube_50.png"></button><button num="51" form="cube" class="blankButton iconButton" id="cube-51"><img title="Cube 51" src="./Online Icon Kit_files/cube_51.png"></button><button num="52" form="cube" class="blankButton iconButton" id="cube-52"><img title="Cube 52" src="./Online Icon Kit_files/cube_52.png"></button><button num="53" form="cube" class="blankButton iconButton" id="cube-53"><img title="Cube 53" src="./Online Icon Kit_files/cube_53.png"></button><button num="54" form="cube" class="blankButton iconButton" id="cube-54"><img title="Cube 54" src="./Online Icon Kit_files/cube_54.png"></button><button num="55" form="cube" class="blankButton iconButton" id="cube-55"><img title="Cube 55" src="./Online Icon Kit_files/cube_55.png"></button><button num="56" form="cube" class="blankButton iconButton" id="cube-56"><img title="Cube 56" src="./Online Icon Kit_files/cube_56.png"></button><button num="57" form="cube" class="blankButton iconButton" id="cube-57"><img title="Cube 57" src="./Online Icon Kit_files/cube_57.png"></button><button num="58" form="cube" class="blankButton iconButton" id="cube-58"><img title="Cube 58" src="./Online Icon Kit_files/cube_58.png"></button><button num="59" form="cube" class="blankButton iconButton" id="cube-59"><img title="Cube 59" src="./Online Icon Kit_files/cube_59.png"></button><button num="60" form="cube" class="blankButton iconButton" id="cube-60"><img title="Cube 60" src="./Online Icon Kit_files/cube_60.png"></button><button num="61" form="cube" class="blankButton iconButton" id="cube-61"><img title="Cube 61" src="./Online Icon Kit_files/cube_61.png"></button><button num="62" form="cube" class="blankButton iconButton" id="cube-62"><img title="Cube 62" src="./Online Icon Kit_files/cube_62.png"></button><button num="63" form="cube" class="blankButton iconButton" id="cube-63"><img title="Cube 63" src="./Online Icon Kit_files/cube_63.png"></button><button num="64" form="cube" class="blankButton iconButton" id="cube-64"><img title="Cube 64" src="./Online Icon Kit_files/cube_64.png"></button><button num="65" form="cube" class="blankButton iconButton" id="cube-65"><img title="Cube 65" src="./Online Icon Kit_files/cube_65.png"></button><button num="66" form="cube" class="blankButton iconButton" id="cube-66"><img title="Cube 66" src="./Online Icon Kit_files/cube_66.png"></button><button num="67" form="cube" class="blankButton iconButton" id="cube-67"><img title="Cube 67" src="./Online Icon Kit_files/cube_67.png"></button><button num="68" form="cube" class="blankButton iconButton" id="cube-68"><img title="Cube 68" src="./Online Icon Kit_files/cube_68.png"></button><button num="69" form="cube" class="blankButton iconButton" id="cube-69"><img title="Cube 69" src="./Online Icon Kit_files/cube_69.png"></button><button num="70" form="cube" class="blankButton iconButton" id="cube-70"><img title="Cube 70" src="./Online Icon Kit_files/cube_70.png"></button><button num="71" form="cube" class="blankButton iconButton" id="cube-71"><img title="Cube 71" src="./Online Icon Kit_files/cube_71.png"></button><button num="72" form="cube" class="blankButton iconButton" id="cube-72"><img title="Cube 72" src="./Online Icon Kit_files/cube_72.png"></button><button num="73" form="cube" class="blankButton iconButton" id="cube-73"><img title="Cube 73" src="./Online Icon Kit_files/cube_73.png"></button><button num="74" form="cube" class="blankButton iconButton" id="cube-74"><img title="Cube 74" src="./Online Icon Kit_files/cube_74.png"></button><button num="75" form="cube" class="blankButton iconButton" id="cube-75"><img title="Cube 75" src="./Online Icon Kit_files/cube_75.png"></button><button num="76" form="cube" class="blankButton iconButton" id="cube-76"><img title="Cube 76" src="./Online Icon Kit_files/cube_76.png"></button><button num="77" form="cube" class="blankButton iconButton" id="cube-77"><img title="Cube 77" src="./Online Icon Kit_files/cube_77.png"></button><button num="78" form="cube" class="blankButton iconButton" id="cube-78"><img title="Cube 78" src="./Online Icon Kit_files/cube_78.png"></button><button num="79" form="cube" class="blankButton iconButton" id="cube-79"><img title="Cube 79" src="./Online Icon Kit_files/cube_79.png"></button><button num="80" form="cube" class="blankButton iconButton" id="cube-80"><img title="Cube 80" src="./Online Icon Kit_files/cube_80.png"></button><button num="81" form="cube" class="blankButton iconButton" id="cube-81"><img title="Cube 81" src="./Online Icon Kit_files/cube_81.png"></button><button num="82" form="cube" class="blankButton iconButton" id="cube-82"><img title="Cube 82" src="./Online Icon Kit_files/cube_82.png"></button><button num="83" form="cube" class="blankButton iconButton" id="cube-83"><img title="Cube 83" src="./Online Icon Kit_files/cube_83.png"></button><button num="84" form="cube" class="blankButton iconButton" id="cube-84"><img title="Cube 84" src="./Online Icon Kit_files/cube_84.png"></button><button num="85" form="cube" class="blankButton iconButton" id="cube-85"><img title="Cube 85" src="./Online Icon Kit_files/cube_85.png"></button><button num="86" form="cube" class="blankButton iconButton" id="cube-86"><img title="Cube 86" src="./Online Icon Kit_files/cube_86.png"></button><button num="87" form="cube" class="blankButton iconButton" id="cube-87"><img title="Cube 87" src="./Online Icon Kit_files/cube_87.png"></button><button num="88" form="cube" class="blankButton iconButton" id="cube-88"><img title="Cube 88" src="./Online Icon Kit_files/cube_88.png"></button><button num="89" form="cube" class="blankButton iconButton" id="cube-89"><img title="Cube 89" src="./Online Icon Kit_files/cube_89.png"></button><button num="90" form="cube" class="blankButton iconButton" id="cube-90"><img title="Cube 90" src="./Online Icon Kit_files/cube_90.png"></button><button num="91" form="cube" class="blankButton iconButton" id="cube-91"><img title="Cube 91" src="./Online Icon Kit_files/cube_91.png"></button><button num="92" form="cube" class="blankButton iconButton" id="cube-92"><img title="Cube 92" src="./Online Icon Kit_files/cube_92.png"></button><button num="93" form="cube" class="blankButton iconButton" id="cube-93"><img title="Cube 93" src="./Online Icon Kit_files/cube_93.png"></button><button num="94" form="cube" class="blankButton iconButton" id="cube-94"><img title="Cube 94" src="./Online Icon Kit_files/cube_94.png"></button><button num="95" form="cube" class="blankButton iconButton" id="cube-95"><img title="Cube 95" src="./Online Icon Kit_files/cube_95.png"></button><button num="96" form="cube" class="blankButton iconButton" id="cube-96"><img title="Cube 96" src="./Online Icon Kit_files/cube_96.png"></button><button num="97" form="cube" class="blankButton iconButton" id="cube-97"><img title="Cube 97" src="./Online Icon Kit_files/cube_97.png"></button><button num="98" form="cube" class="blankButton iconButton" id="cube-98"><img title="Cube 98" src="./Online Icon Kit_files/cube_98.png"></button><button num="99" form="cube" class="blankButton iconButton" id="cube-99"><img title="Cube 99" src="./Online Icon Kit_files/cube_99.png"></button><button num="100" form="cube" class="blankButton iconButton" id="cube-100"><img title="Cube 100" src="./Online Icon Kit_files/cube_100.png"></button><button num="101" form="cube" class="blankButton iconButton" id="cube-101"><img title="Cube 101" src="./Online Icon Kit_files/cube_101.png"></button><button num="102" form="cube" class="blankButton iconButton" id="cube-102"><img title="Cube 102" src="./Online Icon Kit_files/cube_102.png"></button><button num="103" form="cube" class="blankButton iconButton" id="cube-103"><img title="Cube 103" src="./Online Icon Kit_files/cube_103.png"></button><button num="104" form="cube" class="blankButton iconButton" id="cube-104"><img title="Cube 104" src="./Online Icon Kit_files/cube_104.png"></button><button num="105" form="cube" class="blankButton iconButton" id="cube-105"><img title="Cube 105" src="./Online Icon Kit_files/cube_105.png"></button><button num="106" form="cube" class="blankButton iconButton" id="cube-106"><img title="Cube 106" src="./Online Icon Kit_files/cube_106.png"></button><button num="107" form="cube" class="blankButton iconButton" id="cube-107"><img title="Cube 107" src="./Online Icon Kit_files/cube_107.png"></button><button num="108" form="cube" class="blankButton iconButton" id="cube-108"><img title="Cube 108" src="./Online Icon Kit_files/cube_108.png"></button><button num="109" form="cube" class="blankButton iconButton" id="cube-109"><img title="Cube 109" src="./Online Icon Kit_files/cube_109.png"></button><button num="110" form="cube" class="blankButton iconButton" id="cube-110"><img title="Cube 110" src="./Online Icon Kit_files/cube_110.png"></button><button num="111" form="cube" class="blankButton iconButton" id="cube-111"><img title="Cube 111" src="./Online Icon Kit_files/cube_111.png"></button><button num="112" form="cube" class="blankButton iconButton" id="cube-112"><img title="Cube 112" src="./Online Icon Kit_files/cube_112.png"></button><button num="113" form="cube" class="blankButton iconButton" id="cube-113"><img title="Cube 113" src="./Online Icon Kit_files/cube_113.png"></button><button num="114" form="cube" class="blankButton iconButton" id="cube-114"><img title="Cube 114" src="./Online Icon Kit_files/cube_114.png"></button><button num="115" form="cube" class="blankButton iconButton" id="cube-115"><img title="Cube 115" src="./Online Icon Kit_files/cube_115.png"></button><button num="116" form="cube" class="blankButton iconButton" id="cube-116"><img title="Cube 116" src="./Online Icon Kit_files/cube_116.png"></button><button num="117" form="cube" class="blankButton iconButton" id="cube-117"><img title="Cube 117" src="./Online Icon Kit_files/cube_117.png"></button><button num="118" form="cube" class="blankButton iconButton" id="cube-118"><img title="Cube 118" src="./Online Icon Kit_files/cube_118.png"></button><button num="119" form="cube" class="blankButton iconButton" id="cube-119"><img title="Cube 119" src="./Online Icon Kit_files/cube_119.png"></button><button num="120" form="cube" class="blankButton iconButton" id="cube-120"><img title="Cube 120" src="./Online Icon Kit_files/cube_120.png"></button><button num="121" form="cube" class="blankButton iconButton" id="cube-121"><img title="Cube 121" src="./Online Icon Kit_files/cube_121.png"></button><button num="122" form="cube" class="blankButton iconButton" id="cube-122"><img title="Cube 122" src="./Online Icon Kit_files/cube_122.png"></button><button num="123" form="cube" class="blankButton iconButton" id="cube-123"><img title="Cube 123" src="./Online Icon Kit_files/cube_123.png"></button><button num="124" form="cube" class="blankButton iconButton" id="cube-124"><img title="Cube 124" src="./Online Icon Kit_files/cube_124.png"></button><button num="125" form="cube" class="blankButton iconButton" id="cube-125"><img title="Cube 125" src="./Online Icon Kit_files/cube_125.png"></button><button num="126" form="cube" class="blankButton iconButton" id="cube-126"><img title="Cube 126" src="./Online Icon Kit_files/cube_126.png"></button><button num="127" form="cube" class="blankButton iconButton" id="cube-127"><img title="Cube 127" src="./Online Icon Kit_files/cube_127.png"></button><button num="128" form="cube" class="blankButton iconButton" id="cube-128"><img title="Cube 128" src="./Online Icon Kit_files/cube_128.png"></button><button num="129" form="cube" class="blankButton iconButton" id="cube-129"><img title="Cube 129" src="./Online Icon Kit_files/cube_129.png"></button><button num="130" form="cube" class="blankButton iconButton" id="cube-130"><img title="Cube 130" src="./Online Icon Kit_files/cube_130.png"></button><button num="131" form="cube" class="blankButton iconButton" id="cube-131"><img title="Cube 131" src="./Online Icon Kit_files/cube_131.png"></button><button num="132" form="cube" class="blankButton iconButton" id="cube-132"><img title="Cube 132" src="./Online Icon Kit_files/cube_132.png"></button><button num="133" form="cube" class="blankButton iconButton" id="cube-133"><img title="Cube 133" src="./Online Icon Kit_files/cube_133.png"></button><button num="134" form="cube" class="blankButton iconButton" id="cube-134"><img title="Cube 134" src="./Online Icon Kit_files/cube_134.png"></button><button num="135" form="cube" class="blankButton iconButton" id="cube-135"><img title="Cube 135" src="./Online Icon Kit_files/cube_135.png"></button><button num="136" form="cube" class="blankButton iconButton" id="cube-136"><img title="Cube 136" src="./Online Icon Kit_files/cube_136.png"></button><button num="137" form="cube" class="blankButton iconButton" id="cube-137"><img title="Cube 137" src="./Online Icon Kit_files/cube_137.png"></button><button num="138" form="cube" class="blankButton iconButton" id="cube-138"><img title="Cube 138" src="./Online Icon Kit_files/cube_138.png"></button><button num="139" form="cube" class="blankButton iconButton" id="cube-139"><img title="Cube 139" src="./Online Icon Kit_files/cube_139.png"></button><button num="140" form="cube" class="blankButton iconButton" id="cube-140"><img title="Cube 140" src="./Online Icon Kit_files/cube_140.png"></button><button num="141" form="cube" class="blankButton iconButton" id="cube-141"><img title="Cube 141" src="./Online Icon Kit_files/cube_141.png"></button><button num="142" form="cube" class="blankButton iconButton" id="cube-142"><img title="Cube 142" src="./Online Icon Kit_files/cube_142.png"></button><button num="143" form="cube" class="blankButton iconButton" id="cube-143"><img title="Cube 143" src="./Online Icon Kit_files/cube_143.png"></button><button num="144" form="cube" class="blankButton iconButton" id="cube-144"><img title="Cube 144" src="./Online Icon Kit_files/cube_144.png"></button><button num="145" form="cube" class="blankButton iconButton" id="cube-145"><img title="Cube 145" src="./Online Icon Kit_files/cube_145.png"></button><button num="146" form="cube" class="blankButton iconButton" id="cube-146"><img title="Cube 146" src="./Online Icon Kit_files/cube_146.png"></button><button num="147" form="cube" class="blankButton iconButton" id="cube-147"><img title="Cube 147" src="./Online Icon Kit_files/cube_147.png"></button><button num="148" form="cube" class="blankButton iconButton" id="cube-148"><img title="Cube 148" src="./Online Icon Kit_files/cube_148.png"></button><button num="149" form="cube" class="blankButton iconButton" id="cube-149"><img title="Cube 149" src="./Online Icon Kit_files/cube_149.png"></button><button num="150" form="cube" class="blankButton iconButton" id="cube-150"><img title="Cube 150" src="./Online Icon Kit_files/cube_150.png"></button><button num="151" form="cube" class="blankButton iconButton" id="cube-151"><img title="Cube 151" src="./Online Icon Kit_files/cube_151.png"></button><button num="152" form="cube" class="blankButton iconButton" id="cube-152"><img title="Cube 152" src="./Online Icon Kit_files/cube_152.png"></button><button num="153" form="cube" class="blankButton iconButton" id="cube-153"><img title="Cube 153" src="./Online Icon Kit_files/cube_153.png"></button><button num="154" form="cube" class="blankButton iconButton" id="cube-154"><img title="Cube 154" src="./Online Icon Kit_files/cube_154.png"></button><button num="155" form="cube" class="blankButton iconButton" id="cube-155"><img title="Cube 155" src="./Online Icon Kit_files/cube_155.png"></button><button num="156" form="cube" class="blankButton iconButton" id="cube-156"><img title="Cube 156" src="./Online Icon Kit_files/cube_156.png"></button><button num="157" form="cube" class="blankButton iconButton" id="cube-157"><img title="Cube 157" src="./Online Icon Kit_files/cube_157.png"></button><button num="158" form="cube" class="blankButton iconButton" id="cube-158"><img title="Cube 158" src="./Online Icon Kit_files/cube_158.png"></button><button num="159" form="cube" class="blankButton iconButton" id="cube-159"><img title="Cube 159" src="./Online Icon Kit_files/cube_159.png"></button><button num="160" form="cube" class="blankButton iconButton" id="cube-160"><img title="Cube 160" src="./Online Icon Kit_files/cube_160.png"></button><button num="161" form="cube" class="blankButton iconButton" id="cube-161"><img title="Cube 161" src="./Online Icon Kit_files/cube_161.png"></button><button num="162" form="cube" class="blankButton iconButton" id="cube-162"><img title="Cube 162" src="./Online Icon Kit_files/cube_162.png"></button><button num="163" form="cube" class="blankButton iconButton" id="cube-163"><img title="Cube 163" src="./Online Icon Kit_files/cube_163.png"></button><button num="164" form="cube" class="blankButton iconButton" id="cube-164"><img title="Cube 164" src="./Online Icon Kit_files/cube_164.png"></button><button num="165" form="cube" class="blankButton iconButton" id="cube-165"><img title="Cube 165" src="./Online Icon Kit_files/cube_165.png"></button><button num="166" form="cube" class="blankButton iconButton" id="cube-166"><img title="Cube 166" src="./Online Icon Kit_files/cube_166.png"></button><button num="167" form="cube" class="blankButton iconButton" id="cube-167"><img title="Cube 167" src="./Online Icon Kit_files/cube_167.png"></button><button num="168" form="cube" class="blankButton iconButton" id="cube-168"><img title="Cube 168" src="./Online Icon Kit_files/cube_168.png"></button><button num="169" form="cube" class="blankButton iconButton" id="cube-169"><img title="Cube 169" src="./Online Icon Kit_files/cube_169.png"></button><button num="170" form="cube" class="blankButton iconButton" id="cube-170"><img title="Cube 170" src="./Online Icon Kit_files/cube_170.png"></button><button num="171" form="cube" class="blankButton iconButton" id="cube-171"><img title="Cube 171" src="./Online Icon Kit_files/cube_171.png"></button><button num="172" form="cube" class="blankButton iconButton" id="cube-172"><img title="Cube 172" src="./Online Icon Kit_files/cube_172.png"></button><button num="173" form="cube" class="blankButton iconButton" id="cube-173"><img title="Cube 173" src="./Online Icon Kit_files/cube_173.png"></button><button num="174" form="cube" class="blankButton iconButton" id="cube-174"><img title="Cube 174" src="./Online Icon Kit_files/cube_174.png"></button><button num="175" form="cube" class="blankButton iconButton" id="cube-175"><img title="Cube 175" src="./Online Icon Kit_files/cube_175.png"></button><button num="176" form="cube" class="blankButton iconButton" id="cube-176"><img title="Cube 176" src="./Online Icon Kit_files/cube_176.png"></button><button num="177" form="cube" class="blankButton iconButton" id="cube-177"><img title="Cube 177" src="./Online Icon Kit_files/cube_177.png"></button><button num="178" form="cube" class="blankButton iconButton" id="cube-178"><img title="Cube 178" src="./Online Icon Kit_files/cube_178.png"></button><button num="179" form="cube" class="blankButton iconButton" id="cube-179"><img title="Cube 179" src="./Online Icon Kit_files/cube_179.png"></button><button num="180" form="cube" class="blankButton iconButton" id="cube-180"><img title="Cube 180" src="./Online Icon Kit_files/cube_180.png"></button><button num="181" form="cube" class="blankButton iconButton" id="cube-181"><img title="Cube 181" src="./Online Icon Kit_files/cube_181.png"></button><button num="182" form="cube" class="blankButton iconButton" id="cube-182"><img title="Cube 182" src="./Online Icon Kit_files/cube_182.png"></button><button num="183" form="cube" class="blankButton iconButton" id="cube-183"><img title="Cube 183" src="./Online Icon Kit_files/cube_183.png"></button><button num="184" form="cube" class="blankButton iconButton" id="cube-184"><img title="Cube 184" src="./Online Icon Kit_files/cube_184.png"></button><button num="185" form="cube" class="blankButton iconButton" id="cube-185"><img title="Cube 185" src="./Online Icon Kit_files/cube_185.png"></button><button num="186" form="cube" class="blankButton iconButton" id="cube-186"><img title="Cube 186" src="./Online Icon Kit_files/cube_186.png"></button><button num="187" form="cube" class="blankButton iconButton" id="cube-187"><img title="Cube 187" src="./Online Icon Kit_files/cube_187.png"></button><button num="188" form="cube" class="blankButton iconButton" id="cube-188"><img title="Cube 188" src="./Online Icon Kit_files/cube_188.png"></button><button num="189" form="cube" class="blankButton iconButton" id="cube-189"><img title="Cube 189" src="./Online Icon Kit_files/cube_189.png"></button><button num="190" form="cube" class="blankButton iconButton" id="cube-190"><img title="Cube 190" src="./Online Icon Kit_files/cube_190.png"></button><button num="191" form="cube" class="blankButton iconButton" id="cube-191"><img title="Cube 191" src="./Online Icon Kit_files/cube_191.png"></button><button num="192" form="cube" class="blankButton iconButton" id="cube-192"><img title="Cube 192" src="./Online Icon Kit_files/...(truncated 193851 characters)..._${i}.png" title="${formInfo.name} ${i}"></button>`)
+            formContainer.append(ic)
+            if (generatedUnlocks) checkElementUnlock(ic)
+        }
+
+        if (hasMini) formContainer.append(`<button num="0" form="${formName}" class="blankButton iconButton" id="${formName}-0"><img data-src="./premade/${formName}_0.png" title="Mini ${formInfo.name}"></button>`)
+    }
+
+    // load the preview images
+    function loadPreviewImages(parent) {
+        parent.removeAttr("unloaded")
+        let iconButtons = parent.find(`.iconButton img[data-src]`)
+        iconButtons.each(function() {
+            $(this).attr("src", $(this).attr("data-src"))
+            $(this).removeAttr("data-src")
+        })
+
+        let imagesLoaded = 0
+        parent.imagesLoaded(function() {}).progress(function() {
+            imagesLoaded += 1;
+            totalLoaded = imagesLoaded / iconButtons.length * 100
+            $('#iconloading').css('width', `${totalLoaded}%`)
+        })
+    }
+
+    // prepare color list
+    reloadColors = function() { 
+        let group = []
+        $('#colorList').empty()
+
+        function addGroup() {
+            let g = $('<div class="colorGroup"></div>')
+            $('#colorList').append(g)
+            group.forEach(x => g.append(x))
+            group = []
+        }
+
+        let unsort = iconSettings.includes("sort")
+        iconStuff.colorOrder.new.forEach(function (p, n) {
+            if (unsort) p = n;
+            let colRGB = iconStuff.colors[p]
+            let hexCode = toHexCode(rgbToDecimal(colRGB)).slice(1)
+            let isSelected = false
+            let newCol = $(`<button col=${p} class="gdButton blankButton iconColor" hex="${hexCode}" title="Color ${p} (#${hexCode})" id="col-${p}"><div style="background-color: rgb(${colRGB.r}, ${colRGB.g}, ${colRGB.b})"></button>`)
+            group.push(newCol)
+            if (group.length % 4 == 0 && (unsort || n != 103)) addGroup()
+            if (generatedUnlocks) checkElementUnlock(newCol)
+        })
+        addGroup()
+        checkMissingUnlocks()
+        updateSelectedColors()
+        updateColorFilter()
+    }
+
+    reloadColors()
+
+    // add extra items
+    addExtraSection("trail", "Trail")
+    addExtraSection("deathEffect", "Death Effect")
+    addExtraSection("shipFire", "Ship Fire")
+    addExtraSection("item", "Special Item", [18, 19, 20])
+    addExtraSection("item", "Special Item", [1, 2, 3, 5, 4, 16, 17])
+
+    // check url params
+
+    let url = new URL(window.location.href);
+    let useSample = true;
+
+    if (url.searchParams.size > 0) {
+
+        let urlParams = {}
+        let colorParams = {}
+
+        url.searchParams.forEach((val, key) => {
+            if (!val) return
+            let k = key.toLowerCase()
+            if (k.length == 4 && k.startsWith("col")) colorParams[k.slice(-1)] = val
+            else urlParams[k] = val
+        })
+
+        function fromParam(str, func) {
+            let param = urlParams[str];
+            if (param) {
+                useSample = false;
+                func(param)
+            }
+        }
+
+        for (const [colType, colVal] of Object.entries(colorParams)) {
+            if (selectedCol[colType] !== undefined) {
+                useSample = false
+                setColor(colType, colVal)
+            }
+        }
+
+        fromParam('id', x => selectedIcon = parseInt(x))
+        fromParam('icon', x => selectedIcon = parseInt(x))
+        fromParam('form', x => selectedForm = validateForm(x))
+        fromParam('glow', x => {
+            enableGlow = x > 0
+            if (!colorParams["g"]) selectedCol["g"] = selectedCol["2"]
+            setColor("g", selectedCol["g"])
+        })
+
+        getExtraInfo()
+    }
+    
+    // sample icon
+    if (useSample)
+    {
+        let sample = JSON.parse(iconStuff.sample);
+        enableGlow = sample[3] > 0;
+        selectedIcon = sample[0]
+
+        setColor(1, sample[1])
+        setColor(2, sample[2])
+        setColor("g", isNaN(sample[4]) ? selectedCol[2] : sample[4])
+    }
+
+    // set first icon to selected
+    $('body').imagesLoaded(function () {
+        $(`[num="${selectedIcon}"][form="${selectedForm}"]`).addClass('iconSelected');
+    })
+
+    // generate first icon, disable glow after first generated
+    generateIcon(() => {
+        if (!useSample) return
+        icon.glow = false;
+        enableGlow = false
+        updateSelectedColors()
+    }) 
+
+    // changing tabs
+    $(document).on('click', '.iconTabButton', function () {
+        const form = $(this).attr('form')
+        const formElement = $('#' + form + 's')
+        
+        let oldForm = currentForm;
+        currentForm = form  // set form
+        closeDevTab()
+        toggleTabImage(form)
+
+        $('#colorLayer').hide()
+        $('#iconKitParent').show()
+
+        $('#iconKitParent .iconContainer').hide()
+
+        if (formElement[0].hasAttribute("unloaded")) loadPreviewImages(formElement)
+        
+        if (icon && iconSettings.includes("rememberform") && form != oldForm) {
+            $(`.iconButton[form="${form}"][num="${lastForms[form] || 1}"]`).trigger("click")
+        }
+
+        checkMissingUnlocks()
+        
+        formElement.show()
+    })
+
+    // select first tab
+    $('#iconTabs').find(selectedForm == "cube" ? ".iconTabButton" : `.iconTabButton[form="${selectedForm}"]`).first().click();
+})
+
+// icon copying - clicking button
+$("#getUserIcon").click(function() {
+    $(`.copyForm[form=${currentForm}]`).trigger('click')
+    if (iconSettings.includes("rememberform")) $('#copyAllCheckbox').show()
+    else $('#copyAllCheckbox').hide()
+    $('#steal').show();
+    $('#playerName').focus()  
+    $('#playerName').select()  
+})
+
+// icon copying - selecting a form
+$(document).on('click', '.copyForm', function () {
+    $('.copyForm').each(function(x, y) {$(this).children().first().attr('src', $(this).children().first().attr('src').replace('_on', '_off'))})
+    formCopy = $(this).attr('form')
+    let src = $(this).children().first().attr('src')
+    $(this).children().first().attr('src', src.replace('_off', '_on'))
+})
+
+// on clicking a new icon
+$(document).on('click', '.iconButton', function () {
+    
+    // show popup if it's an extra item
+    if ($(this).parents('#extraItems').length) {
+        return extraInfoPopup($(this).attr('form'), $(this).attr('num'))
+    }
+
+    $(".iconButton").removeClass("iconSelected");
+    $(this).addClass('iconSelected');
+    let oldForm = selectedForm
+    selectedIcon = $(this).attr('num');
+    selectedForm = $(this).attr('form');
+
+    if (selectedForm != oldForm) currentAnimation = {}
+
+    generateIcon()
+})
+
+// on clicking a color
+$(document).on('click contextmenu', '.iconColor', function (e) {
+    let col = $(this).attr('col')
+    if (!col) return
+    let colType = selectedColorType
+    if (e.type == "contextmenu") {
+        colType = altColorType
+    }
+    let alsoChangeGlow = (colType == 2 && selectedColorType != "g" && enableGlow && selectedCol.g == selectedCol[2] && !iconSettings.includes("unlinkglow"))
+    
+    setColor(colType, col, {skipUpdates: true})
+    if (alsoChangeGlow) setColor("g", col, {skipUpdates: true})
+    checkGlow()
+
+    updateSelectedColors()
+    return false
+})
+
+// clicking a color category
+$(document).on('click', '#colorLabels .colorLabel', function() {
+    let selected = $(this).hasClass('selectedColorType')
+    let colType = $(this).attr('colType')
+    let altType = $(this).attr('altcol')
+
+    updateAltColorType(altType)
+
+    // change selection
+    if (!selected) {
+        $('.selectedColorType').removeClass('selectedColorType')
+        $(this).addClass('selectedColorType')
+        selectedColorType = colType
+        updateSelectedColors()
+        updateColorFilter()
+    }
+
+    // same selection
+    else {
+        let picker = $("#cp" + colType)
+        picker.val(toHexCode(parseIconColor(selectedCol[colType])))
+        picker.trigger('click')
+    }
+})
+
+// change which color gets modified on right click
+function updateAltColorType(type) {
+    if (type == "2") {
+        altColorType = 2
+        $('#altColor').text("secondary")
+    }
+
+    else {
+        altColorType = 1
+        $('#altColor').text("primary")
+    }
+}
+
+// makes color pickers actually change the color
+function trackColorChanges(picker, colType) {
+    picker.on('input change', function(e) {
+        setColor(colType, picker.val().slice(1))
+    })
+}
+
+trackColorChanges($('#cp1'), "1")
+trackColorChanges($('#cp2'), "2")
+trackColorChanges($('#cpg'), "g")
+trackColorChanges($('#cpw'), "w")
+trackColorChanges($('#cpu'), "u")
+
+// copy icon to clipboard
+$('#copyToClipboard').click(function() {
+    if ($(this).hasClass('greyedOut') || !icon) return
+    icon.copyToClipboard()
+    let copyIcon = $(this).find('img')
+    $(this).addClass('greyedOut')
+    copyIcon.attr('src', '../assets/iconkit/buttons/copied.png')
+    setTimeout(() => {
+        $(this).removeClass('greyedOut')
+        copyIcon.attr('src', '../assets/iconkit/buttons/copy.png')
+    }, 420);
+})
+
+// copy icon URL
+$('#copyURL').click(function() {
+    if ($(this).hasClass('greyedOut') || !icon) return
+
+    let params = [`id=${icon.id}`, `col1=${selectedCol["1"]}`, `col2=${selectedCol["2"]}`]
+    if (icon.form != "player") params.splice(1, 0, `form=${icon.formName()}`)
+    if (icon.glowLayers[0].sprite.visible) params.push("glow=1")
+    if (icon.colors["g"] != icon.colors["2"]) params.push(`colG=${selectedCol['g']}`)
+    if (icon.colors["w"] != 0xffffff) params.push(`colW=${selectedCol["w"]}`)
+    if (icon.form == "bird" && icon.colors["u"] != 0xffffff) params.push(`colU=${selectedCol["u"]}`)
+
+    let finalURL = location.origin + location.pathname + "?" + params.join("&")
+    navigator.clipboard.writeText(finalURL)
+    window.history.replaceState({}, '', finalURL); 
+
+    let linkIcon = $(this).find('img')
+    $(this).addClass('greyedOut')
+    linkIcon.attr('src', '../assets/iconkit/buttons/copied.png')
+    setTimeout(() => {
+        $(this).removeClass('greyedOut')
+        linkIcon.attr('src', '../assets/iconkit/buttons/link.png')
+    }, 420);
+})
+
+// edit robot animation
+$('#robotAnimation').on('change', function() {
+    let prevForm = currentAnimation.form
+    currentAnimation = { name: $(this).val(), form: $('#robotAnimation').find(":selected").attr('form') }
+    if (!icon.customFiles && currentAnimation.form != prevForm) {
+        generateIcon(() => icon.setAnimation(currentAnimation.name, currentAnimation.form))
+    }
+    else icon.setAnimation(currentAnimation.name, currentAnimation.form)
+})
+
+// hover text for settings menu
+let hoverText = $('#helpText').html()
+$(".help").hover(function() { 
+    $(this).css('color', 'rgba(200, 255, 255)')
+    $('#helpText').html($(this).attr('help')) 
+}, function() {
+    $(this).css('color', 'white')
+    $('#helpText').html(hoverText) 
+})
+
+// changing settings
+$(document).on('change', '.iconsetting', function (e) {
+    let checkedSettings = []
+    $('.iconsetting:checkbox:checked').each((i, x) => { checkedSettings.push(x.id.split('-')[1]) })
+    iconSettings = checkedSettings
+    switch ($(this).attr('id').slice(4)) {
+        case "sort": reloadColors(); break;
+        case "ufo": generateIcon(); break;
+        case "cursed":
+            $('#animationOptions').hide();
+            checkFormOptions();
+            $('#robotAnimation').trigger('change');
+            break;
+    }
+    localStorage.iconkit = checkedSettings.join(",")
+})
+
+// extra unlockable items - indivdual
+function getExtraItem(type, name, id) {
+    return $(`<button num="${id}" form="${type}" class="blankButton iconButton" id="${type}-${id}"><img src="./items/${type}_${id}.png" title="${name} ${id}"></button>`)
+}
+
+// extra unlockable items - adding a row
+function addExtraSection(type, name, order) {
+    let itemCount = iconStuff.items.counts[type]
+    if (!itemCount) return
+
+    if ($('.extraItemSection').length > 0) $('#extraItems').append('<hr class="extraItemHR">')
+    let newSection = $(`<div class="extraItemSection"></div>`)
+
+    if (!order) {
+        for (let i = 1; i <= itemCount; i++) {
+            newSection.append(getExtraItem(type, name, i))
+        }
+    }
+
+    else {
+        order.forEach(x => {
+            newSection.append(getExtraItem(type, name, x))
+        })
+    }
+
+    $('#extraItems').append(newSection)
+}
+
+// achievements
+const achTypes = { dart: "wave", bird: "ufo", icon: "cube", player: "cube", player_ball: "ball", special: "trail", death: "deathEffect", explosion: "deathEffect" }
+function addUnlock(type, id, str, unobtainable) {
+    if (!str) return
+    let iconID = +id
+    let t = achTypes[type] || type
+    let dict = (unobtainable ? unobtainableIcons : unlockMethods)
+    if (!dict[t]) dict[t] = {}
+    if (dict[t][iconID]) return
+    else dict[t][iconID] = str
+    return true
+}
+
+function checkElementUnlock(el) {
+    let method = getUnlockFromElement(el)
+    if (!method || method == "Unobtainable") {
+        missingUnlocks.push(el)
+    }
+}
+
+function checkMissingUnlocks() {
+    if (unlockMode && (!isFiltering || filterHide)) missingUnlocks.forEach(x => x.addClass("hasNoUnlock"))
+}
+
+$('#unlockIcon').click(function() {
+    generateUnlocks()
+
+    unlockMode = !unlockMode
+    if (unlockMode) {
+        toggleButtonImage($('#lock'), true)
+        $('#howto').show()
+        $('#extraUnlockText_on').show()
+        $('#extraItemsToggle').show()
+        checkMissingUnlocks()
+    }
+    else {
+        toggleButtonImage($('#lock'), false)
+        $('#howto').hide()
+        $('#extraUnlockText_on').hide()
+        $('.hasNoUnlock').removeClass("hasNoUnlock")
+        if (!isFiltering) $('#extraItemsToggle').hide()
+    }
+})
+
+function generateUnlocks() {
+    if (generatedUnlocks) return
+    else generatedUnlocks = true
+
+    iconStuff.hardcodedUnlocks.forEach(m => {
+        let method;
+        switch (m.type) {
+            case "vault": method = `Solve a riddle in the ${m.vault}${m.code ? ` (${m.code[0] + ("_").repeat(m.code.length - 1)})` : ""}`; break;
+            case "wraith": method = `Redeem in the Secret Room (${m.code ? `"${m.code}"` : "Unknown code"})`; break;
+            case "treasureRoomMilestone": method = `Open ${m.chests} chests in the Treasure Room`; break;
+            case "path": method = `Complete the Path of ${m.path}`; break;
+            case "gauntlet": method = `Complete the ${m.gauntlet} gauntlet`; break;
+            case "destroyPlayers": method = `Destroy ${m.count} player${m.count == 1 ? "" : "s"} on the menu`; break;
+            case "adChest": method = `Open ad chest #${m.ad} in GD Lite`; break;
+            case "goldChest": method = `Open gold chest #${m.chest}`; break;
+            case "unknownChest": method = `Found in an unknown chest${m.guess ? ` (possibly ${m.guess}?)` : ""}`; break;
+            default: method = m.unlock
+        }
+        addUnlock(m.form, m.id, method)
+    })
+
+    iconStuff.treasureRoom.forEach(t => {
+        if (!t.hasIcon) return
+        t.rewards.filter(x => x.item == "item").forEach(r => {
+            addUnlock(r.type, r.iconID, `Found in a ${t.keys}-key chest in the Treasure Room`)
+        })
+    })
+
+    iconStuff.shops.forEach(m => {
+        addUnlock(m.type, m.icon, `Purchase from ${shops[m.shop] || "somewhere"} for <ca>${m.price}</ca> ${m.shop == 4 ? "diamond shards" : "orbs"}`)
+    })
+
+    iconStuff.achievements.forEach(a => {
+        let desc = a.description
+        .replace("Demon difficulty level", "demon")
+        .replace("Insane difficulty rated level", "insane level")
+        
+        addUnlock(a.rewardType, a.rewardID, desc)
+    })
+
+    Object.entries(iconStuff.allUnlocks).forEach(x => {
+        let [form, icons] = x
+        Object.values(icons).forEach(i => {
+
+            if (unlockMethods[form][i.id]) return;
+
+            if (i.unobtainable) {
+                addUnlock(form, i.id, true, true)
+            }
+            else if (i.unlock) {
+                let added = addUnlock(form, i.id, i.unlock)
+                if (added && !isUnlockedByDefault(i.id, form)) missingHardcodedUnlock.push({ form, id: i.id, message: unlockMethods[form][i.id] })
+            }
+        })
+    })
+
+    $('.iconButton, .iconColor').each(function() {
+        checkElementUnlock($(this))
+    }) 
+}
+
+// expand icon list
+$('#expand').click(function() {
+    let exp = $('#expandIcon')
+    let ikp = $('#iconKitParent')
+    let expanded = ikp.hasClass("expanded")
+    if (!expanded) {
+        toggleButtonImage(exp, true)
+        ikp.addClass("expanded")
+    }
+    else {
+        toggleButtonImage(exp, false)
+        ikp.removeClass("expanded")
+    }
+})
+
+$(document).on('mouseover', '.iconButton, .iconColor', function () {
+    if (unlockMode && generatedUnlocks) {
+        $(this).addClass('iconHover')
+        let unlockInfo = getUnlockFromElement($(this))
+        if (!unlockInfo || unlockInfo == "Unobtainable") $('#howto').html(`<span style='color: #aaaaaa'>${unlockInfo || "(no info available)"}</span>`)
+        else $('#howto').html(unlockInfo)
+    }
+})
+
+$(document).on('mouseleave', '.iconButton, .iconColor', function () {
+    $(this).removeClass('iconHover')
+    $('#howto').html("<span style='color: #aaaaaa'>(hover over an icon for info)</span>")
+})
+
+// shuffle button
+$("#randomIcon").click(function() {
+
+    let iconPool = iconStuff.iconCounts
+    if (!iconPool) return;
+
+    const formCount = iconStuff.iconCounts[iconStuff.forms[selectedForm].form]
+    const colorCount = Object.keys(iconStuff.colors).length
+
+    selectedIcon = randInt(1, formCount)
+
+    setColor(1, randInt(0, colorCount - 1), {skipUpdates: true})
+    setColor(2, randInt(0, colorCount - 1), {skipUpdates: true})
+    setColor("g", selectedCol[2], {skipUpdates: true})
+    
+    selectedCol.w = null
+    selectedCol.u = null
+
+    enableGlow = (randInt(0, 2) == 1)   // 1 in 3 chance of glow
+    generateIcon()
+
+    $(`#${selectedForm}-${selectedIcon}`).trigger('click')
+
+    toggleButtonImage($('#glow'), enableGlow)
+})
+
+$('#glowbtn').click(function () {
+    setIconGlow(!enableGlow)
+})
+
+// color tab
+$("#colorToggle").click(function() {
+    closeDevTab()
+    $('#iconKitParent').hide()
+    $('#colorLayer').show()
+})
+
+// extra items tab
+function onExtraItems() {
+    closeDevTab()
+    $('#iconKitParent .iconContainer').hide()
+    $('#colorLayer').hide()
+    $('#extraItems').show()
+    toggleTabImage("extraItem")
+}
+
+// dev tools tab
+$("#devToolsToggle").click(function() {
+    if (!icon) return
+    else if (onDevTab()) return $('.activeForm').click()
+    if (!devStuff.ready) refreshDevTools()
+    $('.iconSetup').hide()
+    $('#devTools').show()
+    toggleButtonImage($('#devToolsIcon'), true)
+})
+
+function closeDevTab() {
+    $('#iconKitParent').show()
+    $('#devTools').hide()
+    toggleButtonImage($('#devToolsIcon'), false)
+}
+
+// secondary icon toggle
+$('#enableSecondaryIcon').click(function() {
+    enableSecondary = $(this).prop('checked')
+
+    if (enableSecondary) {
+        addSecondary()
+    }
+
+    else {
+        icon.removeSecondaryIcon()
+        refreshDevTools()
+        getExtraInfo()
+    }
+})
+
+// add secondary icon
+function addSecondary() {
+    if (hasSecondary()) icon.addSecondaryIcon(lastCube || lastForms.cube || 1, false, () => {
+        refreshDevTools()
+        checkWhite()
+    })
+}
+
+// info button, spawns popup
+function extraInfoPopup(form, id) {
+    let extraStuff = getExtraInfo(true, form, id) || {}
+    
+    let custom = (!form && icon && icon.customFiles)
+    if (!form) form = selectedForm
+    if (!id) id = selectedIcon
+
+    let isCol = form.startsWith("color")
+
+    if (!(isCol ? extraStuff["Color ID"] : extraStuff.ID)) return
+
+    $('#extraInfoText').text(!isCol ? extraStuff.ID : (form == "color1" ? "Primary" : "Secondary") + " Color " + selectedCol[form.slice(5)])
+    let extraLines = []
+    let colLines = ({"Col 1": 1, "Col 2": 2, "Glow": "g"})
+    generateUnlocks()
+    Object.entries(extraStuff).forEach(x => {
+        if (x[0] == "ID") return;
+        let isBaseCol = colLines[x[0]]
+        let foundCol = (x[1].match(/#[a-z0-9]{6}/i) || [""])[0]
+        let extraStr = ""
+        let base = `<span${isBaseCol && !x[1].startsWith("#") ? " colInfo=" + isBaseCol : ""}>${x[0]}</span>`
+        if (foundCol) {
+            if (!x[1].startsWith("#")) extraStr += `<span class="faded"> (${foundCol})</span>`
+            extraStr += `<span class="miniColPrev" style="background-color: ${foundCol}"></span>`
+        }
+        extraLines.push(`<p>${base}: <span class="lime">${x[1].split(" (")[0]}</span>${extraStr}</p>`)
+    })
+
+    let toUnlock = custom ? null : getUnlockMethod(id, form)
+    if (toUnlock) {
+        extraLines.push(`<div class="extraUnlockContainer">`)
+        let ach = getIconAchievement(id, form)
+        if (ach) extraLines.push(`<p class="extraUnlockMethod extraUnlockName">${ach.name}</p>`)
+        extraLines.push(`<p class="extraUnlockMethod">${toUnlock}</p></div>`)
+    }
+    $("#extraInfoPopup").html(extraLines.join(""))
+    $('#iconInfoPopup').show()
+}
+
+// info button for colors
+$(document).on('click', '#extraInfoPopup span[colinfo]', function () {
+    let colType = $(this).attr("colinfo")
+    extraInfoPopup("color" + colType, selectedCol[colType])
+})
+
+
+// on confirm for copying icon from user
+$("#fetchUser").click(async function () {
+    let user = $("#playerName").val()
+    if (!user || !user.length) return $("#steal").hide()
+
+    $(`.iconTabButton[form=${formCopy}]`).trigger('click')
+    
+    $("#steal").hide()
+
+    let info = await fetch('../api/profile/' + user).then(res => res.json()).catch(e => {})
+    if (info == "-1") info = {}
+    info.cube = info.icon
+
+    let iconIndex = info[formCopy] || 1
+
+    let iconBtn = $(`#${formCopy}-${Math.min(iconIndex, $(`.iconButton[form=${formCopy}]`).length)}`)
+    iconBtn.trigger('click')
+    iconBtn[0].scrollIntoView({ block: 'center' })
+
+    let col2 = isNaN(info.col2) ? 3 : info.col2
+
+    setIconGlow(info.glow)
+
+    setColor(1, info.col1 || 0, {skipUpdates: true})
+    setColor(2, col2, {skipUpdates: true})
+    setColor("g", isNaN(info.colG) ? col2 : info.colG, {skipUpdates: true})
+    setColor("w", 12, {skipUpdates: true})
+    setColor("u", 12)
+
+    let setMode = iconSettings.includes("rememberform")
+    if (setMode ? $('#copyFullSet').prop("checked") : true) {
+        forms.forEach(f => {
+            if (info[f]) lastForms[f] = info[f]
+        })
+        if (lastCube) {
+            lastCube.destroy()
+            lastCube = null
+        }
+    }
+})
+
+// Updates which colors should be 'outlined'
+function updateSelectedColors() {
+    $('.selectedColor').removeClass('selectedColor')
+    $('.selectedColorPartial').removeClass('selectedColorPartial')
+
+    let cols = Object.values(selectedCol).filter(x => x !== null)
+    let realCols = [selectedCol[1], selectedCol[2], selectedCol.g]
+
+    $('.iconColor').each(function() {
+        let id = $(this).attr('col')
+        let hex = $(this).attr('hex')
+        if (icon && selectedCol[selectedColorType] == hex) {
+            selectedCol[selectedColorType] = id
+            $(this).addClass('selectedColor')
+        }
+        else if (selectedCol[selectedColorType] == id) $(this).addClass('selectedColor')
+        else {
+            let cList = (id == "12") ? realCols : cols  // ignore ufo and w coloring if col is white
+            if (cList.includes(id) || cList.includes(hex)) {
+                $(this).addClass('selectedColorPartial')
+            }
+        }
+    })
+
+    getExtraInfo()
+}
+
+// Get achievement unlock from an icon html element
+function getUnlockFromElement(el) {
+    let iconNumber = el.attr('num') || el.attr('col')
+    let form = el.attr('form')
+    if (el.hasClass('iconColor')) {
+        let colType;
+        if (selectedColorType == 1) colType = 1
+        else if (selectedColorType == "g" || selectedColorType == 2) colType = 2
+        else return
+        form = "color" + colType
+    }
+    return getUnlockMethod(iconNumber, form)
+}
+
+// Check if icon is unlocked by default
+function isUnlockedByDefault(id, form) {
+    return (form.startsWith("color") && id <= 3) || (form != "item" && id > 0 && (id == 1 || (form == "cube" && id <= 4)))
+}
+
+// Get unlock info from a form and ID
+function getUnlockMethod(iconNumber, form) {
+    if (form == "colorg") form = "color2"
+    if (isUnlockedByDefault(iconNumber, form)) return "Unlocked by default"
+    let nope = unobtainableIcons[form] ? unobtainableIcons[form][iconNumber] : null
+    if (nope) return "Unobtainable"
+    else if (unlockMethods[form]) return unlockMethods[form][iconNumber]
+}
+
+// Get the achievement for an icon if it exists
+function getIconAchievement(iconNumber, form) {
+    let achForm = achFormName[form] || form
+    return iconStuff.achievements.find(x => x.rewardType == achForm && +x.rewardID == iconNumber)
+}
+
+// filter popup
+$("#openFilters").click(function() {
+    loadFilters()
+    $('#filter').show()
+})
+
+// first time setup for filters
+let filterCheckbox;
+function loadFilters() {
+    if (loadedFilters) return
+    loadedFilters = true;
+
+    // setup version dropdowns
+    [...iconStuff.iconVersions.Order].reverse().forEach((x, y) => $('.versionFilter').append(`<option value="${iconStuff.iconVersions.Order.length - y - 1}">${x}</option>`))
+    $('#filter-endversion option:first-of-type, #filter-startversion option:last-of-type').prop("selected", true).attr("default", "")
+
+    // setup checkboxes
+    filterCheckbox = $('.filterCheckbox').clone()
+    $('.filterCheckbox').remove()
+
+    addFilter("Default", () => {
+        let defaults = extendedForms.filter(x => x != "item").map(x => ({form: x, id: 1}))
+        for (let i = 2; i <= 4; i++) {
+            defaults.push({ form: "cube", id: i })
+            defaults.push({ form: "color1", id: i % 4 })
+            defaults.push({ form: "color2", id: i % 4 })
+        }
+        return defaults.concat(hardcodedFilter(x => x.type == "legacy"))
+    })
+
+    addFilter("Level", () =>
+        iconStuff.achievements.filter(x => {
+            let id = x.id.slice(13)
+            
+            return id.startsWith("level")
+            || id.startsWith("world") && !x.rewardType.startsWith("color")
+            || id.startsWith("subzero")
+            || id.startsWith("mdlevel") || id.startsWith("mdcoin")
+            || id.startsWith("demoncoin")
+        }).map(x => achToFilter(x))
+    )
+
+    // all achievements not categorized as something else
+    addFilter("Achievement", () => {
+        let exclude = getFilter("Level").concat(getFilter("Vault")).concat(getFilter("Path")).concat(getFilter("Shards"))
+        let ach = []
+
+        iconStuff.achievements.forEach(x => {
+            let obj = achToFilter(x)
+            if (!exclude.find(z => z.form == obj.form && z.id == obj.id)) ach.push(obj)
+        })
+
+        return ach
+    })
+
+    addFilter("Gauntlet", () => hardcodedFilter(x => x.type == "gauntlet"))
+
+    addFilter("Shop", () =>
+        iconStuff.shops.map(x => ({ form: x.type, id: x.icon }))
+    )
+
+    addFilter("Treasure Room", () =>
+        iconStuff.treasureRoom.filter(x => x.hasIcon).map(x => x.rewards.filter(r => r.item == "item").map(r => ({form: r.type, id: r.iconID}))).flat()
+        .concat(hardcodedFilter(x => x.type == "goldChest" || x.type == "treasureRoomMilestone"))
+    )
+
+    addFilter("Shards", () => achievementFilter("shard"))
+
+    addFilter("Path", () => hardcodedFilter(x => x.type == "path").concat(achievementFilter("path")))
+
+    addFilter("Vault", () => hardcodedFilter(x => x.type == "vault"))
+    addFilter("Wraith", () => hardcodedFilter(x => x.type == "wraith"))
+    addFilter("Misc", () => hardcodedFilter(x => ["adChest", "social", "chest"].includes(x.type)))
+
+    addFilter("Unobtainable", () => {
+        generateUnlocks()
+        let unobtainable = []
+        Object.entries(unobtainableIcons).forEach(x => {
+            Object.keys(x[1]).forEach(id => unobtainable.push({ form: x[0], id }))
+        })
+        return unobtainable
+    })
+
+    $('.iconFilter, .iconFilterBox').change(function() {
+        updateFilters()
+    })
+
+    listOfIcons = [...document.querySelectorAll(".iconButton")].map(x => x.id)
+
+    for (let i = 0; i < iconStuff.colorOrder.new.length; i++) {
+        listOfIcons.push("color1-" + i)
+        listOfIcons.push("color2-" + i)
+    }
+}
+
+// add a checkbox filter
+function addFilter(name, target) {
+    let newFilter = filterCheckbox.clone()
+    let id = "filterbox-" + $('#filterCheckboxList').children().length
+    newFilter.find("input").attr("id", id).attr("filter", name)
+    newFilter.find("label").attr("for", id)
+    newFilter.find("h2").text(name)
+    $('#filterCheckboxList').append(newFilter)
+
+    filterCache[name] = target
+}
+
+// execute a filter from the cache, running it for the first time then storing the result
+function getFilter(name) {
+    if (typeof filterCache[name] == "function") filterCache[name] = filterCache[name]()
+    return filterCache[name]
+}
+
+function hardcodedFilter(func) {
+    return iconStuff.hardcodedUnlocks.filter(func).map(x => ({form: x.form, id: x.id}))
+}
+
+function achievementFilter(startsWith) {
+    return iconStuff.achievements.filter(x => x.id.startsWith("geometry.ach." + startsWith)).map(x => achToFilter(x))
+}
+function achToFilter(ach) {
+    return { form: extendedFormNames[ach.rewardType] || ach.rewardType, id: +ach.rewardID }
+}
+
+// update filters
+function updateFilters() {
+
+    // set of icons to filter from, starts empty
+    let filterSet = new Set()
+    filteredColors = { 1: [], 2: [] }
+
+    // check which icons are in the version range
+    let minVersion = +$('#filter-startversion').val()
+    let maxVersion = +$('#filter-endversion').val()
+
+    // swap versions if they're backwards
+    if (minVersion > maxVersion) {
+        let oldMin = minVersion
+        minVersion = maxVersion
+        maxVersion = oldMin
+        $('#filter-startversion').val(minVersion)
+        $('#filter-endversion').val(maxVersion)
+    }
+
+    // if version filter, add the list of allowed icons to the base set to filter from
+    if (maxVersion != 0 || minVersion != iconStuff.iconVersions.Order.length - 1) {
+        extendedForms.forEach(f => {
+            getAllInVersionRange(f, minVersion, maxVersion).forEach(x => filterSet.add(`${f}-${x}`))
+        })
+    }
+
+    // if no version filter, just filter from every icon
+    else filterSet = new Set(listOfIcons)
+
+    // remove the icons that are part of the unchecked filters
+    $('#filterCheckboxList .iconFilterBox:not(:checked)').each(function() {
+        let filter = $(this).attr("filter")
+        getFilter(filter).forEach(x => {
+           filterSet.delete(`${x.form}-${x.id}`)
+        })
+    })
+
+    // iterate through all icons, filtering out the ones not in the filter set
+    listOfIcons.forEach(x => {
+        // colors
+        if (x.startsWith("color")) {
+            if (filterSet.has(x)) return
+            let [colType, id] = x.split("-")
+            filteredColors[colType.slice(5)].push(id)
+        }
+
+        // not colors
+        else {
+            document.getElementById(x).classList.toggle("filteredOut", !filterSet.has(x))
+        }
+    })
+
+    // check if anything was actually filtered
+    isFiltering = $('.iconButton.filteredOut').length > 0
+    let filterSRC = $('#openFilters').attr("src")
+
+    // hide form tabs if all are filtered out
+    $('#iconTabs .blankButton[form]').each(function() {
+        let formElement = $('#' + $(this).attr("form") + 's')
+        let dontShow = formElement.find(".iconButton:not(.filteredOut)").length < 1
+        $(this).toggleClass("filteredOut", dontShow)
+
+        if (filterHide && dontShow && formElement.is(":visible")) {
+            let goToCube = $(`.iconTabButton[form="${selectedForm}"]`).hasClass("filteredOut")
+            $(`.iconTabButton[form="${goToCube ? "cube" : selectedForm}"]`).click()
+        }
+    })
+
+    // filter the colors
+    updateColorFilter()
+
+    if (isFiltering) {
+        $('#openFilters').attr("src", filterSRC.replace("off.png", "on.png"))
+        if (!filterHide) $('.hasNoUnlock').removeClass("hasNoUnlock")
+        $('#extraItemsToggle').show()
+    }
+
+    else {
+        $('#openFilters').attr("src", filterSRC.replace("on.png", "off.png"))
+        if (!filterHide) checkMissingUnlocks()
+        if (!unlockMode) $('#extraItemsToggle').hide()
+    }
+
+    // hide extra hrs in the items tab
+    if (filterHide) {
+        $('.extraItemSection').each(function() {
+            let isEmpty = $(this).find(".iconButton:not(.filteredOut)").length < 1
+            $(this).prev().toggle(!isEmpty)
+        })
+    }
+    else $('.extraItemHR').show()
+
+}
+
+// filter the colors
+function updateColorFilter() {
+    if (!filteredColors[1]) return
+    let colType = selectedColorType
+    if (colType != 1 && colType != 2) colType = (colType == "g" ? 2 : 1)
+
+    $('.iconColor').each(function() {
+        let dontShow = filteredColors[colType].includes($(this).attr("col"))
+        $(this).toggleClass("filteredOut", dontShow)
+    })
+}
+
+// reset filters
+$('#resetAllFilters').click(function() {
+    $('.iconFilter').each(function() {
+        $(this).val($(this).find("option[default]").val())
+    })
+
+    $('.filterCheckbox input').each(function() {
+        $(this).prop("checked", true)
+    })
+
+    updateFilters()
+})
+
+// toggle checkbox filters
+function toggleAllFilters(enabled) {
+    $('.filterCheckbox input').each(function() {
+        $(this).prop("checked", enabled)
+    }) 
+    updateFilters()
+}
+
+// toggle filter hide
+$('#filterhide').change(function() {
+    filterHide = $(this).prop("checked")
+    document.body.classList.toggle("filterHide", filterHide)
+    updateFilters()
+})
+
+
+// VERY hacky, renders all preview icons
+function renderEveryIcon(missingOnly, useColors) {
+
+    if (!window.JSZip) {
+        return appendScript("jszip").then(x => renderEveryIcon(missingOnly, useColors))
+    }
+
+    let queue = []
+    let rendered = []
+    let missingIcons = []
+
+    if (missingOnly) {
+        Array.from(document.querySelectorAll('.iconButton img')).filter(x => x.naturalWidth == 0).forEach(x => {
+            missingIcons.push(x.src.split("/").at(-1))
+        })
+    }
+
+    Object.keys(iconStuff.iconCounts).forEach(x => {
+        let count = iconStuff.iconCounts[x] + 1
+        let formName = Object.entries(iconStuff.forms).find(z => z[1].form == x)[0]
+        let hasZero = ["player", "player_ball", "ship"].includes(x)
+        if (hasZero) count--
+        for (let i = hasZero ? 0 : 1; i < count; i++) {
+            if (!missingOnly || missingIcons.includes(`${formName}_${i}.png`)) queue.push([x, i])
+        }
+    })
+
+    if (queue.length == 0) return console.info("No icons to render!")
+    else if (!confirm(`This will render and download EVERY ${missingOnly ? "*missing* premade " : ""}icon${useColors ? ", WITH COLORS" : ""}. (${queue.length} total)\n\nUse to generate preview images, otherwise scram.`)) return
+
+    let colArgs = !useColors ? null : {
+        col1: parseIconColor(selectedCol[1]),
+        col2: parseIconColor(selectedCol[2]),
+        colG: parseIconColor(selectedCol.g),
+        colW: selectedCol.w ? parseIconColor(selectedCol.w) : undefined,
+        colU: selectedCol.u ? parseIconColor(selectedCol.u) : undefined,
+        glow: enableGlow
+    }
+
+    let queueIndex = 0
+    function makeIcon() {
+        if (!queueIndex || (queueIndex % 20 == 19)) console.info(`Rendering ${queueIndex+1} / ${queue.length}`)
+        let q = queue[queueIndex]
+        loadIconLayers(q[0], q[1], async function() {
+            let iconArgs = {id: q[1], form: q[0], app}
+            if (useColors) iconArgs = Object.assign(iconArgs, colArgs)
+            icon = new Icon(iconArgs)
+            rendered.push({name: icon.getDownloadString() + ".png", data: await icon.getDataURL()})
+            setTimeout(() => {
+                queueIndex++
+                if (queueIndex < queue.length) makeIcon()
+                else {
+                    setTimeout(() => {
+                        let zip = new JSZip();
+                        rendered.forEach(x => zip.file(x.name, x.data.split(",", 2)[1], {base64: true}))
+                        zip.generateAsync({type: "blob"}).then(z => {
+                            generateIcon()
+                            downloadFile(z, "allIcons.zip")
+                        })
+                    }, 250);
+                }
+            }, 33);
+        })
+    }
+    makeIcon()
+}
+
+function listArtists() {
+    let artistList = {}
+    Object.values(iconStuff.allUnlocks).map(x => Object.values(x)).flat().forEach(x => {
+        if (!x.artist) return
+        if (!artistList[x.artist]) artistList[x.artist] = 0
+        artistList[x.artist] += 1
+    })
+    return Object.entries(artistList).map(x => ({ name: x[0], count: x[1] })).sort((a, b) => b.count - a.count)
+}
+
+// get the version number an icon was added in
+function getVersion(form, id) {
+    let oVersion = iconStuff.obtainableVersions[`${form}-${id}`]
+
+    if (form.startsWith("color")) form = "color"
+    let group = iconStuff.iconVersions[form]
+    if (!group || id < 0) return
+
+    let ver = group.find(x => +id <= x.id) || { v: "?" }
+    let obj = { version: ver.v }
+    if (oVersion && oVersion.version != ver.v) obj.obtainable = oVersion.version
+    if (ver) return obj
+}
+
+// returns a list of icon ids that were added in that version range, inclusive
+function getAllInVersionRange(form, startIndex, endIndex) {
+    if (form.startsWith("color")) form = "color"
+    let versions = iconStuff.iconVersions[form]
+    let order = iconStuff.iconVersions.Order
+
+    if (!versions) return []
+
+    if (typeof startIndex == "string") startIndex = order.indexOf(startIndex)
+    if (typeof endIndex == "string") endIndex = order.indexOf(endIndex)
+    if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) return []
+
+    // icon 0 is a weird case, just remove it so the rest of the versions are in order
+    versions = [...versions]
+    let hasZero = versions[0].id == 0
+    let zeroMoment = hasZero ? versions.shift() : null
+
+    // find the first ID (one after previous version) and last ID
+    let firstID = -1
+    let lastID = -1
+
+    for (i = 0; i < versions.length; i++) {
+        let x = versions[i]
+        let curIndex = order.indexOf(x.v)
+
+        if (curIndex < startIndex) firstID = x.id + 1
+        if (curIndex <= endIndex) lastID = x.id
+    }
+
+    // none found
+    let foundNone = firstID == -1 && lastID == -1
+    if (!foundNone && firstID == -1) firstID = (form == "color" ? 0 : 1)
+
+    // get a list of ids between that range
+    let ids = foundNone ? [] : Array.from({length: lastID - firstID + 1}).map((x, y) => y + firstID)
+    if (zeroMoment) {
+        let zeroIndex = order.indexOf(zeroMoment.v)
+        if (zeroIndex >= startIndex && zeroIndex <= endIndex) ids.unshift(zeroMoment.id)
+    }
+    
+    return ids
+}
+
+// animation speed
+$('#animationSpeed').on('input', function() {
+    animationMultiplier = Number($(this).val())
+    $('#animationSpeedBox').val(animationMultiplier)
+    if (icon.complex) icon.animationSpeed = animationMultiplier
+})
+
+$('#animationSpeedBox').change(function() {
+    animationMultiplier = Number(Math.abs(Number($(this).val()) || 1).toFixed(2))
+    if (animationMultiplier > 99) animationMultiplier = 99
+    else if (animationMultiplier <= 0) animationMultiplier = 0.1
+    $('#animationSpeed').val(animationMultiplier)
+    $('#animationSpeedBox').val(animationMultiplier)
+    if (icon.complex) icon.animationSpeed = animationMultiplier
+})
+
+// ball roll speed
+$('#rollSpeed').on('input', function() {
+    ballSpeed = Number($(this).val())
+    $('#rollSpeedBox').val(ballSpeed)
+    if (icon.form == "player_ball") icon.setBallSpeed(ballSpeed)
+})
+
+$('#rollSpeedBox').change(function() {
+    ballSpeed = Number(Math.abs(Number($(this).val()) || 1).toFixed(2))
+    if (ballSpeed > 99) ballSpeed = 99
+    else if (ballSpeed < -99) ballSpeed = -99
+    $('#rollSpeed').val(ballSpeed)
+    $('#rollSpeedBox').val(ballSpeed)
+    if (icon.form == "player_ball") icon.setBallSpeed(ballSpeed)
+})
+
+function resetBallSpeed() {
+    ballSpeed = 0
+    $('#rollSpeed').val(0)
+    $('#rollSpeedBox').val(0)
+}
+
+$('#resetBallRotation').click(function() {
+    resetBallSpeed()
+    icon.setBallSpeed(0, true)
+})
+
+function backButton() {
+	if (window.history.length > 1 && document.referrer.startsWith(window.location.origin)) window.history.back()
+	window.location.href = "../../../../../"
+}
+
+$(document).keydown(function(k) {
+    if (k.keyCode == 13) { // enter
+        if ($("#steal").is(":visible")) $("#fetchUser").trigger('click')
+        else if ($(".popup").is(":visible")) return
+    }
+    if (k.keyCode == 27) { //esc
+        if ($(".popup").is(":visible")) return $('.popup').hide()
+		// k.preventDefault()
+		// $('#backButton').trigger('click')
+	}
+});
+
+$(document).on('click', '.brownbox, .fancybox', function (e) {
+    e.stopPropagation();
+})
+
+$(document).on('click', '.popup', function () {
+    $('.popup').hide()
+})
+
+async function appendScript(name) {
+    return new Promise((res, rej) => {
+        let script = document.createElement("script")
+        script.src = `./libs/${name}.js`
+        script.type = "text/javascript"
+
+        script.onload = () => {
+            console.info(`-> Imported script: ${name}.js`)
+            res();
+        }
+        script.onerror = () => { rej() }
+        
+        document.head.appendChild(script)
+    })
+}
+    
+</script>
+</body></html>
