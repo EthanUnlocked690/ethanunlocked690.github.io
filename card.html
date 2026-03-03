@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Flashcards: Green & Gold Edition</title>
+    <style>
+        :root {
+            --gold: #FFD700;
+            --forest-green: #006400;
+            --light-green: #e8f5e9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-green);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: var(--forest-green);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        #game-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            border: 5px solid var(--gold);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 350px;
+        }
+
+        #card {
+            font-size: 80px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: transform 0.3s;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #card:hover {
+            transform: scale(1.05);
+        }
+
+        input {
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid var(--forest-green);
+            border-radius: 8px;
+            width: 80%;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        button {
+            background-color: var(--forest-green);
+            color: var(--gold);
+            border: none;
+            padding: 10px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #004d00;
+            transform: translateY(-2px);
+        }
+
+        #feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            height: 20px;
+        }
+
+        #score-board {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>日本語 Flashcards</h1>
+
+    <div id-="game-container">
+        <div id="card">...</div>
+        
+        <input type="text" id="answer-input" placeholder="Type Romaji here..." autocomplete="off">
+        <br>
+        <button onclick="checkAnswer()">Check</button>
+
+        <div id="feedback"></div>
+
+        <div id="score-board">
+            Score: <span id="score">0</span> | Cards Left: <span id="left">0</span>
+        </div>
+    </div>
+
+    <script>
+        // You can add more words to this list!
+        const words = [
+            { jp: "こんにちは", ro: "konnichiwa" },
+            { jp: "ねこ", ro: "neko" },
+            { jp: "いぬ", ro: "inu" },
+            { jp: "ありがとう", ro: "arigatou" },
+            { jp: "みず", ro: "mizu" },
+            { jp: "すし", ro: "sushi" },
+            { jp: "せんせい", ro: "sensei" },
+            { jp: "さようなら", ro: "sayounara" }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+
+        const cardDisplay = document.getElementById('card');
+        const inputField = document.getElementById('answer-input');
+        const feedback = document.getElementById('feedback');
+        const scoreDisplay = document.getElementById('score');
+        const leftDisplay = document.getElementById('left');
+
+        function shuffle(array) {
+            array.sort(() => Math.random() - 0.5);
+        }
+
+        function nextCard() {
+            if (currentIndex < words.length) {
+                cardDisplay.innerText = words[currentIndex].jp;
+                inputField.value = "";
+                feedback.innerText = "";
+                leftDisplay.innerText = words.length - currentIndex;
+            } else {
+                cardDisplay.innerText = "🎉";
+                cardDisplay.style.fontSize = "40px";
+                cardDisplay.innerText = "Otsukaresama! (Done!)";
+                inputField.style.display = "none";
+                feedback.innerText = "Game Over!";
+            }
+        }
+
+        function checkAnswer() {
+            const userGuess = inputField.value.toLowerCase().trim();
+            const correctAnswer = words[currentIndex].ro;
+
+            if (userGuess === correctAnswer) {
+                score++;
+                feedback.style.color = "green";
+                feedback.innerText = "Correct! ✨";
+                currentIndex++;
+                scoreDisplay.innerText = score;
+                setTimeout(nextCard, 1000);
+            } else {
+                feedback.style.color = "red";
+                feedback.innerText = "Try again!";
+                inputField.value = "";
+            }
+        }
+
+        // Allow pressing "Enter" to submit
+        inputField.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                checkAnswer();
+            }
+        });
+
+        // Initialize game
+        shuffle(words);
+        nextCard();
+    </script>
+</body>
+</html>
