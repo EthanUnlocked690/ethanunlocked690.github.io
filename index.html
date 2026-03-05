@@ -355,7 +355,81 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
 });
 </script>
     <h1 style="background-color:#ffa500;">URL's</h1>
-<a style="display:block; color:white; background-color:#ffa500; margin:5px; padding:10px;" href="https://www.youtube.com/@EthanUnlocked-the-GOAT">Subscribe (Main)</a>
+<style>
+  /* Moves the Rainbow Background to the right */
+  @keyframes rainbowFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  /* Moves the Text to the left like a billboard */
+  @keyframes billboardScrollYT {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+  }
+
+  .yt-billboard-box {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    padding: 0;
+    background-color: #ffa500; /* Orange Box */
+    border-radius: 5px;
+    text-decoration: none;
+    overflow: hidden;
+    height: 45px;
+    position: relative;
+    filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.4));
+  }
+
+  /* The Barrier - Keeps the icon static and hides text behind it */
+  .yt-barrier {
+    background-color: #ffa500; 
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    z-index: 10;
+    position: relative;
+    /* This shadow blends the barrier into the moving text area */
+    box-shadow: 5px 0 10px #ffa500;
+  }
+
+  .yt-scroll-wrapper {
+    white-space: nowrap;
+    overflow: hidden;
+    flex-grow: 1;
+    display: flex;
+  }
+
+  .yt-scrolling-text {
+    display: inline-block;
+    font-weight: bold;
+    font-family: sans-serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    /* Rainbow effect */
+    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Combined animations */
+    animation: rainbowFlow 2s linear infinite, billboardScrollYT 12s linear infinite;
+    padding-left: 100%;
+  }
+</style>
+
+<a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="yt-billboard-box">
+  <div class="yt-barrier">
+    <img src="youtube.png" style="width:25px; height:25px;" alt="YouTube">
+  </div>
+
+  <div class="yt-scroll-wrapper">
+    <div class="yt-scrolling-text">
+      SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED!
+    </div>
+  </div>
+</a>
 <style>
   /* This makes the Rainbow move to the right */
   @keyframes rainbowFlow {
@@ -403,49 +477,106 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! 
   </div>
 </a>
-    <style>
+<style>
   @keyframes rainbowGlow {
     0% { background-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
-    20% { background-color: #ff8000; box-shadow: 0 0 15px #ff8000; }
-    40% { background-color: #ffff00; box-shadow: 0 0 10px #ffff00; }
-    60% { background-color: #00ff00; box-shadow: 0 0 15px #00ff00; }
-    80% { background-color: #00ffff; box-shadow: 0 0 10px #00ffff; }
     100% { background-color: #ff00ff; box-shadow: 0 0 15px #ff00ff; }
   }
-  .rainbow-btn {
-    display: inline-block;
-    color: white !important;
-    margin: 5px;
-    padding: 10px;
-    text-decoration: none;
-    font-weight: bold;
-    border-radius: 5px;
-    animation: rainbowGlow 3s infinite alternate;
-    cursor: pointer;
-    border: none;
+  .bug-form-container {
+    display: none; 
+    position: absolute; top: 50px; left: 0; 
+    background: #1a1a1a; color: white; border: 1px solid #fff; 
+    border-radius: 8px; padding: 15px; z-index: 100; min-width: 300px;
+    font-family: sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
   }
+  .bug-form-container label { font-size: 12px; font-weight: bold; color: #ffa500; }
+  .bug-form-container input, .bug-form-container textarea, .bug-form-container select {
+    width: 100%; margin: 8px 0; border-radius: 4px; border: 1px solid #444; background: #222; color: white; padding: 8px; box-sizing: border-box;
+  }
+  .provider-list { display: none; margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; }
+  .provider-btn {
+    display: flex; align-items: center; color: white; text-decoration: none; 
+    padding: 10px; border-bottom: 1px solid #333; font-size: 14px; cursor: pointer;
+  }
+  .provider-btn img { width: 20px; height: 20px; margin-right: 12px; }
 </style>
 
-<div style="display:inline-block; font-family:sans-serif; position:relative;">
-  <span style="color:white; font-weight:bold;">Any Bugs? </span>
-  
-  <button class="rainbow-btn" onclick="document.getElementById('mail-menu').style.display='block'">
+<div style="display:inline-block; position:relative;">
+  <span style="color:white; font-weight:bold; font-family:sans-serif;">Any Bugs? </span>
+  <button onclick="document.getElementById('bug-report-window').style.display='block'" 
+     style="cursor:pointer; padding:10px; border-radius:5px; border:none; color:white; font-weight:bold; animation: rainbowGlow 3s infinite alternate;">
      Report Here!
   </button>
 
-  <div id="mail-menu" style="display:none; position:absolute; top:50px; left:0; background:#1a1a1a; border:1px solid #fff; border-radius:8px; padding:10px; z-index:100; min-width:200px; box-shadow: 0 4px 20px rgba(0,0,0,0.8);">
-    
-    <a target="_blank" href="https://mail.google.com/mail/?view=cm&fs=1&to=ethan.unlocked@gmail.com,ethan.ioannou@icloud.com&su=Bug%20Report" style="display:block; color:white; text-decoration:none; padding:10px; border-bottom:1px solid #333;">Gmail</a>
-    
-    <a target="_blank" href="https://outlook.live.com/owa/?path=/mail/action/compose&to=ethan.unlocked@gmail.com&subject=Bug%20Report" style="display:block; color:white; text-decoration:none; padding:10px; border-bottom:1px solid #333;">Outlook / Hotmail</a>
-    
-    <a target="_blank" href="https://compose.mail.yahoo.com/?to=ethan.unlocked@gmail.com&subject=Bug%20Report" style="display:block; color:white; text-decoration:none; padding:10px; border-bottom:1px solid #333;">Yahoo!</a>
-    
-    <a href="mailto:ethan.unlocked@gmail.com,ethan.ioannou@icloud.com?subject=Bug%20Report" style="display:block; color:white; text-decoration:none; padding:10px;">Default Mail App</a>
+  <div id="bug-report-window" class="bug-form-container">
+    <div id="form-step">
+      <label>Name</label>
+      <input type="text" id="bug-name" placeholder="Enter your name">
+      
+      <label>Explain the bug</label>
+      <textarea id="bug-desc" rows="3" placeholder="What happened?"></textarea>
+      
+      <label>How you COULD fix it:</label>
+      <textarea id="bug-fix" rows="2" placeholder="Your suggestion..."></textarea>
+      
+      <label>Issue Scale</label>
+      <select id="bug-size">
+        <option value="🟢 Minor (Green Level)">Minor (Green)</option>
+        <option value="🟡 Moderate (Yellow Level)">Moderate (Yellow)</option>
+        <option value="🔴 MAJOR (Red Level)">Major (Red)</option>
+      </select>
+      
+      <button onclick="showProviders()" style="width:100%; background:#ffa500; color:black; font-weight:bold; border:none; padding:10px; margin-top:5px; cursor:pointer; border-radius:4px;">Next: Choose Provider</button>
+    </div>
 
-    <button onclick="this.parentElement.style.display='none'" style="width:100%; background:#cc0000; color:white; border:none; margin-top:8px; cursor:pointer; font-weight:bold; padding:5px; border-radius:3px;">Close</button>
+    <div id="provider-step" class="provider-list">
+      <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Select your email to send:</p>
+      <a class="provider-btn" onclick="openMail('gmail')"><img src="gmail.png"> Gmail</a>
+      <a class="provider-btn" onclick="openMail('outlook')"><img src="outlook.png"> Outlook</a>
+      <a class="provider-btn" onclick="openMail('yahoo')"><img src="yahoo.png"> Yahoo!</a>
+      <a class="provider-btn" onclick="openMail('hotmail')"><img src="hotmail.png"> Hotmail</a>
+    </div>
+    
+    <button onclick="document.getElementById('bug-report-window').style.display='none'" style="width:100%; background:#cc0000; color:white; border:none; margin-top:10px; cursor:pointer; padding:5px; border-radius:3px; font-size:11px;">Close</button>
   </div>
 </div>
+
+<script>
+  function showProviders() {
+    document.getElementById('form-step').style.display = 'none';
+    document.getElementById('provider-step').style.display = 'block';
+  }
+
+  function openMail(service) {
+    const name = document.getElementById('bug-name').value;
+    const desc = document.getElementById('bug-desc').value;
+    const fix = document.getElementById('bug-fix').value;
+    const size = document.getElementById('bug-size').value;
+    const target = "ethan.unlocked@gmail.com"; // Primary recipient
+    
+    // Formatting the exact text body you requested
+    const bodyText = `My name is ${name} and I am reporting a bug!%0D%0A%0D%0A` +
+                     `The issue is: ${desc}%0D%0A%0D%0A` +
+                     `How you COULD fix it: ${fix}%0D%0A%0D%0A` +
+                     `Issue Scale: ${size}%0D%0A%0D%0A` +
+                     `Thanks!`;
+    
+    const subject = encodeURIComponent("Bug Report: " + size);
+    const body = encodeURIComponent(bodyText).replace(/%250D%250A/g, '%0D%0A'); // Ensure line breaks work
+    
+    let url = "";
+    if(service === 'gmail') {
+      url = `https://mail.google.com/mail/?view=cm&fs=1&to=${target}&su=${subject}&body=${bodyText}`;
+    } else if(service === 'yahoo') {
+      url = `https://compose.mail.yahoo.com/?to=${target}&subject=${subject}&body=${bodyText}`;
+    } else {
+      // Outlook and Hotmail use the same portal
+      url = `https://outlook.live.com/owa/?path=/mail/action/compose&to=${target}&subject=${subject}&body=${bodyText}`;
+    }
+    
+    window.open(url, '_blank');
+  }
+</script>
 
 <h2 style="color:red;">My latest video</h2>
 <h2 style="color:dodgerblue;">What 1K looks like in the new update:</h2>
