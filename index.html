@@ -356,120 +356,36 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
 </script>
     <h1 style="background-color:#ffa500;">URL's</h1>
 <style>
-  /* Shared Rainbow Animation */
-  @keyframes rainbowFlow {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-  }
+  @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+  @keyframes billboardScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
-  /* Movement Animations */
-  @keyframes billboardScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
+  .billboard-box { display: flex; align-items: center; margin: 5px; border-radius: 5px; text-decoration: none; overflow: hidden; height: 45px; position: relative; }
+  .barrier { height: 100%; display: flex; align-items: center; padding: 0 15px; z-index: 10; position: relative; }
+  .scroll-wrapper { white-space: nowrap; overflow: hidden; display: flex; flex-grow: 1; }
+  .scroll-content { display: inline-block; white-space: nowrap; }
+  .scrolling-text { display: inline-block; font-weight: bold; font-family: sans-serif; font-size: 14px; text-transform: uppercase; background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding-right: 50px; }
 
-  /* YOUTUBE BILLBOARD (ORANGE) */
-  .yt-billboard-box {
-    display: flex;
-    align-items: center;
-    margin: 5px;
-    padding: 0;
-    background-color: #ffa500;
-    border-radius: 5px;
-    text-decoration: none;
-    overflow: hidden;
-    height: 45px;
-    position: relative;
-    filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.4));
-  }
-  .yt-barrier {
-    background-color: #ffa500; 
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    z-index: 10;
-    position: relative;
-    box-shadow: 5px 0 10px #ffa500;
-  }
-  .yt-scroll-wrapper {
-    white-space: nowrap;
-    overflow: hidden;
-    flex-grow: 1;
-  }
-  .yt-scrolling-text {
-    display: inline-block;
-    font-weight: bold;
-    font-family: sans-serif;
-    font-size: 14px;
-    text-transform: uppercase;
-    background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    /* Slower speed (25s) and no blank start */
-    animation: rainbowFlow 2s linear infinite, billboardScroll 25s linear infinite;
-    padding-left: 0; 
-  }
+  .yt-box { background-color: #ffa500; }
+  .yt-barrier { background-color: #ffa500; box-shadow: 5px 0 10px #ffa500; }
+  .yt-text { background-image: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); animation: rainbowFlow 2s linear infinite, billboardScroll 30s linear infinite; }
 
-  /* DISCORD BILLBOARD (DARK BLUE) */
-  .billboard-container {
-    display: flex;
-    align-items: center;
-    margin: 5px;
-    padding: 0;
-    background-color: #00008B;
-    border-radius: 5px;
-    text-decoration: none;
-    overflow: hidden;
-    height: 45px;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
-  }
-  .discord-barrier {
-    background-color: #00008B;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    z-index: 10;
-    position: relative;
-    box-shadow: 5px 0 10px #00008B;
-  }
-  .scrolling-text {
-    display: inline-block;
-    font-weight: bold;
-    font-family: sans-serif;
-    text-transform: uppercase;
-    background: linear-gradient(to right, #ff2400, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3, #ff2400);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    /* Normal speed (15s) and no blank start */
-    animation: rainbowFlow 2s linear infinite, billboardScroll 15s linear infinite;
-    padding-left: 0;
-  }
+  .ds-box { background-color: #00008B; }
+  .ds-barrier { background-color: #00008B; box-shadow: 5px 0 10px #00008B; }
+  .ds-text { background-image: linear-gradient(to right, #ff2400, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3, #ff2400); animation: rainbowFlow 2s linear infinite, billboardScroll 15s linear infinite; }
 </style>
 
-<a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="yt-billboard-box">
-  <div class="yt-barrier">
-    <img src="youtube.png" style="width:25px; height:25px;" alt="YouTube">
-  </div>
-  <div class="yt-scroll-wrapper">
-    <div class="yt-scrolling-text">
-      SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED!
-    </div>
-  </div>
+<a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="billboard-box yt-box">
+  <div class="barrier yt-barrier"><img src="youtube.png" style="width:25px; height:25px;"></div>
+  <div class="scroll-wrapper"><div class="scroll-content yt-text">
+      <span class="scrolling-text">SUBSCRIBE TO ETHAN UNLOCKED!</span><span class="scrolling-text">SUBSCRIBE TO ETHAN UNLOCKED!</span>
+  </div></div>
 </a>
 
-<a href="https://discord.gg/h9v9AJP2" class="billboard-container">
-  <div class="discord-barrier">
-    <img src="discord-barrier.png" style="width:25px; height:25px;" alt="Discord">
-  </div>
-  <div class="yt-scroll-wrapper">
-    <div class="scrolling-text">
-      JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD!
-    </div>
-  </div>
+<a href="https://discord.gg/h9v9AJP2" class="billboard-box ds-box">
+  <div class="barrier ds-barrier"><img src="discord-barrier.png" style="width:25px; height:25px;"></div>
+  <div class="scroll-wrapper"><div class="scroll-content ds-text">
+      <span class="scrolling-text">JOIN OUR DISCORD!</span><span class="scrolling-text">JOIN OUR DISCORD!</span>
+  </div></div>
 </a>
 <style>
   @keyframes rainbowGlow {
@@ -486,17 +402,16 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
   .bug-window input, .bug-window textarea {
     width: 100%; margin: 5px 0 12px 0; border-radius: 4px; border: 1px solid #444; background: #222; color: white; padding: 8px; box-sizing: border-box;
   }
-  
-  /* The Scale UI */
   .scale-container { position: relative; width: 100%; height: 30px; margin: 20px 0; cursor: crosshair; border-radius: 3px; background: linear-gradient(to right, #00ff00, #ffff00, #ff0000); }
   #triangle-pointer {
     position: absolute; top: -15px; left: 0; width: 0; height: 0;
     border-left: 8px solid transparent; border-right: 8px solid transparent;
     border-top: 12px solid #fff; transform: translateX(-50%); display: none; pointer-events: none;
   }
-
-  .provider-btn { display: flex; align-items: center; color: white; text-decoration: none; padding: 10px; border-bottom: 1px solid #333; cursor: pointer; }
+  .provider-btn { display: flex; align-items: center; color: white; text-decoration: none; padding: 10px; border-bottom: 1px solid #333; cursor: pointer; font-size: 14px; }
   .provider-btn img { width: 20px; height: 20px; margin-right: 12px; }
+  .copy-section { background: #222; padding: 8px; border-radius: 5px; margin-bottom: 8px; border: 1px solid #444; }
+  .copy-btn { width: 100%; background: #444; color: white; border: none; padding: 6px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 5px; font-size: 12px; }
   .hidden { display: none; }
   .modal-btn { width: 48%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; }
 </style>
@@ -514,13 +429,13 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
       <label>Explain the bug</label><textarea id="bug-desc" rows="2"></textarea>
       <label>How you COULD fix it:</label><textarea id="bug-fix" rows="2"></textarea>
       <label>Issue Scale (Hover & Click)</label>
-      <div class="scale-container" id="bug-scale" onmousemove="moveTriangle(event)" onmouseenter="showTriangle()" onmouseleave="hideTriangle()" onclick="selectScale(event)">
+      <div class="scale-container" onmousemove="moveTriangle(event)" onmouseenter="showTriangle()" onmouseleave="hideTriangle()" onclick="selectScale(event)">
         <div id="triangle-pointer"></div>
       </div>
     </div>
 
     <div id="step-confirm" class="hidden" style="text-align:center;">
-      <p id="confirm-msg"></p>
+      <p id="confirm-msg" style="font-weight:bold;"></p>
       <div style="display:flex; justify-content:space-between;">
         <button class="modal-btn" style="background:#444; color:white;" onclick="resetStep()">No</button>
         <button class="modal-btn" style="background:#00ff00; color:black;" id="confirm-yes-btn">Yes</button>
@@ -528,25 +443,35 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     </div>
 
     <div id="step-providers" class="hidden">
-      <p style="color:#00ff00; font-weight:bold; font-size:14px;">Report Successful!</p>
-      <p style="font-size:12px; color:#aaa;">Now, choose a provider to send:</p>
+      <p style="color:#00ff00; font-weight:bold; font-size:14px; margin-bottom:10px;">Report Successful!</p>
       <a class="provider-btn" onclick="openMail('gmail')"><img src="gmail.png"> Gmail</a>
       <a class="provider-btn" onclick="openMail('outlook')"><img src="outlook.png"> Outlook</a>
       <a class="provider-btn" onclick="openMail('yahoo')"><img src="yahoo.png"> Yahoo!</a>
+      <div style="margin-top:15px; text-align:center; font-size:12px;">
+        If none of these work, <a href="#" onclick="showCopyDashboard()" style="color:#ffa500; font-weight:bold;">CLICK HERE!</a>
+      </div>
     </div>
 
-    <button onclick="closeBugWindow()" style="width:100%; background:#cc0000; color:white; border:none; margin-top:15px; cursor:pointer; padding:5px; border-radius:3px; font-size:11px;">Close</button>
+    <div id="step-copy" class="hidden">
+      <div class="copy-section"><label>Recipient:</label><button class="copy-btn" onclick="copyText('ethan.unlocked@gmail.com')">Copy Email Address</button></div>
+      <div class="copy-section"><label>Subject:</label><button class="copy-btn" id="copy-subject-btn">Copy Subject</button></div>
+      <div class="copy-section"><label>Message Content:</label><button class="copy-btn" id="copy-body-btn">Copy Full Report Body</button></div>
+      <button onclick="backToProviders()" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:10px; text-decoration:underline; width:100%;">Go Back</button>
+    </div>
+
+    <button onclick="closeBugWindow()" style="width:100%; background:#cc0000; color:white; border:none; margin-top:15px; cursor:pointer; padding:5px; border-radius:3px; font-size:11px;">Close Window</button>
   </div>
 </div>
 
 <script>
   let selectedSeverity = "";
+  let finalBody = "";
+  let finalSubject = "";
   const pointer = document.getElementById('triangle-pointer');
 
   function moveTriangle(e) {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    pointer.style.left = x + "px";
+    pointer.style.left = (e.clientX - rect.left) + "px";
   }
   function showTriangle() { pointer.style.display = 'block'; }
   function hideTriangle() { pointer.style.display = 'none'; }
@@ -554,10 +479,9 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
   function selectScale(e) {
     const rect = e.currentTarget.getBoundingClientRect();
     const percent = ((e.clientX - rect.left) / rect.width) * 100;
-    
-    if(percent < 33) selectedSeverity = "🟢 Minor";
-    else if(percent < 66) selectedSeverity = "🟡 Moderate";
-    else selectedSeverity = "🔴 MAJOR";
+    if(percent < 33) selectedSeverity = "🟢 Minor (Green)";
+    else if(percent < 66) selectedSeverity = "🟡 Moderate (Yellow)";
+    else selectedSeverity = "🔴 MAJOR (Red)";
 
     document.getElementById('step-details').classList.add('hidden');
     document.getElementById('step-confirm').classList.remove('hidden');
@@ -565,37 +489,37 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     
     document.getElementById('confirm-yes-btn').onclick = function() {
       if(confirm("Are you sure?")) {
+        prepareData();
         document.getElementById('step-confirm').classList.add('hidden');
         document.getElementById('step-providers').classList.remove('hidden');
       }
     };
   }
 
-  function resetStep() {
-    document.getElementById('step-confirm').classList.add('hidden');
-    document.getElementById('step-details').classList.remove('hidden');
-  }
-
-  function closeBugWindow() {
-    document.getElementById('bug-report-window').style.display = 'none';
-    resetStep();
-    document.getElementById('step-providers').classList.add('hidden');
-  }
-
-  function openMail(service) {
+  function prepareData() {
     const name = document.getElementById('bug-name').value;
     const desc = document.getElementById('bug-desc').value;
     const fix = document.getElementById('bug-fix').value;
+    finalSubject = `Bug Report: ${selectedSeverity}`;
+    finalBody = `My name is ${name} and I am reporting a bug!\n\nThe issue is: ${desc}\n\nHow you COULD fix it: ${fix}\n\nIssue Scale: ${selectedSeverity}\n\nThanks!`;
+    document.getElementById('copy-subject-btn').onclick = () => copyText(finalSubject);
+    document.getElementById('copy-body-btn').onclick = () => copyText(finalBody);
+  }
+
+  function showCopyDashboard() { document.getElementById('step-providers').classList.add('hidden'); document.getElementById('step-copy').classList.remove('hidden'); }
+  function backToProviders() { document.getElementById('step-copy').classList.add('hidden'); document.getElementById('step-providers').classList.remove('hidden'); }
+  function copyText(text) { navigator.clipboard.writeText(text); alert("Copied!"); }
+  function resetStep() { document.getElementById('step-confirm').classList.add('hidden'); document.getElementById('step-details').classList.remove('hidden'); }
+  function closeBugWindow() { document.getElementById('bug-report-window').style.display = 'none'; resetStep(); document.getElementById('step-providers').classList.add('hidden'); document.getElementById('step-copy').classList.add('hidden'); }
+
+  function openMail(service) {
     const target = "ethan.unlocked@gmail.com";
-    
-    const bodyText = `My name is ${name} and I am reporting a bug!%0D%0A%0D%0AThe issue is: ${desc}%0D%0A%0D%0AHow you COULD fix it: ${fix}%0D%0A%0D%0AIssue Scale: ${selectedSeverity}%0D%0A%0D%0AThanks!`;
-    const subject = encodeURIComponent("Bug Report: " + selectedSeverity);
-    
+    const bodyEnc = encodeURIComponent(finalBody).replace(/%0A/g, '%0D%0A');
+    const subEnc = encodeURIComponent(finalSubject);
     let url = "";
-    if(service === 'gmail') url = `https://mail.google.com/mail/?view=cm&fs=1&to=${target}&su=${subject}&body=${bodyText}`;
-    else if(service === 'yahoo') url = `https://compose.mail.yahoo.com/?to=${target}&subject=${subject}&body=${bodyText}`;
-    else url = `https://outlook.live.com/owa/?path=/mail/action/compose&to=${target}&subject=${subject}&body=${bodyText}`;
-    
+    if(service === 'gmail') url = `https://mail.google.com/mail/?view=cm&fs=1&to=${target}&su=${subEnc}&body=${bodyEnc}`;
+    else if(service === 'yahoo') url = `https://compose.mail.yahoo.com/?to=${target}&subject=${subEnc}&body=${bodyEnc}`;
+    else url = `https://outlook.live.com/owa/?path=/mail/action/compose&to=${target}&subject=${subEnc}&body=${bodyEnc}`;
     window.open(url, '_blank');
   }
 </script>
