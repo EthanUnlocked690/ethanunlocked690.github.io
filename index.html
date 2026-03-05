@@ -356,24 +356,25 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
 </script>
     <h1 style="background-color:#ffa500;">URL's</h1>
 <style>
-  /* Moves the Rainbow Background to the right */
+  /* Shared Rainbow Animation */
   @keyframes rainbowFlow {
     0% { background-position: 0% 50%; }
     100% { background-position: 200% 50%; }
   }
 
-  /* Moves the Text to the left like a billboard */
-  @keyframes billboardScrollYT {
+  /* Movement Animations */
+  @keyframes billboardScroll {
     0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
+    100% { transform: translateX(-50%); }
   }
 
+  /* YOUTUBE BILLBOARD (ORANGE) */
   .yt-billboard-box {
     display: flex;
     align-items: center;
     margin: 5px;
     padding: 0;
-    background-color: #ffa500; /* Orange Box */
+    background-color: #ffa500;
     border-radius: 5px;
     text-decoration: none;
     overflow: hidden;
@@ -381,8 +382,6 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     position: relative;
     filter: drop-shadow(0 0 8px rgba(255, 165, 0, 0.4));
   }
-
-  /* The Barrier - Keeps the icon static and hides text behind it */
   .yt-barrier {
     background-color: #ffa500; 
     height: 100%;
@@ -391,31 +390,63 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     padding: 0 15px;
     z-index: 10;
     position: relative;
-    /* This shadow blends the barrier into the moving text area */
     box-shadow: 5px 0 10px #ffa500;
   }
-
   .yt-scroll-wrapper {
     white-space: nowrap;
     overflow: hidden;
     flex-grow: 1;
-    display: flex;
   }
-
   .yt-scrolling-text {
     display: inline-block;
     font-weight: bold;
     font-family: sans-serif;
     font-size: 14px;
     text-transform: uppercase;
-    /* Rainbow effect */
     background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    /* Combined animations */
-    animation: rainbowFlow 2s linear infinite, billboardScrollYT 12s linear infinite;
-    padding-left: 100%;
+    /* Slower speed (25s) and no blank start */
+    animation: rainbowFlow 2s linear infinite, billboardScroll 25s linear infinite;
+    padding-left: 0; 
+  }
+
+  /* DISCORD BILLBOARD (DARK BLUE) */
+  .billboard-container {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    padding: 0;
+    background-color: #00008B;
+    border-radius: 5px;
+    text-decoration: none;
+    overflow: hidden;
+    height: 45px;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
+  }
+  .discord-barrier {
+    background-color: #00008B;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    z-index: 10;
+    position: relative;
+    box-shadow: 5px 0 10px #00008B;
+  }
+  .scrolling-text {
+    display: inline-block;
+    font-weight: bold;
+    font-family: sans-serif;
+    text-transform: uppercase;
+    background: linear-gradient(to right, #ff2400, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3, #ff2400);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Normal speed (15s) and no blank start */
+    animation: rainbowFlow 2s linear infinite, billboardScroll 15s linear infinite;
+    padding-left: 0;
   }
 </style>
 
@@ -423,58 +454,21 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
   <div class="yt-barrier">
     <img src="youtube.png" style="width:25px; height:25px;" alt="YouTube">
   </div>
-
   <div class="yt-scroll-wrapper">
     <div class="yt-scrolling-text">
-      SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED!
+      SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED!
     </div>
   </div>
 </a>
-<style>
-  /* This makes the Rainbow move to the right */
-  @keyframes rainbowFlow {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-  }
-
-  /* This makes the Text scroll to the left like a billboard */
-  @keyframes billboardScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  .billboard-container {
-    display: flex;
-    align-items: center;
-    margin: 5px;
-    padding: 10px;
-    background-color: #00008B; /* Dark Blue Box */
-    border-radius: 5px;
-    text-decoration: none;
-    overflow: hidden; /* Hides the text as it scrolls out of the box */
-    white-space: nowrap;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
-  }
-
-  .scrolling-text {
-    display: inline-block;
-    font-weight: bold;
-    font-family: sans-serif;
-    text-transform: uppercase;
-    /* The moving Rainbow effect */
-    background: linear-gradient(to right, #ff2400, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3, #ff2400);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: rainbowFlow 2s linear infinite, billboardScroll 10s linear infinite;
-    padding-left: 20px;
-  }
-</style>
 
 <a href="https://discord.gg/h9v9AJP2" class="billboard-container">
-  <img src="discord-barrier.png" style="width:25px; height:25px; margin-right:15px; z-index: 2; background: #00008B;">
-  <div class="scrolling-text">
-    JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD!
+  <div class="discord-barrier">
+    <img src="discord-barrier.png" style="width:25px; height:25px;" alt="Discord">
+  </div>
+  <div class="yt-scroll-wrapper">
+    <div class="scrolling-text">
+      JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD! JOIN OUR DISCORD!
+    </div>
   </div>
 </a>
 <style>
