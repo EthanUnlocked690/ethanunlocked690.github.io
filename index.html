@@ -452,6 +452,37 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     </div>
   </div>
 </a>
+<style>
+  @keyframes rainbowGlow {
+    0% { background-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+    100% { background-color: #ff00ff; box-shadow: 0 0 15px #ff00ff; }
+  }
+  .bug-window {
+    display: none; position: absolute; top: 50px; left: 0; 
+    background: #1a1a1a; color: white; border: 1px solid #fff; 
+    border-radius: 8px; padding: 15px; z-index: 100; width: 320px;
+    font-family: sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  }
+  .bug-window label { 
+    display: block; font-size: 11px; font-weight: bold; color: #ffa500; 
+    margin-top: 12px; text-transform: uppercase; 
+  }
+  .bug-window input, .bug-window textarea {
+    display: block; width: 100%; margin-top: 5px; border-radius: 4px; 
+    border: 1px solid #444; background: #222; color: white; padding: 8px; box-sizing: border-box; 
+  }
+  .scale-container { position: relative; width: 100%; height: 30px; margin: 15px 0; cursor: crosshair; border-radius: 3px; background: linear-gradient(to right, #00ff00, #ffff00, #ff0000); }
+  #triangle-pointer {
+    position: absolute; top: -15px; left: 0; width: 0; height: 0;
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-top: 12px solid #fff; transform: translateX(-50%); display: none; pointer-events: none;
+  }
+  .provider-btn { display: flex; align-items: center; color: white; text-decoration: none; padding: 10px; border-bottom: 1px solid #333; cursor: pointer; font-size: 14px; }
+  .provider-btn img { width: 20px; height: 20px; margin-right: 12px; }
+  .hidden { display: none; }
+  .modal-btn { width: 48%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; }
+</style>
+
 <div style="display:inline-block; position:relative;">
   <span style="color:white; font-weight:bold; font-family:sans-serif;">Any Bugs? </span>
   <button onclick="document.getElementById('bug-report-window').style.display='block'" 
@@ -461,9 +492,12 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
 
   <div id="bug-report-window" class="bug-window">
     <div id="step-details">
-      <label>Name</label><input type="text" id="bug-name">
-      <label>Explain the bug</label><textarea id="bug-desc" rows="2"></textarea>
-      <label>How I COULD fix it:</label><textarea id="bug-fix" rows="2"></textarea>
+      <label>Name</label>
+      <input type="text" id="bug-name" placeholder="Your Name">
+      <label>Explain the bug</label>
+      <textarea id="bug-desc" rows="2" placeholder="What happened?"></textarea>
+      <label>How I could fix it:</label>
+      <textarea id="bug-fix" rows="2" placeholder='Suggestion or "Unknown"'></textarea>
       <label>Issue Scale (Hover & Click)</label>
       <div class="scale-container" onmousemove="moveTriangle(event)" onmouseenter="showTriangle()" onmouseleave="hideTriangle()" onclick="selectScale(event)">
         <div id="triangle-pointer"></div>
@@ -471,7 +505,7 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     </div>
 
     <div id="step-confirm" class="hidden" style="text-align:center;">
-      <p id="confirm-msg" style="font-weight:bold;"></p>
+      <p id="confirm-msg" style="font-weight:bold; margin-top:10px;"></p>
       <div style="display:flex; justify-content:space-between;">
         <button class="modal-btn" style="background:#444; color:white;" onclick="resetStep()">No</button>
         <button class="modal-btn" style="background:#00ff00; color:black;" id="confirm-yes-btn">Yes</button>
@@ -484,14 +518,19 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
       <a class="provider-btn" onclick="openMail('outlook')"><img src="outlook.png"> Outlook</a>
       <a class="provider-btn" onclick="openMail('yahoo')"><img src="yahoo.png"> Yahoo!</a>
       <div style="margin-top:15px; text-align:center; font-size:12px;">
-        If none of these work, <a href="#" onclick="showCopyDashboard()" style="color:#ffa500; font-weight:bold;">CLICK HERE!</a>
+        If none work, <a href="#" onclick="showCopyDashboard()" style="color:#ffa500; font-weight:bold;">CLICK HERE!</a>
       </div>
     </div>
 
     <div id="step-copy" class="hidden">
-      <div class="copy-section"><label>Recipient:</label><button class="copy-btn" onclick="copyText('ethan.unlocked@gmail.com')">Copy Email Address</button></div>
-      <div class="copy-section"><label>Subject:</label><button class="copy-btn" id="copy-subject-btn">Copy Subject</button></div>
-      <div class="copy-section"><label>Message Content:</label><button class="copy-btn" id="copy-body-btn">Copy Full Report Body</button></div>
+      <div style="background:#222; padding:8px; border-radius:5px; margin-bottom:8px; border:1px solid #444;">
+        <label style="margin-top:0;">Subject:</label>
+        <button onclick="copyText(finalSubject)" style="width:100%; padding:5px; margin-top:5px; cursor:pointer;">Copy Subject</button>
+      </div>
+      <div style="background:#222; padding:8px; border-radius:5px; margin-bottom:8px; border:1px solid #444;">
+        <label style="margin-top:0;">Message:</label>
+        <button onclick="copyText(finalBody)" style="width:100%; padding:5px; margin-top:5px; cursor:pointer;">Copy Body</button>
+      </div>
       <button onclick="backToProviders()" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:10px; text-decoration:underline; width:100%;">Go Back</button>
     </div>
 
@@ -515,9 +554,9 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
   function selectScale(e) {
     const rect = e.currentTarget.getBoundingClientRect();
     const percent = ((e.clientX - rect.left) / rect.width) * 100;
-    if(percent < 33) selectedSeverity = "🟢 Minor (Green)";
-    else if(percent < 66) selectedSeverity = "🟡 Moderate (Yellow)";
-    else selectedSeverity = "🔴 MAJOR (Red)";
+    if(percent < 33) selectedSeverity = "🟢 Minor";
+    else if(percent < 66) selectedSeverity = "🟡 Moderate";
+    else selectedSeverity = "🔴 MAJOR";
 
     document.getElementById('step-details').classList.add('hidden');
     document.getElementById('step-confirm').classList.remove('hidden');
@@ -535,11 +574,11 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
   function prepareData() {
     const name = document.getElementById('bug-name').value;
     const desc = document.getElementById('bug-desc').value;
-    const fix = document.getElementById('bug-fix').value;
+    let fix = document.getElementById('bug-fix').value.trim();
+    if(!fix) fix = "Unknown";
+    
     finalSubject = `Bug Report: ${selectedSeverity}`;
-    finalBody = `My name is ${name} and I am reporting a bug!\n\nThe issue is: ${desc}\n\nHow you COULD fix it: ${fix}\n\nIssue Scale: ${selectedSeverity}\n\nThanks!`;
-    document.getElementById('copy-subject-btn').onclick = () => copyText(finalSubject);
-    document.getElementById('copy-body-btn').onclick = () => copyText(finalBody);
+    finalBody = `My name is ${name} and I am reporting a bug!\n\nThe issue is: ${desc}\n\nHow I could fix it: ${fix}\n\nIssue Scale: ${selectedSeverity}\n\nThanks!`;
   }
 
   function showCopyDashboard() { document.getElementById('step-providers').classList.add('hidden'); document.getElementById('step-copy').classList.remove('hidden'); }
