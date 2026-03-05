@@ -356,66 +356,102 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
 </script>
     <h1 style="background-color:#ffa500;">URL's</h1>
 <style>
-  @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-  @keyframes billboardScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  /* Rainbow movement */
+  @keyframes rainbowFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
 
-  .billboard-box { display: flex; align-items: center; margin: 5px; border-radius: 5px; text-decoration: none; overflow: hidden; height: 45px; position: relative; }
-  .barrier { height: 100%; display: flex; align-items: center; padding: 0 15px; z-index: 10; position: relative; }
-  .scroll-wrapper { white-space: nowrap; overflow: hidden; display: flex; flex-grow: 1; }
-  .scroll-content { display: inline-block; white-space: nowrap; }
-  .scrolling-text { display: inline-block; font-weight: bold; font-family: sans-serif; font-size: 14px; text-transform: uppercase; background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding-right: 50px; }
+  /* Seamless loop: moves exactly 50% because the content is doubled */
+  @keyframes billboardScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 
+  .billboard-box {
+    display: flex;
+    align-items: center;
+    margin: 10px 5px;
+    border-radius: 5px;
+    text-decoration: none;
+    overflow: hidden;
+    height: 50px;
+    position: relative;
+    background-color: #333; /* Fallback */
+  }
+
+  .barrier {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    z-index: 10;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* This container holds the scrolling track */
+  .scroll-wrapper {
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+  }
+
+  /* The Track: Holds two identical sets of text */
+  .scroll-track {
+    display: flex;
+    white-space: nowrap;
+    animation: billboardScroll 20s linear infinite;
+  }
+
+  .scrolling-text {
+    display: inline-block;
+    font-weight: 900;
+    font-family: 'Arial Black', sans-serif;
+    font-size: 20px;
+    text-transform: uppercase;
+    padding-right: 20px; /* Space between loops */
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbowFlow 2s linear infinite;
+  }
+
+  /* YT Styles */
   .yt-box { background-color: #ffa500; }
-  .yt-barrier { background-color: #ffa500; box-shadow: 5px 0 10px #ffa500; }
-  .yt-text { background-image: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); animation: rainbowFlow 2s linear infinite, billboardScroll 30s linear infinite; }
+  .yt-barrier { background-color: #ffa500; box-shadow: 10px 0 10px #ffa500; }
+  .yt-rainbow { background-image: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000); }
 
+  /* Discord Styles */
   .ds-box { background-color: #00008B; }
-  .ds-barrier { background-color: #00008B; box-shadow: 5px 0 10px #00008B; }
-  .ds-text { background-image: linear-gradient(to right, #ff2400, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3, #ff2400); animation: rainbowFlow 2s linear infinite, billboardScroll 15s linear infinite; }
+  .ds-barrier { background-color: #00008B; box-shadow: 10px 0 10px #00008B; }
+  .ds-rainbow { background-image: linear-gradient(to right, #ff2400, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3, #ff2400); }
 </style>
 
 <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="billboard-box yt-box">
-  <div class="barrier yt-barrier"><img src="youtube.png" style="width:25px; height:25px;"></div>
-  <div class="scroll-wrapper"><div class="scroll-content yt-text">
-      <span class="scrolling-text">SUBSCRIBE TO ETHAN UNLOCKED!</span><span class="scrolling-text">SUBSCRIBE TO ETHAN UNLOCKED!</span>
-  </div></div>
+  <div class="barrier yt-barrier">
+    <img src="youtube.png" style="width:28px; height:28px;">
+  </div>
+  <div class="scroll-wrapper">
+    <div class="scroll-track">
+      <span class="scrolling-text yt-rainbow">SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED!</span>
+      <span class="scrolling-text yt-rainbow">SUBSCRIBE TO ETHAN UNLOCKED! SUBSCRIBE TO ETHAN UNLOCKED!</span>
+    </div>
+  </div>
 </a>
 
 <a href="https://discord.gg/h9v9AJP2" class="billboard-box ds-box">
-  <div class="barrier ds-barrier"><img src="discord.png" style="width:25px; height:25px;"></div>
-  <div class="scroll-wrapper"><div class="scroll-content ds-text">
-      <span class="scrolling-text">JOIN OUR DISCORD!</span><span class="scrolling-text">JOIN OUR DISCORD!</span>
-  </div></div>
+  <div class="barrier ds-barrier">
+    <img src="discord-barrier.png" style="width:28px; height:28px;">
+  </div>
+  <div class="scroll-wrapper">
+    <div class="scroll-track" style="animation-duration: 12s;">
+      <span class="scrolling-text ds-rainbow">JOIN OUR DISCORD! JOIN OUR DISCORD!</span>
+      <span class="scrolling-text ds-rainbow">JOIN OUR DISCORD! JOIN OUR DISCORD!</span>
+    </div>
+  </div>
 </a>
-<style>
-  @keyframes rainbowGlow {
-    0% { background-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
-    100% { background-color: #ff00ff; box-shadow: 0 0 15px #ff00ff; }
-  }
-  .bug-window {
-    display: none; position: absolute; top: 50px; left: 0; 
-    background: #1a1a1a; color: white; border: 1px solid #fff; 
-    border-radius: 8px; padding: 15px; z-index: 100; min-width: 320px;
-    font-family: sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
-  }
-  .bug-window label { font-size: 11px; font-weight: bold; color: #ffa500; text-transform: uppercase; }
-  .bug-window input, .bug-window textarea {
-    width: 100%; margin: 5px 0 12px 0; border-radius: 4px; border: 1px solid #444; background: #222; color: white; padding: 8px; box-sizing: border-box;
-  }
-  .scale-container { position: relative; width: 100%; height: 30px; margin: 20px 0; cursor: crosshair; border-radius: 3px; background: linear-gradient(to right, #00ff00, #ffff00, #ff0000); }
-  #triangle-pointer {
-    position: absolute; top: -15px; left: 0; width: 0; height: 0;
-    border-left: 8px solid transparent; border-right: 8px solid transparent;
-    border-top: 12px solid #fff; transform: translateX(-50%); display: none; pointer-events: none;
-  }
-  .provider-btn { display: flex; align-items: center; color: white; text-decoration: none; padding: 10px; border-bottom: 1px solid #333; cursor: pointer; font-size: 14px; }
-  .provider-btn img { width: 20px; height: 20px; margin-right: 12px; }
-  .copy-section { background: #222; padding: 8px; border-radius: 5px; margin-bottom: 8px; border: 1px solid #444; }
-  .copy-btn { width: 100%; background: #444; color: white; border: none; padding: 6px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 5px; font-size: 12px; }
-  .hidden { display: none; }
-  .modal-btn { width: 48%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; }
-</style>
-
 <div style="display:inline-block; position:relative;">
   <span style="color:white; font-weight:bold; font-family:sans-serif;">Any Bugs? </span>
   <button onclick="document.getElementById('bug-report-window').style.display='block'" 
