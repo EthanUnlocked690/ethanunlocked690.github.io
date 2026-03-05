@@ -476,23 +476,29 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
     0% { background-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
     100% { background-color: #ff00ff; box-shadow: 0 0 15px #ff00ff; }
   }
-  .bug-form-container {
-    display: none; 
-    position: absolute; top: 50px; left: 0; 
+  .bug-window {
+    display: none; position: absolute; top: 50px; left: 0; 
     background: #1a1a1a; color: white; border: 1px solid #fff; 
-    border-radius: 8px; padding: 15px; z-index: 100; min-width: 300px;
+    border-radius: 8px; padding: 15px; z-index: 100; min-width: 320px;
     font-family: sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.8);
   }
-  .bug-form-container label { font-size: 12px; font-weight: bold; color: #ffa500; }
-  .bug-form-container input, .bug-form-container textarea, .bug-form-container select {
-    width: 100%; margin: 8px 0; border-radius: 4px; border: 1px solid #444; background: #222; color: white; padding: 8px; box-sizing: border-box;
+  .bug-window label { font-size: 11px; font-weight: bold; color: #ffa500; text-transform: uppercase; }
+  .bug-window input, .bug-window textarea {
+    width: 100%; margin: 5px 0 12px 0; border-radius: 4px; border: 1px solid #444; background: #222; color: white; padding: 8px; box-sizing: border-box;
   }
-  .provider-list { display: none; margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; }
-  .provider-btn {
-    display: flex; align-items: center; color: white; text-decoration: none; 
-    padding: 10px; border-bottom: 1px solid #333; font-size: 14px; cursor: pointer;
+  
+  /* The Scale UI */
+  .scale-container { position: relative; width: 100%; height: 30px; margin: 20px 0; cursor: crosshair; border-radius: 3px; background: linear-gradient(to right, #00ff00, #ffff00, #ff0000); }
+  #triangle-pointer {
+    position: absolute; top: -15px; left: 0; width: 0; height: 0;
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-top: 12px solid #fff; transform: translateX(-50%); display: none; pointer-events: none;
   }
+
+  .provider-btn { display: flex; align-items: center; color: white; text-decoration: none; padding: 10px; border-bottom: 1px solid #333; cursor: pointer; }
   .provider-btn img { width: 20px; height: 20px; margin-right: 12px; }
+  .hidden { display: none; }
+  .modal-btn { width: 48%; padding: 8px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; margin-top: 10px; }
 </style>
 
 <div style="display:inline-block; position:relative;">
@@ -502,71 +508,93 @@ textElement.textContent = 'YOU JUST GOT RICKROLLED!!! I tried to warn you!!!🤣
      Report Here!
   </button>
 
-  <div id="bug-report-window" class="bug-form-container">
-    <div id="form-step">
-      <label>Name</label>
-      <input type="text" id="bug-name" placeholder="Enter your name">
-      
-      <label>Explain the bug</label>
-      <textarea id="bug-desc" rows="3" placeholder="What happened?"></textarea>
-      
-      <label>How you COULD fix it:</label>
-      <textarea id="bug-fix" rows="2" placeholder="Your suggestion..."></textarea>
-      
-      <label>Issue Scale</label>
-      <select id="bug-size">
-        <option value="🟢 Minor (Green Level)">Minor (Green)</option>
-        <option value="🟡 Moderate (Yellow Level)">Moderate (Yellow)</option>
-        <option value="🔴 MAJOR (Red Level)">Major (Red)</option>
-      </select>
-      
-      <button onclick="showProviders()" style="width:100%; background:#ffa500; color:black; font-weight:bold; border:none; padding:10px; margin-top:5px; cursor:pointer; border-radius:4px;">Next: Choose Provider</button>
+  <div id="bug-report-window" class="bug-window">
+    <div id="step-details">
+      <label>Name</label><input type="text" id="bug-name">
+      <label>Explain the bug</label><textarea id="bug-desc" rows="2"></textarea>
+      <label>How you COULD fix it:</label><textarea id="bug-fix" rows="2"></textarea>
+      <label>Issue Scale (Hover & Click)</label>
+      <div class="scale-container" id="bug-scale" onmousemove="moveTriangle(event)" onmouseenter="showTriangle()" onmouseleave="hideTriangle()" onclick="selectScale(event)">
+        <div id="triangle-pointer"></div>
+      </div>
     </div>
 
-    <div id="provider-step" class="provider-list">
-      <p style="font-size:12px; color:#aaa; margin-bottom:10px;">Select your email to send:</p>
+    <div id="step-confirm" class="hidden" style="text-align:center;">
+      <p id="confirm-msg"></p>
+      <div style="display:flex; justify-content:space-between;">
+        <button class="modal-btn" style="background:#444; color:white;" onclick="resetStep()">No</button>
+        <button class="modal-btn" style="background:#00ff00; color:black;" id="confirm-yes-btn">Yes</button>
+      </div>
+    </div>
+
+    <div id="step-providers" class="hidden">
+      <p style="color:#00ff00; font-weight:bold; font-size:14px;">Report Successful!</p>
+      <p style="font-size:12px; color:#aaa;">Now, choose a provider to send:</p>
       <a class="provider-btn" onclick="openMail('gmail')"><img src="gmail.png"> Gmail</a>
       <a class="provider-btn" onclick="openMail('outlook')"><img src="outlook.png"> Outlook</a>
       <a class="provider-btn" onclick="openMail('yahoo')"><img src="yahoo.png"> Yahoo!</a>
-      <a class="provider-btn" onclick="openMail('hotmail')"><img src="hotmail.png"> Hotmail</a>
     </div>
-    
-    <button onclick="document.getElementById('bug-report-window').style.display='none'" style="width:100%; background:#cc0000; color:white; border:none; margin-top:10px; cursor:pointer; padding:5px; border-radius:3px; font-size:11px;">Close</button>
+
+    <button onclick="closeBugWindow()" style="width:100%; background:#cc0000; color:white; border:none; margin-top:15px; cursor:pointer; padding:5px; border-radius:3px; font-size:11px;">Close</button>
   </div>
 </div>
 
 <script>
-  function showProviders() {
-    document.getElementById('form-step').style.display = 'none';
-    document.getElementById('provider-step').style.display = 'block';
+  let selectedSeverity = "";
+  const pointer = document.getElementById('triangle-pointer');
+
+  function moveTriangle(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    pointer.style.left = x + "px";
+  }
+  function showTriangle() { pointer.style.display = 'block'; }
+  function hideTriangle() { pointer.style.display = 'none'; }
+
+  function selectScale(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = ((e.clientX - rect.left) / rect.width) * 100;
+    
+    if(percent < 33) selectedSeverity = "🟢 Minor";
+    else if(percent < 66) selectedSeverity = "🟡 Moderate";
+    else selectedSeverity = "🔴 MAJOR";
+
+    document.getElementById('step-details').classList.add('hidden');
+    document.getElementById('step-confirm').classList.remove('hidden');
+    document.getElementById('confirm-msg').innerText = `Is this a ${selectedSeverity} issue?`;
+    
+    document.getElementById('confirm-yes-btn').onclick = function() {
+      if(confirm("Are you sure?")) {
+        document.getElementById('step-confirm').classList.add('hidden');
+        document.getElementById('step-providers').classList.remove('hidden');
+      }
+    };
+  }
+
+  function resetStep() {
+    document.getElementById('step-confirm').classList.add('hidden');
+    document.getElementById('step-details').classList.remove('hidden');
+  }
+
+  function closeBugWindow() {
+    document.getElementById('bug-report-window').style.display = 'none';
+    resetStep();
+    document.getElementById('step-providers').classList.add('hidden');
   }
 
   function openMail(service) {
     const name = document.getElementById('bug-name').value;
     const desc = document.getElementById('bug-desc').value;
     const fix = document.getElementById('bug-fix').value;
-    const size = document.getElementById('bug-size').value;
-    const target = "ethan.unlocked@gmail.com"; // Primary recipient
+    const target = "ethan.unlocked@gmail.com";
     
-    // Formatting the exact text body you requested
-    const bodyText = `My name is ${name} and I am reporting a bug!%0D%0A%0D%0A` +
-                     `The issue is: ${desc}%0D%0A%0D%0A` +
-                     `How you COULD fix it: ${fix}%0D%0A%0D%0A` +
-                     `Issue Scale: ${size}%0D%0A%0D%0A` +
-                     `Thanks!`;
-    
-    const subject = encodeURIComponent("Bug Report: " + size);
-    const body = encodeURIComponent(bodyText).replace(/%250D%250A/g, '%0D%0A'); // Ensure line breaks work
+    const bodyText = `My name is ${name} and I am reporting a bug!%0D%0A%0D%0AThe issue is: ${desc}%0D%0A%0D%0AHow you COULD fix it: ${fix}%0D%0A%0D%0AIssue Scale: ${selectedSeverity}%0D%0A%0D%0AThanks!`;
+    const subject = encodeURIComponent("Bug Report: " + selectedSeverity);
     
     let url = "";
-    if(service === 'gmail') {
-      url = `https://mail.google.com/mail/?view=cm&fs=1&to=${target}&su=${subject}&body=${bodyText}`;
-    } else if(service === 'yahoo') {
-      url = `https://compose.mail.yahoo.com/?to=${target}&subject=${subject}&body=${bodyText}`;
-    } else {
-      // Outlook and Hotmail use the same portal
-      url = `https://outlook.live.com/owa/?path=/mail/action/compose&to=${target}&subject=${subject}&body=${bodyText}`;
-    }
+    if(service === 'gmail') url = `https://mail.google.com/mail/?view=cm&fs=1&to=${target}&su=${subject}&body=${bodyText}`;
+    else if(service === 'yahoo') url = `https://compose.mail.yahoo.com/?to=${target}&subject=${subject}&body=${bodyText}`;
+    else url = `https://outlook.live.com/owa/?path=/mail/action/compose&to=${target}&subject=${subject}&body=${bodyText}`;
     
     window.open(url, '_blank');
   }
