@@ -3,298 +3,290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Ronin's Eternal Pilgrimage | Year-Long Survival</title>
+    <title>Ronin: The Year-Long Exile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --iron: #5a5a5a; --blood: #8b0000; --ink: #0a0a0a; }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Times New Roman', serif; color: var(--gold); }
+        :root { --gold: #d4af37; --blood: #8b0000; --panel-bg: rgba(10, 8, 5, 0.95); }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Palatino', serif; color: var(--gold); }
         
-        /* THE INTERFACE */
-        #hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 30px; }
-        .panel { background: rgba(5, 5, 5, 0.9); border: 1px solid var(--iron); padding: 15px; pointer-events: auto; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
-        
-        /* TOP HUD */
-        #top-hud { display: flex; justify-content: space-between; align-items: flex-start; }
-        .map-frame { width: 180px; height: 180px; border-radius: 50%; border: 3px double var(--gold); position: relative; overflow: hidden; }
-        #compass-needle { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-weight: bold; color: var(--blood); font-size: 1.2em; }
-        #map-canvas { background: #050505; width: 100%; height: 100%; }
+        /* OVERLAY UI */
+        #ui-container { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 25px; }
+        .hud-panel { pointer-events: auto; background: var(--panel-bg); border: 2px solid #5a4025; padding: 15px; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
 
-        /* SURVIVAL STATS */
-        .vitals { width: 250px; }
-        .bar-container { width: 100%; height: 10px; background: #111; border: 1px solid var(--iron); margin: 5px 0; overflow: hidden; }
-        .bar-fill { height: 100%; transition: width 0.3s; }
-        #hp-fill { background: var(--blood); width: 100%; }
-        #stamina-fill { background: #daa520; width: 100%; }
-        #hunger-fill { background: #556b2f; width: 100%; }
+        /* TOP LEFT: WEATHER & TIME */
+        #env-panel { top: 25px; left: 25px; border-left: 5px solid var(--gold); min-width: 220px; }
+        .weather-status { display: flex; align-items: center; gap: 10px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+        .clock-sub { font-size: 0.8em; color: #888; margin-top: 5px; }
 
-        /* WEATHER & TIME */
-        .chronicle { font-variant: small-caps; letter-spacing: 2px; text-align: left; }
-        #weather-icon { font-size: 2em; margin-bottom: 5px; }
+        /* TOP RIGHT: COMPASS */
+        #compass-outer { top: 25px; right: 25px; width: 160px; height: 160px; border-radius: 50%; border: 3px double var(--gold); position: relative; }
+        #compass-needle { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: var(--blood); font-weight: bold; font-size: 1.4em; }
 
-        /* INTERACTION */
-        #prompt { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); text-align: center; opacity: 0; transition: 1s; }
-        .save-toast { position: absolute; bottom: 10px; right: 10px; font-size: 0.7em; color: #4CAF50; }
+        /* BOTTOM LEFT: VITALS */
+        #vitals-panel { bottom: 25px; left: 25px; width: 280px; }
+        .stat-row { margin: 8px 0; }
+        .stat-label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
+        .bar-bg { width: 100%; height: 12px; background: #1a1a1a; border: 1px solid #444; margin-top: 4px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* LOADING */
-        #overlay { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: 2s; }
-        .loader { width: 50px; height: 50px; border: 3px solid var(--iron); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* BOTTOM RIGHT: PROGRESS */
+        #progress-panel { bottom: 25px; right: 25px; text-align: right; min-width: 320px; }
+        .dist-text { font-size: 2.2em; font-weight: bold; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
+        #save-indicator { position: absolute; bottom: -20px; right: 0; font-size: 0.7em; color: #4CAF50; opacity: 0; transition: 1s; }
+
+        /* POST-PROCESSING VIGNETTE */
+        #vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%); }
     </style>
 </head>
 <body>
 
-    <div id="overlay">
-        <div class="loader"></div>
-        <h1 style="letter-spacing: 10px; margin-top: 20px;">EXILE</h1>
-        <p id="load-status">Synchronizing with Real-World Time...</p>
-    </div>
+    <div id="vignette"></div>
 
-    <div id="hud">
-        <div id="top-hud">
-            <div class="panel chronicle">
-                <div id="weather-icon">☀</div>
-                <div id="weather-desc">Syncing Terrigal Weather...</div>
-                <div id="real-time-clock">00:00:00</div>
-                <div style="font-size: 0.8em; color: var(--iron); margin-top: 10px;">CYCLE: <span id="cycle-type">DAY</span></div>
+    <div id="ui-container">
+        <div id="env-panel" class="hud-panel">
+            <div class="weather-status">
+                <span id="w-icon">☀️</span>
+                <span id="w-desc">Syncing Local Skies...</span>
             </div>
+            <div id="real-clock" class="clock-sub">16:18:45 PM</div>
+            <div style="font-size: 0.7em; color: var(--gold); margin-top: 8px;">CYCLE: <span id="cycle-tag">DAYTIME</span></div>
+        </div>
 
-            <div class="map-frame">
-                <div id="compass-needle">N</div>
-                <canvas id="map-canvas"></canvas>
+        <div id="compass-outer" class="hud-panel">
+            <div id="compass-needle">N</div>
+            <canvas id="compass-map" style="width:100%; height:100%; opacity: 0.3;"></canvas>
+        </div>
+
+        <div id="vitals-panel" class="hud-panel">
+            <div class="stat-row">
+                <div class="stat-label">Vitality</div>
+                <div class="bar-bg"><div id="hp-fill" class="bar-fill" style="background: var(--blood);"></div></div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">Stamina</div>
+                <div class="bar-bg"><div id="st-fill" class="bar-fill" style="background: var(--gold);"></div></div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">Nourishment</div>
+                <div class="bar-bg"><div id="nr-fill" class="bar-fill" style="background: #556b2f;"></div></div>
             </div>
         </div>
 
-        <div id="prompt" class="panel">Press [E] to Rest at Campfire</div>
-
-        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <div class="panel vitals">
-                <label>VITALITY</label><div class="bar-container"><div id="hp-fill" class="bar-fill"></div></div>
-                <label>STAMINA</label><div class="bar-container"><div id="stamina-fill" class="bar-fill"></div></div>
-                <label>NOURISHMENT</label><div class="bar-container"><div id="hunger-fill" class="bar-fill"></div></div>
-            </div>
-
-            <div class="panel" style="text-align: right; width: 300px;">
-                <div style="font-size: 0.7em; color: var(--iron);">DISTANCE TO ANCIENT VOLCANO</div>
-                <div style="font-size: 1.5em;"><span id="dist-val">4,999.00</span> MILES</div>
-                <div class="bar-container"><div id="year-progress" style="background: var(--gold); width: 0.1%;"></div></div>
-            </div>
+        <div id="progress-panel" class="hud-panel">
+            <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">DISTANCE TO ANCIENT VOLCANO</div>
+            <div class="dist-text"><span id="dist-val">4,999.00</span> MILES</div>
+            <div class="bar-bg" style="height: 6px;"><div id="year-fill" class="bar-fill" style="background: var(--gold); width: 0.1%;"></div></div>
+            <div id="save-indicator">PERSISTENCE SAVED</div>
         </div>
     </div>
-
-    <div id="save-toast" class="save-toast">PERSISTENCE SAVED</div>
 
 <script>
-/**
- * THE ETERNAL ENGINE (v3.0)
- * Designed for a 365-day persistence cycle.
+/** * THE RONIN CORE ENGINE
+ * Modular architecture for long-term simulation
  */
 
-// --- 1. CORE DATA STRUCTURES ---
-const CONFIG = {
-    VOLCANO_POS: { x: 0, z: -5000000 }, // 5 million units (approx 1 year of walking)
-    DAY_CYCLE_MS: 20 * 60 * 1000,
-    WEATHER_SYNC_INTERVAL: 10 * 60 * 1000,
-    SAVE_INTERVAL: 10000,
-    WALK_SPEED: 0.4,
-    RUN_SPEED: 0.9
-};
+const ENGINE = {
+    // 1. SYSTEM CONFIG
+    init() {
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(this.renderer.domElement);
 
-let playerState = {
-    x: 0, z: 0, rot: 0,
-    hp: 100, stamina: 100, hunger: 100,
-    lastLogin: Date.now(),
-    startDate: Date.now(),
-    bossHp: 1000000
-};
+        this.clock = new THREE.Clock();
+        this.playerData = this.loadState();
+        this.input = { w:0, a:0, s:0, d:0, shift: false };
+        this.objects = [];
 
-// --- 2. PERSISTENCE LAYER ---
-function loadGame() {
-    const saved = localStorage.getItem('ronin_eternal_v3');
-    if (saved) {
-        playerState = JSON.parse(saved);
-        // Hunger decay based on time away
-        const hoursAway = (Date.now() - playerState.lastLogin) / (1000 * 60 * 60);
-        playerState.hunger = Math.max(0, playerState.hunger - (hoursAway * 5));
-    }
-    playerState.lastLogin = Date.now();
-}
+        this.setupLights();
+        this.setupWorld();
+        this.setupPlayer();
+        this.bindEvents();
+        this.syncWeather();
 
-function saveGame() {
-    playerState.lastLogin = Date.now();
-    localStorage.setItem('ronin_eternal_v3', JSON.stringify(playerState));
-    const toast = document.getElementById('save-toast');
-    toast.style.opacity = 1;
-    setTimeout(() => toast.style.opacity = 0, 2000);
-}
+        this.animate();
+        setInterval(() => this.saveState(), 10000);
+        setInterval(() => this.syncWeather(), 600000);
+    },
 
-// --- 3. THE 3D ENVIRONMENT ---
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 10000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
+    // 2. LIGHTING & ATMOSPHERE
+    setupLights() {
+        this.sun = new THREE.DirectionalLight(0xffffff, 1.2);
+        this.sun.position.set(100, 200, 100);
+        this.sun.castShadow = true;
+        this.sun.shadow.camera.left = -100;
+        this.sun.shadow.camera.right = 100;
+        this.sun.shadow.camera.top = 100;
+        this.sun.shadow.camera.bottom = -100;
+        this.scene.add(this.sun);
 
-// Celestial SkyBox
-const skyGeo = new THREE.SphereGeometry(8000, 32, 32);
-const skyMat = new THREE.MeshBasicMaterial({ color: 0x000005, side: THREE.BackSide });
-const sky = new THREE.Mesh(skyGeo, skyMat);
-scene.add(sky);
+        this.ambient = new THREE.AmbientLight(0x404040, 0.5);
+        this.scene.add(this.ambient);
 
-const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-const sunOrb = new THREE.Mesh(new THREE.SphereGeometry(50, 32, 32), new THREE.MeshBasicMaterial({ color: 0xffffee }));
-scene.add(sun, sunOrb);
+        this.scene.fog = new THREE.FogExp2(0x000000, 0.002);
+    },
 
-const moonOrb = new THREE.Mesh(new THREE.SphereGeometry(30, 32, 32), new THREE.MeshBasicMaterial({ color: 0xaaaaaa }));
-scene.add(moonOrb);
+    // 3. WORLD GENERATION
+    setupWorld() {
+        // Massive Ground
+        const groundGeo = new THREE.PlaneGeometry(20000, 20000, 50, 50);
+        const groundMat = new THREE.MeshStandardMaterial({ 
+            color: 0x121212, 
+            roughness: 0.9,
+            metalness: 0.1 
+        });
+        this.ground = new THREE.Mesh(groundGeo, groundMat);
+        this.ground.rotation.x = -Math.PI / 2;
+        this.ground.receiveShadow = true;
+        this.scene.add(this.ground);
 
-// Ground System (Procedural Tiles)
-const groundGroup = new THREE.Group();
-scene.add(groundGroup);
-const tileGeo = new THREE.PlaneGeometry(1000, 1000, 10, 10);
-const tileMat = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 1 });
+        // Procedural Foliage (Trees/Rocks)
+        const treeTrunk = new THREE.CylinderGeometry(0.2, 0.3, 2);
+        const treeTop = new THREE.ConeGeometry(1, 3, 8);
+        const treeMat = new THREE.MeshStandardMaterial({ color: 0x1a2e1a });
+        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x2b1d0e });
 
-function buildTerrain() {
-    for(let i = -2; i <= 2; i++) {
-        for(let j = -2; j <= 2; j++) {
-            const tile = new THREE.Mesh(tileGeo, tileMat);
-            tile.rotation.x = -Math.PI/2;
-            tile.position.set(i*1000, 0, j*1000);
-            tile.receiveShadow = true;
-            groundGroup.add(tile);
+        for(let i = 0; i < 800; i++) {
+            const group = new THREE.Group();
+            const trunk = new THREE.Mesh(treeTrunk, trunkMat);
+            const top = new THREE.Mesh(treeTop, treeMat);
+            top.position.y = 2;
+            group.add(trunk, top);
+            
+            group.position.set(
+                (Math.random() - 0.5) * 1000,
+                1,
+                (Math.random() - 0.5) * 1000
+            );
+            group.castShadow = true;
+            this.scene.add(group);
+            this.objects.push(group);
         }
-    }
-}
+    },
 
-// Player Avatar
-const ronin = new THREE.Group();
-const rBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1.2, 4, 8), new THREE.MeshStandardMaterial({ color: 0x222222 }));
-rBody.position.y = 1;
-rBody.castShadow = true;
-ronin.add(rBody);
-scene.add(ronin);
-
-// --- 4. WEATHER & TIME API ---
-async function fetchWeather() {
-    try {
-        const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.44&longitude=151.44&current=weather_code,temperature_2m');
-        const data = await response.json();
-        const code = data.current.weather_code;
-        const temp = data.current.temperature_2m;
+    // 4. PLAYER ARCHITECTURE
+    setupPlayer() {
+        this.player = new THREE.Group();
         
-        let desc = "Clear";
-        if (code >= 51) desc = "Rain";
-        if (code >= 1 && code <= 3) desc = "Cloudy";
+        // Character mesh
+        const bodyGeo = new THREE.CapsuleGeometry(0.4, 1.2, 4, 8);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 1;
+        body.castShadow = true;
+        this.player.add(body);
+
+        // Camera rig
+        this.camTarget = new THREE.Object3D();
+        this.camTarget.position.set(0, 5, 12);
+        this.player.add(this.camTarget);
+
+        this.player.position.set(this.playerData.x, 0, this.playerData.z);
+        this.scene.add(this.player);
+    },
+
+    // 5. SYSTEMS: WEATHER & PERSISTENCE
+    async syncWeather() {
+        try {
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.44&longitude=151.44&current=weather_code,temperature_2m');
+            const data = await res.json();
+            const code = data.current.weather_code;
+            const isRain = code >= 51;
+            
+            document.getElementById('w-desc').innerText = isRain ? `Rain (${data.current.temperature_2m}°C)` : `Clear (${data.current.temperature_2m}°C)`;
+            document.getElementById('w-icon').innerText = isRain ? '🌧️' : '☀️';
+            this.scene.fog.color.setHex(isRain ? 0x222222 : 0x000000);
+            this.scene.fog.density = isRain ? 0.01 : 0.002;
+        } catch(e) { console.log("Weather offline"); }
+    },
+
+    loadState() {
+        const saved = localStorage.getItem('ronin_eternal_v4');
+        return saved ? JSON.parse(saved) : {
+            x: 0, z: 0, rot: 0,
+            dist: 4999.00,
+            hp: 100, stamina: 100, hunger: 100,
+            lastSave: Date.now()
+        };
+    },
+
+    saveState() {
+        this.playerData.x = this.player.position.x;
+        this.playerData.z = this.player.position.z;
+        this.playerData.rot = this.player.rotation.y;
+        localStorage.setItem('ronin_eternal_v4', JSON.stringify(this.playerData));
         
-        document.getElementById('weather-desc').innerText = `${desc} (${temp}°C)`;
-        document.getElementById('weather-icon').innerText = desc === "Rain" ? "🌧" : (desc === "Cloudy" ? "☁" : "☀");
+        const tag = document.getElementById('save-indicator');
+        tag.style.opacity = 1;
+        setTimeout(() => tag.style.opacity = 0, 2000);
+    },
+
+    // 6. INPUT & ANIMATION LOOP
+    bindEvents() {
+        window.addEventListener('keydown', e => {
+            const key = e.key.toLowerCase();
+            if(key === 'w') this.input.w = 1;
+            if(key === 's') this.input.s = 1;
+            if(key === 'a') this.input.a = 1;
+            if(key === 'd') this.input.d = 1;
+            if(e.shiftKey) this.input.shift = true;
+        });
+        window.addEventListener('keyup', e => {
+            const key = e.key.toLowerCase();
+            if(key === 'w') this.input.w = 0;
+            if(key === 's') this.input.s = 0;
+            if(key === 'a') this.input.a = 0;
+            if(key === 'd') this.input.d = 0;
+            if(!e.shiftKey) this.input.shift = false;
+        });
+    },
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+        const delta = this.clock.getDelta();
+
+        // 1. Movement Logic
+        const moveSpeed = (this.input.shift && this.playerData.stamina > 0) ? 12 : 5;
+        if(this.input.w) this.player.translateZ(-moveSpeed * delta);
+        if(this.input.s) this.player.translateZ(moveSpeed * delta);
+        if(this.input.a) this.player.rotation.y += 2 * delta;
+        if(this.input.d) this.player.rotation.y -= 2 * delta;
+
+        // 2. Stamina & Progress Mechanics
+        if(this.input.w && this.input.shift) {
+            this.playerData.stamina = Math.max(0, this.playerData.stamina - 15 * delta);
+        } else {
+            this.playerData.stamina = Math.min(100, this.playerData.stamina + 10 * delta);
+        }
         
-        // Fog adjustment
-        scene.fog = new THREE.FogExp2(desc === "Rain" ? 0x222222 : 0x000000, 0.005);
-    } catch (e) { console.error("Weather Sync Failed"); }
-}
+        if(this.input.w) {
+            this.playerData.dist -= 0.00005; // 365-day scaling factor
+        }
 
-// --- 5. THE GAME LOOP (LOGIC HUB) ---
-const keys = {};
-window.addEventListener('keydown', (e) => keys[e.code] = true);
-window.addEventListener('keyup', (e) => keys[e.code] = false);
+        // 3. Camera Smoothing
+        const targetPos = new THREE.Vector3();
+        this.camTarget.getWorldPosition(targetPos);
+        this.camera.position.lerp(targetPos, 0.1);
+        this.camera.lookAt(this.player.position.x, 2, this.player.position.z);
 
-function updateCelestial() {
-    const now = Date.now();
-    const cyclePos = (now % (CONFIG.DAY_CYCLE_MS * 2)) / (CONFIG.DAY_CYCLE_MS * 2);
-    const angle = cyclePos * Math.PI * 2;
-    
-    // Sun position
-    sunOrb.position.set(Math.cos(angle) * 5000, Math.sin(angle) * 5000, -2000);
-    sun.position.copy(sunOrb.position);
-    
-    // Moon position
-    moonOrb.position.set(Math.cos(angle + Math.PI) * 5000, Math.sin(angle + Math.PI) * 5000, -2000);
-    
-    const isDay = Math.sin(angle) > 0;
-    document.getElementById('cycle-type').innerText = isDay ? "DAY" : "NIGHTFALL";
-    skyMat.color.setHex(isDay ? 0x050a1a : 0x000002);
-}
+        // 4. UI Rendering
+        document.getElementById('st-fill').style.width = this.playerData.stamina + "%";
+        document.getElementById('dist-val').innerText = this.playerData.dist.toFixed(2);
+        document.getElementById('real-clock').innerText = new Date().toLocaleTimeString();
+        document.getElementById('compass-needle').style.transform = `translateX(-50%) rotate(${this.player.rotation.y}rad)`;
+        
+        // 5. Celestial Update
+        const cycle = (Date.now() % 2400000) / 2400000; // 40m cycle
+        this.sun.position.set(Math.cos(cycle * Math.PI * 2) * 200, Math.sin(cycle * Math.PI * 2) * 200, 100);
 
-function handleInput() {
-    let currentSpeed = CONFIG.WALK_SPEED;
-    
-    // Running mechanics
-    if (keys['ShiftLeft'] && playerState.stamina > 0) {
-        currentSpeed = CONFIG.RUN_SPEED;
-        playerState.stamina = Math.max(0, playerState.stamina - 0.2);
-    } else {
-        playerState.stamina = Math.min(100, playerState.stamina + 0.1);
+        this.renderer.render(this.scene, this.camera);
     }
+};
 
-    if (keys['KeyW']) {
-        ronin.position.z -= Math.cos(ronin.rotation.y) * currentSpeed;
-        ronin.position.x -= Math.sin(ronin.rotation.y) * currentSpeed;
-    }
-    if (keys['KeyS']) {
-        ronin.position.z += Math.cos(ronin.rotation.y) * currentSpeed;
-        ronin.position.x += Math.sin(ronin.rotation.y) * currentSpeed;
-    }
-    if (keys['KeyA']) ronin.rotation.y += 0.03;
-    if (keys['KeyD']) ronin.rotation.y -= 0.03;
-
-    // Movement updates terrain tiles
-    groundGroup.position.x = Math.floor(ronin.position.x / 1000) * 1000;
-    groundGroup.position.z = Math.floor(ronin.position.z / 1000) * 1000;
-
-    // Camera follow
-    const camOffset = new THREE.Vector3(0, 5, 12).applyQuaternion(ronin.quaternion);
-    camera.position.lerp(ronin.position.clone().add(camOffset), 0.1);
-    camera.lookAt(ronin.position.clone().add(new THREE.Vector3(0, 2, 0)));
-}
-
-function updateHUD() {
-    document.getElementById('hp-fill').style.width = playerState.hp + "%";
-    document.getElementById('stamina-fill').style.width = playerState.stamina + "%";
-    document.getElementById('hunger-fill').style.width = playerState.hunger + "%";
-    
-    const distToVolcano = Math.abs(ronin.position.z - CONFIG.VOLCANO_POS.z);
-    const miles = (distToBoss / 100).toFixed(2);
-    document.getElementById('dist-val').innerText = (distToVolcano / 5000).toFixed(2);
-    
-    // Map Canvas
-    const canvas = document.getElementById('map-canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,180,180);
-    ctx.strokeStyle = "#d4af37";
-    ctx.beginPath(); ctx.moveTo(90,90); ctx.lineTo(90, 70); ctx.stroke(); // North marker
-}
-
-function loop() {
-    requestAnimationFrame(loop);
-    
-    handleInput();
-    updateCelestial();
-    updateHUD();
-    
-    renderer.render(scene, camera);
-}
-
-// --- 6. INITIALIZATION ---
-loadGame();
-buildTerrain();
-fetchWeather();
-setInterval(fetchWeather, CONFIG.WEATHER_SYNC_INTERVAL);
-setInterval(saveGame, CONFIG.SAVE_INTERVAL);
-
-// Clock
-setInterval(() => {
-    document.getElementById('real-time-clock').innerText = new Date().toLocaleTimeString();
-}, 1000);
-
-// Remove overlay after assets load
-setTimeout(() => {
-    document.getElementById('overlay').style.opacity = '0';
-    setTimeout(() => document.getElementById('overlay').style.display = 'none', 2000);
-}, 3000);
-
-loop();
-
+ENGINE.init();
 </script>
 </body>
 </html>
