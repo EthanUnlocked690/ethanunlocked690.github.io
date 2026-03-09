@@ -2,132 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ronin Chronicles | The Exile</title>
+    <title>Ronin: The Year-Long Exile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --blood: #8b0000; --panel: rgba(15, 12, 10, 0.98); }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Palatino', serif; color: var(--gold); user-select: none; }
+        :root { --gold: #d4af37; --blood: #8b0000; --panel: rgba(15, 12, 10, 0.95); }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Georgia', serif; color: var(--gold); }
         
-        /* THE MAIN ESC MENU */
+        /* THE MAP (Top Right) */
+        #map-container {
+            position: absolute; top: 20px; right: 20px; width: 180px; height: 180px;
+            border: 3px double var(--gold); border-radius: 50%; overflow: hidden;
+            background: #050505; pointer-events: auto;
+        }
+        #map-canvas { width: 100%; height: 100%; }
+        #compass-n { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-weight: bold; color: var(--blood); }
+
+        /* ESC MENU (Fixed & Interactive) */
         #esc-menu {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px); pointer-events: auto;
+            pointer-events: auto;
         }
-        .menu-frame {
-            border: 3px double var(--gold); background: var(--panel);
-            padding: 40px; width: 400px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1);
-        }
+        .menu-box { border: 2px solid var(--gold); background: var(--panel); padding: 40px; width: 350px; text-align: center; }
         .menu-btn {
             display: block; width: 100%; padding: 15px; margin: 10px 0;
-            background: transparent; border: 1px solid #5a4025; color: var(--gold);
-            font-size: 1.2em; cursor: pointer; transition: 0.3s; text-transform: uppercase;
+            background: #1a1a1a; border: 1px solid var(--gold); color: var(--gold);
+            cursor: pointer; font-size: 1rem; text-transform: uppercase;
         }
         .menu-btn:hover { background: var(--gold); color: #000; }
 
-        /* HUD ELEMENTS */
-        #hud { position: absolute; inset: 0; pointer-events: none; padding: 30px; }
-        .hud-box { pointer-events: auto; background: var(--panel); border: 2px solid #5a4025; padding: 15px; position: absolute; }
-        
-        #top-left { top: 30px; left: 30px; border-left: 5px solid var(--gold); }
-        #vitals { bottom: 30px; left: 30px; width: 300px; }
-        #progress { bottom: 30px; right: 30px; text-align: right; }
-        
-        /* BARS */
-        .bar-bg { width: 100%; height: 10px; background: #111; margin-top: 5px; border: 1px solid #333; }
+        /* HUD */
+        #hud { position: absolute; inset: 0; pointer-events: none; padding: 25px; }
+        .hud-box { pointer-events: auto; background: var(--panel); border: 1px solid #444; padding: 15px; }
+        #vitals { position: absolute; bottom: 25px; left: 25px; width: 280px; }
+        .bar-bg { width: 100%; height: 8px; background: #111; margin-top: 5px; border: 1px solid #333; }
         .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
-
-        #crosshair { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 20px; height: 20px; border: 1px solid rgba(212, 175, 55, 0.5); border-radius: 50%;
-        }
     </style>
 </head>
 <body>
 
     <div id="esc-menu">
-        <div class="menu-frame">
-            <h1 style="letter-spacing: 5px; margin-bottom: 30px;">PAUSED</h1>
-            <button class="menu-btn" onclick="toggleMenu()">Resume Pilgrimage</button>
-            <button class="menu-btn">Character Customizer</button>
-            <button class="menu-btn">World Map (Year View)</button>
-            <button class="menu-btn" onclick="location.reload()">Save & Quit</button>
-            <p style="font-size: 0.7em; color: #555; margin-top: 20px;">EXILE DAY: <span id="days-survived">1</span></p>
+        <div class="menu-box">
+            <h2 style="letter-spacing: 4px;">SYSTEM PAUSED</h2>
+            <button class="menu-btn" onclick="toggleMenu()">Resume Journey</button>
+            <button class="menu-btn" onclick="resetPosition()">Reset to Start</button>
+            <button class="menu-btn" onclick="alert('Saving Progress...')">Manual Save</button>
+            <button class="menu-btn" onclick="window.close()">Quit Game</button>
         </div>
     </div>
 
+    <div id="map-container">
+        <div id="compass-n">N</div>
+        <canvas id="map-canvas"></canvas>
+    </div>
+
     <div id="hud">
-        <div id="crosshair"></div>
-        
-        <div id="top-left" class="hud-box">
-            <div id="w-icon" style="font-size: 1.5em;">🌧️</div>
-            <div id="w-desc" style="text-transform: uppercase; font-size: 0.9em;">Rain (21.5°C)</div>
-            <div id="clock" style="font-size: 0.8em; color: #888;">05:09:45 PM</div>
+        <div class="hud-box" style="width: 200px;">
+            <div id="w-desc">☀️ CLEAR (21°C)</div>
+            <div id="clock" style="font-size: 0.8rem; color: #888;">00:00:00</div>
         </div>
 
         <div id="vitals" class="hud-box">
-            <div class="stat">VITALITY<div class="bar-bg"><div id="hp-bar" class="bar-fill" style="background:var(--blood)"></div></div></div>
-            <div class="stat" style="margin-top:10px">STAMINA<div class="bar-bg"><div id="st-bar" class="bar-fill" style="background:var(--gold)"></div></div></div>
-            <div class="stat" style="margin-top:10px">NOURISHMENT<div class="bar-bg"><div id="nr-bar" class="bar-fill" style="background:#556b2f"></div></div></div>
-        </div>
-
-        <div id="progress" class="hud-box">
-            <div style="font-size: 0.8em; color: #888;">DISTANCE TO ANCIENT VOLCANO</div>
-            <div style="font-size: 2.2em; font-weight: bold;">4,999.00 MILES</div>
-            <div class="bar-bg" style="height:4px;"><div style="width:0.1%; background:var(--gold); height:100%;"></div></div>
+            VITALITY <div class="bar-bg"><div id="hp-bar" class="bar-fill" style="background:var(--blood)"></div></div>
+            STAMINA <div class="bar-bg"><div id="st-bar" class="bar-fill" style="background:var(--gold)"></div></div>
+            NOURISHMENT <div class="bar-bg"><div id="nr-bar" class="bar-fill" style="background:#445522"></div></div>
         </div>
     </div>
 
 <script>
-/** ENGINE START **/
+/** 3D ENGINE **/
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
-// Lighting - Dynamic Day/Night
-const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-sun.position.set(50, 100, 50);
-sun.castShadow = true;
-scene.add(sun);
-scene.add(new THREE.AmbientLight(0x404040, 0.5));
+// Environment
+scene.background = new THREE.Color(0x0a0a0f);
+scene.fog = new THREE.FogExp2(0x0a0a0f, 0.002);
 
-// Atmosphere
-scene.fog = new THREE.FogExp2(0x111111, 0.002);
+const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+sun.position.set(10, 50, 10);
+scene.add(sun, new THREE.AmbientLight(0x404040, 0.7));
 
-/** THE CHARACTER (REPLACING THE PILL) **/
-const player = new THREE.Group();
-const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.2, 4, 12), new THREE.MeshStandardMaterial({color: 0x222222}));
-body.position.y = 1.1;
-body.castShadow = true;
-player.add(body);
-scene.add(player);
-
-/** THE LANDSCAPE (PROCEDURAL FOLIAGE) **/
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(20000, 20000), new THREE.MeshStandardMaterial({color: 0x151515}));
-ground.rotation.x = -Math.PI/2;
-ground.receiveShadow = true;
+// The World
+const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(10000, 10000, 50, 50),
+    new THREE.MeshStandardMaterial({ color: 0x111b11, wireframe: false })
+);
+ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
-// Populate with 1000 trees to fix the "Void" look
-const treeGeo = new THREE.ConeGeometry(1, 4, 6);
-const treeMat = new THREE.MeshStandardMaterial({color: 0x1a241a});
-for(let i=0; i<1000; i++){
-    const tree = new THREE.Mesh(treeGeo, treeMat);
-    tree.position.set(Math.random()*2000-1000, 2, Math.random()*2000-1000);
-    tree.castShadow = true;
-    scene.add(tree);
+// Adding Trees so you can see movement
+const treeGeo = new THREE.ConeGeometry(1, 4, 8);
+const treeMat = new THREE.MeshStandardMaterial({color: 0x0f200f});
+for(let i=0; i<600; i++) {
+    const t = new THREE.Mesh(treeGeo, treeMat);
+    t.position.set(Math.random()*1000-500, 2, Math.random()*1000-500);
+    scene.add(t);
 }
 
-/** SYSTEM LOGIC **/
+/** THE RONIN (Better than a pill!) **/
+const ronin = new THREE.Group();
+const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.5), new THREE.MeshStandardMaterial({color: 0x332211}));
+torso.position.y = 1.2;
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.3), new THREE.MeshStandardMaterial({color: 0xffdbac}));
+head.position.y = 2.0;
+ronin.add(torso, head);
+scene.add(ronin);
+
+/** MECHANICS **/
 let isPaused = false;
+let stamina = 100;
 const keys = {};
 
 function toggleMenu() {
     isPaused = !isPaused;
     document.getElementById('esc-menu').style.display = isPaused ? 'flex' : 'none';
+}
+
+function resetPosition() {
+    ronin.position.set(0,0,0);
+    toggleMenu();
 }
 
 window.addEventListener('keydown', e => {
@@ -136,29 +132,54 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
+/** MINI-MAP LOGIC **/
+const mapCtx = document.getElementById('map-canvas').getContext('2d');
+function updateMap() {
+    mapCtx.clearRect(0, 0, 180, 180);
+    mapCtx.fillStyle = "#111";
+    mapCtx.fillRect(0,0,180,180);
+    
+    // Player on map
+    mapCtx.fillStyle = "#d4af37";
+    mapCtx.beginPath();
+    mapCtx.arc(90, 90, 4, 0, Math.PI*2);
+    mapCtx.fill();
+}
+
 /** MAIN LOOP **/
 function animate() {
     requestAnimationFrame(animate);
     if(isPaused) return;
 
-    // Movement
-    const speed = keys.shift ? 0.35 : 0.15;
-    if(keys.w) player.translateZ(-speed);
-    if(keys.s) player.translateZ(speed);
-    if(keys.a) player.rotation.y += 0.03;
-    if(keys.d) player.rotation.y -= 0.03;
-
-    // Camera follow rig
-    camera.position.set(player.position.x, 8, player.position.z + 15);
-    camera.lookAt(player.position.x, 2, player.position.z);
-
-    // Sync UI
-    document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    const speed = keys.shift && stamina > 0 ? 0.4 : 0.18;
     
+    // FIXED MOVEMENT (A/D now rotate the character)
+    if(keys.w) {
+        ronin.position.x -= Math.sin(ronin.rotation.y) * speed;
+        ronin.position.z -= Math.cos(ronin.rotation.y) * speed;
+    }
+    if(keys.s) {
+        ronin.position.x += Math.sin(ronin.rotation.y) * speed;
+        ronin.position.z += Math.cos(ronin.rotation.y) * speed;
+    }
+    if(keys.a) ronin.rotation.y += 0.04;
+    if(keys.d) ronin.rotation.y -= 0.04;
+
+    // Stamina
+    if(keys.w && keys.shift) stamina = Math.max(0, stamina - 0.3);
+    else stamina = Math.min(100, stamina + 0.1);
+    document.getElementById('st-bar').style.width = stamina + "%";
+
+    // Camera rig
+    const camOffset = new THREE.Vector3(0, 6, 12).applyQuaternion(ronin.quaternion);
+    camera.position.lerp(ronin.position.clone().add(camOffset), 0.1);
+    camera.lookAt(ronin.position.x, 2, ronin.position.z);
+
+    updateMap();
+    document.getElementById('clock').innerText = new Date().toLocaleTimeString();
     renderer.render(scene, camera);
 }
 
-// Initial Sync
 animate();
 </script>
 </body>
