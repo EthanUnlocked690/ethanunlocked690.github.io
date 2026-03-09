@@ -3,181 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japanese Flashcards: Green & Gold Edition</title>
+    <title>Hiragana Boss Battle</title>
     <style>
-        :root {
-            --gold: #FFD700;
-            --forest-green: #006400;
-            --light-green: #e8f5e9;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light-green);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            color: var(--forest-green);
-        }
-
-        h1 {
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
-
-        #game-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 20px;
-            border: 5px solid var(--gold);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 350px;
-        }
-
-        #card {
-            font-size: 80px;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: transform 0.3s;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #card:hover {
-            transform: scale(1.05);
-        }
-
-        input {
-            padding: 12px;
-            font-size: 18px;
-            border: 2px solid var(--forest-green);
-            border-radius: 8px;
-            width: 80%;
-            margin-bottom: 15px;
-            outline: none;
-        }
-
-        button {
-            background-color: var(--forest-green);
-            color: var(--gold);
-            border: none;
-            padding: 10px 25px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        button:hover {
-            background-color: #004d00;
-            transform: translateY(-2px);
-        }
-
-        #feedback {
-            margin-top: 15px;
-            font-weight: bold;
-            height: 20px;
-        }
-
-        #score-board {
-            margin-top: 20px;
-            font-size: 14px;
-        }
+        :root { --gold: #FFD700; --green: #006400; --red: #ff4d4d; --bg: #f0fdf4; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; color: var(--green); }
+        #game-container { background: white; padding: 30px; border-radius: 20px; border: 6px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; width: 400px; position: relative; }
+        
+        /* Health Bars */
+        .health-container { width: 100%; height: 20px; background: #eee; border-radius: 10px; margin: 5px 0; overflow: hidden; border: 1px solid #ccc; }
+        .health-bar { height: 100%; transition: width 0.3s ease; }
+        #player-health { background: var(--green); width: 100%; }
+        #boss-health { background: var(--gold); width: 100%; }
+        
+        #boss-area { display: none; margin-bottom: 20px; }
+        #boss-sprite { font-size: 50px; margin-bottom: 10px; }
+        
+        #card { font-size: 80px; margin: 10px 0; font-weight: bold; height: 110px; display: flex; align-items: center; justify-content: center; }
+        input { padding: 12px; font-size: 18px; border: 2px solid var(--green); border-radius: 8px; width: 60%; text-align: center; outline: none; }
+        button { background: var(--green); color: var(--gold); border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        #feedback { margin-top: 10px; font-weight: bold; height: 20px; }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-    <h1>日本語 Flashcards</h1>
+    <h1 id="title">Hiragana Training</h1>
 
-    <div id-="game-container">
-        <div id="card">...</div>
-        
-        <input type="text" id="answer-input" placeholder="Type Romaji here..." autocomplete="off">
-        <br>
-        <button onclick="checkAnswer()">Check</button>
-
-        <div id="feedback"></div>
-
-        <div id="score-board">
-            Score: <span id="score">0</span> | Cards Left: <span id="left">0</span>
+    <div id="game-container">
+        <div id="boss-area">
+            <div id="boss-sprite">👹</div>
+            <div style="font-size: 12px; font-weight: bold;">BOSS HP</div>
+            <div class="health-container"><div id="boss-health" class="health-bar"></div></div>
+            <div style="font-size: 12px; font-weight: bold;">YOUR HP</div>
+            <div class="health-container"><div id="player-health" class="health-bar"></div></div>
         </div>
+
+        <div id="card">---</div>
+        <input type="text" id="answer-input" placeholder="?" autocomplete="off">
+        <br>
+        <button id="action-btn" onclick="handleInput()">Submit</button>
+        <div id="feedback"></div>
     </div>
 
     <script>
-        // You can add more words to this list!
-        const words = [
-            { jp: "こんにちは", ro: "konnichiwa" },
-            { jp: "ねこ", ro: "neko" },
-            { jp: "いぬ", ro: "inu" },
-            { jp: "ありがとう", ro: "arigatou" },
-            { jp: "みず", ro: "mizu" },
-            { jp: "すし", ro: "sushi" },
-            { jp: "せんせい", ro: "sensei" },
-            { jp: "さようなら", ro: "sayounara" }
+        const library = [
+            { jp: "か", ro: "ka" }, { jp: "き", ro: "ki" }, { jp: "く", ro: "ku" }, 
+            { jp: "が", ro: "ga" }, { jp: "ぎ", ro: "gi" }, { jp: "ぐ", ro: "gu" },
+            { jp: "さ", ro: "sa" }, { jp: "し", ro: "shi" }, { jp: "す", ro: "su" },
+            { jp: "ざ", ro: "za" }, { jp: "じ", ro: "ji" }, { jp: "ず", ro: "zu" },
+            { jp: "た", ro: "ta" }, { jp: "ち", ro: "chi" }, { jp: "つ", ro: "tsu" },
+            { jp: "だ", ro: "da" }, { jp: "ば", ro: "ba" }, { jp: "び", ro: "bi" }
         ];
 
-        let currentIndex = 0;
-        let score = 0;
-
-        const cardDisplay = document.getElementById('card');
-        const inputField = document.getElementById('answer-input');
-        const feedback = document.getElementById('feedback');
-        const scoreDisplay = document.getElementById('score');
-        const leftDisplay = document.getElementById('left');
-
-        function shuffle(array) {
-            array.sort(() => Math.random() - 0.5);
-        }
+        let isBossMode = false;
+        let currentCard = {};
+        let questionCount = 0;
+        let playerHP = 100;
+        let bossHP = 100;
 
         function nextCard() {
-            if (currentIndex < words.length) {
-                cardDisplay.innerText = words[currentIndex].jp;
-                inputField.value = "";
-                feedback.innerText = "";
-                leftDisplay.innerText = words.length - currentIndex;
-            } else {
-                cardDisplay.innerText = "🎉";
-                cardDisplay.style.fontSize = "40px";
-                cardDisplay.innerText = "Otsukaresama! (Done!)";
-                inputField.style.display = "none";
-                feedback.innerText = "Game Over!";
+            if (questionCount >= 5 && !isBossMode) {
+                startBossFight();
             }
+            currentCard = library[Math.floor(Math.random() * library.length)];
+            document.getElementById('card').innerText = currentCard.jp;
+            document.getElementById('answer-input').value = "";
+            document.getElementById('answer-input').focus();
         }
 
-        function checkAnswer() {
-            const userGuess = inputField.value.toLowerCase().trim();
-            const correctAnswer = words[currentIndex].ro;
+        function startBossFight() {
+            isBossMode = true;
+            document.getElementById('title').innerText = "BOSS BATTLE!";
+            document.getElementById('boss-area').style.display = "block";
+            document.getElementById('game-container').style.borderColor = "var(--red)";
+        }
 
-            if (userGuess === correctAnswer) {
-                score++;
+        function handleInput() {
+            const input = document.getElementById('answer-input').value.toLowerCase().trim();
+            const feedback = document.getElementById('feedback');
+            const container = document.getElementById('game-container');
+
+            if (input === currentCard.ro) {
+                feedback.innerText = "Nice Hit! ✨";
                 feedback.style.color = "green";
-                feedback.innerText = "Correct! ✨";
-                currentIndex++;
-                scoreDisplay.innerText = score;
-                setTimeout(nextCard, 1000);
+                if (isBossMode) {
+                    bossHP -= 20;
+                    document.getElementById('boss-health').style.width = bossHP + "%";
+                }
+                questionCount++;
             } else {
+                feedback.innerText = "Miss! ❌";
                 feedback.style.color = "red";
-                feedback.innerText = "Try again!";
-                inputField.value = "";
+                container.classList.add('shake');
+                setTimeout(() => container.classList.remove('shake'), 500);
+                
+                if (isBossMode) {
+                    playerHP -= 25;
+                    document.getElementById('player-health').style.width = playerHP + "%";
+                }
             }
+
+            if (bossHP <= 0) {
+                document.getElementById('card').innerText = "🏆";
+                feedback.innerText = "YOU WIN!";
+                document.getElementById('answer-input').style.display = "none";
+                return;
+            }
+
+            if (playerHP <= 0) {
+                document.getElementById('card').innerText = "💀";
+                feedback.innerText = "GAME OVER";
+                document.getElementById('answer-input').style.display = "none";
+                return;
+            }
+
+            setTimeout(nextCard, 600);
         }
 
-        // Allow pressing "Enter" to submit
-        inputField.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                checkAnswer();
-            }
+        document.getElementById('answer-input').addEventListener("keypress", (e) => {
+            if (e.key === "Enter") handleInput();
         });
 
-        // Initialize game
-        shuffle(words);
         nextCard();
     </script>
 </body>
