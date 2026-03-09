@@ -2,130 +2,176 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hiragana Boss Battle</title>
+    <title>The Ronin's Pilgrimage</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
-        :root { --gold: #FFD700; --green: #006400; --red: #ff4d4d; --bg: #f0fdf4; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; color: var(--green); }
-        #game-container { background: white; padding: 30px; border-radius: 20px; border: 6px solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; width: 400px; position: relative; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Garamond', serif; color: #d4af37; }
+        #ui { position: absolute; inset: 0; pointer-events: none; }
+        .hud { pointer-events: auto; background: rgba(15, 10, 5, 0.9); border: 2px solid #5a4025; padding: 15px; position: absolute; }
         
-        /* Health Bars */
-        .health-container { width: 100%; height: 20px; background: #eee; border-radius: 10px; margin: 5px 0; overflow: hidden; border: 1px solid #ccc; }
-        .health-bar { height: 100%; transition: width 0.3s ease; }
-        #player-health { background: var(--green); width: 100%; }
-        #boss-health { background: var(--gold); width: 100%; }
-        
-        #boss-area { display: none; margin-bottom: 20px; }
-        #boss-sprite { font-size: 50px; margin-bottom: 10px; }
-        
-        #card { font-size: 80px; margin: 10px 0; font-weight: bold; height: 110px; display: flex; align-items: center; justify-content: center; }
-        input { padding: 12px; font-size: 18px; border: 2px solid var(--green); border-radius: 8px; width: 60%; text-align: center; outline: none; }
-        button { background: var(--green); color: var(--gold); border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        #feedback { margin-top: 10px; font-weight: bold; height: 20px; }
-        .shake { animation: shake 0.5s; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        /* Navigation & Weather */
+        #top-left { top: 20px; left: 20px; border-left: 5px solid #d4af37; }
+        .weather-tag { color: #88ccee; font-size: 12px; text-transform: uppercase; }
+
+        /* Map & Compass */
+        #map-box { top: 20px; right: 20px; width: 160px; height: 160px; border-radius: 50%; border: 3px double #d4af37; overflow: hidden; }
+        #map-canvas { background: #0a0a0a; width: 100%; height: 100%; }
+        #compass-needle { position: absolute; top: 10px; right: 80px; font-weight: bold; font-size: 24px; color: #ff4500; }
+
+        /* Combat HUD */
+        #combat-hud { bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; }
+        .hp-bar { width: 300px; height: 12px; background: #222; border: 1px solid #d4af37; margin: 5px 0; }
+        #boss-hp-fill { height: 100%; background: #d4af37; width: 0%; transition: width 0.3s; }
+
+        #action-hint { font-size: 14px; color: #aaa; margin-top: 10px; }
+        #save-status { position: absolute; bottom: 20px; right: 20px; font-size: 10px; color: #4CAF50; opacity: 0; }
     </style>
 </head>
 <body>
 
-    <h1 id="title">Hiragana Training</h1>
-
-    <div id="game-container">
-        <div id="boss-area">
-            <div id="boss-sprite">👹</div>
-            <div style="font-size: 12px; font-weight: bold;">BOSS HP</div>
-            <div class="health-container"><div id="boss-health" class="health-bar"></div></div>
-            <div style="font-size: 12px; font-weight: bold;">YOUR HP</div>
-            <div class="health-container"><div id="player-health" class="health-bar"></div></div>
+    <div id="ui">
+        <div id="top-left" class="hud">
+            <div id="clock-text">MIDDAY</div>
+            <div id="weather-text" class="weather-tag">CLEAR SKIES</div>
+            <div style="font-size: 12px; margin-top: 5px;">YEAR PROGRESS: <span id="year-pc">0.00</span>%</div>
         </div>
 
-        <div id="card">---</div>
-        <input type="text" id="answer-input" placeholder="?" autocomplete="off">
-        <br>
-        <button id="action-btn" onclick="handleInput()">Submit</button>
-        <div id="feedback"></div>
+        <div id="map-box" class="hud">
+            <div id="compass-needle">N</div>
+            <canvas id="map-canvas"></canvas>
+        </div>
+
+        <div id="combat-hud">
+            <div id="boss-name" style="display:none; letter-spacing: 4px;">ANCIENT GUARDIAN</div>
+            <div id="boss-hp-container" style="display:none;" class="hp-bar"><div id="boss-hp-fill"></div></div>
+            <div id="action-hint">WASD to Move | CLICK to Fire Greatbow</div>
+        </div>
+
+        <div id="save-status">JOURNAL UPDATED</div>
     </div>
 
-    <script>
-        const library = [
-            { jp: "か", ro: "ka" }, { jp: "き", ro: "ki" }, { jp: "く", ro: "ku" }, 
-            { jp: "が", ro: "ga" }, { jp: "ぎ", ro: "gi" }, { jp: "ぐ", ro: "gu" },
-            { jp: "さ", ro: "sa" }, { jp: "し", ro: "shi" }, { jp: "す", ro: "su" },
-            { jp: "ざ", ro: "za" }, { jp: "じ", ro: "ji" }, { jp: "ず", ro: "zu" },
-            { jp: "た", ro: "ta" }, { jp: "ち", ro: "chi" }, { jp: "つ", ro: "tsu" },
-            { jp: "だ", ro: "da" }, { jp: "ば", ro: "ba" }, { jp: "び", ro: "bi" }
-        ];
+<script>
+/** * PERSISTENCE & WEATHER SYNC
+ */
+let gameData = JSON.parse(localStorage.getItem('ronin_save')) || {
+    x: 0, z: 0, dist: 0, level: 1, bossHp: 5000, startDate: Date.now()
+};
 
-        let isBossMode = false;
-        let currentCard = {};
-        let questionCount = 0;
-        let playerHP = 100;
-        let bossHP = 100;
+async function syncWeather() {
+    try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.44&longitude=151.44&current=weather_code');
+        const data = await res.json();
+        const code = data.current.weather_code;
+        const weather = code >= 51 ? "Rain" : (code >= 1 ? "Cloudy" : "Clear");
+        document.getElementById('weather-text').innerText = `${weather} in Terrigal`;
+        scene.fog.density = weather === "Rain" ? 0.05 : 0.01;
+    } catch(e) {}
+}
 
-        function nextCard() {
-            if (questionCount >= 5 && !isBossMode) {
-                startBossFight();
-            }
-            currentCard = library[Math.floor(Math.random() * library.length)];
-            document.getElementById('card').innerText = currentCard.jp;
-            document.getElementById('answer-input').value = "";
-            document.getElementById('answer-input').focus();
+/** 3D ENGINE **/
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x000000, 0.01);
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 5000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Celestial Objects
+const sun = new THREE.DirectionalLight(0xffffff, 1);
+scene.add(sun);
+const moon = new THREE.PointLight(0x4444ff, 0.5, 500);
+scene.add(moon);
+
+// Player (The Ronin)
+const player = new THREE.Group();
+const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1, 4, 8), new THREE.MeshStandardMaterial({color: 0x333333}));
+player.add(body);
+player.position.set(gameData.x, 1, gameData.z);
+scene.add(player);
+
+// The Boss (A massive ancient monolith far to the North)
+const boss = new THREE.Mesh(new THREE.BoxGeometry(10, 40, 10), new THREE.MeshStandardMaterial({color: 0x1a1a1a, emissive: 0x220000}));
+boss.position.set(0, 20, -1000); // 1km away
+scene.add(boss);
+
+const ground = new THREE.GridHelper(10000, 200, 0x222222, 0x111111);
+scene.add(ground);
+
+/** COMBAT SYSTEM **/
+let arrows = [];
+function fireArrow() {
+    const arrow = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1), new THREE.MeshBasicMaterial({color: 0xd4af37}));
+    arrow.position.copy(player.position);
+    arrow.rotation.x = Math.PI / 2;
+    arrow.velocity = new THREE.Vector3(0, 0, -2);
+    scene.add(arrow);
+    arrows.push(arrow);
+}
+
+/** GAME LOOP **/
+let keys = {};
+function loop() {
+    requestAnimationFrame(loop);
+    
+    // Day/Night Logic (20m Cycle)
+    const now = Date.now();
+    const cycle = 20 * 60 * 1000;
+    const isDay = (now % (cycle * 2)) < cycle;
+    document.getElementById('clock-text').innerText = isDay ? "DAY" : "NIGHT";
+    sun.intensity = isDay ? 1 : 0.05;
+    scene.background = new THREE.Color(isDay ? 0x0a0a14 : 0x000000);
+
+    // WASD Movement
+    const speed = 0.25;
+    if(keys['w']) player.position.z -= speed;
+    if(keys['s']) player.position.z += speed;
+    if(keys['a']) player.position.x -= speed;
+    if(keys['d']) player.position.x += speed;
+
+    // Camera follow
+    camera.position.set(player.position.x, 10, player.position.z + 15);
+    camera.lookAt(player.position);
+
+    // Map & Progress
+    const distToBoss = player.position.distanceTo(boss.position);
+    const progress = Math.max(0, (1 - (distToBoss / 1000)) * 100);
+    document.getElementById('year-pc').innerText = progress.toFixed(4);
+    
+    if(distToBoss < 150) {
+        document.getElementById('boss-name').style.display = 'block';
+        document.getElementById('boss-hp-container').style.display = 'block';
+        document.getElementById('boss-hp-fill').style.width = (gameData.bossHp / 5000 * 100) + "%";
+    }
+
+    // Arrow Physics
+    arrows.forEach((a, i) => {
+        a.position.add(a.velocity);
+        if(a.position.distanceTo(boss.position) < 10) {
+            gameData.bossHp -= 10;
+            scene.remove(a);
+            arrows.splice(i, 1);
         }
+        if(a.position.z < player.position.z - 200) { scene.remove(a); arrows.splice(i, 1); }
+    });
 
-        function startBossFight() {
-            isBossMode = true;
-            document.getElementById('title').innerText = "BOSS BATTLE!";
-            document.getElementById('boss-area').style.display = "block";
-            document.getElementById('game-container').style.borderColor = "var(--red)";
-        }
+    renderer.render(scene, camera);
+}
 
-        function handleInput() {
-            const input = document.getElementById('answer-input').value.toLowerCase().trim();
-            const feedback = document.getElementById('feedback');
-            const container = document.getElementById('game-container');
+// Input & Save
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+window.addEventListener('mousedown', () => fireArrow());
 
-            if (input === currentCard.ro) {
-                feedback.innerText = "Nice Hit! ✨";
-                feedback.style.color = "green";
-                if (isBossMode) {
-                    bossHP -= 20;
-                    document.getElementById('boss-health').style.width = bossHP + "%";
-                }
-                questionCount++;
-            } else {
-                feedback.innerText = "Miss! ❌";
-                feedback.style.color = "red";
-                container.classList.add('shake');
-                setTimeout(() => container.classList.remove('shake'), 500);
-                
-                if (isBossMode) {
-                    playerHP -= 25;
-                    document.getElementById('player-health').style.width = playerHP + "%";
-                }
-            }
+setInterval(() => {
+    gameData.x = player.position.x;
+    gameData.z = player.position.z;
+    localStorage.setItem('ronin_save', JSON.stringify(gameData));
+    document.getElementById('save-status').style.opacity = 1;
+    setTimeout(() => document.getElementById('save-status').style.opacity = 0, 1000);
+}, 5000);
 
-            if (bossHP <= 0) {
-                document.getElementById('card').innerText = "🏆";
-                feedback.innerText = "YOU WIN!";
-                document.getElementById('answer-input').style.display = "none";
-                return;
-            }
-
-            if (playerHP <= 0) {
-                document.getElementById('card').innerText = "💀";
-                feedback.innerText = "GAME OVER";
-                document.getElementById('answer-input').style.display = "none";
-                return;
-            }
-
-            setTimeout(nextCard, 600);
-        }
-
-        document.getElementById('answer-input').addEventListener("keypress", (e) => {
-            if (e.key === "Enter") handleInput();
-        });
-
-        nextCard();
-    </script>
+syncWeather();
+loop();
+</script>
 </body>
 </html>
