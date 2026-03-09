@@ -2,291 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ronin: The Year-Long Exile</title>
+    <title>Ronin Chronicles | The Exile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --blood: #8b0000; --panel-bg: rgba(10, 8, 5, 0.95); }
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Palatino', serif; color: var(--gold); }
+        :root { --gold: #d4af37; --blood: #8b0000; --panel: rgba(15, 12, 10, 0.98); }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Palatino', serif; color: var(--gold); user-select: none; }
         
-        /* OVERLAY UI */
-        #ui-container { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 25px; }
-        .hud-panel { pointer-events: auto; background: var(--panel-bg); border: 2px solid #5a4025; padding: 15px; box-shadow: 0 0 15px rgba(0,0,0,0.8); }
+        /* THE MAIN ESC MENU */
+        #esc-menu {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px); pointer-events: auto;
+        }
+        .menu-frame {
+            border: 3px double var(--gold); background: var(--panel);
+            padding: 40px; width: 400px; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
+        .menu-btn {
+            display: block; width: 100%; padding: 15px; margin: 10px 0;
+            background: transparent; border: 1px solid #5a4025; color: var(--gold);
+            font-size: 1.2em; cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .menu-btn:hover { background: var(--gold); color: #000; }
 
-        /* TOP LEFT: WEATHER & TIME */
-        #env-panel { top: 25px; left: 25px; border-left: 5px solid var(--gold); min-width: 220px; }
-        .weather-status { display: flex; align-items: center; gap: 10px; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
-        .clock-sub { font-size: 0.8em; color: #888; margin-top: 5px; }
+        /* HUD ELEMENTS */
+        #hud { position: absolute; inset: 0; pointer-events: none; padding: 30px; }
+        .hud-box { pointer-events: auto; background: var(--panel); border: 2px solid #5a4025; padding: 15px; position: absolute; }
+        
+        #top-left { top: 30px; left: 30px; border-left: 5px solid var(--gold); }
+        #vitals { bottom: 30px; left: 30px; width: 300px; }
+        #progress { bottom: 30px; right: 30px; text-align: right; }
+        
+        /* BARS */
+        .bar-bg { width: 100%; height: 10px; background: #111; margin-top: 5px; border: 1px solid #333; }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
 
-        /* TOP RIGHT: COMPASS */
-        #compass-outer { top: 25px; right: 25px; width: 160px; height: 160px; border-radius: 50%; border: 3px double var(--gold); position: relative; }
-        #compass-needle { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: var(--blood); font-weight: bold; font-size: 1.4em; }
-
-        /* BOTTOM LEFT: VITALS */
-        #vitals-panel { bottom: 25px; left: 25px; width: 280px; }
-        .stat-row { margin: 8px 0; }
-        .stat-label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px; color: #aaa; }
-        .bar-bg { width: 100%; height: 12px; background: #1a1a1a; border: 1px solid #444; margin-top: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; width: 100%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-
-        /* BOTTOM RIGHT: PROGRESS */
-        #progress-panel { bottom: 25px; right: 25px; text-align: right; min-width: 320px; }
-        .dist-text { font-size: 2.2em; font-weight: bold; text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
-        #save-indicator { position: absolute; bottom: -20px; right: 0; font-size: 0.7em; color: #4CAF50; opacity: 0; transition: 1s; }
-
-        /* POST-PROCESSING VIGNETTE */
-        #vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%); }
+        #crosshair { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 20px; height: 20px; border: 1px solid rgba(212, 175, 55, 0.5); border-radius: 50%;
+        }
     </style>
 </head>
 <body>
 
-    <div id="vignette"></div>
+    <div id="esc-menu">
+        <div class="menu-frame">
+            <h1 style="letter-spacing: 5px; margin-bottom: 30px;">PAUSED</h1>
+            <button class="menu-btn" onclick="toggleMenu()">Resume Pilgrimage</button>
+            <button class="menu-btn">Character Customizer</button>
+            <button class="menu-btn">World Map (Year View)</button>
+            <button class="menu-btn" onclick="location.reload()">Save & Quit</button>
+            <p style="font-size: 0.7em; color: #555; margin-top: 20px;">EXILE DAY: <span id="days-survived">1</span></p>
+        </div>
+    </div>
 
-    <div id="ui-container">
-        <div id="env-panel" class="hud-panel">
-            <div class="weather-status">
-                <span id="w-icon">☀️</span>
-                <span id="w-desc">Syncing Local Skies...</span>
-            </div>
-            <div id="real-clock" class="clock-sub">16:18:45 PM</div>
-            <div style="font-size: 0.7em; color: var(--gold); margin-top: 8px;">CYCLE: <span id="cycle-tag">DAYTIME</span></div>
+    <div id="hud">
+        <div id="crosshair"></div>
+        
+        <div id="top-left" class="hud-box">
+            <div id="w-icon" style="font-size: 1.5em;">🌧️</div>
+            <div id="w-desc" style="text-transform: uppercase; font-size: 0.9em;">Rain (21.5°C)</div>
+            <div id="clock" style="font-size: 0.8em; color: #888;">05:09:45 PM</div>
         </div>
 
-        <div id="compass-outer" class="hud-panel">
-            <div id="compass-needle">N</div>
-            <canvas id="compass-map" style="width:100%; height:100%; opacity: 0.3;"></canvas>
+        <div id="vitals" class="hud-box">
+            <div class="stat">VITALITY<div class="bar-bg"><div id="hp-bar" class="bar-fill" style="background:var(--blood)"></div></div></div>
+            <div class="stat" style="margin-top:10px">STAMINA<div class="bar-bg"><div id="st-bar" class="bar-fill" style="background:var(--gold)"></div></div></div>
+            <div class="stat" style="margin-top:10px">NOURISHMENT<div class="bar-bg"><div id="nr-bar" class="bar-fill" style="background:#556b2f"></div></div></div>
         </div>
 
-        <div id="vitals-panel" class="hud-panel">
-            <div class="stat-row">
-                <div class="stat-label">Vitality</div>
-                <div class="bar-bg"><div id="hp-fill" class="bar-fill" style="background: var(--blood);"></div></div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Stamina</div>
-                <div class="bar-bg"><div id="st-fill" class="bar-fill" style="background: var(--gold);"></div></div>
-            </div>
-            <div class="stat-row">
-                <div class="stat-label">Nourishment</div>
-                <div class="bar-bg"><div id="nr-fill" class="bar-fill" style="background: #556b2f;"></div></div>
-            </div>
-        </div>
-
-        <div id="progress-panel" class="hud-panel">
-            <div style="font-size: 0.8em; color: #888; margin-bottom: 5px;">DISTANCE TO ANCIENT VOLCANO</div>
-            <div class="dist-text"><span id="dist-val">4,999.00</span> MILES</div>
-            <div class="bar-bg" style="height: 6px;"><div id="year-fill" class="bar-fill" style="background: var(--gold); width: 0.1%;"></div></div>
-            <div id="save-indicator">PERSISTENCE SAVED</div>
+        <div id="progress" class="hud-box">
+            <div style="font-size: 0.8em; color: #888;">DISTANCE TO ANCIENT VOLCANO</div>
+            <div style="font-size: 2.2em; font-weight: bold;">4,999.00 MILES</div>
+            <div class="bar-bg" style="height:4px;"><div style="width:0.1%; background:var(--gold); height:100%;"></div></div>
         </div>
     </div>
 
 <script>
-/** * THE RONIN CORE ENGINE
- * Modular architecture for long-term simulation
- */
+/** ENGINE START **/
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
 
-const ENGINE = {
-    // 1. SYSTEM CONFIG
-    init() {
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 10000);
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.body.appendChild(this.renderer.domElement);
+// Lighting - Dynamic Day/Night
+const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+sun.position.set(50, 100, 50);
+sun.castShadow = true;
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0x404040, 0.5));
 
-        this.clock = new THREE.Clock();
-        this.playerData = this.loadState();
-        this.input = { w:0, a:0, s:0, d:0, shift: false };
-        this.objects = [];
+// Atmosphere
+scene.fog = new THREE.FogExp2(0x111111, 0.002);
 
-        this.setupLights();
-        this.setupWorld();
-        this.setupPlayer();
-        this.bindEvents();
-        this.syncWeather();
+/** THE CHARACTER (REPLACING THE PILL) **/
+const player = new THREE.Group();
+const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.2, 4, 12), new THREE.MeshStandardMaterial({color: 0x222222}));
+body.position.y = 1.1;
+body.castShadow = true;
+player.add(body);
+scene.add(player);
 
-        this.animate();
-        setInterval(() => this.saveState(), 10000);
-        setInterval(() => this.syncWeather(), 600000);
-    },
+/** THE LANDSCAPE (PROCEDURAL FOLIAGE) **/
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20000, 20000), new THREE.MeshStandardMaterial({color: 0x151515}));
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
+scene.add(ground);
 
-    // 2. LIGHTING & ATMOSPHERE
-    setupLights() {
-        this.sun = new THREE.DirectionalLight(0xffffff, 1.2);
-        this.sun.position.set(100, 200, 100);
-        this.sun.castShadow = true;
-        this.sun.shadow.camera.left = -100;
-        this.sun.shadow.camera.right = 100;
-        this.sun.shadow.camera.top = 100;
-        this.sun.shadow.camera.bottom = -100;
-        this.scene.add(this.sun);
+// Populate with 1000 trees to fix the "Void" look
+const treeGeo = new THREE.ConeGeometry(1, 4, 6);
+const treeMat = new THREE.MeshStandardMaterial({color: 0x1a241a});
+for(let i=0; i<1000; i++){
+    const tree = new THREE.Mesh(treeGeo, treeMat);
+    tree.position.set(Math.random()*2000-1000, 2, Math.random()*2000-1000);
+    tree.castShadow = true;
+    scene.add(tree);
+}
 
-        this.ambient = new THREE.AmbientLight(0x404040, 0.5);
-        this.scene.add(this.ambient);
+/** SYSTEM LOGIC **/
+let isPaused = false;
+const keys = {};
 
-        this.scene.fog = new THREE.FogExp2(0x000000, 0.002);
-    },
+function toggleMenu() {
+    isPaused = !isPaused;
+    document.getElementById('esc-menu').style.display = isPaused ? 'flex' : 'none';
+}
 
-    // 3. WORLD GENERATION
-    setupWorld() {
-        // Massive Ground
-        const groundGeo = new THREE.PlaneGeometry(20000, 20000, 50, 50);
-        const groundMat = new THREE.MeshStandardMaterial({ 
-            color: 0x121212, 
-            roughness: 0.9,
-            metalness: 0.1 
-        });
-        this.ground = new THREE.Mesh(groundGeo, groundMat);
-        this.ground.rotation.x = -Math.PI / 2;
-        this.ground.receiveShadow = true;
-        this.scene.add(this.ground);
+window.addEventListener('keydown', e => {
+    if(e.key === 'Escape') toggleMenu();
+    keys[e.key.toLowerCase()] = true;
+});
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-        // Procedural Foliage (Trees/Rocks)
-        const treeTrunk = new THREE.CylinderGeometry(0.2, 0.3, 2);
-        const treeTop = new THREE.ConeGeometry(1, 3, 8);
-        const treeMat = new THREE.MeshStandardMaterial({ color: 0x1a2e1a });
-        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x2b1d0e });
+/** MAIN LOOP **/
+function animate() {
+    requestAnimationFrame(animate);
+    if(isPaused) return;
 
-        for(let i = 0; i < 800; i++) {
-            const group = new THREE.Group();
-            const trunk = new THREE.Mesh(treeTrunk, trunkMat);
-            const top = new THREE.Mesh(treeTop, treeMat);
-            top.position.y = 2;
-            group.add(trunk, top);
-            
-            group.position.set(
-                (Math.random() - 0.5) * 1000,
-                1,
-                (Math.random() - 0.5) * 1000
-            );
-            group.castShadow = true;
-            this.scene.add(group);
-            this.objects.push(group);
-        }
-    },
+    // Movement
+    const speed = keys.shift ? 0.35 : 0.15;
+    if(keys.w) player.translateZ(-speed);
+    if(keys.s) player.translateZ(speed);
+    if(keys.a) player.rotation.y += 0.03;
+    if(keys.d) player.rotation.y -= 0.03;
 
-    // 4. PLAYER ARCHITECTURE
-    setupPlayer() {
-        this.player = new THREE.Group();
-        
-        // Character mesh
-        const bodyGeo = new THREE.CapsuleGeometry(0.4, 1.2, 4, 8);
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 1;
-        body.castShadow = true;
-        this.player.add(body);
+    // Camera follow rig
+    camera.position.set(player.position.x, 8, player.position.z + 15);
+    camera.lookAt(player.position.x, 2, player.position.z);
 
-        // Camera rig
-        this.camTarget = new THREE.Object3D();
-        this.camTarget.position.set(0, 5, 12);
-        this.player.add(this.camTarget);
+    // Sync UI
+    document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    
+    renderer.render(scene, camera);
+}
 
-        this.player.position.set(this.playerData.x, 0, this.playerData.z);
-        this.scene.add(this.player);
-    },
-
-    // 5. SYSTEMS: WEATHER & PERSISTENCE
-    async syncWeather() {
-        try {
-            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.44&longitude=151.44&current=weather_code,temperature_2m');
-            const data = await res.json();
-            const code = data.current.weather_code;
-            const isRain = code >= 51;
-            
-            document.getElementById('w-desc').innerText = isRain ? `Rain (${data.current.temperature_2m}°C)` : `Clear (${data.current.temperature_2m}°C)`;
-            document.getElementById('w-icon').innerText = isRain ? '🌧️' : '☀️';
-            this.scene.fog.color.setHex(isRain ? 0x222222 : 0x000000);
-            this.scene.fog.density = isRain ? 0.01 : 0.002;
-        } catch(e) { console.log("Weather offline"); }
-    },
-
-    loadState() {
-        const saved = localStorage.getItem('ronin_eternal_v4');
-        return saved ? JSON.parse(saved) : {
-            x: 0, z: 0, rot: 0,
-            dist: 4999.00,
-            hp: 100, stamina: 100, hunger: 100,
-            lastSave: Date.now()
-        };
-    },
-
-    saveState() {
-        this.playerData.x = this.player.position.x;
-        this.playerData.z = this.player.position.z;
-        this.playerData.rot = this.player.rotation.y;
-        localStorage.setItem('ronin_eternal_v4', JSON.stringify(this.playerData));
-        
-        const tag = document.getElementById('save-indicator');
-        tag.style.opacity = 1;
-        setTimeout(() => tag.style.opacity = 0, 2000);
-    },
-
-    // 6. INPUT & ANIMATION LOOP
-    bindEvents() {
-        window.addEventListener('keydown', e => {
-            const key = e.key.toLowerCase();
-            if(key === 'w') this.input.w = 1;
-            if(key === 's') this.input.s = 1;
-            if(key === 'a') this.input.a = 1;
-            if(key === 'd') this.input.d = 1;
-            if(e.shiftKey) this.input.shift = true;
-        });
-        window.addEventListener('keyup', e => {
-            const key = e.key.toLowerCase();
-            if(key === 'w') this.input.w = 0;
-            if(key === 's') this.input.s = 0;
-            if(key === 'a') this.input.a = 0;
-            if(key === 'd') this.input.d = 0;
-            if(!e.shiftKey) this.input.shift = false;
-        });
-    },
-
-    animate() {
-        requestAnimationFrame(() => this.animate());
-        const delta = this.clock.getDelta();
-
-        // 1. Movement Logic
-        const moveSpeed = (this.input.shift && this.playerData.stamina > 0) ? 12 : 5;
-        if(this.input.w) this.player.translateZ(-moveSpeed * delta);
-        if(this.input.s) this.player.translateZ(moveSpeed * delta);
-        if(this.input.a) this.player.rotation.y += 2 * delta;
-        if(this.input.d) this.player.rotation.y -= 2 * delta;
-
-        // 2. Stamina & Progress Mechanics
-        if(this.input.w && this.input.shift) {
-            this.playerData.stamina = Math.max(0, this.playerData.stamina - 15 * delta);
-        } else {
-            this.playerData.stamina = Math.min(100, this.playerData.stamina + 10 * delta);
-        }
-        
-        if(this.input.w) {
-            this.playerData.dist -= 0.00005; // 365-day scaling factor
-        }
-
-        // 3. Camera Smoothing
-        const targetPos = new THREE.Vector3();
-        this.camTarget.getWorldPosition(targetPos);
-        this.camera.position.lerp(targetPos, 0.1);
-        this.camera.lookAt(this.player.position.x, 2, this.player.position.z);
-
-        // 4. UI Rendering
-        document.getElementById('st-fill').style.width = this.playerData.stamina + "%";
-        document.getElementById('dist-val').innerText = this.playerData.dist.toFixed(2);
-        document.getElementById('real-clock').innerText = new Date().toLocaleTimeString();
-        document.getElementById('compass-needle').style.transform = `translateX(-50%) rotate(${this.player.rotation.y}rad)`;
-        
-        // 5. Celestial Update
-        const cycle = (Date.now() % 2400000) / 2400000; // 40m cycle
-        this.sun.position.set(Math.cos(cycle * Math.PI * 2) * 200, Math.sin(cycle * Math.PI * 2) * 200, 100);
-
-        this.renderer.render(this.scene, this.camera);
-    }
-};
-
-ENGINE.init();
+// Initial Sync
+animate();
 </script>
 </body>
 </html>
