@@ -2,148 +2,143 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ronin: The Year-Long Exile</title>
+    <title>Ronin: The Eternal Exile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --blood: #8b0000; --panel: rgba(15, 12, 10, 0.95); }
+        :root { --gold: #d4af37; --bg: rgba(10, 8, 5, 0.95); }
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Georgia', serif; color: var(--gold); }
         
-        /* THE MAP (Top Right) */
-        #map-container {
-            position: absolute; top: 20px; right: 20px; width: 180px; height: 180px;
-            border: 3px double var(--gold); border-radius: 50%; overflow: hidden;
-            background: #050505; pointer-events: auto;
-        }
-        #map-canvas { width: 100%; height: 100%; }
-        #compass-n { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-weight: bold; color: var(--blood); }
-
-        /* ESC MENU (Fixed & Interactive) */
-        #esc-menu {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000;
+        /* FULL MAIN MENU */
+        #main-menu {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
-            pointer-events: auto;
         }
-        .menu-box { border: 2px solid var(--gold); background: var(--panel); padding: 40px; width: 350px; text-align: center; }
-        .menu-btn {
-            display: block; width: 100%; padding: 15px; margin: 10px 0;
-            background: #1a1a1a; border: 1px solid var(--gold); color: var(--gold);
-            cursor: pointer; font-size: 1rem; text-transform: uppercase;
+        .menu-card { border: 2px solid var(--gold); background: var(--bg); padding: 50px; width: 400px; text-align: center; box-shadow: 0 0 100px #000; }
+        .btn { 
+            display: block; width: 100%; padding: 15px; margin: 15px 0; 
+            background: #111; border: 1px solid var(--gold); color: var(--gold);
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
         }
-        .menu-btn:hover { background: var(--gold); color: #000; }
+        .btn:hover { background: var(--gold); color: #000; }
 
-        /* HUD */
+        /* HUD ELEMENTS */
         #hud { position: absolute; inset: 0; pointer-events: none; padding: 25px; }
-        .hud-box { pointer-events: auto; background: var(--panel); border: 1px solid #444; padding: 15px; }
-        #vitals { position: absolute; bottom: 25px; left: 25px; width: 280px; }
-        .bar-bg { width: 100%; height: 8px; background: #111; margin-top: 5px; border: 1px solid #333; }
-        .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
+        
+        /* TOP RIGHT: MAP & COMPASS */
+        #nav-cluster { position: absolute; top: 20px; right: 20px; width: 180px; text-align: center; pointer-events: auto; }
+        #map-frame { width: 180px; height: 180px; border: 2px solid var(--gold); border-radius: 50%; background: #050505; overflow: hidden; position: relative; }
+        #compass-n { position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-weight: bold; color: #8b0000; z-index: 10; }
+        #map-canvas { width: 100%; height: 100%; }
+
+        /* VITALS */
+        #vitals { position: absolute; bottom: 30px; left: 30px; width: 300px; background: var(--bg); padding: 20px; border: 1px solid #444; }
+        .bar-wrap { width: 100%; height: 10px; background: #111; margin: 10px 0; border: 1px solid #333; }
+        .bar { height: 100%; width: 100%; transition: width 0.3s; }
+
+        /* WEATHER/TIME */
+        #info-panel { position: absolute; top: 20px; left: 20px; background: var(--bg); padding: 15px; border-left: 4px solid var(--gold); }
     </style>
 </head>
 <body>
 
-    <div id="esc-menu">
-        <div class="menu-box">
-            <h2 style="letter-spacing: 4px;">SYSTEM PAUSED</h2>
-            <button class="menu-btn" onclick="toggleMenu()">Resume Journey</button>
-            <button class="menu-btn" onclick="resetPosition()">Reset to Start</button>
-            <button class="menu-btn" onclick="alert('Saving Progress...')">Manual Save</button>
-            <button class="menu-btn" onclick="window.close()">Quit Game</button>
+    <div id="main-menu">
+        <div class="menu-card">
+            <h1 style="letter-spacing: 10px;">RONIN</h1>
+            <p style="color: #666; font-size: 0.8em;">PAUSED</p>
+            <button class="btn" onclick="toggleMenu()">Resume</button>
+            <button class="btn" onclick="window.location.reload()">Save & Exit</button>
+            <div style="margin-top: 20px; font-size: 0.7em;">YEAR PROGRESS: <span id="year-pc">0.01</span>%</div>
         </div>
-    </div>
-
-    <div id="map-container">
-        <div id="compass-n">N</div>
-        <canvas id="map-canvas"></canvas>
     </div>
 
     <div id="hud">
-        <div class="hud-box" style="width: 200px;">
-            <div id="w-desc">☀️ CLEAR (21°C)</div>
-            <div id="clock" style="font-size: 0.8rem; color: #888;">00:00:00</div>
+        <div id="info-panel">
+            <div id="w-icon">☀️</div>
+            <div id="w-text">CLEAR SKIES</div>
+            <div id="clock" style="font-size: 0.8em; color: #888; margin-top: 5px;">00:00:00</div>
         </div>
 
-        <div id="vitals" class="hud-box">
-            VITALITY <div class="bar-bg"><div id="hp-bar" class="bar-fill" style="background:var(--blood)"></div></div>
-            STAMINA <div class="bar-bg"><div id="st-bar" class="bar-fill" style="background:var(--gold)"></div></div>
-            NOURISHMENT <div class="bar-bg"><div id="nr-bar" class="bar-fill" style="background:#445522"></div></div>
+        <div id="nav-cluster">
+            <div id="map-frame">
+                <div id="compass-n">N</div>
+                <canvas id="map-canvas" width="180" height="180"></canvas>
+            </div>
+        </div>
+
+        <div id="vitals">
+            VITALITY <div class="bar-wrap"><div id="hp-bar" class="bar" style="background:#8b0000"></div></div>
+            STAMINA <div class="bar-wrap"><div id="st-bar" class="bar" style="background:var(--gold)"></div></div>
         </div>
     </div>
 
 <script>
-/** 3D ENGINE **/
+/** ENGINE & WORLD SETUP **/
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 10000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Environment
-scene.background = new THREE.Color(0x0a0a0f);
-scene.fog = new THREE.FogExp2(0x0a0a0f, 0.002);
+// Celestial Objects
+const sun = new THREE.DirectionalLight(0xffffff, 1);
+const sunOrb = new THREE.Mesh(new THREE.SphereGeometry(5), new THREE.MeshBasicMaterial({color: 0xffffff}));
+const moonOrb = new THREE.Mesh(new THREE.SphereGeometry(4), new THREE.MeshBasicMaterial({color: 0xaaaaaa}));
+scene.add(sun, sunOrb, moonOrb);
 
-const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-sun.position.set(10, 50, 10);
-scene.add(sun, new THREE.AmbientLight(0x404040, 0.7));
+const starGeo = new THREE.BufferGeometry();
+const starCoords = [];
+for(let i=0; i<2000; i++) starCoords.push((Math.random()-0.5)*2000, (Math.random()-0.5)*2000, (Math.random()-0.5)*2000);
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
+const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({color: 0xffffff, size: 0.7}));
+scene.add(stars);
 
-// The World
-const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(10000, 10000, 50, 50),
-    new THREE.MeshStandardMaterial({ color: 0x111b11, wireframe: false })
-);
-ground.rotation.x = -Math.PI / 2;
+// Ground
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), new THREE.MeshStandardMaterial({color: 0x121212}));
+ground.rotation.x = -Math.PI/2;
 scene.add(ground);
 
-// Adding Trees so you can see movement
-const treeGeo = new THREE.ConeGeometry(1, 4, 8);
-const treeMat = new THREE.MeshStandardMaterial({color: 0x0f200f});
-for(let i=0; i<600; i++) {
-    const t = new THREE.Mesh(treeGeo, treeMat);
-    t.position.set(Math.random()*1000-500, 2, Math.random()*1000-500);
-    scene.add(t);
-}
-
-/** THE RONIN (Better than a pill!) **/
+// Player
 const ronin = new THREE.Group();
-const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 0.5), new THREE.MeshStandardMaterial({color: 0x332211}));
-torso.position.y = 1.2;
-const head = new THREE.Mesh(new THREE.SphereGeometry(0.3), new THREE.MeshStandardMaterial({color: 0xffdbac}));
-head.position.y = 2.0;
-ronin.add(torso, head);
+const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 1.5), new THREE.MeshStandardMaterial({color: 0x222}));
+body.position.y = 1;
+ronin.add(body);
 scene.add(ronin);
 
-/** MECHANICS **/
+/** WEATHER SYNC (TERRIGAL) **/
+async function syncWeather() {
+    try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-33.44&longitude=151.44&current=weather_code');
+        const data = await res.json();
+        const rain = data.current.weather_code >= 51;
+        document.getElementById('w-text').innerText = rain ? "RAINY" : "CLEAR";
+        document.getElementById('w-icon').innerText = rain ? "🌧️" : "☀️";
+        scene.fog = new THREE.FogExp2(rain ? 0x222222 : 0x050505, 0.002);
+    } catch(e) {}
+}
+
+/** INPUT SYSTEM (FIXED A/D INDEPENDENCE) **/
+const keys = {};
 let isPaused = false;
 let stamina = 100;
-const keys = {};
 
-function toggleMenu() {
-    isPaused = !isPaused;
-    document.getElementById('esc-menu').style.display = isPaused ? 'flex' : 'none';
-}
-
-function resetPosition() {
-    ronin.position.set(0,0,0);
-    toggleMenu();
-}
-
-window.addEventListener('keydown', e => {
+window.addEventListener('keydown', e => { 
     if(e.key === 'Escape') toggleMenu();
-    keys[e.key.toLowerCase()] = true;
+    keys[e.key.toLowerCase()] = true; 
 });
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-/** MINI-MAP LOGIC **/
-const mapCtx = document.getElementById('map-canvas').getContext('2d');
-function updateMap() {
-    mapCtx.clearRect(0, 0, 180, 180);
-    mapCtx.fillStyle = "#111";
-    mapCtx.fillRect(0,0,180,180);
-    
-    // Player on map
-    mapCtx.fillStyle = "#d4af37";
-    mapCtx.beginPath();
-    mapCtx.arc(90, 90, 4, 0, Math.PI*2);
-    mapCtx.fill();
+function toggleMenu() {
+    isPaused = !isPaused;
+    document.getElementById('main-menu').style.display = isPaused ? 'flex' : 'none';
+}
+
+/** MINI-MAP **/
+const mCtx = document.getElementById('map-canvas').getContext('2d');
+function drawMap() {
+    mCtx.fillStyle = "#050505";
+    mCtx.fillRect(0,0,180,180);
+    mCtx.strokeStyle = "#d4af37";
+    mCtx.strokeRect(85, 85, 10, 10); // Player pos
 }
 
 /** MAIN LOOP **/
@@ -151,35 +146,49 @@ function animate() {
     requestAnimationFrame(animate);
     if(isPaused) return;
 
-    const speed = keys.shift && stamina > 0 ? 0.4 : 0.18;
-    
-    // FIXED MOVEMENT (A/D now rotate the character)
-    if(keys.w) {
-        ronin.position.x -= Math.sin(ronin.rotation.y) * speed;
-        ronin.position.z -= Math.cos(ronin.rotation.y) * speed;
-    }
-    if(keys.s) {
-        ronin.position.x += Math.sin(ronin.rotation.y) * speed;
-        ronin.position.z += Math.cos(ronin.rotation.y) * speed;
-    }
-    if(keys.a) ronin.rotation.y += 0.04;
-    if(keys.d) ronin.rotation.y -= 0.04;
+    // THE FIX: Independent Vector Calculation
+    const wishDir = new THREE.Vector3(0, 0, 0);
+    if(keys.w) wishDir.z -= 1;
+    if(keys.s) wishDir.z += 1;
+    if(keys.a) wishDir.x -= 1;
+    if(keys.d) wishDir.x += 1;
 
-    // Stamina
-    if(keys.w && keys.shift) stamina = Math.max(0, stamina - 0.3);
-    else stamina = Math.min(100, stamina + 0.1);
-    document.getElementById('st-bar').style.width = stamina + "%";
+    if(wishDir.length() > 0) {
+        wishDir.normalize();
+        const speed = (keys.shift && stamina > 0) ? 0.35 : 0.15;
+        // Move relative to character facing
+        const moveVector = wishDir.applyQuaternion(ronin.quaternion);
+        ronin.position.add(moveVector.multiplyScalar(speed));
+        if(keys.shift) stamina = Math.max(0, stamina - 0.2);
+    } else {
+        stamina = Math.min(100, stamina + 0.1);
+    }
 
-    // Camera rig
-    const camOffset = new THREE.Vector3(0, 6, 12).applyQuaternion(ronin.quaternion);
-    camera.position.lerp(ronin.position.clone().add(camOffset), 0.1);
+    // Camera Turn (Q/E) or Mouse
+    if(keys.q) ronin.rotation.y += 0.04;
+    if(keys.e) ronin.rotation.y -= 0.04;
+
+    // Day/Night Cycle
+    const time = Date.now() * 0.0001;
+    sunOrb.position.set(Math.cos(time)*200, Math.sin(time)*200, -100);
+    moonOrb.position.set(Math.cos(time+Math.PI)*200, Math.sin(time+Math.PI)*200, -100);
+    sun.position.copy(sunOrb.position);
+    stars.visible = Math.sin(time) < 0;
+
+    // Camera Rig
+    const camPos = new THREE.Vector3(0, 6, 12).applyQuaternion(ronin.quaternion);
+    camera.position.lerp(ronin.position.clone().add(camPos), 0.1);
     camera.lookAt(ronin.position.x, 2, ronin.position.z);
 
-    updateMap();
+    // UI Updates
+    document.getElementById('st-bar').style.width = stamina + "%";
     document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+    drawMap();
+
     renderer.render(scene, camera);
 }
 
+syncWeather();
 animate();
 </script>
 </body>
