@@ -243,76 +243,39 @@
 
 <script>
   /*
-    ─── SETUP ───────────────────────────────────────────────────────────────────
-    To make this page fetch your real videos:
+    Videos are loaded from ../json/videos.json, which is generated
+    automatically by the GitHub Action at:
+      .github/workflows/fetch-videos.yml
 
-    1. Find your YouTube Channel ID:
-       - Go to youtube.com/@EthanUnlocked-the-GOAT
-       - View page source and search for "channel_id" or "externalId"
-       - It looks like: UCxxxxxxxxxxxxxxxxxxxxxxxx
+    That Action runs every hour (server-side, no CORS issues) and
+    commits an updated videos.json to the repo. No API keys needed.
 
-    2. Paste it below as CHANNEL_ID.
-
-    This page uses rss2json.com (free, no API key needed) to convert
-    YouTube's public RSS feed into JSON, which works from GitHub Pages.
-    ─────────────────────────────────────────────────────────────────────────── */
-
-  const CHANNEL_ID = 'UC2cZN8VOCTVkelLsw3KlFHA'; // ← paste your channel ID
-
-  /*
-    Uses the Piped API — open source YouTube frontend with CORS headers.
-    No API key needed. Falls back to secondary instances if primary is down.
+    To trigger it manually: GitHub repo → Actions tab →
+    "Fetch YouTube Videos" → Run workflow.
   */
-  const PIPED_INSTANCES = [
-    'https://pipedapi.kavin.rocks',
-    'https://pipedapi.tokhmi.xyz',
-    'https://pipedapi.moomoo.me',
-  ];
-
-  async function fetchVideos() {
-    for (const base of PIPED_INSTANCES) {
-      try {
-        console.log('Trying:', base);
-        const r = await fetch(`${base}/channel/${CHANNEL_ID}`);
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const data = await r.json();
-        if (!data.relatedStreams?.length) throw new Error('No videos');
-        return data.relatedStreams;
-      } catch (e) {
-        console.warn(`${base} failed: ${e.message}`);
-      }
-    }
-    throw new Error('All Piped instances failed');
-  }
 
   const grid      = document.getElementById('videoGrid');
   const filterBar = document.getElementById('filterBar');
-
   let allVideos   = [];
   let activeFilter = 'all';
 
-  /* ── Render with filter ── */
   function render() {
     const filtered = activeFilter === 'all'
       ? allVideos
       : allVideos.filter(v => v.dataset.type === activeFilter);
-
     grid.innerHTML = '';
-
-    if (filtered.length === 0) {
+    if (!filtered.length) {
       grid.innerHTML = `
         <div class="empty-state">
           <i class="fa-solid fa-film empty-icon"></i>
           <div class="empty-title">No ${activeFilter}s found</div>
-          <div class="empty-body">Try switching the filter above, or check the channel directly.</div>
+          <div class="empty-body">Try a different filter or check the channel directly.</div>
         </div>`;
       return;
     }
-
     filtered.forEach(card => grid.appendChild(card));
   }
 
-  /* ── Filter buttons ── */
   filterBar.addEventListener('click', e => {
     const btn = e.target.closest('.filter-btn');
     if (!btn) return;
@@ -322,88 +285,62 @@
     render();
   });
 
-  /* ── Fetch ── */
-  if (CHANNEL_ID === 'YOUR_CHANNEL_ID_HERE') {
-    // Demo mode — show placeholder message so the page isn't blank
-    grid.innerHTML = `
-      <div class="empty-state">
-        <i class="fa-brands fa-youtube empty-icon" style="color:var(--gold)"></i>
-        <div class="empty-title">Add your Channel ID</div>
-        <div class="empty-body">
-          Open <code style="background:var(--card-h);padding:2px 6px;border-radius:4px;font-size:.8rem">videos/index.html</code>
-          and paste your YouTube Channel ID into the <code style="background:var(--card-h);padding:2px 6px;border-radius:4px;font-size:.8rem">CHANNEL_ID</code> constant.
-          Your ID starts with <strong>UC</strong> and can be found in your channel's page source.
-        </div>
-        <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
-          <i class="fa-brands fa-youtube"></i> View Channel
-        </a>
-      </div>`;
-  } else {
-    fetchVideos()
-      .then(streams => {
-        console.log(`Got ${streams.length} videos from Piped`);
-
-        allVideos = streams.map(v => {
-          const id       = v.url?.split('v=')[1] ?? '';
-          const title    = v.title ?? '';
-          const thumb    = v.thumbnail ?? (id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '');
-          const isShort  = v.isShort || title.toLowerCase().includes('#short');
-          const type     = isShort ? 'short' : 'video';
-          const uploaded = v.uploadedDate ?? '';
-          const ytUrl    = `https://www.youtube.com/watch?v=${id}`;
-
-          const card = document.createElement('a');
-          card.className    = 'video-card';
-          card.href         = ytUrl;
-          card.target       = '_blank';
-          card.rel          = 'noopener noreferrer';
-          card.dataset.type = type;
-          card.innerHTML = `
-            <div class="video-thumb">
-              ${thumb ? `<img src="${thumb}" alt="${title}" loading="lazy">` : ''}
-              <div class="thumb-overlay"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
-              <span class="type-badge ${isShort ? 'type-short' : 'type-video'}">${isShort ? 'Short' : 'Video'}</span>
-            </div>
-            <div class="video-body">
-              <div class="video-title">${title}</div>
-              <div class="video-meta">
-                <span><i class="fa-regular fa-calendar"></i> ${uploaded}</span>
-              </div>
-            </div>`;
-          return card;
-        });
-
-        if (!allVideos.length) {
-          grid.innerHTML = `
-            <div class="empty-state">
-              <i class="fa-brands fa-youtube empty-icon" style="color:var(--gold)"></i>
-              <div class="empty-title">No videos yet</div>
-              <div class="empty-body">No public videos found on this channel. Check back soon.</div>
-              <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
-                <i class="fa-brands fa-youtube"></i> View Channel
-              </a>
-            </div>`;
-          return;
-        }
-
-        render();
-      })
-      .catch(err => {
-        console.error('Videos fetch failed:', err);
+  fetch('../json/videos.json')
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(videos => {
+      if (!videos.length) {
         grid.innerHTML = `
           <div class="empty-state">
-            <i class="fa-solid fa-triangle-exclamation empty-icon"></i>
-            <div class="empty-title">Couldn't load videos</div>
+            <i class="fa-brands fa-youtube empty-icon" style="color:var(--gold)"></i>
+            <div class="empty-title">No videos yet</div>
             <div class="empty-body">
-              Open DevTools (F12 → Console) to see the exact error.<br><br>
-              <strong>Error:</strong> <code style="background:var(--card-h);padding:2px 6px;border-radius:4px;font-size:.72rem">${err.message}</code>
+              The GitHub Action hasn't run yet. Go to your repo →
+              Actions tab → "Fetch YouTube Videos" → Run workflow.
+              It'll populate this page automatically.
             </div>
             <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
               <i class="fa-brands fa-youtube"></i> View Channel
             </a>
           </div>`;
+        return;
+      }
+
+      allVideos = videos.map(v => {
+        const card = document.createElement('a');
+        card.className    = 'video-card';
+        card.href         = v.url;
+        card.target       = '_blank';
+        card.rel          = 'noopener noreferrer';
+        card.dataset.type = v.isShort ? 'short' : 'video';
+        card.innerHTML = `
+          <div class="video-thumb">
+            <img src="${v.thumbnail}" alt="${v.title}" loading="lazy">
+            <div class="thumb-overlay"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
+            <span class="type-badge ${v.isShort ? 'type-short' : 'type-video'}">${v.isShort ? 'Short' : 'Video'}</span>
+          </div>
+          <div class="video-body">
+            <div class="video-title">${v.title}</div>
+            <div class="video-meta">
+              <span><i class="fa-regular fa-calendar"></i> ${new Date(v.published).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</span>
+            </div>
+          </div>`;
+        return card;
       });
-  }
+
+      render();
+    })
+    .catch(err => {
+      console.error('Failed to load videos.json:', err);
+      grid.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-triangle-exclamation empty-icon"></i>
+          <div class="empty-title">Couldn't load videos</div>
+          <div class="empty-body">Error: ${err.message}</div>
+          <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
+            <i class="fa-brands fa-youtube"></i> View Channel
+          </a>
+        </div>`;
+    });
 </script>
 </body>
 </html>

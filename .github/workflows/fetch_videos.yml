@@ -1,0 +1,74 @@
+name: Fetch YouTube Videos
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # runs every 6 hours
+  workflow_dispatch:          # lets you trigger it manually from GitHub
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch YouTube RSS and write JSON
+        run: |
+          CHANNEL_ID="UC2cZN8VOCTVkelLsw3KlFHA"
+          FEED_URL="https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}"
+
+          echo "Fetching: $FEED_URL"
+          curl -fsSL "$FEED_URL" -o /tmp/feed.xml
+
+          python3 - <<'EOF'
+          import xml.etree.ElementTree as ET
+          import json, os
+
+          NS = {
+            'atom':  'http://www.w3.org/2005/Atom',
+            'yt':    'http://www.youtube.com/xml/schemas/2015',
+            'media': 'http://search.yahoo.com/mrss/',
+          }
+
+          tree = ET.parse('/tmp/feed.xml')
+          root = tree.getroot()
+          videos = []
+
+          for entry in root.findall('atom:entry', NS):
+            video_id  = entry.find('yt:videoId',     NS).text
+            title     = entry.find('atom:title',     NS).text
+            published = entry.find('atom:published', NS).text
+            link      = entry.find('atom:link',      NS).attrib.get('href', '')
+            thumb     = f'https://i.ytimg.com/vi/{video_id}/hqdefault.jpg'
+            is_short  = '#short' in title.lower()
+
+            videos.append({
+              'id':        video_id,
+              'title':     title,
+              'url':       link,
+              'thumbnail': thumb,
+              'published': published,
+              'isShort':   is_short,
+            })
+
+          os.makedirs('json', exist_ok=True)
+          with open('json/videos.json', 'w') as f:
+            json.dump(videos, f, indent=2)
+
+          print(f'Wrote {len(videos)} videos to json/videos.json')
+          EOF
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add json/videos.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update videos.json [skip ci]"
+            git push
+          fi
