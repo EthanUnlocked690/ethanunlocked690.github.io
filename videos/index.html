@@ -260,7 +260,27 @@
   const CHANNEL_ID = 'UC2cZN8VOCTVkelLsw3KlFHA'; // ← paste your channel ID
 
   const RSS_URL  = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
-  const FETCH_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(RSS_URL)}`;
+  const PROXIES = [
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(RSS_URL)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(RSS_URL)}`,
+    `https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`,
+  ];
+
+  async function fetchWithFallback() {
+    for (const url of PROXIES) {
+      try {
+        console.log('Trying proxy:', url);
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const text = await r.text();
+        if (text.includes('<entry>')) return text; // sanity check
+        console.warn('Proxy returned no entries, trying next...');
+      } catch (e) {
+        console.warn('Proxy failed:', e.message, '— trying next...');
+      }
+    }
+    throw new Error('All proxies failed');
+  }
 
   const grid      = document.getElementById('videoGrid');
   const filterBar = document.getElementById('filterBar');
@@ -316,8 +336,7 @@
         </a>
       </div>`;
   } else {
-    fetch(FETCH_URL)
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+    fetchWithFallback()
       .then(xmlText => {
         const xml   = new DOMParser().parseFromString(xmlText, 'text/xml');
         const items = [...xml.querySelectorAll('entry')];
@@ -372,7 +391,7 @@
         render();
       })
       .catch(err => {
-        console.error('Videos fetch failed:', err, '\nURL tried:', FETCH_URL);
+        console.error('Videos fetch failed:', err);
         grid.innerHTML = `
           <div class="empty-state">
             <i class="fa-solid fa-triangle-exclamation empty-icon"></i>
