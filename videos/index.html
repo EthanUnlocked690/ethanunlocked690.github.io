@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Videos — TheUnlockedWeb</title>
+  <meta name="description" content="Watch the latest videos and shorts from EthanUnlocked.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../style.css">
+
+  <style>
+    /* ── Page header ──────────────────────── */
+    .page-header {
+      padding: 52px 0 48px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+    }
+    .page-title {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(2rem, 7vw, 3.8rem);
+      line-height: 1; letter-spacing: -0.03em;
+      background: linear-gradient(140deg, #fff 0%, #f5f3ff 20%, var(--gold) 48%, var(--gold-soft) 68%, #fff 88%);
+      background-size: 200% auto;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 7s 0.4s linear infinite,
+                 fadeUp  .7s      cubic-bezier(.22,1,.36,1) both;
+    }
+    .page-sub {
+      font-size: .88rem; color: var(--sub); font-weight: 500;
+      animation: fadeUp .6s .15s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    /* ── Filter bar ───────────────────────── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 8px;
+      flex-wrap: wrap; margin-bottom: 28px;
+      animation: fadeUp .6s .22s cubic-bezier(.22,1,.36,1) both;
+    }
+    .filter-btn {
+      font-family: 'Manrope', sans-serif; font-size: .75rem; font-weight: 600;
+      padding: 6px 14px; border-radius: 99px;
+      border: 1px solid var(--border); background: transparent; color: var(--sub);
+      cursor: pointer;
+      transition: color .16s, border-color .16s, background .16s, transform .16s;
+    }
+    .filter-btn:hover { color: var(--text); border-color: var(--border-h); transform: translateY(-1px); }
+    .filter-btn.active { background: var(--gold-gl); border-color: rgba(245,158,11,.35); color: var(--gold); }
+
+    /* ── Video grid ───────────────────────── */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Video card ───────────────────────── */
+    .video-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column;
+      transition: border-color .22s, transform .22s cubic-bezier(.22,1,.36,1),
+                  box-shadow .22s, background .22s;
+      animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both;
+    }
+    .video-card:hover {
+      border-color: var(--border-h); background: var(--card-h);
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(0,0,0,.45);
+    }
+
+    /* Thumbnail */
+    .video-thumb {
+      position: relative; width: 100%; padding-top: 56.25%;
+      overflow: hidden; background: #0a0a18;
+    }
+    .video-thumb img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .35s cubic-bezier(.22,1,.36,1), filter .35s;
+      filter: brightness(.9);
+    }
+    .video-card:hover .video-thumb img { transform: scale(1.06); filter: brightness(1.05); }
+
+    /* Play overlay */
+    .thumb-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.3);
+      opacity: 0;
+      transition: opacity .22s;
+    }
+    .video-card:hover .thumb-overlay { opacity: 1; }
+    .play-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(245,158,11,.92);
+      display: flex; align-items: center; justify-content: center;
+      color: #000; font-size: 1.1rem;
+      transform: scale(.8);
+      transition: transform .22s cubic-bezier(.22,1,.36,1);
+      padding-left: 3px; /* optical centre for ▶ */
+    }
+    .video-card:hover .play-icon { transform: scale(1); }
+
+    /* Duration badge */
+    .thumb-badge {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,.78); color: #fff;
+      font-size: .65rem; font-weight: 600; letter-spacing: .5px;
+      padding: 2px 7px; border-radius: 4px;
+    }
+
+    /* Type badge */
+    .type-badge {
+      position: absolute; top: 8px; left: 8px;
+      font-size: .6rem; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    }
+    .type-video  { background: var(--gold-gl);   color: var(--gold);   border: 1px solid rgba(245,158,11,.3); }
+    .type-short  { background: var(--purple-gl);  color: var(--purple); border: 1px solid rgba(88,101,242,.3); }
+
+    /* Card body */
+    .video-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+    .video-title {
+      font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+      color: var(--text); line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .video-meta {
+      display: flex; align-items: center; gap: 10px;
+      font-size: .72rem; color: var(--muted); font-weight: 500;
+      margin-top: auto;
+    }
+    .video-meta i { font-size: .7rem; }
+
+    /* ── Empty / error ─────────────────────── */
+    .empty-state {
+      grid-column: 1 / -1;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px; padding: 60px 20px; text-align: center;
+    }
+    .empty-icon { font-size: 2.5rem; color: var(--muted); }
+    .empty-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; color: var(--sub); }
+    .empty-body  { font-size: .82rem; color: var(--muted); max-width: 380px; line-height: 1.6; }
+
+    /* Skeleton loader */
+    .skeleton {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+    }
+    .skel-thumb { width: 100%; padding-top: 56.25%; background: linear-gradient(90deg, #0f0f1e 25%, #1a1a2e 50%, #0f0f1e 75%); background-size: 200% 100%; animation: skelShimmer 1.4s infinite; }
+    .skel-body  { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .skel-line  { height: 12px; border-radius: 6px; background: linear-gradient(90deg, #0f0f1e 25%, #1a1a2e 50%, #0f0f1e 75%); background-size: 200% 100%; animation: skelShimmer 1.4s infinite; }
+    .skel-line.short { width: 55%; }
+    @keyframes skelShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* Staggered card entrance */
+    .video-card:nth-child(1)  { animation-delay: .05s; }
+    .video-card:nth-child(2)  { animation-delay: .10s; }
+    .video-card:nth-child(3)  { animation-delay: .15s; }
+    .video-card:nth-child(4)  { animation-delay: .20s; }
+    .video-card:nth-child(5)  { animation-delay: .25s; }
+    .video-card:nth-child(6)  { animation-delay: .30s; }
+    .video-card:nth-child(7)  { animation-delay: .35s; }
+    .video-card:nth-child(8)  { animation-delay: .40s; }
+    .video-card:nth-child(9)  { animation-delay: .45s; }
+    .video-card:nth-child(10) { animation-delay: .50s; }
+    .video-card:nth-child(11) { animation-delay: .55s; }
+    .video-card:nth-child(12) { animation-delay: .60s; }
+
+    @media (max-width: 520px) {
+      .video-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="aurora" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <a href="../" class="nav-brand">TUW</a>
+  <div class="nav-divider"></div>
+  <div class="nav-links">
+    <a href="../">Home</a>
+    <a href="./" class="active">Videos</a>
+  </div>
+  <div class="nav-socials">
+    <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="nav-pill nav-pill-yt" target="_blank">
+      <i class="fa-brands fa-youtube"></i> YouTube
+    </a>
+    <a href="https://discord.gg/vBMNDBTFn" class="nav-pill nav-pill-dc" target="_blank">
+      <i class="fa-brands fa-discord"></i> Discord
+    </a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header class="page-header">
+    <div class="chip"><span class="chip-dot"></span>Auto-updated from YouTube</div>
+    <h1 class="page-title">Videos</h1>
+    <p class="page-sub">The latest uploads from EthanUnlocked — pulled live from YouTube.</p>
+  </header>
+
+  <!-- Filter -->
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="video">Videos</button>
+    <button class="filter-btn" data-filter="short">Shorts</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="video-grid" id="videoGrid">
+    <!-- Skeleton placeholders while loading -->
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+    <div class="skeleton"><div class="skel-thumb"></div><div class="skel-body"><div class="skel-line"></div><div class="skel-line short"></div></div></div>
+  </div>
+
+</div>
+
+<footer>
+  <span class="f-brand">TheUnlockedWeb</span>
+  <span class="f-copy">© 2025 EthanUnlocked690</span>
+  <div class="f-links">
+    <a href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io" target="_blank"><i class="fa-brands fa-github"></i> Source</a>
+    <a href="https://discord.gg/vBMNDBTFn" target="_blank"><i class="fa-brands fa-discord"></i> Discord</a>
+  </div>
+</footer>
+
+<script>
+  /*
+    ─── SETUP ───────────────────────────────────────────────────────────────────
+    To make this page fetch your real videos:
+
+    1. Find your YouTube Channel ID:
+       - Go to youtube.com/@EthanUnlocked-the-GOAT
+       - View page source and search for "channel_id" or "externalId"
+       - It looks like: UCxxxxxxxxxxxxxxxxxxxxxxxx
+
+    2. Paste it below as CHANNEL_ID.
+
+    This page uses rss2json.com (free, no API key needed) to convert
+    YouTube's public RSS feed into JSON, which works from GitHub Pages.
+    ─────────────────────────────────────────────────────────────────────────── */
+
+  const CHANNEL_ID = 'YOUR_CHANNEL_ID_HERE'; // ← paste your channel ID
+
+  const RSS_URL  = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+  const API_URL  = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}&count=50`;
+
+  const grid      = document.getElementById('videoGrid');
+  const filterBar = document.getElementById('filterBar');
+
+  let allVideos   = [];
+  let activeFilter = 'all';
+
+  /* ── Helpers ── */
+  function videoId(url) {
+    try { return new URL(url).searchParams.get('v') || url.split('/').pop(); }
+    catch { return ''; }
+  }
+
+  function isShort(item) {
+    const dur = item.duration || '';
+    // Shorts are <= 60s — rss2json doesn't give duration, so we use title/desc heuristic
+    const title = (item.title || '').toLowerCase();
+    return title.includes('#short') || title.includes('#shorts');
+  }
+
+  function thumbUrl(item) {
+    // rss2json puts the thumbnail in enclosure or thumbnail field
+    if (item.thumbnail && item.thumbnail.startsWith('http')) return item.thumbnail;
+    const id = videoId(item.link);
+    return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '';
+  }
+
+  function fmtDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  /* ── Build card ── */
+  function buildCard(item) {
+    const id     = videoId(item.link);
+    const short  = isShort(item);
+    const thumb  = thumbUrl(item);
+    const type   = short ? 'short' : 'video';
+    const typeLabel = short ? 'Short' : 'Video';
+    const typeClass = short ? 'type-short' : 'type-video';
+
+    const card = document.createElement('a');
+    card.className = 'video-card';
+    card.href      = item.link;
+    card.target    = '_blank';
+    card.rel       = 'noopener noreferrer';
+    card.dataset.type = type;
+
+    card.innerHTML = `
+      <div class="video-thumb">
+        ${thumb ? `<img src="${thumb}" alt="${item.title}" loading="lazy">` : ''}
+        <div class="thumb-overlay"><div class="play-icon"><i class="fa-solid fa-play"></i></div></div>
+        <span class="type-badge ${typeClass}">${typeLabel}</span>
+      </div>
+      <div class="video-body">
+        <div class="video-title">${item.title}</div>
+        <div class="video-meta">
+          <span><i class="fa-regular fa-calendar"></i> ${fmtDate(item.pubDate)}</span>
+        </div>
+      </div>`;
+
+    return card;
+  }
+
+  /* ── Render with filter ── */
+  function render() {
+    const filtered = activeFilter === 'all'
+      ? allVideos
+      : allVideos.filter(v => v.dataset.type === activeFilter);
+
+    grid.innerHTML = '';
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <i class="fa-solid fa-film empty-icon"></i>
+          <div class="empty-title">No ${activeFilter}s found</div>
+          <div class="empty-body">Try switching the filter above, or check the channel directly.</div>
+        </div>`;
+      return;
+    }
+
+    filtered.forEach(card => grid.appendChild(card));
+  }
+
+  /* ── Filter buttons ── */
+  filterBar.addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+
+  /* ── Fetch ── */
+  if (CHANNEL_ID === 'YOUR_CHANNEL_ID_HERE') {
+    // Demo mode — show placeholder message so the page isn't blank
+    grid.innerHTML = `
+      <div class="empty-state">
+        <i class="fa-brands fa-youtube empty-icon" style="color:var(--gold)"></i>
+        <div class="empty-title">Add your Channel ID</div>
+        <div class="empty-body">
+          Open <code style="background:var(--card-h);padding:2px 6px;border-radius:4px;font-size:.8rem">videos/index.html</code>
+          and paste your YouTube Channel ID into the <code style="background:var(--card-h);padding:2px 6px;border-radius:4px;font-size:.8rem">CHANNEL_ID</code> constant.
+          Your ID starts with <strong>UC</strong> and can be found in your channel's page source.
+        </div>
+        <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
+          <i class="fa-brands fa-youtube"></i> View Channel
+        </a>
+      </div>`;
+  } else {
+    fetch(API_URL)
+      .then(r => { if (!r.ok) throw new Error('network'); return r.json(); })
+      .then(data => {
+        if (data.status !== 'ok' || !data.items?.length) throw new Error('no items');
+        allVideos = data.items.map(buildCard);
+        render();
+      })
+      .catch(() => {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-solid fa-triangle-exclamation empty-icon"></i>
+            <div class="empty-title">Couldn't load videos</div>
+            <div class="empty-body">
+              The YouTube feed couldn't be reached right now. Check your Channel ID is correct,
+              or view the channel directly on YouTube.
+            </div>
+            <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
+              <i class="fa-brands fa-youtube"></i> View Channel
+            </a>
+          </div>`;
+      });
+  }
+</script>
+</body>
+</html>
