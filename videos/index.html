@@ -257,7 +257,7 @@
     YouTube's public RSS feed into JSON, which works from GitHub Pages.
     ─────────────────────────────────────────────────────────────────────────── */
 
-  const CHANNEL_ID = 'UC2cZN8VOCTVkelLsw3KlFHA'; // ← paste your channel ID
+  const CHANNEL_ID = 'YOUR_CHANNEL_ID_HERE'; // ← paste your channel ID
 
   const RSS_URL  = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
   const FETCH_URL = `https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`;
@@ -322,7 +322,22 @@
         const xml   = new DOMParser().parseFromString(xmlText, 'text/xml');
         const items = [...xml.querySelectorAll('entry')];
         console.log(`Fetched ${items.length} entries from YouTube RSS`);
-        if (!items.length) throw new Error('No entries in feed');
+        if (!items.length) {
+          grid.innerHTML = `
+            <div class="empty-state">
+              <i class="fa-brands fa-youtube empty-icon" style="color:var(--gold)"></i>
+              <div class="empty-title">No videos yet</div>
+              <div class="empty-body">
+                The feed loaded successfully but YouTube isn't returning any videos for this channel yet.
+                This can happen if videos are new, unlisted, or the RSS feed hasn't updated.
+                Check back soon — or view the channel directly.
+              </div>
+              <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
+                <i class="fa-brands fa-youtube"></i> View Channel
+              </a>
+            </div>`;
+          return;
+        }
 
         allVideos = items.map(entry => {
           const videoUrl = entry.querySelector('link')?.getAttribute('href') ?? '';
