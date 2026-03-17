@@ -373,20 +373,24 @@
       </div>`;
   } else {
     fetch(API_URL)
-      .then(r => { if (!r.ok) throw new Error('network'); return r.json(); })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then(data => {
-        if (data.status !== 'ok' || !data.items?.length) throw new Error('no items');
+        console.log('rss2json response:', data);
+        if (data.status !== 'ok' || !data.items?.length) throw new Error(`status: ${data.status}, items: ${data.items?.length ?? 0}`);
         allVideos = data.items.map(buildCard);
         render();
       })
-      .catch(() => {
+      .catch(err => {
+        console.error('Videos fetch failed:', err, '\nURL tried:', API_URL);
         grid.innerHTML = `
           <div class="empty-state">
             <i class="fa-solid fa-triangle-exclamation empty-icon"></i>
             <div class="empty-title">Couldn't load videos</div>
             <div class="empty-body">
-              The YouTube feed couldn't be reached right now. Check your Channel ID is correct,
-              or view the channel directly on YouTube.
+              Open DevTools (F12 → Console) to see the exact error.<br><br>
+              <strong>URL being fetched:</strong><br>
+              <code style="background:var(--card-h);padding:4px 8px;border-radius:4px;font-size:.72rem;word-break:break-all;display:block;margin-top:6px">${API_URL}</code><br>
+              <strong>Error:</strong> <code style="background:var(--card-h);padding:2px 6px;border-radius:4px;font-size:.72rem">${err.message}</code>
             </div>
             <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="btn btn-yt" target="_blank" style="margin-top:8px">
               <i class="fa-brands fa-youtube"></i> View Channel
