@@ -260,7 +260,7 @@
   const CHANNEL_ID = 'YOUR_CHANNEL_ID_HERE'; // ← paste your channel ID
 
   const RSS_URL  = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
-  const FETCH_URL = `https://corsproxy.io/?${encodeURIComponent(RSS_URL)}`;
+  const FETCH_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(RSS_URL)}`;
 
   const grid      = document.getElementById('videoGrid');
   const filterBar = document.getElementById('filterBar');
