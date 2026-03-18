@@ -36,8 +36,14 @@ jobs:
             CHANNEL
           ], capture_output=True, text=True)
 
+          print("=== STDOUT ===")
+          print(repr(result.stdout[:2000]))
+          print("=== STDERR ===")
+          print(repr(result.stderr[:2000]))
+          print("=== RETURN CODE ===", result.returncode)
+
           if result.returncode != 0:
-            print("yt-dlp error:", result.stderr, file=sys.stderr)
+            print("yt-dlp failed", file=sys.stderr)
             sys.exit(1)
 
           videos = []
@@ -61,6 +67,8 @@ jobs:
               'published': published,
               'isShort':   is_short,
             })
+
+          print(f"Parsed {len(videos)} videos")
 
           os.makedirs('json', exist_ok=True)
           with open('json/videos.json', 'w') as f:
