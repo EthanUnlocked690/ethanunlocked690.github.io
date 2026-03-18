@@ -10,71 +10,87 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-      - name: Install yt-dlp
-        run: pip install -q yt-dlp
-
-      - name: Fetch videos and write JSON
+      - name: Fetch videos via Invidious API and write JSON
         run: |
           python3 - <<'EOF'
-          import subprocess, json, os, sys
+          import urllib.request, urllib.error, json, os, sys
+          from datetime import datetime
 
-          CHANNEL = "https://www.youtube.com/@ethan1957-p2y"
+          CHANNEL_ID = 'UC2cZN8VOCTVkelLsw3KlFHA'
 
-          result = subprocess.run([
-            "yt-dlp",
-            "--flat-playlist",
-            "--print", "%(id)s\t%(title)s\t%(upload_date)s\t%(url)s\t%(duration)s",
-            "--no-warnings",
-            "--playlist-end", "50",
-            CHANNEL
-          ], capture_output=True, text=True)
+          # Public Invidious instances — tries each until one works
+          INSTANCES = [
+            'https://invidious.privacydev.net',
+            'https://inv.nadeko.net',
+            'https://invidious.nerdvpn.de',
+            'https://invidious.fdn.fr',
+            'https://vid.puffyan.us',
+          ]
 
-          print("=== STDOUT ===")
-          print(repr(result.stdout[:2000]))
-          print("=== STDERR ===")
-          print(repr(result.stderr[:2000]))
-          print("=== RETURN CODE ===", result.returncode)
+          def try_fetch(base):
+            url = f'{base}/api/v1/channels/{CHANNEL_ID}/videos?fields=videoId,title,published,videoThumbnails,lengthSeconds'
+            print(f'Trying {base}...')
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=15) as r:
+              data = json.load(r)
+            # Invidious returns either a list or {"videos": [...]}
+            return data if isinstance(data, list) else data.get('videos', [])
 
-          if result.returncode != 0:
-            print("yt-dlp failed", file=sys.stderr)
+          items = []
+          for base in INSTANCES:
+            try:
+              items = try_fetch(base)
+              if items:
+                print(f'Got {len(items)} videos from {base}')
+                break
+            except Exception as e:
+              print(f'  failed: {e}')
+
+          if not items:
+            print('All instances failed', file=sys.stderr)
             sys.exit(1)
 
           videos = []
-          for line in result.stdout.strip().splitlines():
-            parts = line.split('\t')
-            if len(parts) < 4:
-              continue
-            vid_id, title, upload_date, url, *rest = parts
-            duration = int(rest[0]) if rest and rest[0].isdigit() else 9999
-            is_short = duration <= 60 or '#short' in title.lower()
-            try:
-              from datetime import datetime
-              published = datetime.strptime(upload_date, '%Y%m%d').isoformat() + '+00:00'
-            except:
-              published = upload_date
+          for v in items:
+            vid_id   = v.get('videoId', '')
+            title    = v.get('title', '')
+            pub_ts   = v.get('published', 0)
+            length   = v.get('lengthSeconds', 9999)
+            is_short = length <= 60 or '#short' in title.lower()
+
+            # Best available thumbnail
+            thumbs = v.get('videoThumbnails', [])
+            thumb  = next(
+              (t['url'] for t in thumbs if t.get('quality') in ('high', 'medium')),
+              f'https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg'
+            )
+            # Invidious thumbnails are sometimes relative — make absolute
+            if thumb.startswith('/'):
+              thumb = f'https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg'
+
+            published = datetime.utcfromtimestamp(pub_ts).isoformat() + '+00:00' if pub_ts else ''
+
             videos.append({
               'id':        vid_id,
               'title':     title,
               'url':       f'https://www.youtube.com/watch?v={vid_id}',
-              'thumbnail': f'https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg',
+              'thumbnail': thumb,
               'published': published,
               'isShort':   is_short,
             })
-
-          print(f"Parsed {len(videos)} videos")
 
           os.makedirs('json', exist_ok=True)
           with open('json/videos.json', 'w') as f:
             json.dump(videos, f, indent=2)
 
-          print(f"Wrote {len(videos)} videos to json/videos.json")
+          print(f'Wrote {len(videos)} videos to json/videos.json')
           EOF
 
       - name: Commit if changed
