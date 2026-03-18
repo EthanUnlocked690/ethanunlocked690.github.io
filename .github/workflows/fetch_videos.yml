@@ -17,77 +17,85 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Fetch videos via Invidious API and write JSON
+      - name: Fetch videos and write JSON
         run: |
           python3 - <<'EOF'
-          import urllib.request, urllib.error, json, os, sys
+          import urllib.request, json, os, sys, re
           from datetime import datetime
 
-          CHANNEL_ID = 'UC2cZN8VOCTVkelLsw3KlFHA'
+          CHANNEL = 'https://www.youtube.com/@ethan1957-p2y/videos'
 
-          # Current public Invidious instances (from invidious.io, March 2026)
-          INSTANCES = [
-            'https://yewtu.be',
-            'https://inv.tux.pizza',
-            'https://invidious.private.coffee',
-            'https://invidious.protokolla.fi',
-            'https://iv.melmac.space',
-            'https://yt.artemislena.eu',
-            'https://invidious.flokinet.to',
-            'https://inv.nadeko.net',
-          ]
+          headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+          }
 
-          def try_fetch(base):
-            url = f'{base}/api/v1/channels/{CHANNEL_ID}/videos?fields=videoId,title,published,videoThumbnails,lengthSeconds'
-            print(f'Trying {base}...')
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=15) as r:
-              data = json.load(r)
-            # Invidious returns either a list or {"videos": [...]}
-            return data if isinstance(data, list) else data.get('videos', [])
+          print(f'Fetching {CHANNEL}')
+          req = urllib.request.Request(CHANNEL, headers=headers)
+          with urllib.request.urlopen(req, timeout=20) as r:
+            html = r.read().decode('utf-8')
 
-          items = []
-          for base in INSTANCES:
-            try:
-              items = try_fetch(base)
-              if items:
-                print(f'Got {len(items)} videos from {base}')
-                break
-            except Exception as e:
-              print(f'  failed: {e}')
-
-          if not items:
-            print('All instances failed', file=sys.stderr)
+          # YouTube embeds all page data as a JS variable
+          match = re.search(r'var ytInitialData\s*=\s*(\{.+?\});</script>', html, re.DOTALL)
+          if not match:
+            print('Could not find ytInitialData in page', file=sys.stderr)
+            print('HTML snippet:', html[:500])
             sys.exit(1)
 
+          data = json.loads(match.group(1))
+
+          # Navigate the nested structure to find video items
+          tabs = data.get('contents', {}) \
+                     .get('twoColumnBrowseResultsRenderer', {}) \
+                     .get('tabs', [])
+
+          video_items = []
+          for tab in tabs:
+            tab_content = tab.get('tabRenderer', {}).get('content', {})
+            section_list = tab_content.get('richGridRenderer', {}) \
+                                      .get('contents', [])
+            for item in section_list:
+              vi = item.get('richItemRenderer', {}) \
+                       .get('content', {}) \
+                       .get('videoRenderer', {})
+              if vi:
+                video_items.append(vi)
+
+          print(f'Found {len(video_items)} videos')
+
           videos = []
-          for v in items:
-            vid_id   = v.get('videoId', '')
-            title    = v.get('title', '')
-            pub_ts   = v.get('published', 0)
-            length   = v.get('lengthSeconds', 9999)
-            is_short = length <= 60 or '#short' in title.lower()
+          for vi in video_items:
+            vid_id = vi.get('videoId', '')
+            title  = vi.get('title', {}).get('runs', [{}])[0].get('text', '')
+            length = vi.get('lengthText', {}).get('simpleText', '')
+            date_str = vi.get('publishedTimeText', {}).get('simpleText', '')
 
-            # Best available thumbnail
-            thumbs = v.get('videoThumbnails', [])
-            thumb  = next(
-              (t['url'] for t in thumbs if t.get('quality') in ('high', 'medium')),
-              f'https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg'
-            )
-            # Invidious thumbnails are sometimes relative — make absolute
-            if thumb.startswith('/'):
-              thumb = f'https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg'
+            # Detect shorts by duration (≤60s)
+            total_secs = 0
+            if length:
+              parts = length.split(':')
+              try:
+                if len(parts) == 2:
+                  total_secs = int(parts[0]) * 60 + int(parts[1])
+                elif len(parts) == 3:
+                  total_secs = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+              except:
+                pass
+            is_short = (total_secs > 0 and total_secs <= 60) or '#short' in title.lower()
 
-            published = datetime.utcfromtimestamp(pub_ts).isoformat() + '+00:00' if pub_ts else ''
+            thumb = f'https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg'
 
             videos.append({
               'id':        vid_id,
               'title':     title,
               'url':       f'https://www.youtube.com/watch?v={vid_id}',
               'thumbnail': thumb,
-              'published': published,
+              'published': date_str,
               'isShort':   is_short,
             })
+
+          if not videos:
+            print('No videos parsed — channel may have no public videos or YouTube changed its page structure')
 
           os.makedirs('json', exist_ok=True)
           with open('json/videos.json', 'w') as f:
