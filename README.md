@@ -1,7 +1,7 @@
 # TheUnlockedWeb
 
 Personal website for [EthanUnlocked690](https://www.youtube.com/@EthanUnlocked-the-GOAT) — hosted on GitHub Pages.
-
+created by Google Gemini AI
 ---
 
 ## Structure
@@ -31,10 +31,6 @@ All pages use **clean URLs** — no `.html` in links. GitHub Pages serves `video
 - About section
 - News feed (paginated, loaded from `json/news.json`)
 
-### `/videos/` — Videos
-- Auto-fetches latest uploads from YouTube via RSS
-- Filter by All / Videos / Shorts
-- Skeleton loading state
 
 ---
 
