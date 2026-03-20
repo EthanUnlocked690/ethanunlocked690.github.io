@@ -1,22 +1,34 @@
 # TheUnlockedWeb
 
-Personal website for [EthanUnlocked690](https://www.youtube.com/@EthanUnlocked-the-GOAT) — hosted on GitHub Pages.
-created by Google Gemini AI
+Personal website for [EthanUnlocked's gaming hits](https://www.youtube.com/@ethan1957-p2y) — hosted on GitHub Pages.
+
 ---
 
 ## Structure
 
 ```
 /
-├── index.html          # Homepage
-├── style.css           # Shared stylesheet (used by all pages)
+├── index.html              # Homepage
+├── style.css               # Shared stylesheet
 ├── README.md
+├── generate_videos.py      # Manual video JSON generator
+│
+├── .github/
+│   └── workflows/
+│       └── fetch-videos.yml
 │
 ├── json/
-│   └── news.json       # News feed data
+│   ├── news.json           # News feed data
+│   ├── games.json          # Games list
+│   └── videos.json         # Auto-generated video list
+│
+├── games/
+│   ├── index.html          # Games page
+│   └── thumbnails/         # Game thumbnail images
+│       └── agar.png
 │
 └── videos/
-    └── index.html      # YouTube videos page
+    └── index.html          # Videos page
 ```
 
 All pages use **clean URLs** — no `.html` in links. GitHub Pages serves `videos/index.html` automatically when you visit `/videos/`.
@@ -31,8 +43,38 @@ All pages use **clean URLs** — no `.html` in links. GitHub Pages serves `video
 - About section
 - News feed (paginated, loaded from `json/news.json`)
 
+### `/videos/` — Videos
+- Auto-fetches latest uploads from YouTube via RSS
+- Filter by All / Videos / Shorts
+- Skeleton loading state
 
 ---
+
+## Adding Games
+
+Open `json/games.json` and add an entry:
+
+```json
+{
+  "id": "mygame",
+  "title": "My Game",
+  "desc": "Short description of the game.",
+  "url": "https://my-game-url.com",
+  "thumbnail": "./thumbnails/mygame.png",
+  "icon": "fa-solid fa-gamepad",
+  "iconBg": "rgba(129,140,248,.13)",
+  "iconColor": "#818cf8",
+  "tags": [
+    { "label": "Puzzle", "color": "purple" }
+  ]
+}
+```
+
+**Thumbnail:** save a screenshot or image to `games/thumbnails/mygame.png`. If `thumbnail` is `null`, the page falls back to the icon instead.
+
+**Tag colors:** `"gold"`, `"purple"`, or `"green"`.
+
+**`url`** must allow iframe embedding. If the game blocks iframes, players can still use the "Open tab" button in the launcher.
 
 ## Adding News
 
@@ -61,21 +103,23 @@ Open `json/news.json` and prepend a new object to the top of the array:
 
 ---
 
-## Setting Up the Videos Page
+## Adding Videos
 
-The videos page fetches from YouTube's public RSS feed via [rss2json.com](https://rss2json.com) — no API key needed.
+Open `generate_videos.py`, add your video IDs to the `VIDEOS` list, then run it:
 
-1. **Find your Channel ID**
-   - Go to your YouTube channel
-   - View page source (`Ctrl+U`)
-   - Search for `externalId` — it looks like `UCxxxxxxxxxxxxxxxxxxxxxxxx`
+```python
+VIDEOS = [
+    ('dQw4w9WgXcQ', 'My Video Title', '2025-06-10', False),  # False = regular, True = Short
+]
+```
 
-2. **Paste it into `videos/index.html`**
-   ```js
-   const CHANNEL_ID = 'UCxxxxxxxxxxxxxxxxxxxxxxxx'; // ← your ID here
-   ```
+```bash
+python3 generate_videos.py
+```
 
-That's it. The page will auto-fetch and display your latest 50 uploads every time it loads.
+This writes `json/videos.json`. Commit and push — the videos page updates instantly.
+
+The video ID is the part after `?v=` in any YouTube URL.
 
 ---
 
@@ -138,7 +182,7 @@ Page-specific styles (hero layout, video grid, etc.) live in a `<style>` block i
     <a href="./" class="active">This Page</a>
   </div>
   <div class="nav-socials">
-    <a href="https://www.youtube.com/@EthanUnlocked-the-GOAT" class="nav-pill nav-pill-yt" target="_blank">
+    <a href="https://www.youtube.com/@ethan1957-p2y" class="nav-pill nav-pill-yt" target="_blank">
       <i class="fa-brands fa-youtube"></i> YouTube
     </a>
     <a href="https://discord.gg/vBMNDBTFn" class="nav-pill nav-pill-dc" target="_blank">
@@ -153,7 +197,7 @@ Page-specific styles (hero layout, video grid, etc.) live in a `<style>` block i
 
 <footer>
   <span class="f-brand">TheUnlockedWeb</span>
-  <span class="f-copy">© 2025 EthanUnlocked690</span>
+  <span class="f-copy">© 2025 EthanUnlocked's gaming hits</span>
   <div class="f-links">
     <a href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io" target="_blank">
       <i class="fa-brands fa-github"></i> Source
