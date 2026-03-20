@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Starfighter</title>
+    <style>
+        body {
+            margin: 0;
+            background: #020205;
+            color: #00f2ff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid #00f2ff;
+            color: #00f2ff;
+            text-decoration: none;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #00f2ff;
+            color: #000;
+            box-shadow: 0 0 20px #00f2ff;
+        }
+
+        #score-text {
+            font-size: 24px;
+            text-shadow: 0 0 10px #00f2ff;
+        }
+
+        canvas {
+            display: block;
+            background: radial-gradient(circle, #0a0a1a 0%, #000 100%);
+        }
+
+        #ui-layer {
+            position: absolute;
+            pointer-events: none;
+            text-align: center;
+            z-index: 5;
+        }
+
+        h1 { font-size: 3rem; margin: 0; text-shadow: 0 0 20px #00f2ff; }
+        p { letter-spacing: 5px; }
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <a href="../games/" class="btn">EXIT TO MENU</a>
+        <div id="score-text">SCORE: 0</div>
+    </div>
+
+    <div id="ui-layer">
+        <h1 id="msg">NEON STRIDER</h1>
+        <p id="sub-msg">CLICK ANYWHERE TO START</p>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score-text');
+        const msg = document.getElementById('msg');
+        const subMsg = document.getElementById('sub-msg');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let score = 0;
+        let gameActive = false;
+        let particles = [];
+        let enemies = [];
+        let projectiles = [];
+
+        class Player {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                this.radius = 12;
+            }
+            draw() {
+                ctx.save();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00f2ff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f2ff';
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        class Projectile {
+            constructor(x, y, tx, ty) {
+                this.x = x;
+                this.y = y;
+                this.radius = 3;
+                const angle = Math.atan2(ty - y, tx - x);
+                this.v = { x: Math.cos(angle) * 10, y: Math.sin(angle) * 10 };
+            }
+            update() {
+                this.x += this.v.x;
+                this.y += this.v.y;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+            }
+        }
+
+        class Enemy {
+            constructor() {
+                this.radius = Math.random() * 20 + 10;
+                if (Math.random() < 0.5) {
+                    this.x = Math.random() < 0.5 ? -this.radius : canvas.width + this.radius;
+                    this.y = Math.random() * canvas.height;
+                } else {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() < 0.5 ? -this.radius : canvas.height + this.radius;
+                }
+                const angle = Math.atan2(canvas.height/2 - this.y, canvas.width/2 - this.x);
+                this.v = { x: Math.cos(angle) * 1.5, y: Math.sin(angle) * 1.5 };
+                this.hue = Math.random() * 360;
+            }
+            update() {
+                this.x += this.v.x;
+                this.y += this.v.y;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        const player = new Player();
+
+        function spawn() {
+            if (gameActive) {
+                enemies.push(new Enemy());
+                setTimeout(spawn, Math.max(200, 1000 - score/10));
+            }
+        }
+
+        function animate() {
+            if (!gameActive) return;
+            requestAnimationFrame(animate);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            player.draw();
+
+            projectiles.forEach((p, pi) => {
+                p.update();
+                if(p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) projectiles.splice(pi, 1);
+            });
+
+            enemies.forEach((e, ei) => {
+                e.update();
+                const dist = Math.hypot(player.x - e.x, player.y - e.y);
+                if (dist < e.radius + player.radius) {
+                    gameActive = false;
+                    msg.innerHTML = "SYSTEM CRASHED";
+                    subMsg.innerHTML = "CLICK TO REBOOT";
+                    msg.style.display = "block";
+                    subMsg.style.display = "block";
+                }
+
+                projectiles.forEach((p, pi) => {
+                    const d = Math.hypot(p.x - e.x, p.y - e.y);
+                    if (d < e.radius + p.radius) {
+                        enemies.splice(ei, 1);
+                        projectiles.splice(pi, 1);
+                        score += 10;
+                        scoreEl.innerText = `SCORE: ${score}`;
+                    }
+                });
+            });
+        }
+
+        window.addEventListener('mousedown', (e) => {
+            if (!gameActive) {
+                score = 0;
+                scoreEl.innerText = "SCORE: 0";
+                enemies = [];
+                projectiles = [];
+                gameActive = true;
+                msg.style.display = "none";
+                subMsg.style.display = "none";
+                spawn();
+                animate();
+            } else {
+                projectiles.push(new Projectile(canvas.width/2, canvas.height/2, e.clientX, e.clientY));
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            player.x = canvas.width/2;
+            player.y = canvas.height/2;
+        });
+    </script>
+</body>
+</html>
