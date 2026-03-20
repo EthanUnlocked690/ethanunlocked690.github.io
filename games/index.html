@@ -268,79 +268,97 @@
 </div>
 
 <script>
-  /* ── Game definitions ──────────────────────
-     Add more games here. Fields:
-       id       — unique string
-       title    — display name
-       desc     — short description
-       url      — the game URL (must allow iframes)
-       icon     — Font Awesome class
-       iconBg   — background colour for the icon
-       iconColor— icon colour
-       tags     — array of { label, color: 'gold'|'purple'|'green' }
-  ─────────────────────────────────────────── */
-  const GAMES = [
-    {
-      id:        'agar',
-      title:     'Agar.io Clone',
-      desc:      'Grow your cell by eating smaller ones and avoid getting eaten. Classic multiplayer survival.',
-      url:       'https://agar-io-ta0l.onrender.com',
-      icon:      'fa-solid fa-circle',
-      iconBg:    'rgba(245,158,11,.13)',
-      iconColor: '#f59e0b',
-      tags: [
-        { label: 'Multiplayer', color: 'gold' },
-        { label: 'Made by Ethan', color: 'green' },
-      ],
-    },
-    // ── Add more games below ──────────────────
-    // {
-    //   id:        'game2',
-    //   title:     'My Game',
-    //   desc:      'Short description.',
-    //   url:       'https://example.com',
-    //   icon:      'fa-solid fa-gamepad',
-    //   iconBg:    'rgba(129,140,248,.13)',
-    //   iconColor: '#818cf8',
-    //   tags: [{ label: 'Puzzle', color: 'purple' }],
-    // },
-  ];
-
-  /* ── Build cards ────────────────────────── */
+  /* ── Load games from JSON ───────────────── */
   const grid = document.getElementById('gamesGrid');
 
-  GAMES.forEach((g, i) => {
+  fetch('../json/games.json')
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(games => {
+      if (!games.length) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--muted)">
+            <i class="fa-solid fa-gamepad" style="font-size:2rem;display:block;margin-bottom:14px"></i>
+            No games yet — add some to json/games.json
+          </div>`;
+        return;
+      }
+      games.forEach((g, i) => buildCard(g, i));
+    })
+    .catch(err => {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--muted)">
+          <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;display:block;margin-bottom:14px"></i>
+          Could not load games.json — ${err.message}
+        </div>`;
+    });
+
+  /* ── Build a single card ────────────────── */
+  function buildCard(g, i) {
     const card = document.createElement('div');
     card.className = 'game-card';
-    card.style.animationDelay = `${.05 + i * .07}s`;
-    card.style.animation = 'fadeUp .5s cubic-bezier(.22,1,.36,1) both';
-    card.style.animationDelay = `${.1 + i * .08}s`;
+    card.style.animation = `fadeUp .5s ${.1 + i * .08}s cubic-bezier(.22,1,.36,1) both`;
 
-    const tagHTML = g.tags.map(t =>
+    const tagHTML = (g.tags || []).map(t =>
       `<span class="game-tag tag-${t.color}">${t.label}</span>`
     ).join('');
 
-    card.innerHTML = `
-      <div class="game-preview">
-        <div class="game-preview-bg">
-          <div class="game-preview-icon" style="background:${g.iconBg};color:${g.iconColor}">
-            <i class="${g.icon}"></i>
-          </div>
-          <span class="game-preview-label">${g.title}</span>
-        </div>
-        <div class="play-overlay">
-          <div class="play-circle"><i class="fa-solid fa-play"></i></div>
-        </div>
+    // Build icon fallback element
+    const iconEl = document.createElement('div');
+    iconEl.className = 'game-preview-bg';
+    iconEl.innerHTML = `
+      <div class="game-preview-icon" style="background:${g.iconBg};color:${g.iconColor}">
+        <i class="${g.icon}"></i>
       </div>
+      <span class="game-preview-label">${g.title}</span>`;
+
+    // Preview container
+    const preview = document.createElement('div');
+    preview.className = 'game-preview';
+
+    if (g.thumbnail) {
+      const img = document.createElement('img');
+      img.alt = g.title;
+      img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.85);transition:transform .35s cubic-bezier(.22,1,.36,1),filter .35s';
+      img.onerror = () => {
+        img.remove();
+        preview.insertBefore(iconEl, preview.firstChild);
+      };
+      img.src = g.thumbnail; // set src AFTER onerror so it fires correctly
+      preview.appendChild(img);
+
+      card.addEventListener('mouseenter', () => {
+        if (preview.querySelector('img')) {
+          img.style.transform = 'scale(1.06)';
+          img.style.filter = 'brightness(1)';
+        }
+      });
+      card.addEventListener('mouseleave', () => {
+        if (preview.querySelector('img')) {
+          img.style.transform = '';
+          img.style.filter = 'brightness(.85)';
+        }
+      });
+    } else {
+      preview.appendChild(iconEl);
+    }
+
+    // Play overlay
+    preview.insertAdjacentHTML('beforeend', `
+      <div class="play-overlay">
+        <div class="play-circle"><i class="fa-solid fa-play"></i></div>
+      </div>`);
+
+    card.appendChild(preview);
+    card.insertAdjacentHTML('beforeend', `
       <div class="game-body">
         <div class="game-title">${g.title}</div>
         <div class="game-desc">${g.desc}</div>
         <div class="game-tags">${tagHTML}</div>
-      </div>`;
+      </div>`);
 
     card.addEventListener('click', () => openGame(g));
     grid.appendChild(card);
-  });
+  }
 
   /* ── Launcher ───────────────────────────── */
   const launcher         = document.getElementById('launcher');
