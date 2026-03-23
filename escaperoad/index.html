@@ -167,65 +167,83 @@
 -->
 <script src="2410211_loader.js"></script>
 <script>
-  const BUILD   = '2410211';
-  const canvas  = document.getElementById('unity-canvas');
+  const BUILD = '2410211';
+  const canvas = document.getElementById('unity-canvas');
   const loading = document.getElementById('loading-screen');
-  const errScr  = document.getElementById('error-screen');
-  const errMsg  = document.getElementById('error-msg');
-  const fill    = document.getElementById('progress-fill');
-  const pct     = document.getElementById('loading-pct');
+  const errScr = document.getElementById('error-screen');
+  const errMsg = document.getElementById('error-msg');
+  const fill = document.getElementById('progress-fill');
+  const pct = document.getElementById('loading-pct');
 
   function setProgress(p) {
     const v = Math.round(p * 100);
     fill.style.width = v + '%';
-    pct.textContent  = v + '%';
+    pct.textContent = v + '%';
   }
 
   function showError(msg) {
     loading.classList.add('hidden');
     errScr.style.display = 'flex';
-    errMsg.textContent   = msg;
+    errMsg.textContent = msg;
   }
 
-  // Resize canvas to fill available space
+  // --- NEW: MERGE LOGIC ---
+  async function loadAndMergeWasm() {
+    try {
+      const parts = [BUILD + '_wasm.unityweb.part1', BUILD + '_wasm.unityweb.part2'];
+      setProgress(0.05); // Start progress
+
+      // Fetch both parts in parallel
+      const responses = await Promise.all(parts.map(url => fetch(url).then(r => {
+        if (!r.ok) throw new Error(`Failed to load ${url}`);
+        return r.blob();
+      })));
+      
+      setProgress(0.2); // Halfway through download/merge phase
+
+      // Combine parts into one blob
+      const combinedBlob = new Blob(responses, { type: 'application/wasm' });
+      return URL.createObjectURL(combinedBlob);
+    } catch (e) {
+      showError("Failed to assemble game files: " + e.message);
+    }
+  }
+
+  // Launch Unity
+  async function initGame() {
+    const mergedWasmUrl = await loadAndMergeWasm();
+    if (!mergedWasmUrl) return;
+
+    createUnityInstance(canvas, {
+      dataUrl:      BUILD + '_data.unityweb',
+      frameworkUrl: BUILD + '_framework_js.unityweb',
+      codeUrl:      mergedWasmUrl, // Uses the merged blob URL
+      streamingAssetsUrl: 'StreamingAssets',
+      companyName:  'EthanUnlocked',
+      productName:  'Unity Game',
+      productVersion: '1.0',
+    }, (progress) => {
+      // Offset progress slightly because we already did some work merging
+      setProgress(0.2 + (progress * 0.8));
+    }).then((instance) => {
+      window.unityInstance = instance;
+      loading.classList.add('hidden');
+    }).catch((err) => {
+      showError(err || 'Failed to start the game.');
+    });
+  }
+
+  initGame();
+
+  // Fullscreen & Resize logic remains the same
   function resizeCanvas() {
     const wrap = canvas.parentElement;
-    canvas.style.width  = wrap.clientWidth  + 'px';
+    canvas.style.width = wrap.clientWidth + 'px';
     canvas.style.height = wrap.clientHeight + 'px';
   }
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // Launch Unity
-  createUnityInstance(canvas, {
-    dataUrl:      BUILD + '_data.unityweb',
-    frameworkUrl: BUILD + '_framework_js.unityweb',
-    codeUrl:      BUILD + '_wasm.unityweb',
-    streamingAssetsUrl: 'StreamingAssets',
-    companyName:  'EthanUnlocked',
-    productName:  'Unity Game',
-    productVersion: '1.0',
-    showBanner: (msg, type) => {
-      if (type === 'error') showError(msg);
-      else console.warn(msg);
-    },
-  }, (progress) => {
-    setProgress(progress);
-  }).then((instance) => {
-    window.unityInstance = instance;
-    loading.classList.add('hidden');
-
-    // Update titles from Unity's product name if available
-    const name = instance.Module?.productName || 'Unity Game';
-    document.getElementById('game-name').textContent    = name;
-    document.getElementById('toolbar-title').textContent = name;
-    document.title = name + ' — TheUnlockedWeb';
-
-  }).catch((err) => {
-    showError(err || 'Failed to start the game. Check the browser console for details.');
-  });
-
-  // Fullscreen
   document.getElementById('btn-fullscreen').addEventListener('click', () => {
     if (window.unityInstance) {
       window.unityInstance.SetFullscreen(1);
@@ -234,5 +252,6 @@
     }
   });
 </script>
+
 </body>
 </html>
