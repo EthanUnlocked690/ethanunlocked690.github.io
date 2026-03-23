@@ -377,9 +377,13 @@
     launcher.classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    // Small delay so the open animation runs before the heavy iframe loads
+    // The Proxy logic:
+    // Using AllOrigins "raw" API to get the site content directly
+    const proxiedUrl = `https://api.allorigins.win{encodeURIComponent(g.url)}`;
+
     setTimeout(() => {
-      launcherFrame.src = g.url;
+      // If the game is flagged for proxying, use the proxied version
+      launcherFrame.src = g.useProxy ? proxiedUrl : g.url;
     }, 120);
   }
 
