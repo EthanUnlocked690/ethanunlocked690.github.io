@@ -159,13 +159,13 @@
 <!--
   ── Unity build files ──────────────────────────────────────────
   Put these 4 files in the SAME folder as this index.html:
-    2410211_loader.js
-    2410211_data.unityweb
-    2410211_framework_js.unityweb
-    2410211_wasm.unityweb
+    2410211.loader.js
+    2410211.data.unityweb
+    2410211.framework.js.unityweb
+    2410211.wasm.unityweb
   ──────────────────────────────────────────────────────────────
 -->
-<script src="2410211_loader.js"></script>
+<script src="2410211.loader.js"></script>
 <script>
   const BUILD = '2410211';
   const canvas = document.getElementById('unity-canvas');
@@ -215,8 +215,8 @@
     if (!mergedWasmUrl) return;
 
     createUnityInstance(canvas, {
-      dataUrl:      BUILD + '_data.unityweb',
-      frameworkUrl: BUILD + '_framework_js.unityweb',
+      dataUrl:      BUILD + '.data.unityweb',
+      frameworkUrl: BUILD + '.framework.js.unityweb',
       codeUrl:      mergedWasmUrl, // Uses the merged blob URL
       streamingAssetsUrl: 'StreamingAssets',
       companyName:  'EthanUnlocked',
