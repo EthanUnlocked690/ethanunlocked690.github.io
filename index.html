@@ -3,355 +3,140 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TheUnlockedWeb</title>
-  <meta name="description" content="Welcome to TheUnlockedWeb – games, videos, shorts, and more by EthanUnlocked's gaming hits.">
-  <meta name="google-site-verification" content="eHA-fyuHNpFO1gxDcH8B29KJYZwD2gO1jATtmFPYaTE">
-  <meta name="google-site-verification" content="QqWjcG_lS4PzyOKbjN_PqBPduMinlXEyyh6kwtbkAzg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <title>We've Moved</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="./style.css">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-
   <style>
-    /* ── Hero ──────────────────────────────── */
-    .hero {
-      min-height: calc(100vh - var(--nav-h));
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; padding: 80px 0 60px;
+    :root {
+      --bg:   #06060d;
+      --gold: #f59e0b;
+      --soft: #fde68a;
+      --text: #eeedf8;
+      --sub:  #8888b0;
     }
 
-    .chip {
-      margin-bottom: 32px;
-      opacity: 0; animation: fadeUp .7s .1s cubic-bezier(.22,1,.36,1) forwards;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
     }
 
-    .greeting {
-      font-size: .8rem; font-weight: 500; letter-spacing: 1px; color: var(--sub);
-      margin-bottom: 14px;
-      opacity: 0; animation: fadeUp .6s .22s cubic-bezier(.22,1,.36,1) forwards;
+    /* Aurora */
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(90px); opacity: .25; pointer-events: none;
+    }
+    .orb-1 { width:600px;height:600px; background:radial-gradient(circle,rgba(245,158,11,.5) 0%,transparent 65%); top:-200px;left:-200px; animation:d1 18s ease-in-out infinite alternate; }
+    .orb-2 { width:500px;height:500px; background:radial-gradient(circle,rgba(88,101,242,.4) 0%,transparent 65%); bottom:-150px;right:-150px; animation:d2 22s ease-in-out infinite alternate; }
+    @keyframes d1 { to { transform: translate(60px,40px) scale(1.1); } }
+    @keyframes d2 { to { transform: translate(-50px,-40px) scale(1.08); } }
+
+    /* Card */
+    .card {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 52px 44px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 20px;
+      max-width: 480px; width: 90%;
+      animation: up .7s cubic-bezier(.22,1,.36,1) both;
     }
 
-    .hero-title {
-      display: flex; flex-direction: column; align-items: center;
-      opacity: 0; animation: fadeUp .85s .32s cubic-bezier(.22,1,.36,1) forwards;
+    @keyframes up {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
     }
-    .hero-title .word {
+
+    .icon {
+      font-size: 2.6rem; margin-bottom: 22px;
+      animation: up .6s .1s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    h1 {
       font-family: 'Syne', sans-serif; font-weight: 800;
-      font-size: clamp(3.2rem, 14vw, 8rem);
-      line-height: .93; letter-spacing: -0.03em;
-      background: linear-gradient(140deg, #fff 0%, #f5f3ff 18%, var(--gold) 44%, var(--gold-soft) 64%, #fff 86%);
-      background-size: 220% auto;
+      font-size: clamp(1.8rem, 6vw, 2.6rem);
+      line-height: 1.1; letter-spacing: -.03em;
+      background: linear-gradient(135deg, #fff 0%, var(--gold) 50%, var(--soft) 100%);
       -webkit-background-clip: text; background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: shimmer 7s 1.6s linear infinite;
-      display: block;
-      transition: transform .25s cubic-bezier(.22,1,.36,1), filter .25s;
-    }
-    .hero-title:hover .word { filter: brightness(1.12); }
-    .hero-title .word:hover { transform: translateX(8px); }
-
-    .tagline {
-      margin-top: 22px;
-      font-size: clamp(.88rem, 2vw, 1rem);
-      font-weight: 500; line-height: 1.7; color: var(--sub); max-width: 340px;
-      opacity: 0; animation: fadeUp .7s .52s cubic-bezier(.22,1,.36,1) forwards;
+      margin-bottom: 14px;
+      animation: up .7s .15s cubic-bezier(.22,1,.36,1) both;
     }
 
-    .ctas {
-      display: flex; align-items: center; justify-content: center;
-      gap: 12px; flex-wrap: wrap; margin-top: 36px;
-      opacity: 0; animation: fadeUp .7s .64s cubic-bezier(.22,1,.36,1) forwards;
+    p {
+      font-size: .95rem; color: var(--sub);
+      line-height: 1.65; margin-bottom: 32px;
+      animation: up .6s .25s cubic-bezier(.22,1,.36,1) both;
     }
 
-    /* ── Tickers ───────────────────────────── */
-    .tickers {
-      display: flex; flex-direction: column; gap: 10px;
-      width: 100%; max-width: 580px; margin-top: 48px;
-      opacity: 0; animation: fadeUp .7s .78s cubic-bezier(.22,1,.36,1) forwards;
+    .new-url {
+      display: inline-block;
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: .95rem; letter-spacing: .5px;
+      color: var(--gold);
+      background: rgba(245,158,11,.1);
+      border: 1px solid rgba(245,158,11,.25);
+      padding: 10px 20px; border-radius: 8px;
+      margin-bottom: 28px;
+      word-break: break-all;
+      animation: up .6s .32s cubic-bezier(.22,1,.36,1) both;
     }
-    .ticker {
-      display: flex; align-items: center; height: 48px;
-      border-radius: 12px; overflow: hidden;
-      border: 1px solid var(--border); text-decoration: none;
-      transition: border-color .2s, transform .2s, box-shadow .2s;
-    }
-    .ticker:hover { border-color: var(--border-h); transform: scale(1.015); box-shadow: 0 4px 24px rgba(0,0,0,.3); }
-    .ticker-icon {
-      width: 48px; height: 100%; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: .95rem;
-      transition: transform .2s;
-    }
-    .ticker:hover .ticker-icon { transform: scale(1.15); }
-    .ti-yt { background: rgba(245,158,11,.1); color: var(--gold); }
-    .ti-dc { background: var(--purple-gl); color: var(--purple); }
-    .ticker-overflow { overflow: hidden; flex: 1; }
-    .ticker-track { display: flex; white-space: nowrap; animation: tick 22s linear infinite; }
-    .ticker-track.fast { animation-duration: 14s; }
-    .ticker-text {
-      display: inline-block; font-family: 'Syne', sans-serif;
-      font-size: .72rem; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
-      padding-right: 56px;
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .tt-yt { background-image: linear-gradient(90deg, var(--gold), var(--gold-soft), var(--gold)); }
-    .tt-dc { background-image: linear-gradient(90deg, var(--purple), #a5b4fc, var(--purple)); }
 
-    /* ── Scroll hint ───────────────────────── */
-    .scroll-hint {
-      margin-top: 52px;
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
-      opacity: 0; animation: fadeUp .6s .95s cubic-bezier(.22,1,.36,1) forwards;
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Manrope', sans-serif; font-size: .9rem; font-weight: 600;
+      background: var(--gold); color: #000;
+      border: none; padding: 13px 28px; border-radius: 11px;
+      text-decoration: none; cursor: pointer;
+      transition: background .15s, transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s;
+      animation: up .6s .4s cubic-bezier(.22,1,.36,1) both;
     }
-    .sh-label { font-size: .62rem; letter-spacing: 2.5px; color: var(--muted); text-transform: uppercase; }
-    .sh-line { width: 1px; height: 30px; background: linear-gradient(to bottom, var(--muted), transparent); animation: drip 2.2s ease-in-out infinite; }
+    .btn:hover { background: #fbbf24; transform: translateY(-2px); box-shadow: 0 10px 30px rgba(245,158,11,.35); }
+
+    .countdown {
+      margin-top: 20px;
+      font-size: .75rem; color: rgba(136,136,176,.5);
+      letter-spacing: 1px;
+      animation: up .5s .5s cubic-bezier(.22,1,.36,1) both;
+    }
+    .countdown span { color: var(--sub); }
   </style>
 </head>
 <body>
 
-<div class="grain" aria-hidden="true"></div>
-<div class="aurora" aria-hidden="true">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="card">
+  <div class="icon">📦</div>
+  <h1>We've moved</h1>
+  <p>This URL is no longer active. TheUnlockedWeb has a new home — update your bookmarks!</p>
+  <div class="new-url" id="newUrl">ethanunlocked690.github.io</div>
+  <br>
+  <a class="btn" href="https://theunlockedweb.github.io" id="goBtn">
+    Go to new site →
+  </a>
+  <p class="countdown">Redirecting in <span id="secs">10</span>s</p>
 </div>
-
-<!-- Nav -->
-<nav class="nav">
-  <a href="./" class="nav-brand">TUW</a>
-  <div class="nav-divider"></div>
-  <div class="nav-links">
-    <a href="./" class="active">Home</a>
-    <a href="./videos/">Videos</a>
-    <a href="./games/">Games</a>
-  </div>
-  <div class="nav-socials">
-    <a href="https://www.youtube.com/channel/UCi8DgxMDGJ-Qsjqfdi-uoIw" class="nav-pill nav-pill-yt" target="_blank">
-      <i class="fa-brands fa-youtube"></i> YouTube
-    </a>
-    <a href="https://discord.gg/vBMNDBTFn" class="nav-pill nav-pill-dc" target="_blank">
-      <i class="fa-brands fa-discord"></i> Discord
-    </a>
-  </div>
-</nav>
-
-<div class="wrap">
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="chip"><span class="chip-dot"></span>Games · Videos · Community</div>
-    <p class="greeting" id="greeting">Good evening. Welcome to...</p>
-    <div class="hero-title">
-      <span class="word">The</span>
-      <span class="word">Unlocked</span>
-      <span class="word">Web</span>
-    </div>
-    <p class="tagline">Games, videos, shorts &amp; more —<br>all made by EthanUnlocked!</p>
-    <div class="ctas">
-      <a href="https://www.youtube.com/channel/UCi8DgxMDGJ-Qsjqfdi-uoIw" class="btn btn-yt" target="_blank">
-        <i class="fa-brands fa-youtube"></i> Watch on YouTube
-      </a>
-      <a href="https://discord.gg/vBMNDBTFn" class="btn btn-dc" target="_blank">
-        <i class="fa-brands fa-discord"></i> Join the Discord
-      </a>
-    </div>
-    <div class="tickers">
-      <a href="https://www.youtube.com/channel/UCi8DgxMDGJ-Qsjqfdi-uoIw" class="ticker" target="_blank">
-        <div class="ticker-icon ti-yt"><i class="fa-brands fa-youtube"></i></div>
-        <div class="ticker-overflow">
-          <div class="ticker-track">
-            <span class="ticker-text tt-yt">Subscribe to Ethan's Sneaky Hits &nbsp;·&nbsp; New videos every week &nbsp;·&nbsp; Subscribe to Ethan's Sneaky Hits &nbsp;·&nbsp; New videos every week &nbsp;·&nbsp; </span>
-            <span class="ticker-text tt-yt">Subscribe to Ethan's Sneaky Hits &nbsp;·&nbsp; New videos every week &nbsp;·&nbsp; Subscribe to Ethan's Sneaky Hits &nbsp;·&nbsp; New videos every week &nbsp;·&nbsp; </span>
-          </div>
-        </div>
-      </a>
-      <a href="https://discord.gg/vBMNDBTFn" class="ticker" target="_blank">
-        <div class="ticker-icon ti-dc"><i class="fa-brands fa-discord"></i></div>
-        <div class="ticker-overflow">
-          <div class="ticker-track fast">
-            <span class="ticker-text tt-dc">Join the community &nbsp;·&nbsp; Chat with us on Discord &nbsp;·&nbsp; Join the community &nbsp;·&nbsp; Chat with us on Discord &nbsp;·&nbsp; </span>
-            <span class="ticker-text tt-dc">Join the community &nbsp;·&nbsp; Chat with us on Discord &nbsp;·&nbsp; Join the community &nbsp;·&nbsp; Chat with us on Discord &nbsp;·&nbsp; </span>
-          </div>
-        </div>
-      </a>
-    </div>
-    <div class="scroll-hint" aria-hidden="true">
-      <span class="sh-label">Scroll</span>
-      <div class="sh-line"></div>
-    </div>
-  </section>
-
-  <!-- About -->
-  <div class="section-head"><span class="section-label">About the channel</span><div class="section-rule"></div></div>
-  <div class="about-grid">
-    <div class="about-card wide">
-      <div class="about-card-icon"><i class="fa-solid fa-user"></i></div>
-      <div>
-        <h3>EthanUnlocked's gaming hits</h3>
-        <p>EthanUnlocked's gaming hits is a YouTube content creator and web developer who runs TheUnlockedWeb. He makes gaming videos, shorts, LEGO animations, and tutorials — and has built two web games from scratch: a Cookie Clicker and a Brawl Stars guessing game. This entire website is hand-coded and open source.</p>
-      </div>
-    </div>
-    <div class="about-card"><div class="about-card-icon"><i class="fa-brands fa-youtube"></i></div><h3>YouTube</h3><p>Gaming videos, speedruns, and shorts covering Brawl Stars, Geometry Dash, and more. New uploads regularly.</p></div>
-    <div class="about-card"><div class="about-card-icon purple"><i class="fa-solid fa-gamepad"></i></div><h3>Web Games</h3><p>Two browser games built entirely by Ethan — Cookie Clicker and Brawl Stars-dle, a daily Wordle-style guessing game.</p></div>
-    <div class="about-card"><div class="about-card-icon green"><i class="fa-solid fa-cubes"></i></div><h3>LEGO Animations</h3><p>Original stop-motion LEGO animations created and edited by Ethan, posted alongside main gaming content.</p></div>
-    <div class="about-card"><div class="about-card-icon purple"><i class="fa-brands fa-discord"></i></div><h3>Community</h3><p>An active Discord server where fans can chat, share clips, and stay up to date with everything on the channel.</p></div>
-    <div class="about-card"><div class="about-card-icon"><i class="fa-solid fa-code"></i></div><h3>Open Source</h3><p>All code for this site is public on GitHub. Ethan built and maintains it himself — check it out and see how it works.</p></div>
-  </div>
-
-  <!-- News -->
-  <div class="section-head"><span class="section-label">Latest News</span><div class="section-rule"></div></div>
-  <div class="news-shell">
-    <div class="news-viewport" id="newsViewport">
-      <div class="status-msg" id="newsStatus">
-        <i class="fa-solid fa-circle-notch spin"></i> Loading news...
-      </div>
-    </div>
-    <div class="news-controls" id="newsControls" style="display:none;">
-      <button class="pag-btn" id="pagPrev"><i class="fa-solid fa-arrow-left"></i><span>Previous</span></button>
-      <div class="pag-center">
-        <div class="pag-counter">Page <span id="pagCurrent">1</span> of <span id="pagTotal">1</span></div>
-        <div class="pag-dots" id="pagDots"></div>
-      </div>
-      <button class="pag-btn" id="pagNext"><span>Next</span><i class="fa-solid fa-arrow-right"></i></button>
-    </div>
-  </div>
-
-</div>
-
-<footer>
-  <span class="f-brand">TheUnlockedWeb</span>
-  <span class="f-copy">© 2025 EthanUnlocked's gaming hits</span>
-  <div class="f-links">
-    <a href="https://github.com/EthanUnlocked690/EthanUnlocked690.github.io" target="_blank"><i class="fa-brands fa-github"></i> Source</a>
-    <a href="https://discord.gg/vBMNDBTFn" target="_blank"><i class="fa-brands fa-discord"></i> Discord</a>
-  </div>
-</footer>
 
 <script>
-  /* Greeting */
-  const h = new Date().getHours();
-  document.getElementById('greeting').textContent =
-    (h<5?'Good night.':h<12?'Good morning.':h<18?'Good afternoon.':'Good evening.') + ' Welcome to...';
+  const NEW_URL = 'https://theunlockedweb.github.io';
 
-  /* ── News paginator ── */
-  const PER_PAGE = 5;
-  let allNews = [], curPage = 0, totalPages = 0, busy = false;
-  const DUR = 380, EASE = 'cubic-bezier(0.4,0,0.2,1)';
+  // Update display
+  document.getElementById('newUrl').textContent = NEW_URL.replace('https://', '');
+  document.getElementById('goBtn').href = NEW_URL;
 
-  const vp      = document.getElementById('newsViewport');
-  const ctrls   = document.getElementById('newsControls');
-  const btnPrev = document.getElementById('pagPrev');
-  const btnNext = document.getElementById('pagNext');
-  const dots    = document.getElementById('pagDots');
-  const lblCur  = document.getElementById('pagCurrent');
-  const lblTot  = document.getElementById('pagTotal');
-
-  const colorOf = c => c === 'gold' ? 'gold' : c === 'purple' ? 'purple' : 'green';
-  const fmtDate = iso => new Date(iso+'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
-
-  function buildItem(item) {
-    const c = colorOf(item.color);
-    return `<div class="news-item">
-      <span class="news-dot dot-${c}"></span>
-      <div class="news-content">
-        <span class="news-tag tag-${c}"><i class="${item.icon}" style="margin-right:4px"></i>${item.tag}</span>
-        <div class="news-title">${item.title}</div>
-        <div class="news-body">${item.body}</div>
-        <div class="news-date">${fmtDate(item.date)}</div>
-      </div>
-    </div>`;
-  }
-
-  function buildPage(idx) {
-    const el = document.createElement('div');
-    el.className = 'news-page';
-    el.innerHTML = allNews.slice(idx * PER_PAGE, idx * PER_PAGE + PER_PAGE).map(buildItem).join('');
-    return el;
-  }
-
-  function updateControls() {
-    dots.innerHTML = '';
-    for (let i = 0; i < totalPages; i++) {
-      const d = document.createElement('div');
-      d.className = 'pag-dot' + (i === curPage ? ' active' : '');
-      d.style.width = i === curPage ? '24px' : '6px';
-      d.addEventListener('click', () => goTo(i));
-      dots.appendChild(d);
-    }
-    lblCur.textContent = curPage + 1;
-    lblTot.textContent = totalPages;
-    btnPrev.disabled = curPage === 0;
-    btnNext.disabled = curPage === totalPages - 1;
-  }
-
-  function goTo(next) {
-    if (busy || next === curPage || next < 0 || next >= totalPages) return;
-    busy = true;
-
-    const dir   = next > curPage ? 1 : -1;
-    const oldEl = vp.querySelector('.news-page');
-    const newEl = buildPage(next);
-
-    newEl.style.transform = `translateX(${dir * -48}px)`;
-    newEl.style.opacity   = '0';
-    vp.appendChild(newEl);
-
-    if (oldEl) {
-      Object.assign(oldEl.style, { position:'absolute', top:'0', left:'0', right:'0' });
-    }
-
-    curPage = next;
-    updateControls();
-
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const t = `transform ${DUR}ms ${EASE}, opacity ${DUR}ms ${EASE}`;
-      newEl.style.transition = t;
-      newEl.style.transform  = 'translateX(0)';
-      newEl.style.opacity    = '1';
-      if (oldEl) {
-        oldEl.style.transition = t;
-        oldEl.style.transform  = `translateX(${dir * 48}px)`;
-        oldEl.style.opacity    = '0';
-      }
-      setTimeout(() => {
-        if (oldEl) oldEl.remove();
-        newEl.style.cssText = '';
-        busy = false;
-      }, DUR + 16);
-    }));
-  }
-
-  function initNews(data) {
-    allNews = data;
-    totalPages = Math.ceil(data.length / PER_PAGE);
-    vp.innerHTML = '';
-    vp.appendChild(buildPage(0));
-    ctrls.style.display = 'flex';
-    updateControls();
-    btnPrev.addEventListener('click', () => goTo(curPage - 1));
-    btnNext.addEventListener('click', () => goTo(curPage + 1));
-    document.addEventListener('keydown', e => {
-      if (e.key === 'ArrowLeft')  goTo(curPage - 1);
-      if (e.key === 'ArrowRight') goTo(curPage + 1);
-    });
-    let tx = null;
-    vp.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive:true });
-    vp.addEventListener('touchend',   e => {
-      if (tx === null) return;
-      const dx = e.changedTouches[0].clientX - tx;
-      if (Math.abs(dx) > 48) goTo(dx < 0 ? curPage + 1 : curPage - 1);
-      tx = null;
-    }, { passive:true });
-  }
-
-  fetch('./json/news.json')
-    .then(r => { if (!r.ok) throw 0; return r.json(); })
-    .then(initNews)
-    .catch(() => {
-      document.getElementById('newsStatus').innerHTML =
-        '<i class="fa-solid fa-triangle-exclamation"></i>&nbsp; Could not load news.json';
-    });
+  // Countdown + auto redirect
+  let s = 10;
+  const el = document.getElementById('secs');
+  const t = setInterval(() => {
+    el.textContent = --s;
+    if (s <= 0) { clearInterval(t); window.location.replace(NEW_URL); }
+  }, 1000);
 </script>
 </body>
 </html>
