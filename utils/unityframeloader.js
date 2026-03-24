@@ -3,15 +3,14 @@
  * ──────────────
  * Drop this anywhere in your repo. Each Unity game's index.html just does:
  *
- *   <script>const UNITY_BUILD = '2410211';</script>
+ *   <script>
+ *     window.UNITY_BUILD      = '2410211';
+ *     window.UNITY_TITLE      = 'My Game';
+ *     window.UNITY_WASM_PARTS = 1;
+ *   </script>
  *   <script src="../../unity-frame.js"></script>
  *
- * That's it. This script builds the entire page — styles, canvas,
- * loading screen, Firebase stub, everything.
- *
- * Optional config (set before importing this script):
- *   UNITY_TITLE       — display name shown while loading (default: "Loading game...")
- *   UNITY_WASM_PARTS  — number of .wasm split parts (default: 1, set 2 if you split it)
+ * IMPORTANT: use window.UNITY_BUILD, NOT const — const doesn't attach to window.
  */
 
 (function () {
@@ -34,6 +33,12 @@
       setUserId:       (id)   => console.log('[Unity] userId:', id),
     }),
   };
+
+  // Some Unity builds also call these as bare globals
+  window.firebaseLogEvent        = (n, p) => console.log('[Unity] firebaseLogEvent:', n, p);
+  window.firebaseSetCurrentScreen= (s)    => console.log('[Unity] firebaseSetCurrentScreen:', s);
+  window.firebaseSetUserId       = (id)   => console.log('[Unity] firebaseSetUserId:', id);
+  window.firebaseSetUserProperty = (n, v) => console.log('[Unity] firebaseSetUserProperty:', n, v);
 
   /* ── Inject <head> assets ───────────────────────────────── */
   document.title = TITLE + ' — TheUnlockedWeb';
