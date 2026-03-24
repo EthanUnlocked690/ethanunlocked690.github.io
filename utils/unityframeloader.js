@@ -24,7 +24,12 @@
     return;
   }
 
-  /* ── Fake Firebase (stops Unity Firebase plugin errors) ─── */
+  /* ── Fake Firebase ──────────────────────────────────────────
+     Unity's Firebase plugin calls bare globals like firebaseLogEvent,
+     firebaseSetUserId, etc. Rather than listing every possible name,
+     we use a Proxy on window that returns a no-op for any unknown
+     function call — so nothing ever throws ReferenceError.
+  ─────────────────────────────────────────────────────────── */
   window.firebase = {
     initializeApp: () => { console.log('[Unity] Fake Firebase init'); return window.firebase; },
     analytics: () => ({
@@ -32,13 +37,32 @@
       setCurrentScreen:(s)    => console.log('[Unity] screen:', s),
       setUserId:       (id)   => console.log('[Unity] userId:', id),
     }),
+    app:  () => window.firebase,
+    auth: () => ({ onAuthStateChanged: () => {}, signInAnonymously: () => Promise.resolve() }),
   };
 
-  // Some Unity builds also call these as bare globals
-  window.firebaseLogEvent        = (n, p) => console.log('[Unity] firebaseLogEvent:', n, p);
-  window.firebaseSetCurrentScreen= (s)    => console.log('[Unity] firebaseSetCurrentScreen:', s);
-  window.firebaseSetUserId       = (id)   => console.log('[Unity] firebaseSetUserId:', id);
-  window.firebaseSetUserProperty = (n, v) => console.log('[Unity] firebaseSetUserProperty:', n, v);
+  // Bare globals Unity might call (e.g. firebaseLogEvent, firebaseSetUserId...)
+  // Intercept ALL missing globals with a Proxy so no name ever throws.
+  try {
+    window = new Proxy(window, {
+      get(target, prop) {
+        const val = target[prop];
+        if (val !== undefined) return typeof val === 'function' ? val.bind(target) : val;
+        // Unknown property — if it looks like a firebase function, return a no-op
+        if (typeof prop === 'string' && prop.startsWith('firebase')) {
+          console.log('[Unity] Intercepted missing global:', prop);
+          return (...args) => console.log('[Unity]', prop, ...args);
+        }
+        return val;
+      }
+    });
+  } catch(e) {
+    // window proxy not supported — fall back to manually stubbing known names
+    [
+      'firebaseLogEvent','firebaseSetCurrentScreen','firebaseSetUserId',
+      'firebaseSetUserProperty','firebaseGetToken','firebaseGetAnalyticsInstanceId',
+    ].forEach(fn => { if (!window[fn]) window[fn] = (...a) => console.log('[Unity]', fn, ...a); });
+  }
 
   /* ── Inject <head> assets ───────────────────────────────── */
   document.title = TITLE + ' — TheUnlockedWeb';
