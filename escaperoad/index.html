@@ -1,5 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+  <script>
+  // Create a "dummy" Firebase object to trick the Unity plugin
+  window.firebase = {
+    initializeApp: function() {
+      console.log("Fake Firebase initialized!");
+      return this;
+    },
+    analytics: function() {
+      return {
+        logEvent: function(name, params) {
+          console.log("Fake Log Event:", name, params);
+        },
+        setCurrentScreen: function(screen) {
+          console.log("Fake Screen Set:", screen);
+        },
+        setUserId: function(id) {
+          console.log("Fake User ID Set:", id);
+        }
+      };
+    }
+  };
+</script>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
